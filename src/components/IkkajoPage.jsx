@@ -2,22 +2,29 @@
 
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { C } from '@/lib/utils';
-import { BELT, KYU_DATA, FLAT_INDEX, TECHNIQUE_VIDEOS } from '@/data/techniques';
+import { BELT, KYU_DATA, FLAT_INDEX } from '@/data/techniques';
+import { useTechniques } from '@/lib/db';
 
 export default function IkkajoPage({ nav }) {
   const [activeKyu, setActiveKyu] = useState('6kyu');
   const cur = KYU_DATA.find(k => k.id === activeKyu);
+  const { videos } = useTechniques();
+
+  // Счётчик видео по технике из Supabase
+  const videoCountByTech = useMemo(() => {
+    const map = {};
+    videos.forEach(v => { map[v.technique_id] = (map[v.technique_id] || 0) + 1; });
+    return map;
+  }, [videos]);
 
   return (
     <div className="fade" style={{ padding: '32px 36px' }}>
-      {/* Хлебные крошки */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24, fontSize: 12 }}>
         <button onClick={nav.dashboard} style={{ background: 'none', border: 'none', color: C.gold, cursor: 'pointer', padding: 0 }}>← База техник</button>
         <span style={{ color: '#ddd' }}>/</span>
         <span style={{ color: C.dark }}>Иккаджо</span>
       </div>
 
-      {/* Шапка */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: 20, marginBottom: 24, paddingBottom: 20, borderBottom: `2px solid ${C.border}`, flexWrap: 'wrap' }}>
         <div style={{ fontFamily: "'Noto Serif JP', serif", fontSize: 72, color: '#ece7de', lineHeight: 1, flexShrink: 0 }}>一</div>
         <div style={{ flex: 1 }}>
@@ -30,7 +37,6 @@ export default function IkkajoPage({ nav }) {
         </div>
       </div>
 
-      {/* Табы кю */}
       <div style={{ display: 'flex', gap: 2, marginBottom: 20, background: '#e8e0d0', padding: 2, flexWrap: 'wrap' }}>
         {KYU_DATA.map(k => {
           const active = activeKyu === k.id;
@@ -46,7 +52,6 @@ export default function IkkajoPage({ nav }) {
         })}
       </div>
 
-      {/* Техники */}
       <div key={activeKyu} className="fade">
         {cur?.note && (
           <div style={{ padding: '10px 14px', background: C.light, border: `1px solid ${C.goldBorder}`, fontSize: 12, color: C.gold, marginBottom: 16 }}>↳ {cur.note}</div>
@@ -62,7 +67,13 @@ export default function IkkajoPage({ nav }) {
             </div>
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 1, background: '#e8e0d0' }}>
               {sec.techniques.map((tech, i) => (
-                <TechCard key={tech.id} tech={tech} index={i} onClick={() => nav.technique(cur, sec, tech)} />
+                <TechCard
+                  key={tech.id}
+                  tech={tech}
+                  index={i}
+                  videoCount={videoCountByTech[tech.name] || 0}
+                  onClick={() => nav.technique(cur, sec, tech)}
+                />
               ))}
             </div>
           </div>
@@ -72,9 +83,8 @@ export default function IkkajoPage({ nav }) {
   );
 }
 
-function TechCard({ tech, index, onClick }) {
+function TechCard({ tech, index, videoCount, onClick }) {
   const [hover, setHover] = useState(false);
-  const vlen = (TECHNIQUE_VIDEOS[tech.name] || []).length;
   return (
     <div onClick={onClick}
       onMouseEnter={() => setHover(true)} onMouseLeave={() => setHover(false)}
@@ -85,7 +95,7 @@ function TechCard({ tech, index, onClick }) {
       <div style={{ flex: 1 }}>
         <div style={{ fontSize: 14, fontWeight: 500, color: C.dark }}>{tech.nameRu}</div>
         <div style={{ fontSize: 11, color: C.muted, marginTop: 1 }}>{tech.name}</div>
-        <div style={{ fontSize: 10, color: '#c8a84a', marginTop: 3 }}>{vlen} видео</div>
+        <div style={{ fontSize: 10, color: '#c8a84a', marginTop: 3 }}>{videoCount} видео</div>
       </div>
       <span style={{ color: hover ? C.gold : '#ccc', fontSize: 15, transition: 'color 0.15s' }}>→</span>
     </div>

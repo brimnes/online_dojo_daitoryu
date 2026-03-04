@@ -1,0 +1,189 @@
+
+/**
+ * scripts/seed.js
+ *
+ * Заливает скелет программы в Supabase из mock-данных.
+ * Безопасен к повторному запуску — использует upsert по id.
+ *
+ * Запуск:
+ *   node --env-file=.env.local scripts/seed.js
+ */
+
+import { createClient } from '@supabase/supabase-js';
+
+// ─── Supabase client (читает из .env.local) ───────────────────
+const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
+const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+
+if (!url || !key) {
+  console.error('❌  Не найдены NEXT_PUBLIC_SUPABASE_URL или NEXT_PUBLIC_SUPABASE_ANON_KEY');
+  console.error('    Убедись что файл .env.local существует и запускай:');
+  console.error('    node --env-file=.env.local scripts/seed.js');
+  process.exit(1);
+}
+
+const supabase = createClient(url, key);
+
+// ─── Данные из data-файлов ────────────────────────────────────
+// Используем динамический import так как файлы используют ES-модули
+const { MONTHS, MONTH_LESSONS } = await import('../src/data/months.js');
+const { KYU_DATA, TECHNIQUE_CONTENT, TECHNIQUE_VIDEOS } = await import('../src/data/techniques.js');
+
+// ─── Утилита: upsert с логом ──────────────────────────────────
+async function upsert(table, rows, label) {
+  if (!rows.length) {
+    console.log(`  ⊘  ${label}: нет данных для заливки`);
+    return 0;
+  }
+  const { error } = await supabase
+    .from(table)
+    .upsert(rows, { onConflict: 'id' });
+
+  if (error) {
+    console.error(`  ❌  ${label}:`, error.message);
+    return 0;
+  }
+  console.log(`  ✓  ${label}: ${rows.length} записей`);
+  return rows.length;
+}
+
+// ─────────────────────────────────────────────────────────────
+// 1. LESSONS
+// ─────────────────────────────────────────────────────────────
+function buildLessons() {
+  const rows = [];
+  for (const month of MONTHS) {
+    const lessons = MONTH_LESSONS[month.id] || [];
+    lessons.forEach((l, idx) => {
+      rows.push({
+        id:        l.id,
+        month_id:  month.id,
+        num:       l.num ?? idx + 1,
+        title:     l.title     || '',
+        subtitle:  l.subtitle  || '',
+        duration:  l.duration  || '',
+        video_url: l.videoUrl  || '',
+        text:      l.text      || '',
+      });
+    });
+  }
+  return rows;
+}
+
+// ─────────────────────────────────────────────────────────────
+// 2. TECHNIQUES
+// Собираем уникальные техники из KYU_DATA + обогащаем TECHNIQUE_CONTENT
+// ─────────────────────────────────────────────────────────────
+function buildTechniques() {
+  // Сначала собираем уникальные техники из всех уровней
+  const seen   = new Set();
+  const rows   = [];
+  let sortOrder = 0;
+
+  for (const kyu of KYU_DATA) {
+    for (const section of kyu.sections) {
+      for (const tech of section.techniques) {
+        const key = `${tech.name}__${section.id}`;
+        if (seen.has(key)) continue;
+        seen.add(key);
+
+        const content = TECHNIQUE_CONTENT[tech.name] || {};
+
+        rows.push({
+          id:          tech.name,           // 'Ippondori', 'Shihonage', ...
+          name_ru:     tech.nameRu  || tech.name,
+          kyu:         kyu.id,              // уровень первого появления
+          section:     section.name,        // 'Tachiai', 'Idori', ...
+          section_ru:  section.nameRu || section.name,
+          description: content.description || '',
+          principles:  content.principles  || [],
+          sensei_quote:content.senseiQuote || '',
+          sort_order:  sortOrder++,
+        });
+      }
+    }
+  }
+  return rows;
+}
+
+// ─────────────────────────────────────────────────────────────
+// 3. TECHNIQUE_VIDEOS
+// ─────────────────────────────────────────────────────────────
+function buildTechniqueVideos() {
+  const rows = [];
+  for (const [techName, videos] of Object.entries(TECHNIQUE_VIDEOS)) {
+    videos.forEach((v, idx) => {
+      rows.push({
+        id:           v.id,
+        technique_id: techName,
+        title:        v.title    || '',
+        duration:     v.duration || '',
+        category:     v.category || 'overview',
+        video_url:    v.videoUrl || '',
+        sort_order:   idx,
+      });
+    });
+  }
+  return rows;
+}
+
+// ─────────────────────────────────────────────────────────────
+// 4. TECHNIQUE_MISTAKES
+// ─────────────────────────────────────────────────────────────
+function buildTechniqueMistakes() {
+  const rows = [];
+  for (const [techName, content] of Object.entries(TECHNIQUE_CONTENT)) {
+    const mistakes = content.mistakes || [];
+    mistakes.forEach((m, idx) => {
+      // Детерминированный id чтобы upsert работал идемпотентно
+      const id = `${techName}-mistake-${idx}`;
+      rows.push({
+        id:           id,
+        technique_id: techName,
+        title:        m.title || '',
+        description:  m.desc  || '',
+        sort_order:   idx,
+      });
+    });
+  }
+  return rows;
+}
+
+// ─────────────────────────────────────────────────────────────
+// MAIN
+// ─────────────────────────────────────────────────────────────
+async function seed() {
+  console.log('\n🌱  Seed — начало заливки данных\n');
+
+  const lessons         = buildLessons();
+  const techniques      = buildTechniques();
+  const techniqueVideos = buildTechniqueVideos();
+  const mistakes        = buildTechniqueMistakes();
+
+  let total = 0;
+
+  console.log('📅  Уроки:');
+  total += await upsert('lessons', lessons, `${lessons.length} уроков по всем месяцам`);
+
+  console.log('\n🥋  Техники:');
+  total += await upsert('techniques', techniques, `${techniques.length} уникальных техник`);
+
+  console.log('\n🎬  Видео техник:');
+  total += await upsert('technique_videos', techniqueVideos, `${techniqueVideos.length} видео`);
+
+  console.log('\n⚠️   Ошибки техник:');
+  total += await upsert('technique_mistakes', mistakes, `${mistakes.length} записей ошибок`);
+
+  console.log(`\n✅  Готово. Залито записей: ${total}`);
+  console.log('\nЧто появится в Supabase:');
+  console.log(`  lessons            — ${lessons.length} строк (12 уроков × ${MONTHS.length} месяцев)`);
+  console.log(`  techniques         — ${techniques.length} строк`);
+  console.log(`  technique_videos   — ${techniqueVideos.length} строк`);
+  console.log(`  technique_mistakes — ${mistakes.length} строк`);
+  console.log('\n  Поля video_url пустые — заполняй через AdminPanel.\n');
+}
+
+seed().catch(err => {
+  console.error('\n❌  Непредвиденная ошибка:', err.message);
+  process.exit(1);
+});

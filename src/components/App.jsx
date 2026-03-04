@@ -1,21 +1,44 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import AuthPage from './AuthPage';
 import Dashboard from './Dashboard';
 import IkkajoPage from './IkkajoPage';
 import TechniquePage from './TechniquePage';
 import MonthPage from './MonthPage';
 import LessonPage from './LessonPage';
-import { INITIAL_COMMENTS } from '@/data/months';
-import { USER } from '@/data/users';
 
 export default function App() {
-  // auth: null = не вошёл, object = вошедший пользователь
-  const [currentUser, setCurrentUser] = useState(null); // null → показывает AuthPage
+  const [currentUser, setCurrentUser] = useState(null);
+  const [authLoading, setAuthLoading] = useState(true);
+
+  useEffect(() => {
+    // Восстанавливаем сессию при перезагрузке страницы
+    import('@/lib/supabase').then(({ supabase }) => {
+      supabase.auth.getSession().then(async ({ data: { session } }) => {
+        if (session?.user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', session.user.id)
+            .single();
+          setCurrentUser(profile || { id: session.user.id, email: session.user.email, name: session.user.email.split('@')[0] });
+        }
+        setAuthLoading(false);
+      });
+
+      // Слушаем изменения сессии (логин/логаут)
+      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
+        if (event === 'SIGNED_OUT' || !session) {
+          setCurrentUser(null);
+        }
+      });
+      return () => subscription.unsubscribe();
+    });
+  }, []);
   const [route,    setRoute]    = useState({ page: 'dashboard' });
   const [watched,  setWatched]  = useState({});
-  const [comments, setComments] = useState(INITIAL_COMMENTS);
+  const [comments, setComments] = useState({});
 
   const nav = {
     dashboard: ()                   => setRoute({ page: 'dashboard' }),
@@ -30,7 +53,7 @@ export default function App() {
 
   const addComment = (lessonId, text) => {
     if (!text.trim()) return;
-    const name = currentUser?.name || USER.name;
+    const name = currentUser?.name || 'Ученик';
     setComments(prev => ({
       ...prev,
       [lessonId]: [...(prev[lessonId] || []), {
@@ -44,11 +67,14 @@ export default function App() {
     }));
   };
 
-  // Мёрдж mock-USER с данными из формы регистрации/входа
-  const user = currentUser ? { ...USER, ...currentUser } : USER;
+  if (authLoading) {
+    return (
+      <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#f5f3ee', fontFamily:"'Jost',sans-serif", color:'#999', fontSize:13 }}>
+        Загрузка…
+      </div>
+    );
+  }
 
-  // ── Если не авторизован — показываем AuthPage ──
-  // TEMP: закомментируй строчку ниже чтобы сразу открывался dashboard без входа
   if (!currentUser) {
     return <AuthPage onSuccess={(userData) => setCurrentUser(userData)} />;
   }
@@ -56,7 +82,7 @@ export default function App() {
   return (
     <>
       {route.page === 'dashboard' && (
-        <Dashboard nav={nav} watched={watched} user={user} onLogout={() => setCurrentUser(null)} />
+        <Dashboard nav={nav} watched={watched} user={currentUser} onLogout={async () => { const { supabase } = await import('@/lib/supabase'); await supabase.auth.signOut(); setCurrentUser(null); }} />
       )}
       {route.page === 'ikkajo' && (
         <IkkajoPage nav={nav} />

@@ -494,4 +494,4 @@ KYU_DATA.forEach(kyu =>
     )
   )
 );
-export { BELT } from '@/data/users';
+export { BELT } from './users.js';

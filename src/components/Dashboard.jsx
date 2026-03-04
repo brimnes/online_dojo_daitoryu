@@ -2,9 +2,9 @@
 
 import { useState } from 'react';
 import { C, hasLevel, levelIndex } from '@/lib/utils';
-import { USER, LEVELS, SELF_LEVELS, EXAMS, PAYS } from '@/data/users';
+import { LEVELS, SELF_LEVELS, EXAMS, PAYS } from '@/data/users';
 import { DB_SECTIONS } from '@/data/techniques';
-import { MONTHS, MONTH_LESSONS } from '@/data/months';
+import { useMonths, useLessons, useUserAccess } from '@/lib/db';
 
 const TABS = [
   { id: 'months',   label: 'Месяцы 2026'    },
@@ -12,11 +12,35 @@ const TABS = [
   { id: 'profile',  label: 'Личный кабинет'  },
 ];
 
+async function startPayment(type, reference) {
+  const { supabase } = await import('@/lib/supabase');
+  const { data: { session } } = await supabase.auth.getSession();
+  if (!session) { alert('Необходимо войти в аккаунт'); return; }
+
+  const res = await fetch('/api/payments/create', {
+    method: 'POST',
+    headers: {
+      'Content-Type':  'application/json',
+      'Authorization': `Bearer ${session.access_token}`,
+    },
+    body: JSON.stringify({ type, reference }),
+  });
+
+  if (!res.ok) {
+    const err = await res.json();
+    alert('Ошибка создания платежа: ' + (err.error || res.status));
+    return;
+  }
+  const { confirmation_url } = await res.json();
+  window.location.href = confirmation_url;
+}
+
 export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
   const [tab, setTab]     = useState('months');
   const [modal, setModal] = useState(null);
-  const u     = userProp || USER;
+  const u     = userProp || {};
   const curLv = LEVELS.find(l => l.id === u.level);
+  const { hasMonth, hasSection, reload: reloadAccess } = useUserAccess();
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -35,7 +59,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px' }}>
           <div style={{ width: 34, height: 34, borderRadius: '50%', border: `1px solid ${C.goldBorder}`, background: C.light, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Cormorant Garamond', serif", fontSize: 16, color: C.gold, flexShrink: 0 }}>
-            {u.name[0]}
+            {(u.name || '?')[0]}
           </div>
           <div>
             <div style={{ fontSize: 12, fontWeight: 500, color: C.dark }}>{u.name}</div>
@@ -69,7 +93,6 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
 
         <div style={{ height: 1, background: '#ede8e0' }} />
         <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-          {/* Кнопка видна только для роли admin — в будущем проверять через Supabase */}
           <a href="/admin"
             style={{ display: 'block', padding: '7px 12px', background: 'none', border: `1px solid #c8a84a`, color: '#8B6914', fontSize: 11, cursor: 'pointer', textAlign: 'left', textDecoration: 'none' }}>
             ⚙ Панель управления
@@ -94,8 +117,8 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
         </header>
 
         <div style={{ padding: '32px 36px' }} key={tab} className="fade">
-          {tab === 'months'   && <TabMonths   nav={nav} watched={watched} />}
-          {tab === 'database' && <TabDatabase nav={nav} setModal={setModal} />}
+          {tab === 'months'   && <TabMonths   nav={nav} watched={watched} user={u} hasMonth={hasMonth} />}
+          {tab === 'database' && <TabDatabase nav={nav} setModal={setModal} user={u} hasSection={hasSection} />}
           {tab === 'profile'  && <TabProfile user={u} />}
         </div>
       </main>
@@ -111,7 +134,9 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
             <div style={{ fontSize: 11, color: C.muted, marginBottom: 12 }}>{modal.sublabel} · {modal.techniques} техник</div>
             <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 36, fontWeight: 300, color: C.dark, marginBottom: 6 }}>{modal.price}</div>
             <p style={{ fontSize: 11, color: '#888', lineHeight: 1.7, marginBottom: 20 }}>Разовая оплата — постоянный доступ без ограничений.</p>
-            <button style={{ width: '100%', padding: '10px', background: C.dark, color: '#fff', border: 'none', fontSize: 13, cursor: 'pointer', marginBottom: 8 }}>
+            <button
+              onClick={() => { setModal(null); startPayment('section', modal.id); }}
+              style={{ width: '100%', padding: '10px', background: C.dark, color: '#fff', border: 'none', fontSize: 13, cursor: 'pointer', marginBottom: 8 }}>
               Перейти к оплате
             </button>
             <button onClick={() => setModal(null)}
@@ -126,7 +151,11 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
 }
 
 // ── Вкладка: Месяцы ──────────────────────────────────────────────────────────
-function TabMonths({ nav, watched }) {
+function TabMonths({ nav, watched, user, hasMonth }) {
+  const { months, loading } = useMonths();
+
+  if (loading) return <div style={{ color: C.muted, fontSize: 13 }}>Загрузка…</div>;
+
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 20, paddingBottom: 16, borderBottom: `2px solid ${C.border}` }}>
@@ -134,42 +163,48 @@ function TabMonths({ nav, watched }) {
         <span style={{ fontSize: 12, color: C.muted }}>1 990 ₽ / месяц</span>
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(190px, 1fr))', gap: 10 }}>
-        {MONTHS.map(m => {
-          const lessons = MONTH_LESSONS[m.id] || [];
-          const watchedCount = lessons.filter(l => watched[l.id]).length;
-          const hasProg = lessons.length > 0 && watchedCount > 0;
-          return (
-            <div key={m.id} style={{ padding: '18px 16px', minHeight: 200, background: m.current ? '#fff' : m.paid ? '#fdfcf8' : C.white, border: m.current ? '2px solid #c8a84a' : `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: 6, boxShadow: m.current ? '0 2px 16px rgba(139,105,20,0.07)' : 'none' }}>
-              {m.current && <div style={{ fontSize: 8, color: C.gold, background: '#faf0d8', border: '1px solid #e0c870', padding: '2px 7px', letterSpacing: 1, textTransform: 'uppercase', alignSelf: 'flex-start' }}>Текущий</div>}
-              <div style={{ fontFamily: "'Noto Serif JP', serif", fontSize: 20, color: '#e0e0e0', lineHeight: 1 }}>{m.kanji}</div>
-              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 17, fontWeight: 600, color: C.dark }}>{m.label}</div>
-              <div style={{ fontSize: 11, color: '#888', lineHeight: 1.6, flex: 1 }}>{m.desc}</div>
-              {hasProg && (
-                <div>
-                  <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-                    <span style={{ fontSize: 9, color: C.muted }}>{watchedCount} / {lessons.length} уроков</span>
-                  </div>
-                  <div style={{ height: 2, background: '#e8e0d0', borderRadius: 2 }}>
-                    <div style={{ height: '100%', width: `${(watchedCount / lessons.length) * 100}%`, background: C.gold, borderRadius: 2 }} />
-                  </div>
-                </div>
-              )}
-              <div style={{ marginTop: 8 }}>
-                {m.paid
-                  ? <button onClick={() => nav.month(m.id)} style={{ padding: '7px 14px', background: C.dark, color: '#fff', border: 'none', fontSize: 12, cursor: 'pointer' }}>Войти →</button>
-                  : <button style={{ padding: '7px 14px', background: 'transparent', color: '#888', border: `1px solid ${C.border}`, fontSize: 12, cursor: 'pointer' }}>Оплатить — 1 990 ₽</button>
-                }
-              </div>
-            </div>
-          );
-        })}
+        {months.map(m => (
+          <MonthCard key={m.id} month={m} nav={nav} watched={watched} hasMonth={hasMonth} />
+        ))}
+      </div>
+    </div>
+  );
+}
+
+// Отдельный компонент чтобы каждый месяц грузил свои уроки независимо
+function MonthCard({ month: m, nav, watched, hasMonth }) {
+  const { lessons } = useLessons(m.id);
+  const watchedCount = lessons.filter(l => watched[l.id]).length;
+  const hasProg = lessons.length > 0 && watchedCount > 0;
+
+  return (
+    <div style={{ padding: '18px 16px', minHeight: 200, background: m.current ? '#fff' : (hasMonth?.(m.id) || m.is_open) ? '#fdfcf8' : C.white, border: m.current ? '2px solid #c8a84a' : `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: 6, boxShadow: m.current ? '0 2px 16px rgba(139,105,20,0.07)' : 'none' }}>
+      {m.current && <div style={{ fontSize: 8, color: C.gold, background: '#faf0d8', border: '1px solid #e0c870', padding: '2px 7px', letterSpacing: 1, textTransform: 'uppercase', alignSelf: 'flex-start' }}>Текущий</div>}
+      <div style={{ fontFamily: "'Noto Serif JP', serif", fontSize: 20, color: '#e0e0e0', lineHeight: 1 }}>{m.kanji}</div>
+      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 17, fontWeight: 600, color: C.dark }}>{m.label}</div>
+      <div style={{ fontSize: 11, color: '#888', lineHeight: 1.6, flex: 1 }}>{m.description || m.desc}</div>
+      {hasProg && (
+        <div>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
+            <span style={{ fontSize: 9, color: C.muted }}>{watchedCount} / {lessons.length} уроков</span>
+          </div>
+          <div style={{ height: 2, background: '#e8e0d0', borderRadius: 2 }}>
+            <div style={{ height: '100%', width: `${(watchedCount / lessons.length) * 100}%`, background: C.gold, borderRadius: 2 }} />
+          </div>
+        </div>
+      )}
+      <div style={{ marginTop: 8 }}>
+        {(hasMonth?.(m.id) || m.is_open)
+          ? <button onClick={() => nav.month(m.id)} style={{ padding: '7px 14px', background: C.dark, color: '#fff', border: 'none', fontSize: 12, cursor: 'pointer' }}>Войти →</button>
+          : <button onClick={() => startPayment('month', m.id)} style={{ padding: '7px 14px', background: 'transparent', color: '#888', border: `1px solid ${C.border}`, fontSize: 12, cursor: 'pointer' }}>Оплатить — 1 990 ₽</button>
+        }
       </div>
     </div>
   );
 }
 
 // ── Вкладка: База техник ──────────────────────────────────────────────────────
-function TabDatabase({ nav, setModal }) {
+function TabDatabase({ nav, setModal, user, hasSection }) {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 20, paddingBottom: 16, borderBottom: `2px solid ${C.border}` }}>
@@ -178,8 +213,8 @@ function TabDatabase({ nav, setModal }) {
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         {DB_SECTIONS.map(sec => {
-          const avail  = hasLevel(USER.level, sec.requiredLevel);
-          const bought = USER.purchasedSections.includes(sec.id);
+          const avail  = hasLevel(user?.level || '6kyu', sec.requiredLevel);
+          const bought = hasSection?.(sec.id) || false;
           return (
             <div key={sec.id} style={{ display: 'flex', alignItems: 'center', gap: 18, padding: '20px 18px', background: C.white, border: `1px solid ${C.border}`, borderTop: 'none', opacity: avail ? 1 : 0.4 }}>
               <div style={{ fontFamily: "'Noto Serif JP', serif", fontSize: 32, minWidth: 40, textAlign: 'center', color: bought ? C.gold : avail ? C.dark : '#bbb', lineHeight: 1 }}>{sec.kanji}</div>
@@ -210,13 +245,18 @@ function TabDatabase({ nav, setModal }) {
 // ── Вкладка: Профиль ──────────────────────────────────────────────────────────
 function TabProfile({ user: u }) {
   const [sub, setSub] = useState('info');
-  const usr   = u || USER;
+  const usr   = u || {};
   const curLv = LEVELS.find(l => l.id === usr.level);
   const selfLvLabel = SELF_LEVELS.find(l => l.id === usr.selfLevel)?.label;
 
+  // Экзамены и оплаты — данные текущего пользователя из профиля
+  // Пока из mock; заменить на usr.exams / usr.pays когда Supabase вернёт их в профиле
+  const userExams = usr.exams || EXAMS;
+  const userPays  = usr.pays  || PAYS;
+
   const grouped = [];
   const seen = {};
-  EXAMS.forEach(ex => {
+  userExams.forEach(ex => {
     if (!seen[ex.level]) { seen[ex.level] = []; grouped.push({ level: ex.level, attempts: seen[ex.level] }); }
     seen[ex.level].push(ex);
   });
@@ -233,7 +273,6 @@ function TabProfile({ user: u }) {
         <h2 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 26, fontWeight: 600, color: C.dark }}>Личный кабинет</h2>
       </div>
 
-      {/* Карточка пользователя */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '20px 22px', background: C.white, border: `1px solid ${C.border}`, marginBottom: 20, flexWrap: 'wrap' }}>
         <div style={{ width: 52, height: 52, borderRadius: '50%', border: `2px solid ${C.goldBorder}`, background: C.light, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Cormorant Garamond', serif", fontSize: 24, color: C.gold, flexShrink:0 }}>{(usr.name||'?')[0]}</div>
         <div style={{ flex: 1 }}>
@@ -255,7 +294,6 @@ function TabProfile({ user: u }) {
         </div>
       </div>
 
-      {/* Подвкладки */}
       <div style={{ display: 'flex', background: C.white, border: `1px solid ${C.border}`, borderBottom: 'none' }}>
         {SUB_TABS.map(t => (
           <button key={t.id} onClick={() => setSub(t.id)}
@@ -265,13 +303,12 @@ function TabProfile({ user: u }) {
         ))}
       </div>
 
-      {/* ── Обо мне ── */}
       {sub === 'info' && (
         <div style={{ border: `1px solid ${C.border}`, borderTop: 'none', background: C.white }}>
           {[
-            { label: 'Уровень (подтверждён)', value: curLv?.label,                  show: !!curLv },
-            { label: 'Уровень (при регистрации)', value: selfLvLabel,               show: !!selfLvLabel && selfLvLabel !== curLv?.label },
-            { label: 'Имя сэнсэя',           value: usr.senseiName || 'Станислав Копин', show: true },
+            { label: 'Уровень (подтверждён)',     value: curLv?.label,    show: !!curLv },
+            { label: 'Уровень (при регистрации)', value: selfLvLabel,     show: !!selfLvLabel && selfLvLabel !== curLv?.label },
+            { label: 'Имя сэнсэя',               value: usr.senseiName || 'Станислав Копин', show: true },
           ].filter(r => r.show).map(row => (
             <div key={row.label} style={{ display: 'grid', gridTemplateColumns: '200px 1fr', padding: '14px 20px', borderBottom: `1px solid ${C.border}`, fontSize: 13, alignItems: 'start' }}>
               <span style={{ color: C.muted, fontSize: 11 }}>{row.label}</span>
@@ -285,14 +322,11 @@ function TabProfile({ user: u }) {
             </div>
           )}
           {!usr.experience && !selfLvLabel && !usr.senseiName && (
-            <div style={{ padding: '24px 20px', textAlign: 'center', color: C.muted, fontSize: 13 }}>
-              Анкета не заполнена
-            </div>
+            <div style={{ padding: '24px 20px', textAlign: 'center', color: C.muted, fontSize: 13 }}>Анкета не заполнена</div>
           )}
         </div>
       )}
 
-      {/* ── Экзамены ── */}
       {sub === 'exams' && (
         <div style={{ border: `1px solid ${C.border}`, borderTop: 'none' }}>
           {grouped.map((g, gi) => {
@@ -321,10 +355,9 @@ function TabProfile({ user: u }) {
         </div>
       )}
 
-      {/* ── Оплаты ── */}
       {sub === 'payments' && (
         <div style={{ border: `1px solid ${C.border}`, borderTop: 'none' }}>
-          {PAYS.map(p => (
+          {userPays.map(p => (
             <div key={p.id} style={{ display: 'grid', gridTemplateColumns: '90px 1fr 100px', padding: '13px 18px', fontSize: 12, background: C.white, borderBottom: '1px solid #f5f5f5', alignItems: 'center' }}>
               <span style={{ color: C.muted }}>{p.date}</span>
               <span style={{ color: C.dark }}>{p.desc}</span>

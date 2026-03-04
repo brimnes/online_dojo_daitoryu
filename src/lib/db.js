@@ -307,6 +307,44 @@ export function useExams() {
   return { exams, loading, approveExam, rejectExam, addManualExam };
 }
 
+
+// ─────────────────────────────────────────────────────────────
+// HOOK: useMonthsWithLessons
+// Возвращает массив месяцев, у каждого month.lessons = [...]
+// ─────────────────────────────────────────────────────────────
+
+export function useMonthsWithLessons() {
+  const [months,  setMonths]  = useState([]);
+  const [loading, setLoading] = useState(true);
+
+  const reload = useCallback(async () => {
+    setLoading(true);
+    if (!IS_DB_CONNECTED) {
+      setMonths(MOCK_MONTHS.map(m => ({
+        ...m,
+        lessons: MOCK_LESSONS.filter(l => l.month_id === m.id),
+      })));
+      setLoading(false);
+      return;
+    }
+    const [{ data: mData }, { data: lData }] = await Promise.all([
+      supabase.from('months').select('*').order('sort_order'),
+      supabase.from('lessons').select('*').order('month_id, num'),
+    ]);
+    const monthList  = mData  || [];
+    const lessonList = lData  || [];
+    setMonths(monthList.map(m => ({
+      ...m,
+      lessons: lessonList.filter(l => l.month_id === m.id),
+    })));
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { reload(); }, [reload]);
+
+  return { months, loading, reload };
+}
+
 // ─────────────────────────────────────────────────────────────
 // HOOK: useMonths
 // ─────────────────────────────────────────────────────────────
@@ -346,25 +384,24 @@ export function useLessons(monthId) {
   const [loading,  setLoading]  = useState(true);
   const [saving,   setSaving]   = useState(false);
 
-  useEffect(() => {
+  const reload = useCallback(async () => {
     if (!monthId) return;
-    const load = async () => {
-      setLoading(true);
-      if (!IS_DB_CONNECTED) {
-        setLessons(MOCK_LESSONS.filter(l => l.month_id === monthId));
-        setLoading(false);
-        return;
-      }
-      const { data } = await supabase
-        .from('lessons')
-        .select('*')
-        .eq('month_id', monthId)
-        .order('num');
-      setLessons(data || []);
+    setLoading(true);
+    if (!IS_DB_CONNECTED) {
+      setLessons(MOCK_LESSONS.filter(l => l.month_id === monthId));
       setLoading(false);
-    };
-    load();
+      return;
+    }
+    const { data } = await supabase
+      .from('lessons')
+      .select('*')
+      .eq('month_id', monthId)
+      .order('num');
+    setLessons(data || []);
+    setLoading(false);
   }, [monthId]);
+
+  useEffect(() => { reload(); }, [reload]);
 
   const saveLesson = useCallback(async (lesson) => {
     setSaving(true);
@@ -406,7 +443,7 @@ export function useLessons(monthId) {
     return { ok: !error };
   }, []);
 
-  return { lessons, loading, saving, saveLesson, addLesson, deleteLesson };
+  return { lessons, loading, saving, saveLesson, addLesson, deleteLesson, reload };
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -443,18 +480,23 @@ export function useTechniques() {
   }, []);
 
   // Возвращает контент конкретной техники в удобном формате
-  const getTechContent = useCallback((techId) => ({
-    description:  techniques.find(t => t.id === techId)?.description || '',
-    principles:   techniques.find(t => t.id === techId)?.principles  || [],
-    senseiQuote:  techniques.find(t => t.id === techId)?.sensei_quote || '',
-    mistakes:     mistakes.filter(m => m.technique_id === techId).sort((a,b) => a.sort_order - b.sort_order),
-    videos: {
-      overview:   videos.filter(v => v.technique_id === techId && v.category === 'overview').sort((a,b) => a.sort_order - b.sort_order),
-      details:    videos.filter(v => v.technique_id === techId && v.category === 'details').sort((a,b) => a.sort_order - b.sort_order),
-      mistakes:   videos.filter(v => v.technique_id === techId && v.category === 'mistakes').sort((a,b) => a.sort_order - b.sort_order),
-      variations: videos.filter(v => v.technique_id === techId && v.category === 'variations').sort((a,b) => a.sort_order - b.sort_order),
-    },
-  }), [techniques, mistakes, videos]);
+  const getTechContent = useCallback((techId) => {
+    const tech = techniques.find(t => t.id === techId) || {};
+    const sort = (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0);
+    return {
+      description: tech.description   || '',
+      // principles может прийти как null из Supabase если jsonb не заполнен
+      principles:  Array.isArray(tech.principles) ? tech.principles : [],
+      senseiQuote: tech.sensei_quote   || '',
+      mistakes:     mistakes.filter(m => m.technique_id === techId).sort(sort),
+      videos: {
+        overview:   videos.filter(v => v.technique_id === techId && v.category === 'overview').sort(sort),
+        details:    videos.filter(v => v.technique_id === techId && v.category === 'details').sort(sort),
+        mistakes:   videos.filter(v => v.technique_id === techId && v.category === 'mistakes').sort(sort),
+        variations: videos.filter(v => v.technique_id === techId && v.category === 'variations').sort(sort),
+      },
+    };
+  }, [techniques, mistakes, videos]);
 
   // Сохранить основную инфо + принципы + цитату сэнсэя
   const saveTechInfo = useCallback(async (techId, patch) => {
@@ -524,7 +566,42 @@ export function useTechniques() {
     return { ok: !error };
   }, []);
 
-  return { techniques, loading, saving, getTechContent, saveTechInfo, saveMistakes, saveVideos };
+  return { techniques, videos, mistakes, loading, saving, getTechContent, saveTechInfo, saveMistakes, saveVideos };
+}
+
+// ─────────────────────────────────────────────────────────────
+// HOOK: useUserAccess
+// Возвращает Set оплаченных доступов текущего пользователя.
+// accessSet.has('month:jan') → true если доступ к январю открыт
+// accessSet.has('section:ikkajo') → true если куплено иккаджо
+// ─────────────────────────────────────────────────────────────
+
+export function useUserAccess() {
+  const [accessSet, setAccessSet] = useState(new Set());
+  const [loading,   setLoading]   = useState(true);
+
+  const reload = useCallback(async () => {
+    setLoading(true);
+    if (!IS_DB_CONNECTED) {
+      setAccessSet(new Set());
+      setLoading(false);
+      return;
+    }
+    const { data } = await supabase
+      .from('user_access')
+      .select('type, reference');
+    const set = new Set((data || []).map(a => `${a.type}:${a.reference}`));
+    setAccessSet(set);
+    setLoading(false);
+  }, []);
+
+  useEffect(() => { reload(); }, [reload]);
+
+  // Хелперы
+  const hasMonth   = useCallback((monthId)  => accessSet.has(`month:${monthId}`),   [accessSet]);
+  const hasSection = useCallback((sectionId) => accessSet.has(`section:${sectionId}`), [accessSet]);
+
+  return { accessSet, hasMonth, hasSection, loading, reload };
 }
 
 // ─────────────────────────────────────────────────────────────

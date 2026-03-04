@@ -1,22 +1,38 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { C } from '@/lib/utils';
-import { USER } from '@/data/users';
-import { MONTHS, MONTH_LESSONS } from '@/data/months';
+import { useMonths, useLessons } from '@/lib/db';
+
+// Разбирает ссылку YouTube / Vimeo → embed URL
+function extractVideoEmbed(url) {
+  if (!url) return null;
+  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([^&\n?#]+)/);
+  if (yt) return `https://www.youtube.com/embed/${yt[1]}?rel=0`;
+  const vi = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
+  if (vi) return `https://player.vimeo.com/video/${vi[1]}?dnt=1`;
+  // прямая ссылка на mp4
+  if (url.match(/\.mp4/i)) return url;
+  return null;
+}
 
 export default function LessonPage({ nav, monthId, lessonId, watched, toggleWatched, comments, addComment }) {
-  const month       = MONTHS.find(m => m.id === monthId);
-  const lessons     = MONTH_LESSONS[monthId] || [];
-  const lessonIndex = lessons.findIndex(l => l.id === lessonId);
-  const lesson      = lessons[lessonIndex];
-  const isWatched   = !!watched[lessonId];
+  const { months } = useMonths();
+  const { lessons, reload } = useLessons(monthId);
+
+  // Перезагружаем при каждом открытии — чтобы видеть правки из AdminPanel
+  useEffect(() => { reload?.(); }, [monthId]);
+
+  const month        = months.find(m => m.id === monthId);
+  const lessonIndex  = lessons.findIndex(l => l.id === lessonId);
+  const lesson       = lessons[lessonIndex];
+  const isWatched    = !!watched[lessonId];
   const lessonComments = comments[lessonId] || [];
 
   const [commentText, setCommentText] = useState('');
   const [playing, setPlaying]         = useState(false);
 
-  const prevLesson = lessonIndex > 0               ? lessons[lessonIndex - 1] : null;
+  const prevLesson = lessonIndex > 0                 ? lessons[lessonIndex - 1] : null;
   const nextLesson = lessonIndex < lessons.length - 1 ? lessons[lessonIndex + 1] : null;
 
   if (!lesson) return null;
@@ -24,7 +40,6 @@ export default function LessonPage({ nav, monthId, lessonId, watched, toggleWatc
   return (
     <div className="fade" style={{ padding: '32px 40px', maxWidth: 1000, margin: '0 auto' }}>
 
-      {/* Хлебные крошки */}
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28, fontSize: 12, flexWrap: 'wrap' }}>
         <button onClick={nav.dashboard} style={{ background: 'none', border: 'none', color: C.gold, cursor: 'pointer', padding: 0 }}>← Месяцы</button>
         <span style={{ color: '#ddd' }}>/</span>
@@ -33,7 +48,6 @@ export default function LessonPage({ nav, monthId, lessonId, watched, toggleWatc
         <span style={{ color: C.dark }}>Урок {lesson.num}. {lesson.title}</span>
       </div>
 
-      {/* Заголовок */}
       <div style={{ marginBottom: 24 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10 }}>
           <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: '#ccc', fontWeight: 600 }}>Урок {String(lesson.num).padStart(2, '0')}</span>
@@ -54,53 +68,60 @@ export default function LessonPage({ nav, monthId, lessonId, watched, toggleWatc
         </div>
       </div>
 
-      {/* Видеоплеер */}
-      <div onClick={() => setPlaying(!playing)}
-        style={{ height: 420, background: '#111', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}>
-        {playing ? (
-          <>
-            <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: '1.5px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
-              <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 16 }}>⏸</span>
-            </div>
-            <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Воспроизведение…</div>
-          </>
+      <div style={{ position: 'relative', background: '#111' }}>
+        {extractVideoEmbed(lesson.video_url) ? (
+          <div style={{ position: 'relative', paddingTop: '56.25%' /* 16:9 */ }}>
+            <iframe
+              src={extractVideoEmbed(lesson.video_url)}
+              title={lesson.title}
+              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
+              allowFullScreen
+              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
+            />
+          </div>
         ) : (
-          <>
-            <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: '2px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-              <span style={{ color: '#fff', fontSize: 22, marginLeft: 3 }}>▶</span>
-            </div>
-            <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, textAlign: 'center' }}>{lesson.title}</div>
-            <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, marginTop: 6 }}>{lesson.duration}</div>
-          </>
+          <div onClick={() => setPlaying(!playing)}
+            style={{ height: 420, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}>
+            {playing ? (
+              <>
+                <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: '1.5px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
+                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 16 }}>⏸</span>
+                </div>
+                <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Воспроизведение…</div>
+              </>
+            ) : (
+              <>
+                <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: '2px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
+                  <span style={{ color: '#fff', fontSize: 22, marginLeft: 3 }}>▶</span>
+                </div>
+                <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, textAlign: 'center' }}>{lesson.title}</div>
+                <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, marginTop: 6 }}>{lesson.duration}</div>
+              </>
+            )}
+            <div style={{ position: 'absolute', bottom: 14, right: 16, fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>Видео не добавлено</div>
+          </div>
         )}
-        <div style={{ position: 'absolute', bottom: 14, right: 16, fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>Нажмите для воспроизведения</div>
         {isWatched && (
           <div style={{ position: 'absolute', top: 14, right: 14, background: 'rgba(58,138,90,0.85)', padding: '3px 10px', fontSize: 10, color: '#fff', letterSpacing: 0.5 }}>ПРОСМОТРЕНО</div>
         )}
       </div>
 
-      {/* Полоска прогресса */}
       <div style={{ height: 3, background: '#1a1a1a', marginBottom: 28 }}>
         <div style={{ height: '100%', width: playing ? '35%' : '0%', background: C.gold, transition: 'width 2s linear' }} />
       </div>
 
-      {/* Основной контент */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 24, marginBottom: 24 }}>
-
-        {/* Текст урока */}
         <div style={{ background: '#fff', border: `1px solid ${C.border}`, padding: '28px 30px' }}>
           <div style={{ fontSize: 9, color: C.muted, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 16 }}>О УРОКЕ</div>
           <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 17, color: '#444', lineHeight: 1.85 }}>{lesson.text}</p>
         </div>
-
-        {/* Боковая панель */}
         <div style={{ display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ background: '#fff', border: `1px solid ${C.border}`, padding: '20px' }}>
             <div style={{ fontSize: 9, color: C.muted, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 14 }}>УРОК В ПРОГРАММЕ</div>
             <div style={{ fontSize: 13, color: C.dark, marginBottom: 4 }}>{month?.label} 2026</div>
             <div style={{ fontSize: 12, color: C.muted, marginBottom: 12 }}>{lesson.num} из {lessons.length} уроков</div>
             <div style={{ height: 2, background: '#e8e0d0', borderRadius: 2 }}>
-              <div style={{ height: '100%', width: `${(lesson.num / lessons.length) * 100}%`, background: C.gold }} />
+              <div style={{ height: '100%', width: `${lessons.length ? (lesson.num / lessons.length) * 100 : 0}%`, background: C.gold }} />
             </div>
           </div>
           <div style={{ background: '#fff', border: `1px solid ${C.border}`, padding: '20px' }}>
@@ -116,7 +137,6 @@ export default function LessonPage({ nav, monthId, lessonId, watched, toggleWatc
         </div>
       </div>
 
-      {/* Навигация между уроками */}
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2, marginBottom: 28 }}>
         {prevLesson ? (
           <div onClick={() => nav.lesson(monthId, prevLesson.id)}
@@ -138,18 +158,13 @@ export default function LessonPage({ nav, monthId, lessonId, watched, toggleWatc
         ) : <div />}
       </div>
 
-      {/* Комментарии */}
       <div style={{ background: '#fff', border: `1px solid ${C.border}`, padding: '28px 30px' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 24, paddingBottom: 16, borderBottom: `1px solid ${C.border}` }}>
           <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, fontWeight: 600, color: C.dark }}>Обсуждение</div>
           <span style={{ fontSize: 11, color: C.muted }}>{lessonComments.length} комментариев · видят все ученики и сэнсэй</span>
         </div>
-
-        {/* Форма */}
         <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>
-          <div style={{ width: 34, height: 34, borderRadius: '50%', background: C.light, border: `1px solid ${C.goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: C.gold, flexShrink: 0 }}>
-            {USER.name[0]}
-          </div>
+          <div style={{ width: 34, height: 34, borderRadius: '50%', background: C.light, border: `1px solid ${C.goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: C.gold, flexShrink: 0 }}>У</div>
           <div style={{ flex: 1 }}>
             <textarea
               value={commentText}
@@ -168,8 +183,6 @@ export default function LessonPage({ nav, monthId, lessonId, watched, toggleWatc
             </div>
           </div>
         </div>
-
-        {/* Список комментариев */}
         {lessonComments.length === 0 ? (
           <div style={{ textAlign: 'center', padding: '24px 0', color: '#bbb', fontSize: 13 }}>
             Комментариев пока нет. Будьте первым!

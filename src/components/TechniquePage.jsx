@@ -2,20 +2,23 @@
 
 import { useState } from 'react';
 import { C } from '@/lib/utils';
-import { BELT, TECHNIQUE_VIDEOS, TECHNIQUE_CONTENT, VIDEO_CATS } from '@/data/techniques';
+import { BELT, VIDEO_CATS } from '@/data/techniques';
+import { useTechniques } from '@/lib/db';
 
 export default function TechniquePage({ kyu, section, tech, onBack }) {
-  const belt   = BELT[kyu.belt] || { color: '#ccc', border: '#aaa', label: '' };
+  const belt = BELT[kyu.belt] || { color: '#ccc', border: '#aaa', label: '' };
   const [cat, setCat] = useState('overview');
   const [vid, setVid] = useState(null);
 
-  const allV = TECHNIQUE_VIDEOS[tech.name] || [];
-  const byC  = {};
-  VIDEO_CATS.forEach(c => { byC[c.id] = allV.filter(v => v.category === c.id); });
+  const { getTechContent, loading } = useTechniques();
+
+  // getTechContent возвращает { description, principles, senseiQuote, mistakes, videos:{overview,details,mistakes,variations} }
+  const content = loading ? { description:'', principles:[], senseiQuote:'', mistakes:[], videos:{} }
+                          : getTechContent(tech.name);
+
+  const byC    = content.videos || {};
   const curV   = byC[cat] || [];
   const curCat = VIDEO_CATS.find(c => c.id === cat);
-
-  const content = TECHNIQUE_CONTENT[tech.name] || { description:'', principles:[], mistakes:[], senseiQuote:'' };
 
   return (
     <div className="fade" style={{ padding: '32px 36px' }}>
@@ -57,7 +60,7 @@ export default function TechniquePage({ kyu, section, tech, onBack }) {
           <button key={c.id} onClick={() => { setCat(c.id); setVid(null); }}
             style={{ padding: '11px 16px', background: 'none', border: 'none', borderBottom: `2px solid ${cat === c.id ? c.color : 'transparent'}`, color: cat === c.id ? c.color : C.muted, fontSize: 12, display: 'flex', alignItems: 'center', gap: 5, whiteSpace: 'nowrap', cursor: 'pointer', fontWeight: cat === c.id ? 600 : 400, marginBottom: -1 }}>
             <span style={{ fontSize: 10 }}>{c.icon}</span>{c.label}
-            <span style={{ marginLeft: 3, fontSize: 10, background: '#f0ede8', padding: '1px 5px', color: '#aaa', borderRadius: 8 }}>{byC[c.id]?.length || 0}</span>
+            <span style={{ marginLeft: 3, fontSize: 10, background: '#f0ede8', padding: '1px 5px', color: '#aaa', borderRadius: 8 }}>{(byC[c.id] || []).length}</span>
           </button>
         ))}
       </div>
@@ -86,7 +89,7 @@ export default function TechniquePage({ kyu, section, tech, onBack }) {
         }
       </div>
 
-      {content.principles.length > 0 && (
+      {content.principles?.length > 0 && (
         <div style={{ background: '#fff', border: `1px solid ${C.border}`, padding: '22px 24px', marginBottom: 12 }}>
           <div style={{ fontSize: 9, color: C.muted, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ color: C.gold, fontFamily: "'Noto Serif JP', serif", fontSize: 13 }}>道</span>Ключевые принципы
@@ -100,7 +103,7 @@ export default function TechniquePage({ kyu, section, tech, onBack }) {
         </div>
       )}
 
-      {content.mistakes.length > 0 && (
+      {content.mistakes?.length > 0 && (
         <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderLeft: '3px solid #b04030', padding: '22px 24px', marginBottom: 12 }}>
           <div style={{ fontSize: 9, color: C.muted, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 18, display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ color: '#b04030', fontSize: 11 }}>✕</span>Типичные ошибки
@@ -108,7 +111,7 @@ export default function TechniquePage({ kyu, section, tech, onBack }) {
           {content.mistakes.map((m, i) => (
             <div key={i} style={{ marginBottom: 14 }}>
               <div style={{ fontSize: 13, fontWeight: 600, color: '#b04030', marginBottom: 4 }}>{m.title}</div>
-              <div style={{ fontSize: 12, color: '#888', lineHeight: 1.65 }}>{m.desc}</div>
+              <div style={{ fontSize: 12, color: '#888', lineHeight: 1.65 }}>{m.description || m.desc}</div>
             </div>
           ))}
         </div>

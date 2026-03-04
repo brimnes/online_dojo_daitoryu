@@ -182,6 +182,7 @@ const SECTIONS = [
   {id:'users',    icon:'◉', label:'Пользователи'},
   {id:'exams',    icon:'✦', label:'Экзамены'},
   {id:'payments', icon:'◈', label:'Оплаты'},
+  {id:'access',   icon:'⊕', label:'Доступы'},
   {id:'months',   icon:'◧', label:'Месяцы'},
   {id:'ikkajo',   icon:'一', label:'Иккаджо'},
   {id:'comments', icon:'◎', label:'Комментарии'},
@@ -241,6 +242,7 @@ export default function AdminPanel({ onExit }) {
           {section==='users'    && <SectionUsers    showToast={showToast}/>}
           {section==='exams'    && <SectionExams    showToast={showToast}/>}
           {section==='payments' && <SectionPayments/>}
+          {section==='access'   && <SectionAccess   showToast={showToast}/>}
           {section==='months'   && <SectionMonths   showToast={showToast}/>}
           {section==='ikkajo'   && <SectionIkkajo   showToast={showToast}/>}
           {section==='comments' && <SectionComments showToast={showToast}/>}
@@ -914,6 +916,147 @@ function SectionIkkajo({showToast}){
 // ═══════════════════════════════════════════════════════════════
 // 6. КОММЕНТАРИИ
 // ═══════════════════════════════════════════════════════════════
+function SectionAccess({showToast}) {
+  const {users, loading: uLoading} = useUsers();
+  const [userId,    setUserId]    = useState('');
+  const [accessType, setAccessType] = useState('month');
+  const [reference,  setReference]  = useState('jan');
+  const [saving,    setSaving]    = useState(false);
+  const [accList,   setAccList]   = useState([]);
+  const [accLoading,setAccLoading]= useState(false);
+
+  const MONTH_REFS = [
+    {value:'jan',label:'Январь'},{value:'feb',label:'Февраль'},{value:'mar',label:'Март'},
+    {value:'apr',label:'Апрель'},{value:'may',label:'Май'},{value:'jun',label:'Июнь'},
+    {value:'jul',label:'Июль'},{value:'aug',label:'Август'},{value:'sep',label:'Сентябрь'},
+    {value:'oct',label:'Октябрь'},{value:'nov',label:'Ноябрь'},{value:'dec',label:'Декабрь'},
+  ];
+  const SECTION_REFS = [{value:'ikkajo',label:'Иккаджо'}];
+  const refs = accessType === 'month' ? MONTH_REFS : SECTION_REFS;
+
+  // При смене типа — сбрасываем reference на первый
+  const handleTypeChange = (v) => {
+    setAccessType(v);
+    setReference(v === 'month' ? 'jan' : 'ikkajo');
+  };
+
+  const loadUserAccess = async (uid) => {
+    setUserId(uid);
+    if (!uid) { setAccList([]); return; }
+    setAccLoading(true);
+    const { supabase } = await import('@/lib/supabase');
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch(`/api/admin/user-access?user_id=${uid}`, {
+      headers: { Authorization: `Bearer ${session?.access_token}` },
+    });
+    if (res.ok) setAccList(await res.json());
+    setAccLoading(false);
+  };
+
+  const doGrant = async () => {
+    if (!userId) { alert('Выберите пользователя'); return; }
+    setSaving(true);
+    const { supabase } = await import('@/lib/supabase');
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch('/api/admin/grant-access', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ user_id: userId, type: accessType, reference }),
+    });
+    setSaving(false);
+    if (res.ok) {
+      showToast('Доступ выдан');
+      loadUserAccess(userId);
+    } else {
+      const e = await res.json();
+      alert('Ошибка: ' + (e.error || res.status));
+    }
+  };
+
+  const doRevoke = async (item) => {
+    if (!confirm(`Отозвать доступ ${item.type}:${item.reference}?`)) return;
+    const { supabase } = await import('@/lib/supabase');
+    const { data: { session } } = await supabase.auth.getSession();
+    const res = await fetch('/api/admin/grant-access', {
+      method: 'POST',
+      headers: { 'Content-Type':'application/json', Authorization: `Bearer ${session?.access_token}` },
+      body: JSON.stringify({ user_id: userId, type: item.type, reference: item.reference, revoke: true }),
+    });
+    if (res.ok) { showToast('Доступ отозван'); loadUserAccess(userId); }
+  };
+
+  return (
+    <div>
+      <SectionHeader title="Управление доступами"/>
+      <div style={{padding:'24px 36px'}}>
+
+        {/* Форма выдачи */}
+        <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'24px',marginBottom:20}}>
+          <Label>Выдать доступ вручную</Label>
+          <div style={{display:'grid',gridTemplateColumns:'1fr 140px 200px auto',gap:8,marginTop:12,alignItems:'flex-end'}}>
+            <div>
+              <div style={{fontSize:10,color:C.muted,marginBottom:4}}>Пользователь</div>
+              <Select
+                value={userId}
+                onChange={loadUserAccess}
+                options={[{value:'',label:'— выберите —'},...users.map(u=>({value:u.id,label:u.name}))]}
+              />
+            </div>
+            <div>
+              <div style={{fontSize:10,color:C.muted,marginBottom:4}}>Тип</div>
+              <Select
+                value={accessType}
+                onChange={handleTypeChange}
+                options={[{value:'month',label:'Месяц'},{value:'section',label:'Раздел'}]}
+              />
+            </div>
+            <div>
+              <div style={{fontSize:10,color:C.muted,marginBottom:4}}>Период / раздел</div>
+              <Select value={reference} onChange={setReference} options={refs}/>
+            </div>
+            <button
+              onClick={doGrant}
+              disabled={saving || !userId}
+              style={{padding:'10px 18px',background:saving||!userId?'#ccc':C.dark,color:'#fff',border:'none',fontSize:12,cursor:saving||!userId?'default':'pointer',whiteSpace:'nowrap'}}>
+              {saving ? '…' : '⊕ Выдать'}
+            </button>
+          </div>
+        </div>
+
+        {/* Текущие доступы выбранного пользователя */}
+        {userId && (
+          <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'20px 24px'}}>
+            <div style={{fontSize:10,color:C.muted,letterSpacing:1.2,textTransform:'uppercase',marginBottom:12}}>
+              Доступы пользователя
+            </div>
+            {accLoading ? <Spinner/> : accList.length === 0 ? (
+              <div style={{fontSize:12,color:'#bbb',padding:'12px 0'}}>Нет активных доступов</div>
+            ) : (
+              <div style={{display:'flex',flexDirection:'column',gap:2}}>
+                {accList.map((item,i) => (
+                  <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 12px',background:C.bg,fontSize:12}}>
+                    <span style={{fontSize:9,padding:'2px 7px',background:item.type==='month'?'#e8f0fa':C.goldBg,color:item.type==='month'?'#3060b0':C.gold,border:`1px solid ${item.type==='month'?'#c0d4f0':C.goldBorder}`}}>
+                      {item.type==='month'?'Месяц':'Раздел'}
+                    </span>
+                    <span style={{flex:1,color:C.dark}}>{item.reference}</span>
+                    <span style={{color:C.muted}}>{item.paid_at ? new Date(item.paid_at).toLocaleDateString('ru-RU') : '—'}</span>
+                    <span style={{color:C.gold}}>{item.amount > 0 ? `${item.amount} ₽` : 'Вручную'}</span>
+                    <button
+                      onClick={() => doRevoke(item)}
+                      style={{padding:'4px 10px',background:'transparent',border:`1px solid ${C.border}`,color:C.muted,fontSize:11,cursor:'pointer'}}>
+                      Отозвать
+                    </button>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
 function SectionComments({showToast}){
   const {comments,loading,markReplied} = useComments();
   const [replyOpen, setReplyOpen] = useState({});

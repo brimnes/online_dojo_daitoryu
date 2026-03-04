@@ -203,16 +203,23 @@ function LoginForm({ onSuccess, onRegister }) {
     if (Object.keys(e).length) { setErrors(e); return; }
     setErrors({}); setServerErr(''); setLoading(true);
 
-    // TODO: supabase.auth.signInWithPassword({ email, password })
-    await new Promise(r => setTimeout(r, 800)); // mock delay
+    const { supabase } = await import('@/lib/supabase');
+    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
     setLoading(false);
 
-    // Mock: любой email/password пускает
-    if (email && password) {
-      onSuccess({ email, name: email.split('@')[0] });
-    } else {
+    if (error) {
       setServerErr('Неверный email или пароль');
+      return;
     }
+
+    // Загружаем профиль
+    const { data: profile } = await supabase
+      .from('profiles')
+      .select('*')
+      .eq('id', data.user.id)
+      .single();
+
+    onSuccess(profile || { email, name: email.split('@')[0], id: data.user.id });
   };
 
   return (
@@ -271,8 +278,9 @@ function RegisterForm({ onSuccess, onLogin }) {
   const [senseiName,  setSenseiName]  = useState('');
   const [experience,  setExperience]  = useState('');
 
-  const [errors,  setErrors]  = useState({});
-  const [loading, setLoading] = useState(false);
+  const [errors,    setErrors]    = useState({});
+  const [loading,   setLoading]   = useState(false);
+  const [serverErr, setServerErr] = useState('');
 
   const validateStep1 = () => {
     const e = {};
@@ -292,18 +300,50 @@ function RegisterForm({ onSuccess, onLogin }) {
 
   const handleStep2 = async () => {
     setLoading(true);
+    setServerErr('');
 
-    // TODO: supabase.auth.signUp({ email, password, options:{ data:{ name } } })
-    // TODO: supabase.from('profiles').update({ self_level, sensei_name, experience })
-    await new Promise(r => setTimeout(r, 1000)); // mock
+    const { supabase } = await import('@/lib/supabase');
+
+    // 1. Создаём пользователя в Supabase Auth
+    const { data, error } = await supabase.auth.signUp({
+      email,
+      password,
+      options: { data: { name } },
+    });
+
+    if (error) {
+      setLoading(false);
+      setServerErr(error.message);
+      return;
+    }
+
+    // 2. Триггер создаёт запись в profiles, но дополняем данными профиля
+    if (data.user) {
+      await supabase.from('profiles').upsert({
+        id:           data.user.id,
+        email,
+        name,
+        role:         'student',
+        status:       'active',
+        self_level:   selfLevel,
+        sensei_name:  senseiName,
+        experience,
+        joined_at:    new Date().toISOString(),
+      }, { onConflict: 'id' });
+    }
 
     setLoading(false);
     setStep(2);
   };
 
-  // Шаг завершён — входим
-  const handleDone = () => {
-    onSuccess({ name, email, selfLevel, senseiName, experience, level: '6kyu' });
+  // Шаг завершён — входим (сессия уже создана через signUp)
+  const handleDone = async () => {
+    const { supabase } = await import('@/lib/supabase');
+    const { data: { user } } = await supabase.auth.getUser();
+    const { data: profile } = user
+      ? await supabase.from('profiles').select('*').eq('id', user.id).single()
+      : { data: null };
+    onSuccess(profile || { name, email, level: '6kyu', role: 'student' });
   };
 
   const selfLevelLabel = SELF_LEVELS.find(l => l.id === selfLevel)?.label || '—';
@@ -396,6 +436,11 @@ function RegisterForm({ onSuccess, onLogin }) {
               />
             </Field>
 
+            {serverErr && (
+              <div style={{ padding:'12px 14px', background:'#fff8f7', border:'1px solid #e8c0c0', fontSize:13, color:'#a03030' }}>
+                {serverErr}
+              </div>
+            )}
             <div style={{ display:'flex', gap:10, marginTop:4 }}>
               <button onClick={()=>setStep(0)}
                 style={{ padding:'14px 20px', background:'transparent', color:C.muted, border:`1px solid ${C.border}`, fontSize:13, cursor:'pointer', fontFamily:"'Jost',sans-serif" }}>
