@@ -3,18 +3,8 @@
 import { useState, useEffect } from 'react';
 import { C } from '@/lib/utils';
 import { useMonths, useLessons } from '@/lib/db';
+import KinescopePlayer from '@/components/KinescopePlayer';
 
-// Разбирает ссылку YouTube / Vimeo → embed URL
-function extractVideoEmbed(url) {
-  if (!url) return null;
-  const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([^&\n?#]+)/);
-  if (yt) return `https://www.youtube.com/embed/${yt[1]}?rel=0`;
-  const vi = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
-  if (vi) return `https://player.vimeo.com/video/${vi[1]}?dnt=1`;
-  // прямая ссылка на mp4
-  if (url.match(/\.mp4/i)) return url;
-  return null;
-}
 
 export default function LessonPage({ nav, monthId, lessonId, watched, toggleWatched, comments, addComment }) {
   const { months } = useMonths();
@@ -30,7 +20,6 @@ export default function LessonPage({ nav, monthId, lessonId, watched, toggleWatc
   const lessonComments = comments[lessonId] || [];
 
   const [commentText, setCommentText] = useState('');
-  const [playing, setPlaying]         = useState(false);
 
   const prevLesson = lessonIndex > 0                 ? lessons[lessonIndex - 1] : null;
   const nextLesson = lessonIndex < lessons.length - 1 ? lessons[lessonIndex + 1] : null;
@@ -58,7 +47,7 @@ export default function LessonPage({ nav, monthId, lessonId, watched, toggleWatc
         </div>
         <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 20 }}>
           <div>
-            <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 30, fontWeight: 600, color: C.dark, marginBottom: 6 }}>{lesson.title}</h1>
+            <h1 style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: 26, color: '#c8a84a', marginBottom: 6 }}>{lesson.title}</h1>
             <div style={{ fontSize: 13, color: C.gold, letterSpacing: 0.3 }}>{lesson.subtitle}</div>
           </div>
           <button onClick={() => toggleWatched(lessonId)}
@@ -68,47 +57,19 @@ export default function LessonPage({ nav, monthId, lessonId, watched, toggleWatc
         </div>
       </div>
 
-      <div style={{ position: 'relative', background: '#111' }}>
-        {extractVideoEmbed(lesson.video_url) ? (
-          <div style={{ position: 'relative', paddingTop: '56.25%' /* 16:9 */ }}>
-            <iframe
-              src={extractVideoEmbed(lesson.video_url)}
-              title={lesson.title}
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; fullscreen"
-              allowFullScreen
-              style={{ position: 'absolute', top: 0, left: 0, width: '100%', height: '100%', border: 'none' }}
-            />
-          </div>
-        ) : (
-          <div onClick={() => setPlaying(!playing)}
-            style={{ height: 420, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', cursor: 'pointer', position: 'relative' }}>
-            {playing ? (
-              <>
-                <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: '1.5px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 14 }}>
-                  <span style={{ color: 'rgba(255,255,255,0.5)', fontSize: 16 }}>⏸</span>
-                </div>
-                <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 12 }}>Воспроизведение…</div>
-              </>
-            ) : (
-              <>
-                <div style={{ width: 64, height: 64, borderRadius: '50%', background: 'rgba(255,255,255,0.1)', border: '2px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 16 }}>
-                  <span style={{ color: '#fff', fontSize: 22, marginLeft: 3 }}>▶</span>
-                </div>
-                <div style={{ color: 'rgba(255,255,255,0.6)', fontSize: 14, textAlign: 'center' }}>{lesson.title}</div>
-                <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12, marginTop: 6 }}>{lesson.duration}</div>
-              </>
-            )}
-            <div style={{ position: 'absolute', bottom: 14, right: 16, fontSize: 11, color: 'rgba(255,255,255,0.25)' }}>Видео не добавлено</div>
-          </div>
-        )}
+      <div style={{ position: 'relative' }}>
+        <KinescopePlayer
+          videoId={lesson.video_id}
+          videoStatus={lesson.video_status}
+          posterUrl={lesson.video_poster_url}
+          title={lesson.title}
+          duration={lesson.duration}
+        />
         {isWatched && (
           <div style={{ position: 'absolute', top: 14, right: 14, background: 'rgba(58,138,90,0.85)', padding: '3px 10px', fontSize: 10, color: '#fff', letterSpacing: 0.5 }}>ПРОСМОТРЕНО</div>
         )}
       </div>
 
-      <div style={{ height: 3, background: '#1a1a1a', marginBottom: 28 }}>
-        <div style={{ height: '100%', width: playing ? '35%' : '0%', background: C.gold, transition: 'width 2s linear' }} />
-      </div>
 
       <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 24, marginBottom: 24 }}>
         <div style={{ background: '#fff', border: `1px solid ${C.border}`, padding: '28px 30px' }}>
@@ -160,7 +121,7 @@ export default function LessonPage({ nav, monthId, lessonId, watched, toggleWatc
 
       <div style={{ background: '#fff', border: `1px solid ${C.border}`, padding: '28px 30px' }}>
         <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 24, paddingBottom: 16, borderBottom: `1px solid ${C.border}` }}>
-          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, fontWeight: 600, color: C.dark }}>Обсуждение</div>
+          <div style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: 18, color: '#c8a84a' }}>Обсуждение</div>
           <span style={{ fontSize: 11, color: C.muted }}>{lessonComments.length} комментариев · видят все ученики и сэнсэй</span>
         </div>
         <div style={{ display: 'flex', gap: 12, marginBottom: 24 }}>

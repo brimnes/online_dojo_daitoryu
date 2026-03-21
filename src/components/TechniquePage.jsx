@@ -3,7 +3,10 @@
 import { useState } from 'react';
 import { C } from '@/lib/utils';
 import { BELT, VIDEO_CATS } from '@/data/techniques';
-import { useTechniques } from '@/lib/db';
+import KinescopePlayer from '@/components/KinescopePlayer';
+import { useTechniques, useUserAccessRows } from '@/lib/db';
+import { hasIkkajoSectionAccess } from '@/lib/access';
+import { IKKAJO_SECTION_KEYS as IKKAJO_SECTIONS } from '@/lib/ikkajoSections';
 
 export default function TechniquePage({ kyu, section, tech, onBack }) {
   const belt = BELT[kyu.belt] || { color: '#ccc', border: '#aaa', label: '' };
@@ -11,6 +14,13 @@ export default function TechniquePage({ kyu, section, tech, onBack }) {
   const [vid, setVid] = useState(null);
 
   const { getTechContent, loading } = useTechniques();
+  const { rows: userAccess, loading: accessLoading } = useUserAccessRows();
+
+  // Access gate: проверяем, есть ли доступ к разделу Ikkajo
+  const sectionKey = section?.id?.toLowerCase();
+  const isIkkajoSection = IKKAJO_SECTIONS.includes(sectionKey);
+  const canAccess = accessLoading || !isIkkajoSection || hasIkkajoSectionAccess(userAccess, sectionKey);
+  console.log(`[TechniquePage] section=${sectionKey} canAccess=${canAccess} loading=${accessLoading}`, userAccess);
 
   // getTechContent возвращает { description, principles, senseiQuote, mistakes, videos:{overview,details,mistakes,variations} }
   const content = loading ? { description:'', principles:[], senseiQuote:'', mistakes:[], videos:{} }
@@ -19,6 +29,19 @@ export default function TechniquePage({ kyu, section, tech, onBack }) {
   const byC    = content.videos || {};
   const curV   = byC[cat] || [];
   const curCat = VIDEO_CATS.find(c => c.id === cat);
+
+  if (!accessLoading && !canAccess) {
+    return (
+      <div style={{ padding: '60px 32px', textAlign: 'center', background: '#faf8f4', minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+        <div style={{ fontSize: 32 }}>🔒</div>
+        <div style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: 20, color: '#c8a84a' }}>Нет доступа к разделу</div>
+        <div style={{ fontSize: 13, color: '#999', maxWidth: 320 }}>Приобретите доступ к разделу «{section?.nameRu}» чтобы просматривать техники.</div>
+        <button onClick={onBack} style={{ marginTop: 8, padding: '10px 24px', background: '#1a1a1a', color: '#fff', border: 'none', fontSize: 13, cursor: 'pointer' }}>
+          ← Назад к Иккаджо
+        </button>
+      </div>
+    );
+  }
 
   return (
     <div className="fade" style={{ padding: '32px 36px' }}>
@@ -35,7 +58,7 @@ export default function TechniquePage({ kyu, section, tech, onBack }) {
             <span style={{ width: 9, height: 9, borderRadius: '50%', background: belt.color, border: `2px solid ${belt.border}`, display: 'inline-block' }} />
             {belt.label} · {kyu.label} · {section.nameRu}
           </div>
-          <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 32, fontWeight: 600, color: C.dark, marginBottom: 4 }}>{tech.nameRu}</h1>
+          <h1 style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: 28, color: '#c8a84a', marginBottom: 4 }}>{tech.nameRu}</h1>
           <div style={{ fontSize: 14, color: '#bbb', marginBottom: content.description ? 12 : 0 }}>{tech.name}</div>
           {content.description && <p style={{ fontSize: 13, color: '#666', lineHeight: 1.7, maxWidth: 560 }}>{content.description}</p>}
         </div>
@@ -43,11 +66,17 @@ export default function TechniquePage({ kyu, section, tech, onBack }) {
       </div>
 
       {vid ? (
-        <div style={{ position: 'relative', height: 340, background: '#111', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center' }}>
-          <div style={{ width: 52, height: 52, borderRadius: '50%', background: 'rgba(255,255,255,0.12)', border: '2px solid rgba(255,255,255,0.2)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 18, color: '#fff', marginBottom: 12 }}>▶</div>
-          <div style={{ color: 'rgba(255,255,255,0.65)', fontSize: 13, textAlign: 'center', maxWidth: 400 }}>{vid.title}</div>
-          <div style={{ color: 'rgba(255,255,255,0.35)', fontSize: 12, marginTop: 6 }}>{vid.duration}</div>
-          <button onClick={() => setVid(null)} style={{ position: 'absolute', top: 12, right: 12, background: 'rgba(255,255,255,0.1)', border: 'none', color: 'rgba(255,255,255,0.5)', width: 30, height: 30, borderRadius: '50%', cursor: 'pointer' }}>✕</button>
+        <div style={{ position: 'relative' }}>
+          <KinescopePlayer
+            videoId={vid.video_id}
+            videoStatus={vid.video_status}
+            title={vid.title}
+            duration={vid.duration}
+          />
+          <button onClick={() => setVid(null)}
+            style={{ position: 'absolute', top: 12, right: 12, background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', fontSize: 14 }}>
+            ✕
+          </button>
         </div>
       ) : (
         <div style={{ height: 56, background: '#eeeae4', border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>

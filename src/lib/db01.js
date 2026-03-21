@@ -52,13 +52,10 @@ const MOCK_EXAMS = [
   { id:3, user_id:'u6', user_name:'Сергей Новиков', target_level:'5kyu', status:'approved', teacher_note:'Уверенное исполнение.', requested_at:'2026-02-15' },
 ];
 
-// MOCK_MONTHS: все is_open=false — source of truth только user_access
-// is_open в таблице months используется только для административного "всем открыть"
-// в dev/demo режиме тоже ничего не открыто по умолчанию
 const MOCK_MONTHS = [
-  {id:'jan',label:'Январь',   kanji:'一',is_open:false, sort_order:1,  description:'Основы дистанции и базовые захваты.'},
-  {id:'feb',label:'Февраль',  kanji:'二',is_open:false, sort_order:2,  description:'Укэми — техника падений.'},
-  {id:'mar',label:'Март',     kanji:'三',is_open:false, sort_order:3,  description:'Кихон — базовая техника.'},
+  {id:'jan',label:'Январь',   kanji:'一',is_open:true,  sort_order:1,  description:'Основы дистанции и базовые захваты.'},
+  {id:'feb',label:'Февраль',  kanji:'二',is_open:true,  sort_order:2,  description:'Укэми — техника падений.'},
+  {id:'mar',label:'Март',     kanji:'三',is_open:true,  sort_order:3,  description:'Кихон — базовая техника.'},
   {id:'apr',label:'Апрель',   kanji:'四',is_open:false, sort_order:4,  description:'Ирими — вход. Управление балансом укэ.'},
   {id:'may',label:'Май',      kanji:'五',is_open:false, sort_order:5,  description:'Тэнкан — разворот.'},
   {id:'jun',label:'Июнь',     kanji:'六',is_open:false, sort_order:6,  description:'Атэми — вспомогательные удары.'},
@@ -67,7 +64,7 @@ const MOCK_MONTHS = [
   {id:'sep',label:'Сентябрь', kanji:'九',is_open:false, sort_order:9,  description:'Подготовка к аттестации.'},
   {id:'oct',label:'Октябрь',  kanji:'十',is_open:false, sort_order:10, description:'Оё — прикладные техники.'},
   {id:'nov',label:'Ноябрь',  kanji:'十一',is_open:false, sort_order:11, description:'Рандори — свободная практика.'},
-  {id:'dec',label:'Декабрь', каnji:'十二',is_open:false, sort_order:12, description:'Итоги года.'},
+  {id:'dec',label:'Декабрь', kanji:'十二',is_open:false, sort_order:12, description:'Итоги года.'},
 ];
 
 const MOCK_LESSONS = [
@@ -409,14 +406,11 @@ export function useLessons(monthId) {
   const saveLesson = useCallback(async (lesson) => {
     setSaving(true);
     const patch = {
-      title:          lesson.title,
-      subtitle:       lesson.subtitle,
-      text:           lesson.text,
-      duration:       lesson.duration,
-      video_url:      lesson.video_url || lesson.videoUrl || '',
-      ...(lesson.video_id       !== undefined && { video_id:       lesson.video_id }),
-      ...(lesson.video_status   !== undefined && { video_status:   lesson.video_status }),
-      ...(lesson.video_provider !== undefined && { video_provider: lesson.video_provider }),
+      title:     lesson.title,
+      subtitle:  lesson.subtitle,
+      text:      lesson.text,
+      duration:  lesson.duration,
+      video_url: lesson.video_url || lesson.videoUrl || '',
     };
     if (!IS_DB_CONNECTED) {
       setLessons(prev => prev.map(l => l.id === lesson.id ? { ...l, ...patch } : l));
@@ -449,7 +443,28 @@ export function useLessons(monthId) {
     return { ok: !error };
   }, []);
 
-  return { lessons, loading, saving, saveLesson, addLesson, deleteLesson, reload };
+  /**
+   * Update Kinescope video metadata on a lesson.
+   * Called after KinescopeUploader completes or webhook fires.
+   */
+  const updateVideoStatus = useCallback(async (id, { videoId, videoStatus, videoPosterUrl, videoDuration }) => {
+    const patch = {};
+    if (videoId !== undefined)         patch.video_id         = videoId;
+    if (videoStatus !== undefined)     patch.video_status     = videoStatus;
+    if (videoPosterUrl !== undefined)  patch.video_poster_url = videoPosterUrl;
+    if (videoDuration !== undefined)   patch.video_duration   = videoDuration;
+    patch.video_provider = 'kinescope';
+
+    if (!IS_DB_CONNECTED) {
+      setLessons(prev => prev.map(l => l.id === id ? { ...l, ...patch } : l));
+      return { ok: true };
+    }
+    const { error } = await supabase.from('lessons').update(patch).eq('id', id);
+    if (!error) setLessons(prev => prev.map(l => l.id === id ? { ...l, ...patch } : l));
+    return { ok: !error, error: error?.message };
+  }, []);
+
+  return { lessons, loading, saving, saveLesson, addLesson, deleteLesson, reload, updateVideoStatus };
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -569,10 +584,35 @@ export function useTechniques() {
     const { data, error } = await supabase.from('technique_videos').insert(toInsert).select();
     if (!error) setVideos(prev => [...prev.filter(v => !(v.technique_id === techId && v.category === category)), ...(data || [])]);
     setSaving(false);
-    return { ok: !error, data: data || [] };
+    return { ok: !error };
   }, []);
 
-  return { techniques, videos, mistakes, loading, saving, getTechContent, saveTechInfo, saveMistakes, saveVideos };
+  const updateTechVideoStatus = useCallback(async (id, { videoId, videoStatus }) => {
+    const patch = { video_provider: 'kinescope' };
+    if (videoId !== undefined)     patch.video_id     = videoId;
+    if (videoStatus !== undefined) patch.video_status = videoStatus;
+    if (!IS_DB_CONNECTED) {
+      setVideos(prev => prev.map(v => v.id === id ? { ...v, ...patch } : v));
+      return { ok: true };
+    }
+    const { error } = await supabase.from('technique_videos').update(patch).eq('id', id);
+    if (!error) setVideos(prev => prev.map(v => v.id === id ? { ...v, ...patch } : v));
+    return { ok: !error, error: error?.message };
+  }, []);
+
+  return { techniques, videos, mistakes, loading, saving, getTechContent, saveTechInfo, saveMistakes, saveVideos, updateTechVideoStatus };
+}
+
+// ─────────────────────────────────────────────────────────────
+// HOOK: useVideoUpload — replaced by KinescopeUploader component
+// ─────────────────────────────────────────────────────────────
+
+export function useVideoUpload() {
+  return {
+    uploadFile:  async () => ({ ok: false, error: 'Use KinescopeUploader' }),
+    uploading:   false,
+    uploadError: null,
+  };
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -644,176 +684,3 @@ export function useComments() {
   return { comments, loading, markReplied };
 }
 
-// ─────────────────────────────────────────────────────────────
-// HOOK: useVideoUpload — загрузка на Supabase Storage
-// ─────────────────────────────────────────────────────────────
-
-export function useVideoUpload() {
-  const [uploading,   setUploading]   = useState(false);
-  const [uploadError, setUploadError] = useState(null);
-
-  const uploadFile = useCallback(async (file, path) => {
-    setUploading(true);
-    setUploadError(null);
-
-    if (!IS_DB_CONNECTED) {
-      // Mock — возвращаем fake URL
-      await new Promise(r => setTimeout(r, 800)); // имитация загрузки
-      setUploading(false);
-      return { ok: true, url: `[file: ${file.name}]` };
-    }
-
-    const ext      = file.name.split('.').pop();
-    const filePath = `${path}.${ext}`;
-
-    const { error: upError } = await supabase.storage
-      .from('videos')
-      .upload(filePath, file, { upsert: true, contentType: file.type });
-
-    if (upError) {
-      setUploadError(upError.message);
-      setUploading(false);
-      return { ok: false, error: upError.message };
-    }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('videos')
-      .getPublicUrl(filePath);
-
-    setUploading(false);
-    return { ok: true, url: publicUrl };
-  }, []);
-
-  return { uploadFile, uploading, uploadError };
-}
-
-// ─────────────────────────────────────────────────────────────
-// ACCESS HELPERS (pure functions, no hooks)
-// ─────────────────────────────────────────────────────────────
-
-// userAccessRows — массив {type, reference} из user_access текущего юзера
-
-// ─── Access helpers: единственный источник правды — ikkajoSections.js ───────
-// Переэкспортируем из access.js чтобы не ломать существующие импорты из db.js
-export { hasMonthAccess, hasIkkajoFullAccess, hasIkkajoSectionAccess, getAccessibleIkkajoSections } from '@/lib/access';
-export { IKKAJO_SECTION_KEYS as IKKAJO_SECTIONS, IKKAJO_SECTION_LABELS, IKKAJO_SECTION_KEYS } from '@/lib/ikkajoSections';
-
-// ─────────────────────────────────────────────────────────────
-// HOOK: useUserAccessRows
-// Для использования в Dashboard/IkkajoPage — возвращает сырые rows
-// ─────────────────────────────────────────────────────────────
-export function useUserAccessRows() {
-  const [rows,    setRows]    = useState([]);
-  const [loading, setLoading] = useState(true);
-
-  const reload = useCallback(async () => {
-    setLoading(true);
-    if (!IS_DB_CONNECTED) { setRows([]); setLoading(false); return; }
-    const { data } = await supabase.from('user_access').select('type, reference');
-    setRows(data || []);
-    setLoading(false);
-  }, []);
-
-  useEffect(() => { reload(); }, [reload]);
-  return { rows, loading, reload };
-}
-
-// ─────────────────────────────────────────────────────────────
-// ADMIN: grantAccess / revokeAccess
-// ─────────────────────────────────────────────────────────────
-export async function grantAccess({ userId, type, reference }) {
-  const { error } = await supabase.from('user_access').upsert(
-    { user_id: userId, type, reference, paid_at: new Date().toISOString(), amount: 0 },
-    { onConflict: 'user_id,type,reference' }
-  );
-  return { ok: !error, error: error?.message };
-}
-
-export async function revokeAccess({ userId, type, reference }) {
-  const { error } = await supabase
-    .from('user_access')
-    .delete()
-    .eq('user_id', userId)
-    .eq('type', type)
-    .eq('reference', reference);
-  return { ok: !error, error: error?.message };
-}
-
-// ─────────────────────────────────────────────────────────────
-// HOOK: useAdminUserAccess
-// Для admin panel — список доступов конкретного юзера (с reload)
-// ─────────────────────────────────────────────────────────────
-export function useAdminUserAccess(userId) {
-  const [rows,    setRows]    = useState([]);
-  const [loading, setLoading] = useState(false);
-
-  const reload = useCallback(async () => {
-    if (!userId || !IS_DB_CONNECTED) { setRows([]); return; }
-    setLoading(true);
-    const { data } = await supabase
-      .from('user_access')
-      .select('*')
-      .eq('user_id', userId)
-      .order('paid_at', { ascending: false });
-    setRows(data || []);
-    setLoading(false);
-  }, [userId]);
-
-  useEffect(() => { reload(); }, [reload]);
-  return { rows, loading, reload };
-}
-
-// ─────────────────────────────────────────────────────────────
-// HOOK: useKnowledge
-// База знаний — CRUD для admin, read-only для пользователей
-// ─────────────────────────────────────────────────────────────
-export function useKnowledge({ adminMode = false } = {}) {
-  const [items,   setItems]   = useState([]);
-  const [loading, setLoading] = useState(true);
-  const [saving,  setSaving]  = useState(false);
-
-  const reload = useCallback(async () => {
-    setLoading(true);
-    if (!IS_DB_CONNECTED) { setItems([]); setLoading(false); return; }
-    const q = supabase.from('knowledge_items').select('*').order('sort_order');
-    if (!adminMode) q.eq('is_published', true);
-    const { data } = await q;
-    setItems(data || []);
-    setLoading(false);
-  }, [adminMode]);
-
-  useEffect(() => { reload(); }, [reload]);
-
-  const saveItem = useCallback(async (item) => {
-    setSaving(true);
-    const patch = {
-      title:          item.title,
-      subtitle:       item.subtitle || '',
-      content:        item.content  || '',
-      sort_order:     item.sort_order ?? 0,
-      is_published:   item.is_published ?? false,
-      video_provider: item.video_provider || null,
-      video_id:       item.video_id       || null,
-      video_status:   item.video_status   || 'none',
-    };
-    let error;
-    if (item.id) {
-      ({ error } = await supabase.from('knowledge_items').update(patch).eq('id', item.id));
-      if (!error) setItems(prev => prev.map(i => i.id === item.id ? { ...i, ...patch } : i));
-    } else {
-      const { data, error: e } = await supabase.from('knowledge_items').insert(patch).select().single();
-      error = e;
-      if (!error && data) setItems(prev => [...prev, data]);
-    }
-    setSaving(false);
-    return { ok: !error, error: error?.message };
-  }, []);
-
-  const deleteItem = useCallback(async (id) => {
-    const { error } = await supabase.from('knowledge_items').delete().eq('id', id);
-    if (!error) setItems(prev => prev.filter(i => i.id !== id));
-    return { ok: !error, error: error?.message };
-  }, []);
-
-  return { items, loading, saving, reload, saveItem, deleteItem };
-}

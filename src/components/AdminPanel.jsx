@@ -1,15 +1,19 @@
 'use client';
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 import {
   useUsers, useAccess, useExams,
   useMonths, useLessons, useTechniques,
   useComments, useVideoUpload,
+  useAdminUserAccess, useKnowledge,
+  grantAccess, revokeAccess,
 } from '@/lib/db';
 import { IS_DB_CONNECTED } from '@/lib/supabase';
+import { IKKAJO_SECTION_OPTIONS, IKKAJO_SECTION_LABELS as IKKAJO_LABELS } from '@/lib/ikkajoSections';
+import KinescopeUploader from '@/components/KinescopeUploader';
 
 // ═══════════════════════════════════════════════════════════════
-// ЦВЕТА — светлый стиль платформы
+// ЦВЕТА
 // ═══════════════════════════════════════════════════════════════
 const C = {
   bg:          '#f5f3ee',
@@ -31,6 +35,19 @@ const C = {
   blue:        '#2a5a9a',
 };
 
+// ── Mobile breakpoint hook ──────────────────────────────────────
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+  useEffect(() => {
+    const mq = window.matchMedia('(max-width: 767px)');
+    setIsMobile(mq.matches);
+    const handler = (e) => setIsMobile(e.matches);
+    mq.addEventListener('change', handler);
+    return () => mq.removeEventListener('change', handler);
+  }, []);
+  return isMobile;
+}
+
 const LEVELS_LIST  = ['6kyu','5kyu','4kyu','3kyu','2kyu','1kyu','1dan','2dan','3dan'];
 const LEVEL_LABELS = {'6kyu':'6 кю','5kyu':'5 кю','4kyu':'4 кю','3kyu':'3 кю','2kyu':'2 кю','1kyu':'1 кю','1dan':'1 дан','2dan':'2 дан','3dan':'3 дан'};
 const VIDEO_CAT_IDS    = ['overview','details','mistakes','variations'];
@@ -43,13 +60,10 @@ const VIDEO_CAT_COLORS = {overview:C.dark,details:C.blue,mistakes:C.red,variatio
 
 function extractVideoEmbed(url) {
   if (!url) return null;
-  // YouTube
   const yt = url.match(/(?:youtube\.com\/watch\?v=|youtu\.be\/|youtube\.com\/embed\/|youtube\.com\/shorts\/)([^&\n?#]+)/);
   if (yt) return { type: 'youtube', id: yt[1], embed: `https://www.youtube.com/embed/${yt[1]}?rel=0` };
-  // Vimeo
   const vi = url.match(/vimeo\.com\/(?:video\/)?(\d+)/);
   if (vi) return { type: 'vimeo', id: vi[1], embed: `https://player.vimeo.com/video/${vi[1]}?dnt=1` };
-  // Supabase Storage или любой mp4
   if (url.includes('.mp4') || url.includes('supabase')) return { type: 'file', url };
   return null;
 }
@@ -61,19 +75,19 @@ function extractVideoEmbed(url) {
 function Input({ value, onChange, placeholder, type='text' }) {
   return (
     <input type={type} value={value||''} onChange={e=>onChange(e.target.value)} placeholder={placeholder}
-      style={{background:C.white,border:`1px solid ${C.border}`,color:C.dark,padding:'8px 12px',fontSize:12,outline:'none',width:'100%',fontFamily:"'Jost',sans-serif"}}/>
+      style={{background:C.white,border:`1px solid ${C.border}`,color:C.dark,padding:'8px 12px',fontSize:12,outline:'none',width:'100%',fontFamily:"'Jost',sans-serif",boxSizing:'border-box'}}/>
   );
 }
 function Textarea({ value, onChange, placeholder, rows=3 }) {
   return (
     <textarea value={value||''} onChange={e=>onChange(e.target.value)} placeholder={placeholder} rows={rows}
-      style={{background:C.white,border:`1px solid ${C.border}`,color:C.dark,padding:'8px 12px',fontSize:12,outline:'none',width:'100%',resize:'vertical',lineHeight:1.65,fontFamily:"'Jost',sans-serif"}}/>
+      style={{background:C.white,border:`1px solid ${C.border}`,color:C.dark,padding:'8px 12px',fontSize:12,outline:'none',width:'100%',resize:'vertical',lineHeight:1.65,fontFamily:"'Jost',sans-serif",boxSizing:'border-box'}}/>
   );
 }
 function Select({ value, onChange, options }) {
   return (
     <select value={value||''} onChange={e=>onChange(e.target.value)}
-      style={{background:C.white,border:`1px solid ${C.border}`,color:C.dark,padding:'8px 12px',fontSize:12,outline:'none',cursor:'pointer',fontFamily:"'Jost',sans-serif"}}>
+      style={{background:C.white,border:`1px solid ${C.border}`,color:C.dark,padding:'8px 12px',fontSize:12,outline:'none',cursor:'pointer',fontFamily:"'Jost',sans-serif",width:'100%',boxSizing:'border-box'}}>
       {options.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
   );
@@ -82,17 +96,17 @@ function Btn({ children, onClick, variant='primary', small, disabled, loading })
   const s = {primary:{bg:C.dark,color:'#fff',brd:C.dark},success:{bg:C.green,color:'#fff',brd:C.green},danger:{bg:C.red,color:'#fff',brd:C.red},ghost:{bg:'transparent',color:C.muted,brd:C.border},gold:{bg:C.goldBg,color:C.gold,brd:C.goldBorder}}[variant]||{bg:C.dark,color:'#fff',brd:C.dark};
   return (
     <button onClick={onClick} disabled={disabled||loading}
-      style={{padding:small?'5px 12px':'9px 20px',background:(disabled||loading)?'#eee':s.bg,color:(disabled||loading)?C.muted:s.color,border:`1px solid ${(disabled||loading)?C.border:s.brd}`,fontSize:small?11:12,cursor:(disabled||loading)?'default':'pointer',fontFamily:"'Jost',sans-serif",whiteSpace:'nowrap',transition:'opacity 0.12s',opacity:(disabled||loading)?0.7:1}}>
+      style={{padding:small?'7px 14px':'10px 20px',background:(disabled||loading)?'#eee':s.bg,color:(disabled||loading)?C.muted:s.color,border:`1px solid ${(disabled||loading)?C.border:s.brd}`,fontSize:small?12:13,cursor:(disabled||loading)?'default':'pointer',fontFamily:"'Jost',sans-serif",whiteSpace:'nowrap',transition:'opacity 0.12s',opacity:(disabled||loading)?0.7:1,minHeight:36}}>
       {loading ? '…' : children}
     </button>
   );
 }
 function StatCard({ label, value, sub, accent }) {
   return (
-    <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'20px 22px'}}>
-      <div style={{fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',marginBottom:10}}>{label}</div>
-      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:600,color:accent||C.gold,lineHeight:1}}>{value}</div>
-      {sub&&<div style={{fontSize:11,color:C.muted,marginTop:6}}>{sub}</div>}
+    <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'16px 18px'}}>
+      <div style={{fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',marginBottom:8}}>{label}</div>
+      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:600,color:accent||C.gold,lineHeight:1}}>{value}</div>
+      {sub&&<div style={{fontSize:11,color:C.muted,marginTop:4}}>{sub}</div>}
     </div>
   );
 }
@@ -102,7 +116,7 @@ function Label({ children }) {
 function Toast({ show, text }) {
   if (!show) return null;
   return (
-    <div style={{position:'fixed',bottom:24,right:24,background:C.green,color:'#fff',padding:'11px 22px',fontSize:13,boxShadow:'0 4px 24px rgba(0,0,0,0.14)',zIndex:9999,display:'flex',alignItems:'center',gap:8}}>
+    <div style={{position:'fixed',bottom:24,right:16,left:16,background:C.green,color:'#fff',padding:'11px 22px',fontSize:13,boxShadow:'0 4px 24px rgba(0,0,0,0.14)',zIndex:9999,display:'flex',alignItems:'center',gap:8}}>
       <span style={{fontSize:16}}>✓</span>{text||'Сохранено'}
     </div>
   );
@@ -110,7 +124,7 @@ function Toast({ show, text }) {
 function DBBadge() {
   return (
     <div style={{padding:'4px 10px',background:IS_DB_CONNECTED?C.greenBg:C.goldBg,border:`1px solid ${IS_DB_CONNECTED?C.greenBorder:C.goldBorder}`,fontSize:9,color:IS_DB_CONNECTED?C.green:C.gold,letterSpacing:0.5}}>
-      {IS_DB_CONNECTED ? '● Supabase подключён' : '○ Mock-режим (БД не подключена)'}
+      {IS_DB_CONNECTED ? '● Supabase подключён' : '○ Mock-режим'}
     </div>
   );
 }
@@ -118,13 +132,10 @@ function Spinner() {
   return <div style={{padding:'40px',textAlign:'center',color:C.muted,fontSize:12}}>Загрузка…</div>;
 }
 
-// Превью видео (YouTube iframe, Vimeo iframe, или mp4)
 function VideoPreview({ url }) {
   const embed = extractVideoEmbed(url);
   if (!embed) return null;
-  if (embed.type === 'file') return (
-    <video controls src={embed.url} style={{width:'100%',maxHeight:240,background:'#000'}} />
-  );
+  if (embed.type === 'file') return <video controls src={embed.url} style={{width:'100%',maxHeight:240,background:'#000'}} />;
   return (
     <div style={{position:'relative',paddingBottom:'56.25%',height:0,background:'#000',marginTop:10}}>
       <iframe src={embed.embed} title="video" allow="accelerometer;autoplay;clipboard-write;encrypted-media;gyroscope;picture-in-picture" allowFullScreen
@@ -133,30 +144,23 @@ function VideoPreview({ url }) {
   );
 }
 
-// Поле ввода видео с кнопкой Сохранить, превью и загрузкой файла
 function VideoInput({ videoUrl, onChange, onSave, saving }) {
   const fileRef = useRef();
   const { uploadFile, uploading } = useVideoUpload();
-  const embed   = extractVideoEmbed(videoUrl);
-
+  const embed = extractVideoEmbed(videoUrl);
   const handleFile = async (file) => {
     const path = `uploads/${Date.now()}-${file.name.replace(/\s/g,'_')}`;
     const { ok, url, error } = await uploadFile(file, path);
     if (ok) onChange(url);
     else alert('Ошибка загрузки: ' + error);
   };
-
   return (
     <div>
-      <div style={{display:'flex',gap:8,marginBottom:8}}>
-        <Input value={videoUrl} onChange={onChange} placeholder="https://youtube.com/watch?v=... или https://youtu.be/... или https://vimeo.com/..." />
+      <div style={{display:'flex',gap:8,marginBottom:8,flexWrap:'wrap'}}>
+        <div style={{flex:1,minWidth:0}}><Input value={videoUrl} onChange={onChange} placeholder="https://youtube.com/..."/></div>
         <Btn onClick={onSave} variant='gold' small loading={saving}>Сохранить</Btn>
       </div>
-
-      {/* Превью */}
       {embed && <VideoPreview url={videoUrl} />}
-
-      {/* Загрузка файла */}
       <div style={{display:'flex',alignItems:'center',gap:8,marginTop:10}}>
         <div style={{height:1,flex:1,background:C.border}}/>
         <span style={{fontSize:10,color:C.muted}}>или загрузить файл</span>
@@ -164,12 +168,9 @@ function VideoInput({ videoUrl, onChange, onSave, saving }) {
       </div>
       <input ref={fileRef} type="file" accept="video/mp4,video/mov,video/webm" style={{display:'none'}} onChange={e=>{if(e.target.files[0])handleFile(e.target.files[0]);}}/>
       <button onClick={()=>fileRef.current.click()} disabled={uploading}
-        style={{width:'100%',marginTop:8,padding:'10px',background:C.bg,border:`1px dashed ${C.border}`,color:C.muted,fontSize:11,cursor:'pointer'}}>
+        style={{width:'100%',marginTop:8,padding:'10px',background:C.bg,border:`1px dashed ${C.border}`,color:C.muted,fontSize:11,cursor:'pointer',boxSizing:'border-box'}}>
         {uploading ? 'Загрузка…' : 'Выбрать файл (mp4, mov, webm)'}
       </button>
-      {IS_DB_CONNECTED && videoUrl && videoUrl.startsWith('[file:') && (
-        <div style={{fontSize:10,color:'#c07820',marginTop:4}}>⚠ Создайте bucket «videos» в Supabase Storage для загрузки файлов</div>
-      )}
     </div>
   );
 }
@@ -179,18 +180,21 @@ function VideoInput({ videoUrl, onChange, onSave, saving }) {
 // ═══════════════════════════════════════════════════════════════
 
 const SECTIONS = [
-  {id:'users',    icon:'◉', label:'Пользователи'},
-  {id:'exams',    icon:'✦', label:'Экзамены'},
-  {id:'payments', icon:'◈', label:'Оплаты'},
-  {id:'access',   icon:'⊕', label:'Доступы'},
-  {id:'months',   icon:'◧', label:'Месяцы'},
-  {id:'ikkajo',   icon:'一', label:'Иккаджо'},
-  {id:'comments', icon:'◎', label:'Комментарии'},
+  {id:'users',     icon:'◉', label:'Пользователи'},
+  {id:'access',    icon:'🔑', label:'Доступы'},
+  {id:'knowledge', icon:'📖', label:'База знаний'},
+  {id:'exams',     icon:'✦', label:'Экзамены'},
+  {id:'payments',  icon:'◈', label:'Оплаты'},
+  {id:'months',    icon:'◧', label:'Месяцы'},
+  {id:'ikkajo',    icon:'一', label:'Иккаджо'},
+  {id:'comments',  icon:'◎', label:'Комментарии'},
 ];
 
 export default function AdminPanel({ onExit }) {
-  const [section, setSection] = useState('users');
-  const [toast,   setToast]   = useState(false);
+  const [section,       setSection]       = useState('users');
+  const [toast,         setToast]         = useState(false);
+  const [drawerOpen,    setDrawerOpen]    = useState(false);
+  const isMobile = useIsMobile();
 
   const showToast = useCallback((text) => {
     setToast(text || 'Сохранено');
@@ -200,52 +204,120 @@ export default function AdminPanel({ onExit }) {
   const { exams } = useExams();
   const pendingCount = exams.filter(e => e.status === 'pending').length;
 
-  return (
-    <div style={{display:'flex',minHeight:'100vh',background:C.bg,fontFamily:"'Jost',sans-serif",color:C.dark}}>
+  // Close drawer when switching to desktop
+  useEffect(() => { if (!isMobile) setDrawerOpen(false); }, [isMobile]);
 
-      {/* Сайдбар */}
-      <aside style={{width:220,background:C.white,borderRight:`1px solid ${C.border}`,display:'flex',flexDirection:'column',flexShrink:0,position:'sticky',top:0,height:'100vh'}}>
-        <div style={{padding:'20px 18px 16px',borderBottom:`1px solid ${C.border}`}}>
-          <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
-            <div style={{fontFamily:"'Noto Serif JP',serif",fontSize:24,color:C.gold,lineHeight:1}}>合</div>
-            <div>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:12,fontWeight:600,letterSpacing:3,color:C.dark}}>ADMIN</div>
-              <div style={{fontSize:9,color:C.muted,letterSpacing:1}}>ONLINE DOJO</div>
-            </div>
+  const handleSectionSelect = (id) => {
+    setSection(id);
+    setDrawerOpen(false); // auto-close drawer on mobile
+  };
+
+  const SidebarContent = () => (
+    <>
+      <div style={{padding:'16px 18px',borderBottom:`1px solid ${C.border}`}}>
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
+          <div style={{fontFamily:"'Noto Serif JP',serif",fontSize:24,color:C.gold,lineHeight:1}}>合</div>
+          <div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:12,fontWeight:600,letterSpacing:3,color:C.dark}}>ADMIN</div>
+            <div style={{fontSize:9,color:C.muted,letterSpacing:1}}>ONLINE DOJO</div>
           </div>
-          <DBBadge/>
+          {isMobile && (
+            <button onClick={()=>setDrawerOpen(false)}
+              style={{marginLeft:'auto',background:'none',border:'none',fontSize:20,color:C.muted,cursor:'pointer',lineHeight:1,padding:'4px'}}>
+              ✕
+            </button>
+          )}
         </div>
+        <DBBadge/>
+      </div>
 
-        <nav style={{flex:1,padding:'8px 0'}}>
-          {SECTIONS.map(s=>(
-            <button key={s.id} onClick={()=>setSection(s.id)}
-              style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'11px 18px',background:section===s.id?C.goldBg:'none',border:'none',borderLeft:`2px solid ${section===s.id?C.gold:'transparent'}`,color:section===s.id?C.dark:C.muted,fontSize:12,textAlign:'left',cursor:'pointer',transition:'all 0.12s',position:'relative'}}>
-              <span style={{fontSize:section===s.id?11:10,color:section===s.id?C.gold:'#ccc',fontFamily:s.id==='ikkajo'?"'Noto Serif JP',serif":'inherit'}}>{s.icon}</span>
-              {s.label}
-              {s.id==='exams'&&pendingCount>0&&<span style={{marginLeft:'auto',background:C.red,color:'#fff',fontSize:9,padding:'1px 6px',borderRadius:10}}>{pendingCount}</span>}
-            </button>
-          ))}
-        </nav>
+      <nav style={{flex:1,padding:'8px 0',overflowY:'auto'}}>
+        {SECTIONS.map(s=>(
+          <button key={s.id} onClick={()=>handleSectionSelect(s.id)}
+            style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'13px 18px',background:section===s.id?C.goldBg:'none',border:'none',borderLeft:`2px solid ${section===s.id?C.gold:'transparent'}`,color:section===s.id?C.dark:C.muted,fontSize:13,textAlign:'left',cursor:'pointer',transition:'all 0.12s',position:'relative',minHeight:44}}>
+            <span style={{fontSize:section===s.id?11:10,color:section===s.id?C.gold:'#ccc',fontFamily:s.id==='ikkajo'?"'Noto Serif JP',serif":'inherit'}}>{s.icon}</span>
+            {s.label}
+            {s.id==='exams'&&pendingCount>0&&<span style={{marginLeft:'auto',background:C.red,color:'#fff',fontSize:9,padding:'1px 6px',borderRadius:10}}>{pendingCount}</span>}
+          </button>
+        ))}
+      </nav>
 
-        {onExit&&(
-          <div style={{borderTop:`1px solid ${C.border}`,padding:'12px 16px'}}>
-            <button onClick={onExit} style={{width:'100%',padding:'8px 12px',background:'none',border:`1px solid ${C.border}`,color:C.muted,fontSize:11,cursor:'pointer',textAlign:'left'}}>
-              ← Вернуться на сайт
+      {onExit && (
+        <div style={{borderTop:`1px solid ${C.border}`,padding:'12px 16px'}}>
+          <button onClick={onExit} style={{width:'100%',padding:'10px 12px',background:'none',border:`1px solid ${C.border}`,color:C.muted,fontSize:12,cursor:'pointer',textAlign:'left',minHeight:40}}>
+            ← Вернуться на сайт
+          </button>
+        </div>
+      )}
+    </>
+  );
+
+  return (
+    <div style={{display:'flex',minHeight:'100vh',background:C.bg,fontFamily:"'Jost',sans-serif",color:C.dark,position:'relative'}}>
+
+      {/* ── Desktop sidebar ─────────────────────────────────── */}
+      {!isMobile && (
+        <aside style={{width:220,background:C.white,borderRight:`1px solid ${C.border}`,display:'flex',flexDirection:'column',flexShrink:0,position:'sticky',top:0,height:'100vh'}}>
+          <SidebarContent/>
+        </aside>
+      )}
+
+      {/* ── Mobile: top bar + drawer ─────────────────────────── */}
+      {isMobile && (
+        <>
+          {/* Top bar */}
+          <div style={{position:'fixed',top:0,left:0,right:0,zIndex:200,background:C.white,borderBottom:`1px solid ${C.border}`,display:'flex',alignItems:'center',padding:'0 16px',height:52}}>
+            <button onClick={()=>setDrawerOpen(true)}
+              style={{background:'none',border:'none',fontSize:22,cursor:'pointer',color:C.dark,padding:'8px',marginRight:8,lineHeight:1,minWidth:40,minHeight:40}}>
+              ☰
             </button>
+            <div style={{fontFamily:"'Noto Serif JP',serif",fontSize:18,color:C.gold,marginRight:8}}>合</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:13,fontWeight:600,letterSpacing:2,color:C.dark}}>
+              {SECTIONS.find(s=>s.id===section)?.label || 'ADMIN'}
+            </div>
+            {pendingCount>0 && (
+              <span style={{marginLeft:8,background:C.red,color:'#fff',fontSize:9,padding:'1px 6px',borderRadius:10}}>{pendingCount}</span>
+            )}
           </div>
-        )}
-      </aside>
 
-      {/* Контент */}
-      <main style={{flex:1,overflow:'auto'}}>
-        <div key={section} className="anim">
-          {section==='users'    && <SectionUsers    showToast={showToast}/>}
-          {section==='exams'    && <SectionExams    showToast={showToast}/>}
-          {section==='payments' && <SectionPayments/>}
-          {section==='access'   && <SectionAccess   showToast={showToast}/>}
-          {section==='months'   && <SectionMonths   showToast={showToast}/>}
-          {section==='ikkajo'   && <SectionIkkajo   showToast={showToast}/>}
-          {section==='comments' && <SectionComments showToast={showToast}/>}
+          {/* Overlay */}
+          {drawerOpen && (
+            <div onClick={()=>setDrawerOpen(false)}
+              style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',zIndex:299}}/>
+          )}
+
+          {/* Drawer */}
+          <aside style={{
+            position:'fixed',top:0,left:0,bottom:0,
+            width:280,
+            background:C.white,
+            borderRight:`1px solid ${C.border}`,
+            display:'flex',flexDirection:'column',
+            zIndex:300,
+            transform:drawerOpen?'translateX(0)':'translateX(-100%)',
+            transition:'transform 0.24s ease',
+          }}>
+            <SidebarContent/>
+          </aside>
+        </>
+      )}
+
+      {/* ── Main content ────────────────────────────────────── */}
+      <main style={{
+        flex:1,
+        overflow:'auto',
+        minWidth:0,
+        paddingTop: isMobile ? 52 : 0,
+      }}>
+        <div key={section}>
+          {section==='users'     && <SectionUsers     showToast={showToast} isMobile={isMobile}/>}
+          {section==='access'    && <SectionAccess    showToast={showToast} isMobile={isMobile}/>}
+          {section==='knowledge' && <SectionKnowledge showToast={showToast} isMobile={isMobile}/>}
+          {section==='exams'     && <SectionExams     showToast={showToast} isMobile={isMobile}/>}
+          {section==='payments'  && <SectionPayments                        isMobile={isMobile}/>}
+          {section==='months'    && <SectionMonths    showToast={showToast} isMobile={isMobile}/>}
+          {section==='ikkajo'    && <SectionIkkajo    showToast={showToast} isMobile={isMobile}/>}
+          {section==='comments'  && <SectionComments  showToast={showToast} isMobile={isMobile}/>}
         </div>
       </main>
 
@@ -254,12 +326,13 @@ export default function AdminPanel({ onExit }) {
   );
 }
 
-function SectionHeader({title,subtitle,action}){
+// ── SectionHeader ────────────────────────────────────────────────
+function SectionHeader({title,subtitle,action,isMobile}){
   return(
-    <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',padding:'28px 36px 20px',borderBottom:`1px solid ${C.border}`,background:C.white}}>
+    <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',padding:isMobile?'20px 16px 16px':'28px 36px 20px',borderBottom:`1px solid ${C.border}`,background:C.white,flexWrap:'wrap',gap:8}}>
       <div>
         <div style={{fontSize:9,color:C.gold,letterSpacing:2,textTransform:'uppercase',marginBottom:6}}>Управление</div>
-        <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:26,fontWeight:600,color:C.dark}}>{title}</h1>
+        <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile?22:26,fontWeight:600,color:C.dark,margin:0}}>{title}</h1>
         {subtitle&&<div style={{fontSize:12,color:C.muted,marginTop:3}}>{subtitle}</div>}
       </div>
       {action}
@@ -267,16 +340,27 @@ function SectionHeader({title,subtitle,action}){
   );
 }
 
+// ── StatGrid: responsive 2 or 4 cols ─────────────────────────────
+function StatGrid({children,cols=4,isMobile}){
+  const mobileCols = Math.min(cols,2);
+  return(
+    <div style={{display:'grid',gridTemplateColumns:`repeat(${isMobile?mobileCols:cols},1fr)`,gap:2,marginBottom:20}}>
+      {children}
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════
 // 1. ПОЛЬЗОВАТЕЛИ
 // ═══════════════════════════════════════════════════════════════
-function SectionUsers({showToast}){
+function SectionUsers({showToast,isMobile}){
   const {users,loading,updateLevel} = useUsers();
   const {payments} = useAccess();
   const [selected,  setSelected]  = useState(null);
   const [search,    setSearch]    = useState('');
   const [editLevel, setEditLevel] = useState('');
   const [saving,    setSaving]    = useState(false);
+  const [showDetail,setShowDetail]= useState(false); // mobile: show detail panel
 
   const filtered = users.filter(u=>u.name?.toLowerCase().includes(search.toLowerCase())||u.email?.toLowerCase().includes(search.toLowerCase()));
   const user     = users.find(u=>u.id===selected);
@@ -291,101 +375,148 @@ function SectionUsers({showToast}){
     else showToast('Ошибка: ' + error);
   };
 
+  const selectUser = (u) => {
+    setSelected(u.id);
+    setEditLevel(u.level);
+    if (isMobile) setShowDetail(true);
+  };
+
   if (loading) return <Spinner/>;
+
+  const pad = isMobile ? '0 16px 24px' : '24px 36px';
 
   return(
     <div>
-      <SectionHeader title="Пользователи" subtitle={`${users.length} зарегистрировано`}/>
-      <div style={{padding:'24px 36px'}}>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:2,marginBottom:24}}>
-          <StatCard label="Всего"   value={users.length}                         sub="пользователей"/>
-          <StatCard label="Активных" value={users.filter(u=>u.status==='active').length} sub="есть оплата" accent={C.green}/>
-          <StatCard label="Выручка"  value={`${totalRev.toLocaleString()} ₽`}     sub="за всё время"/>
+      <SectionHeader title="Пользователи" subtitle={`${users.length} зарегистрировано`} isMobile={isMobile}/>
+      <div style={{padding:pad}}>
+        <StatGrid cols={4} isMobile={isMobile}>
+          <StatCard label="Всего"    value={users.length}                                    sub="пользователей"/>
+          <StatCard label="Активных" value={users.filter(u=>u.status==='active').length}     sub="есть оплата" accent={C.green}/>
+          <StatCard label="Выручка"  value={`${totalRev.toLocaleString()} ₽`}               sub="за всё время"/>
           <StatCard label="Ср. чек"  value={`${Math.round(totalRev/Math.max(users.length,1)).toLocaleString()} ₽`} sub="на пользователя"/>
-        </div>
+        </StatGrid>
 
-        <div style={{display:'grid',gridTemplateColumns:'1fr 340px',gap:2}}>
-          <div>
-            <div style={{marginBottom:10}}><Input value={search} onChange={setSearch} placeholder="Поиск по имени или email…"/></div>
-            <div style={{background:C.white,border:`1px solid ${C.border}`}}>
-              <div style={{display:'grid',gridTemplateColumns:'1fr 130px 80px 80px 56px',padding:'9px 16px',fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',borderBottom:`1px solid ${C.border}`}}>
-                <span>Имя</span><span>Email</span><span>Уровень</span><span>Сэнсэй</span><span>Статус</span>
+        {/* Mobile: detail panel поверх */}
+        {isMobile && showDetail && user && (
+          <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'18px 16px',marginBottom:12}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,color:C.dark}}>{user.name}</div>
+              <button onClick={()=>setShowDetail(false)} style={{background:'none',border:'none',fontSize:18,color:C.muted,cursor:'pointer'}}>✕</button>
+            </div>
+            <div style={{fontSize:11,color:C.muted,marginBottom:16}}>{user.email}</div>
+            <div style={{marginBottom:16}}>
+              <Label>Изменить уровень</Label>
+              <div style={{display:'flex',gap:8}}>
+                <div style={{flex:1}}><Select value={editLevel} onChange={setEditLevel} options={LEVELS_LIST.map(l=>({value:l,label:LEVEL_LABELS[l]}))}/></div>
+                <Btn onClick={saveLevel} small loading={saving}>Сохранить</Btn>
               </div>
-              {filtered.map(u=>(
-                <div key={u.id} onClick={()=>{setSelected(u.id);setEditLevel(u.level);}}
-                  style={{display:'grid',gridTemplateColumns:'1fr 130px 80px 80px 56px',padding:'12px 16px',borderBottom:`1px solid ${C.border}`,cursor:'pointer',background:selected===u.id?C.goldBg:'#fff'}}>
-                  <div>
-                    <div style={{fontSize:13,color:C.dark,fontWeight:selected===u.id?500:400}}>{u.name}</div>
-                    <div style={{fontSize:10,color:C.muted,marginTop:2}}>с {u.joined_at||'—'}</div>
-                  </div>
-                  <div style={{fontSize:11,color:C.muted,display:'flex',alignItems:'center',overflow:'hidden',textOverflow:'ellipsis'}}>{u.email}</div>
-                  <div style={{display:'flex',alignItems:'center'}}>
-                    <span style={{fontSize:10,color:C.gold,background:C.goldBg,border:`1px solid ${C.goldBorder}`,padding:'1px 7px'}}>{LEVEL_LABELS[u.level]||u.level}</span>
-                  </div>
-                  <div style={{display:'flex',alignItems:'center'}}>
-                    <span style={{fontSize:11,color:u.sensei_name?C.dark:C.muted,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{u.sensei_name||'Копин'}</span>
-                  </div>
-                  <div style={{display:'flex',alignItems:'center'}}>
-                    <span style={{width:7,height:7,borderRadius:'50%',background:u.status==='active'?C.green:'#ccc',display:'inline-block'}}/>
-                  </div>
+            </div>
+            {(user.self_level||user.sensei_name||user.experience) && (
+              <div style={{marginBottom:16,padding:'12px 14px',background:C.goldBg,border:`1px solid ${C.goldBorder}`}}>
+                <div style={{fontSize:9,color:C.gold,letterSpacing:1.5,textTransform:'uppercase',marginBottom:8}}>Анкета</div>
+                {user.self_level && user.self_level!=='none' && <div style={{fontSize:12,marginBottom:4}}><span style={{color:C.muted}}>Уровень: </span>{LEVEL_LABELS[user.self_level]||user.self_level}</div>}
+                {user.sensei_name && <div style={{fontSize:12,marginBottom:4}}><span style={{color:C.muted}}>Сэнсэй: </span>{user.sensei_name}</div>}
+                {user.experience && <p style={{fontSize:12,color:'#555',lineHeight:1.7,marginTop:8,paddingLeft:8,borderLeft:`2px solid ${C.goldBorder}`}}>{user.experience}</p>}
+              </div>
+            )}
+            <div>
+              <Label>История оплат</Label>
+              {userPays.length===0&&<div style={{fontSize:11,color:C.muted}}>нет оплат</div>}
+              {userPays.map(p=>(
+                <div key={p.id} style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:`1px solid ${C.border}`,fontSize:11,flexWrap:'wrap',gap:4}}>
+                  <span style={{color:C.muted}}>{p.date}</span>
+                  <span style={{color:C.dark,flex:1,margin:'0 8px'}}>{p.desc}</span>
+                  <span style={{color:C.gold,fontWeight:600}}>{p.amount?.toLocaleString()} ₽</span>
                 </div>
               ))}
             </div>
           </div>
+        )}
 
-          {user?(
-            <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'22px'}}>
-              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,fontWeight:600,color:C.dark,marginBottom:3}}>{user.name}</div>
-              <div style={{fontSize:11,color:C.muted,marginBottom:20}}>{user.email}</div>
-              <div style={{marginBottom:18}}>
-                <Label>Изменить уровень</Label>
-                <div style={{display:'flex',gap:8}}>
-                  <Select value={editLevel} onChange={setEditLevel} options={LEVELS_LIST.map(l=>({value:l,label:LEVEL_LABELS[l]}))}/>
-                  <Btn onClick={saveLevel} small loading={saving}>Сохранить</Btn>
+        <div style={{marginBottom:10}}><Input value={search} onChange={setSearch} placeholder="Поиск по имени или email…"/></div>
+
+        {/* Mobile: card list */}
+        {isMobile ? (
+          <div>
+            {filtered.map(u=>(
+              <div key={u.id} onClick={()=>selectUser(u)}
+                style={{background:selected===u.id?C.goldBg:C.white,border:`1px solid ${C.border}`,borderLeft:`3px solid ${selected===u.id?C.gold:C.border}`,padding:'12px 14px',marginBottom:2,cursor:'pointer'}}>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
+                  <span style={{fontSize:13,color:C.dark,fontWeight:500}}>{u.name}</span>
+                  <span style={{width:8,height:8,borderRadius:'50%',background:u.status==='active'?C.green:'#ccc',display:'inline-block',flexShrink:0}}/>
+                </div>
+                <div style={{display:'flex',alignItems:'center',gap:8,flexWrap:'wrap'}}>
+                  <span style={{fontSize:10,color:C.muted}}>{u.email}</span>
+                  <span style={{fontSize:10,color:C.gold,background:C.goldBg,border:`1px solid ${C.goldBorder}`,padding:'1px 6px'}}>{LEVEL_LABELS[u.level]||u.level}</span>
                 </div>
               </div>
-
-              {/* Анкета пользователя */}
-              {(user.self_level||user.sensei_name||user.experience) && (
-                <div style={{marginBottom:18,padding:'14px 16px',background:C.goldBg,border:`1px solid ${C.goldBorder}`}}>
-                  <div style={{fontSize:9,color:C.gold,letterSpacing:1.5,textTransform:'uppercase',marginBottom:10}}>Анкета при регистрации</div>
-                  {user.self_level && user.self_level!=='none' && (
-                    <div style={{display:'flex',gap:8,marginBottom:6,fontSize:12}}>
-                      <span style={{color:C.muted,minWidth:100}}>Уровень (сам):</span>
-                      <span style={{color:C.dark}}>{LEVEL_LABELS[user.self_level]||user.self_level}</span>
-                    </div>
-                  )}
-                  {user.sensei_name && (
-                    <div style={{display:'flex',gap:8,marginBottom:6,fontSize:12}}>
-                      <span style={{color:C.muted,minWidth:100}}>Сэнсэй:</span>
-                      <span style={{color:C.dark}}>{user.sensei_name}</span>
-                    </div>
-                  )}
-                  {user.experience && (
-                    <div style={{marginTop:8}}>
-                      <div style={{fontSize:9,color:C.muted,letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Об опыте</div>
-                      <p style={{fontSize:12,color:'#555',lineHeight:1.75,borderLeft:`2px solid ${C.goldBorder}`,paddingLeft:10}}>{user.experience}</p>
-                    </div>
-                  )}
+            ))}
+          </div>
+        ) : (
+          /* Desktop: grid table */
+          <div style={{display:'grid',gridTemplateColumns:'1fr 340px',gap:2}}>
+            <div>
+              <div style={{background:C.white,border:`1px solid ${C.border}`}}>
+                <div style={{display:'grid',gridTemplateColumns:'1fr 130px 80px 80px 56px',padding:'9px 16px',fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',borderBottom:`1px solid ${C.border}`}}>
+                  <span>Имя</span><span>Email</span><span>Уровень</span><span>Сэнсэй</span><span>Статус</span>
                 </div>
-              )}
-
-              <div>
-                <Label>История оплат</Label>
-                {userPays.length===0&&<div style={{fontSize:11,color:C.muted}}>нет оплат</div>}
-                {userPays.map(p=>(
-                  <div key={p.id} style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:`1px solid ${C.border}`,fontSize:11}}>
-                    <span style={{color:C.muted}}>{p.date}</span>
-                    <span style={{color:C.dark}}>{p.desc}</span>
-                    <span style={{color:C.gold,fontWeight:600}}>{p.amount?.toLocaleString()} ₽</span>
+                {filtered.map(u=>(
+                  <div key={u.id} onClick={()=>selectUser(u)}
+                    style={{display:'grid',gridTemplateColumns:'1fr 130px 80px 80px 56px',padding:'12px 16px',borderBottom:`1px solid ${C.border}`,cursor:'pointer',background:selected===u.id?C.goldBg:'#fff'}}>
+                    <div>
+                      <div style={{fontSize:13,color:C.dark,fontWeight:selected===u.id?500:400}}>{u.name}</div>
+                      <div style={{fontSize:10,color:C.muted,marginTop:2}}>с {u.joined_at||'—'}</div>
+                    </div>
+                    <div style={{fontSize:11,color:C.muted,display:'flex',alignItems:'center',overflow:'hidden',textOverflow:'ellipsis'}}>{u.email}</div>
+                    <div style={{display:'flex',alignItems:'center'}}>
+                      <span style={{fontSize:10,color:C.gold,background:C.goldBg,border:`1px solid ${C.goldBorder}`,padding:'1px 7px'}}>{LEVEL_LABELS[u.level]||u.level}</span>
+                    </div>
+                    <div style={{display:'flex',alignItems:'center'}}>
+                      <span style={{fontSize:11,color:u.sensei_name?C.dark:C.muted,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{u.sensei_name||'Копин'}</span>
+                    </div>
+                    <div style={{display:'flex',alignItems:'center'}}>
+                      <span style={{width:7,height:7,borderRadius:'50%',background:u.status==='active'?C.green:'#ccc',display:'inline-block'}}/>
+                    </div>
                   </div>
                 ))}
               </div>
             </div>
-          ):(
-            <div style={{background:C.white,border:`1px solid ${C.border}`,display:'flex',alignItems:'center',justifyContent:'center',color:C.muted,fontSize:12,minHeight:200}}>Выберите пользователя</div>
-          )}
-        </div>
+            {user?(
+              <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'22px'}}>
+                <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:20,fontWeight:600,color:C.dark,marginBottom:3}}>{user.name}</div>
+                <div style={{fontSize:11,color:C.muted,marginBottom:20}}>{user.email}</div>
+                <div style={{marginBottom:18}}>
+                  <Label>Изменить уровень</Label>
+                  <div style={{display:'flex',gap:8}}>
+                    <Select value={editLevel} onChange={setEditLevel} options={LEVELS_LIST.map(l=>({value:l,label:LEVEL_LABELS[l]}))}/>
+                    <Btn onClick={saveLevel} small loading={saving}>Сохранить</Btn>
+                  </div>
+                </div>
+                {(user.self_level||user.sensei_name||user.experience) && (
+                  <div style={{marginBottom:18,padding:'14px 16px',background:C.goldBg,border:`1px solid ${C.goldBorder}`}}>
+                    <div style={{fontSize:9,color:C.gold,letterSpacing:1.5,textTransform:'uppercase',marginBottom:10}}>Анкета при регистрации</div>
+                    {user.self_level && user.self_level!=='none' && <div style={{display:'flex',gap:8,marginBottom:6,fontSize:12}}><span style={{color:C.muted,minWidth:100}}>Уровень (сам):</span><span style={{color:C.dark}}>{LEVEL_LABELS[user.self_level]||user.self_level}</span></div>}
+                    {user.sensei_name && <div style={{display:'flex',gap:8,marginBottom:6,fontSize:12}}><span style={{color:C.muted,minWidth:100}}>Сэнсэй:</span><span style={{color:C.dark}}>{user.sensei_name}</span></div>}
+                    {user.experience && <div style={{marginTop:8}}><div style={{fontSize:9,color:C.muted,letterSpacing:1,textTransform:'uppercase',marginBottom:6}}>Об опыте</div><p style={{fontSize:12,color:'#555',lineHeight:1.75,borderLeft:`2px solid ${C.goldBorder}`,paddingLeft:10}}>{user.experience}</p></div>}
+                  </div>
+                )}
+                <div>
+                  <Label>История оплат</Label>
+                  {userPays.length===0&&<div style={{fontSize:11,color:C.muted}}>нет оплат</div>}
+                  {userPays.map(p=>(
+                    <div key={p.id} style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:`1px solid ${C.border}`,fontSize:11}}>
+                      <span style={{color:C.muted}}>{p.date}</span>
+                      <span style={{color:C.dark}}>{p.desc}</span>
+                      <span style={{color:C.gold,fontWeight:600}}>{p.amount?.toLocaleString()} ₽</span>
+                    </div>
+                  ))}
+                </div>
+              </div>
+            ):(
+              <div style={{background:C.white,border:`1px solid ${C.border}`,display:'flex',alignItems:'center',justifyContent:'center',color:C.muted,fontSize:12,minHeight:200}}>Выберите пользователя</div>
+            )}
+          </div>
+        )}
       </div>
     </div>
   );
@@ -394,7 +525,7 @@ function SectionUsers({showToast}){
 // ═══════════════════════════════════════════════════════════════
 // 2. ЭКЗАМЕНЫ
 // ═══════════════════════════════════════════════════════════════
-function SectionExams({showToast}){
+function SectionExams({showToast,isMobile}){
   const {users,updateLevel} = useUsers();
   const {exams,loading,approveExam,rejectExam,addManualExam} = useExams();
   const [mUserId, setMUserId] = useState('');
@@ -407,95 +538,85 @@ function SectionExams({showToast}){
   const approved = exams.filter(e=>e.status==='approved');
   const rejected = exams.filter(e=>e.status==='rejected');
 
-  const doApprove = async (id,note) => {
-    const {ok} = await approveExam(id,note,updateLevel);
-    if(ok) showToast('Экзамен подтверждён');
-  };
-  const doReject = async (id,note) => {
-    const {ok} = await rejectExam(id,note);
-    if(ok) showToast('Экзамен отклонён');
-  };
-  const doManual = async () => {
+  const doApprove = async (id,note) => { const {ok} = await approveExam(id,note,updateLevel); if(ok) showToast('Экзамен подтверждён'); };
+  const doReject  = async (id,note) => { const {ok} = await rejectExam(id,note);              if(ok) showToast('Экзамен отклонён'); };
+  const doManual  = async () => {
     if(!mUserId) return;
     setSaving(true);
     const user = users.find(u=>u.id===mUserId);
     const {ok} = await addManualExam({userId:mUserId,userName:user?.name,targetLevel:mLevel,result:mResult,note:mNote});
-    if(ok){
-      if(mResult==='passed') await updateLevel(mUserId,mLevel);
-      showToast('Результат проставлен');
-      setMUserId(''); setMNote('');
-    }
+    if(ok){ if(mResult==='passed') await updateLevel(mUserId,mLevel); showToast('Результат проставлен'); setMUserId(''); setMNote(''); }
     setSaving(false);
   };
 
   if(loading) return <Spinner/>;
+  const pad = isMobile ? '0 16px 24px' : '24px 36px';
+
+  // Manual form — shared between mobile/desktop
+  const manualFormJSX = (
+    <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'18px',marginBottom:isMobile?12:0}}>
+      <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,fontWeight:600,color:C.dark,marginBottom:4}}>Ручная простановка</div>
+      <div style={{fontSize:11,color:C.muted,marginBottom:14}}>Преподаватель проставляет результат напрямую</div>
+      <div style={{display:'flex',flexDirection:'column',gap:12}}>
+        <div><Label>Ученик</Label><Select value={mUserId} onChange={setMUserId} options={[{value:'',label:'— выберите —'},...users.map(u=>({value:u.id,label:u.name}))]}/></div>
+        <div><Label>Уровень экзамена</Label><Select value={mLevel} onChange={setMLevel} options={LEVELS_LIST.map(l=>({value:l,label:LEVEL_LABELS[l]}))}/></div>
+        <div><Label>Результат</Label><Select value={mResult} onChange={setMResult} options={[{value:'passed',label:'✓ Сдал'},{value:'failed',label:'✕ Не сдал'}]}/></div>
+        <div><Label>Комментарий</Label><Textarea value={mNote} onChange={setMNote} placeholder="Замечания…" rows={3}/></div>
+        <Btn onClick={doManual} disabled={!mUserId} loading={saving}>Проставить результат</Btn>
+      </div>
+    </div>
+  );
 
   return(
     <div>
-      <SectionHeader title="Экзамены" subtitle={`${pending.length} ожидают подтверждения`}/>
-      <div style={{padding:'24px 36px'}}>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:2,marginBottom:24}}>
-          <StatCard label="Ожидают"   value={pending.length}  sub="заявок"      accent={pending.length>0?'#c07820':C.muted}/>
+      <SectionHeader title="Экзамены" subtitle={`${pending.length} ожидают подтверждения`} isMobile={isMobile}/>
+      <div style={{padding:pad}}>
+        <StatGrid cols={3} isMobile={isMobile}>
+          <StatCard label="Ожидают"   value={pending.length}  sub="заявок"       accent={pending.length>0?'#c07820':C.muted}/>
           <StatCard label="Сдано"     value={approved.length} sub="подтверждено" accent={C.green}/>
-          <StatCard label="Отклонено" value={rejected.length} sub="не сдали"    accent={C.red}/>
-        </div>
-        <div style={{display:'grid',gridTemplateColumns:'1fr 300px',gap:2}}>
-          <div>
-            {pending.length>0&&(
-              <div style={{marginBottom:24}}>
-                <div style={{fontSize:9,color:'#c07820',letterSpacing:1.5,textTransform:'uppercase',marginBottom:12}}>Ожидают подтверждения</div>
-                {pending.map(e=><ExamCard key={e.id} exam={e} onApprove={doApprove} onReject={doReject}/>)}
-              </div>
-            )}
-            {approved.length>0&&(
-              <div style={{marginBottom:24}}>
-                <div style={{fontSize:9,color:C.green,letterSpacing:1.5,textTransform:'uppercase',marginBottom:12}}>✓ Подтверждённые</div>
-                {approved.map(e=><ExamCard key={e.id} exam={e} readonly/>)}
-              </div>
-            )}
-            {rejected.length>0&&(
-              <div>
-                <div style={{fontSize:9,color:C.red,letterSpacing:1.5,textTransform:'uppercase',marginBottom:12}}>✕ Отклонённые</div>
-                {rejected.map(e=><ExamCard key={e.id} exam={e} readonly/>)}
-              </div>
-            )}
-          </div>
+          <StatCard label="Отклонено" value={rejected.length} sub="не сдали"     accent={C.red}/>
+        </StatGrid>
 
-          <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'22px',alignSelf:'start'}}>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:18,fontWeight:600,color:C.dark,marginBottom:4}}>Ручная простановка</div>
-            <div style={{fontSize:11,color:C.muted,marginBottom:18}}>Преподаватель проставляет результат напрямую</div>
-            <div style={{display:'flex',flexDirection:'column',gap:12}}>
-              <div><Label>Ученик</Label><Select value={mUserId} onChange={setMUserId} options={[{value:'',label:'— выберите —'},...users.map(u=>({value:u.id,label:u.name}))]}/></div>
-              <div><Label>Уровень экзамена</Label><Select value={mLevel} onChange={setMLevel} options={LEVELS_LIST.map(l=>({value:l,label:LEVEL_LABELS[l]}))}/></div>
-              <div><Label>Результат</Label><Select value={mResult} onChange={setMResult} options={[{value:'passed',label:'✓ Сдал'},{value:'failed',label:'✕ Не сдал'}]}/></div>
-              <div><Label>Комментарий</Label><Textarea value={mNote} onChange={setMNote} placeholder="Замечания…" rows={3}/></div>
-              <Btn onClick={doManual} disabled={!mUserId} loading={saving}>Проставить результат</Btn>
-            </div>
+        {isMobile ? (
+          <div>
+            {manualFormJSX}
+            {pending.length>0&&(<><div style={{fontSize:9,color:'#c07820',letterSpacing:1.5,textTransform:'uppercase',marginBottom:10}}>Ожидают подтверждения</div>{pending.map(e=><ExamCard key={e.id} exam={e} onApprove={doApprove} onReject={doReject} isMobile/>)}</>)}
+            {approved.length>0&&(<><div style={{fontSize:9,color:C.green,letterSpacing:1.5,textTransform:'uppercase',margin:'16px 0 10px'}}>✓ Подтверждённые</div>{approved.map(e=><ExamCard key={e.id} exam={e} readonly isMobile/>)}</>)}
+            {rejected.length>0&&(<><div style={{fontSize:9,color:C.red,letterSpacing:1.5,textTransform:'uppercase',margin:'16px 0 10px'}}>✕ Отклонённые</div>{rejected.map(e=><ExamCard key={e.id} exam={e} readonly isMobile/>)}</>)}
           </div>
-        </div>
+        ) : (
+          <div style={{display:'grid',gridTemplateColumns:'1fr 300px',gap:2}}>
+            <div>
+              {pending.length>0&&(<div style={{marginBottom:24}}><div style={{fontSize:9,color:'#c07820',letterSpacing:1.5,textTransform:'uppercase',marginBottom:12}}>Ожидают подтверждения</div>{pending.map(e=><ExamCard key={e.id} exam={e} onApprove={doApprove} onReject={doReject}/>)}</div>)}
+              {approved.length>0&&(<div style={{marginBottom:24}}><div style={{fontSize:9,color:C.green,letterSpacing:1.5,textTransform:'uppercase',marginBottom:12}}>✓ Подтверждённые</div>{approved.map(e=><ExamCard key={e.id} exam={e} readonly/>)}</div>)}
+              {rejected.length>0&&(<div><div style={{fontSize:9,color:C.red,letterSpacing:1.5,textTransform:'uppercase',marginBottom:12}}>✕ Отклонённые</div>{rejected.map(e=><ExamCard key={e.id} exam={e} readonly/>)}</div>)}
+            </div>
+            <div style={{alignSelf:'start'}}>{manualFormJSX}</div>
+          </div>
+        )}
       </div>
     </div>
   );
 }
 
-function ExamCard({exam,onApprove,onReject,readonly}){
+function ExamCard({exam,onApprove,onReject,readonly,isMobile}){
   const [note,setNote] = useState(exam.teacher_note||'');
   const [saving,setSaving] = useState(false);
   const sc = exam.status==='pending'?'#c07820':exam.status==='approved'?C.green:C.red;
   const sl = exam.status==='pending'?'Ожидает':exam.status==='approved'?'Подтверждён':'Отклонён';
   return(
-    <div style={{background:C.white,border:`1px solid ${C.border}`,borderLeft:`3px solid ${sc}`,padding:'15px 16px',marginBottom:2}}>
-      <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:10}}>
+    <div style={{background:C.white,border:`1px solid ${C.border}`,borderLeft:`3px solid ${sc}`,padding:'14px 16px',marginBottom:2}}>
+      <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:10,gap:8}}>
         <div>
           <div style={{fontSize:13,color:C.dark,fontWeight:500}}>{exam.user_name}</div>
           <div style={{fontSize:11,color:C.muted,marginTop:2}}>Заявка на <span style={{color:C.gold}}>{LEVEL_LABELS[exam.target_level]||exam.target_level}</span> · {exam.date}</div>
         </div>
-        <span style={{fontSize:10,color:sc,background:`${sc}12`,border:`1px solid ${sc}30`,padding:'2px 8px'}}>{sl}</span>
+        <span style={{fontSize:10,color:sc,background:`${sc}12`,border:`1px solid ${sc}30`,padding:'2px 8px',whiteSpace:'nowrap'}}>{sl}</span>
       </div>
       {!readonly&&<div style={{marginBottom:10}}><Textarea value={note} onChange={setNote} placeholder="Комментарий к экзамену…" rows={2}/></div>}
       {readonly&&exam.teacher_note&&<div style={{fontSize:12,color:C.muted,fontStyle:'italic',marginBottom:8,paddingLeft:8,borderLeft:`2px solid ${C.border}`}}>«{exam.teacher_note}»</div>}
       {!readonly&&(
-        <div style={{display:'flex',gap:8}}>
+        <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
           <Btn onClick={async()=>{setSaving(true);await onApprove(exam.id,note);setSaving(false);}} variant='success' small loading={saving}>✓ Подтвердить</Btn>
           <Btn onClick={async()=>{setSaving(true);await onReject(exam.id,note);setSaving(false);}} variant='danger' small>✕ Отклонить</Btn>
         </div>
@@ -507,7 +628,7 @@ function ExamCard({exam,onApprove,onReject,readonly}){
 // ═══════════════════════════════════════════════════════════════
 // 3. ОПЛАТЫ
 // ═══════════════════════════════════════════════════════════════
-function SectionPayments(){
+function SectionPayments({isMobile}){
   const {payments,loading} = useAccess();
   const {users} = useUsers();
   const [filter,setFilter] = useState('all');
@@ -515,34 +636,34 @@ function SectionPayments(){
 
   const filtered = payments.filter(p=>filter==='all'||p.type===filter).filter(p=>userId==='all'||p.userId===userId);
   const totalAll = payments.reduce((s,p)=>s+p.amount,0);
-
   const byMonth = {};
   payments.forEach(p=>{ if(p.date){const m=p.date.slice(3,7);byMonth[m]=(byMonth[m]||0)+p.amount;} });
   const topMonths = Object.entries(byMonth).sort((a,b)=>b[1]-a[1]).slice(0,6);
 
   if(loading) return <Spinner/>;
+  const pad = isMobile ? '0 16px 24px' : '24px 36px';
 
   return(
     <div>
-      <SectionHeader title="Статистика оплат"/>
-      <div style={{padding:'24px 36px'}}>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(4,1fr)',gap:2,marginBottom:24}}>
+      <SectionHeader title="Статистика оплат" isMobile={isMobile}/>
+      <div style={{padding:pad}}>
+        <StatGrid cols={4} isMobile={isMobile}>
           <StatCard label="Выручка"  value={`${totalAll.toLocaleString()} ₽`} sub={`${payments.length} транзакций`}/>
           <StatCard label="Подписки" value={`${payments.filter(p=>p.type==='month').reduce((s,p)=>s+p.amount,0).toLocaleString()} ₽`} sub="ежемесячные"/>
           <StatCard label="Разделы"  value={`${payments.filter(p=>p.type==='section').reduce((s,p)=>s+p.amount,0).toLocaleString()} ₽`} sub="разовые" accent={C.green}/>
           <StatCard label="Платящих" value={new Set(payments.map(p=>p.userId)).size} sub="уникальных"/>
-        </div>
+        </StatGrid>
 
         {topMonths.length>0&&(
-          <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'20px 24px',marginBottom:20}}>
+          <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'16px',marginBottom:16}}>
             <Label>Выручка по периодам</Label>
-            <div style={{display:'flex',alignItems:'flex-end',gap:4,height:80,marginTop:12}}>
+            <div style={{display:'flex',alignItems:'flex-end',gap:4,height:70,marginTop:10}}>
               {topMonths.map(([m,amt],i)=>{
                 const max=topMonths[0][1];
                 return(
-                  <div key={m} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:6}}>
-                    <div style={{fontSize:10,color:C.gold,fontWeight:600}}>{(amt/1000).toFixed(1)}к</div>
-                    <div style={{width:'100%',background:C.bg,height:50,display:'flex',alignItems:'flex-end'}}>
+                  <div key={m} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
+                    <div style={{fontSize:9,color:C.gold,fontWeight:600}}>{(amt/1000).toFixed(1)}к</div>
+                    <div style={{width:'100%',background:C.bg,height:44,display:'flex',alignItems:'flex-end'}}>
                       <div style={{width:'100%',background:C.gold,height:`${(amt/max)*100}%`,opacity:1-i*0.1}}/>
                     </div>
                     <div style={{fontSize:9,color:C.muted}}>{m}</div>
@@ -553,29 +674,89 @@ function SectionPayments(){
           </div>
         )}
 
-        <div style={{display:'flex',gap:8,marginBottom:14}}>
-          <Select value={filter} onChange={setFilter} options={[{value:'all',label:'Все типы'},{value:'month',label:'Подписки'},{value:'section',label:'Разделы'}]}/>
-          <Select value={userId} onChange={setUserId} options={[{value:'all',label:'Все пользователи'},...users.map(u=>({value:u.id,label:u.name}))]}/>
+        <div style={{display:'flex',gap:8,marginBottom:14,flexWrap:'wrap'}}>
+          <div style={{flex:1,minWidth:120}}><Select value={filter} onChange={setFilter} options={[{value:'all',label:'Все типы'},{value:'month',label:'Подписки'},{value:'section',label:'Разделы'}]}/></div>
+          <div style={{flex:2,minWidth:140}}><Select value={userId} onChange={setUserId} options={[{value:'all',label:'Все пользователи'},...users.map(u=>({value:u.id,label:u.name}))]}/></div>
         </div>
 
-        <div style={{background:C.white,border:`1px solid ${C.border}`}}>
-          <div style={{display:'grid',gridTemplateColumns:'100px 1fr 160px 80px 110px',padding:'9px 16px',fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',borderBottom:`1px solid ${C.border}`}}>
-            <span>Дата</span><span>Пользователь</span><span>Описание</span><span>Тип</span><span style={{textAlign:'right'}}>Сумма</span>
-          </div>
-          {filtered.map(p=>(
-            <div key={p.id} style={{display:'grid',gridTemplateColumns:'100px 1fr 160px 80px 110px',padding:'11px 16px',borderBottom:`1px solid ${C.border}`,fontSize:12,alignItems:'center'}}>
-              <span style={{color:C.muted}}>{p.date}</span>
-              <span style={{color:C.dark}}>{p.userName}</span>
-              <span style={{color:C.muted}}>{p.desc}</span>
-              <span><span style={{fontSize:9,padding:'2px 7px',background:p.type==='month'?'#e8f0fa':C.goldBg,color:p.type==='month'?C.blue:C.gold,border:`1px solid ${p.type==='month'?'#c0d4f0':C.goldBorder}`}}>{p.type==='month'?'Подписка':'Раздел'}</span></span>
-              <span style={{color:C.gold,fontWeight:600,textAlign:'right'}}>{p.amount?.toLocaleString()} ₽</span>
+        {/* Mobile: cards / Desktop: table */}
+        {isMobile ? (
+          <div>
+            {filtered.map(p=>(
+              <div key={p.id} style={{background:C.white,border:`1px solid ${C.border}`,padding:'12px 14px',marginBottom:2}}>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'flex-start',marginBottom:6}}>
+                  <div>
+                    <div style={{fontSize:13,color:C.dark}}>{p.userName}</div>
+                    <div style={{fontSize:11,color:C.muted,marginTop:2}}>{p.desc}</div>
+                  </div>
+                  <span style={{fontSize:14,color:C.gold,fontWeight:600,whiteSpace:'nowrap'}}>{p.amount?.toLocaleString()} ₽</span>
+                </div>
+                <div style={{display:'flex',gap:8,alignItems:'center'}}>
+                  <span style={{fontSize:10,color:C.muted}}>{p.date}</span>
+                  <span style={{fontSize:9,padding:'2px 7px',background:p.type==='month'?'#e8f0fa':C.goldBg,color:p.type==='month'?C.blue:C.gold,border:`1px solid ${p.type==='month'?'#c0d4f0':C.goldBorder}`}}>{p.type==='month'?'Подписка':'Раздел'}</span>
+                </div>
+              </div>
+            ))}
+            <div style={{padding:'12px 0',display:'flex',justifyContent:'space-between',fontSize:12,borderTop:`1px solid ${C.border}`,marginTop:4}}>
+              <span style={{color:C.muted}}>{filtered.length} записей</span>
+              <span style={{color:C.gold,fontWeight:600}}>{filtered.reduce((s,p)=>s+p.amount,0).toLocaleString()} ₽</span>
             </div>
-          ))}
-          <div style={{padding:'11px 16px',display:'flex',justifyContent:'space-between',borderTop:`1px solid ${C.border}`,fontSize:12}}>
-            <span style={{color:C.muted}}>{filtered.length} записей</span>
-            <span style={{color:C.gold,fontWeight:600}}>{filtered.reduce((s,p)=>s+p.amount,0).toLocaleString()} ₽</span>
           </div>
+        ) : (
+          <div style={{background:C.white,border:`1px solid ${C.border}`}}>
+            <div style={{display:'grid',gridTemplateColumns:'100px 1fr 160px 80px 110px',padding:'9px 16px',fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',borderBottom:`1px solid ${C.border}`}}>
+              <span>Дата</span><span>Пользователь</span><span>Описание</span><span>Тип</span><span style={{textAlign:'right'}}>Сумма</span>
+            </div>
+            {filtered.map(p=>(
+              <div key={p.id} style={{display:'grid',gridTemplateColumns:'100px 1fr 160px 80px 110px',padding:'11px 16px',borderBottom:`1px solid ${C.border}`,fontSize:12,alignItems:'center'}}>
+                <span style={{color:C.muted}}>{p.date}</span>
+                <span style={{color:C.dark}}>{p.userName}</span>
+                <span style={{color:C.muted}}>{p.desc}</span>
+                <span><span style={{fontSize:9,padding:'2px 7px',background:p.type==='month'?'#e8f0fa':C.goldBg,color:p.type==='month'?C.blue:C.gold,border:`1px solid ${p.type==='month'?'#c0d4f0':C.goldBorder}`}}>{p.type==='month'?'Подписка':'Раздел'}</span></span>
+                <span style={{color:C.gold,fontWeight:600,textAlign:'right'}}>{p.amount?.toLocaleString()} ₽</span>
+              </div>
+            ))}
+            <div style={{padding:'11px 16px',display:'flex',justifyContent:'space-between',borderTop:`1px solid ${C.border}`,fontSize:12}}>
+              <span style={{color:C.muted}}>{filtered.length} записей</span>
+              <span style={{color:C.gold,fontWeight:600}}>{filtered.reduce((s,p)=>s+p.amount,0).toLocaleString()} ₽</span>
+            </div>
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── LessonEditForm — standalone to prevent remount on every keystroke ──────
+function LessonEditForm({ draft, setDraft, doSave, setEditId, saving, showToast, isMobile }) {
+  return (
+    <div style={{background:C.white,border:`2px solid ${C.gold}`,padding:isMobile?'14px':'20px',marginBottom:2}}>
+      {isMobile && (
+        <div style={{display:'flex',justifyContent:'space-between',alignItems:'center',marginBottom:12}}>
+          <span style={{fontSize:12,color:C.gold}}>Редактирование урока</span>
+          <button onClick={()=>setEditId(null)} style={{background:'none',border:'none',fontSize:18,color:C.muted,cursor:'pointer'}}>✕</button>
         </div>
+      )}
+      <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:12}}>
+        <div><Label>Заголовок</Label><Input value={draft.title||''} onChange={v=>setDraft(d=>({...d,title:v}))} placeholder="Название урока"/></div>
+        <div><Label>Подзаголовок</Label><Input value={draft.subtitle||''} onChange={v=>setDraft(d=>({...d,subtitle:v}))} placeholder="Тема урока"/></div>
+      </div>
+      <div style={{marginBottom:12}}><Label>Описание</Label><Textarea value={draft.text||''} onChange={v=>setDraft(d=>({...d,text:v}))} rows={3}/></div>
+      <div style={{marginBottom:14}}>
+        <Label>Видео урока (Kinescope)</Label>
+        <KinescopeUploader
+          lessonId={draft.id}
+          currentVideoId={draft.video_id}
+          currentStatus={draft.video_status}
+          onComplete={({videoId,status})=>{
+            setDraft(d=>({...d,video_id:videoId,video_status:status,video_provider:'kinescope'}));
+            showToast('Видео загружено');
+          }}
+        />
+      </div>
+      <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+        <Btn onClick={doSave} variant='success' small loading={saving}>Сохранить урок</Btn>
+        <Btn onClick={()=>setEditId(null)} variant='ghost' small>Отмена</Btn>
       </div>
     </div>
   );
@@ -584,22 +765,24 @@ function SectionPayments(){
 // ═══════════════════════════════════════════════════════════════
 // 4. МЕСЯЦЫ
 // ═══════════════════════════════════════════════════════════════
-function SectionMonths({showToast}){
+function SectionMonths({showToast,isMobile}){
   const {months,loading:mLoading,toggleOpen} = useMonths();
   const [activeMonth, setActiveMonth] = useState('jan');
+  const [showLessons, setShowLessons] = useState(false); // mobile nav
   const {lessons,loading:lLoading,saving,saveLesson,addLesson,deleteLesson} = useLessons(activeMonth);
   const [editId, setEditId] = useState(null);
   const [draft,  setDraft]  = useState({});
 
-  const startEdit = (l) => { setEditId(l.id); setDraft({...l, videoUrl: l.video_url||''}); };
+  const startEdit = (l) => { setEditId(l.id); setDraft({...l}); };
   const doSave    = async () => {
-    const {ok,error} = await saveLesson({...draft, video_url: draft.videoUrl||draft.video_url||''});
+    const {ok,error} = await saveLesson({...draft});
     if(ok){ setEditId(null); showToast('Урок сохранён'); }
     else showToast('Ошибка: ' + error);
   };
   const doAdd = async () => {
     const {ok,lesson} = await addLesson(activeMonth);
     if(ok && lesson) startEdit(lesson);
+    if(isMobile) setShowLessons(true);
   };
   const doDelete = async (id) => {
     await deleteLesson(id);
@@ -608,88 +791,127 @@ function SectionMonths({showToast}){
   };
 
   if(mLoading) return <Spinner/>;
+  const pad = isMobile ? '0 16px 16px' : '24px 36px';
+
+
 
   return(
     <div>
-      <SectionHeader title="Управление месяцами"/>
-      <div style={{padding:'24px 36px'}}>
-        <div style={{display:'grid',gridTemplateColumns:'220px 1fr',gap:2}}>
-          <div style={{background:C.white,border:`1px solid ${C.border}`}}>
-            <div style={{padding:'10px 14px',fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',borderBottom:`1px solid ${C.border}`}}>Месяцы 2026</div>
-            {months.map(m=>(
-              <div key={m.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'11px 14px',borderBottom:`1px solid ${C.border}`,background:activeMonth===m.id?C.goldBg:'#fff',cursor:'pointer'}}>
-                <div onClick={()=>{setActiveMonth(m.id);setEditId(null);}} style={{flex:1,display:'flex',alignItems:'center',gap:10}}>
-                  <span style={{fontFamily:"'Noto Serif JP',serif",fontSize:14,color:m.is_open?C.gold:'#ccc'}}>{m.kanji}</span>
-                  <span style={{fontSize:12,color:m.is_open?C.dark:C.muted}}>{m.label}</span>
+      <SectionHeader title="Управление месяцами" isMobile={isMobile}/>
+      <div style={{padding:pad}}>
+        {isMobile ? (
+          /* Mobile: two screens — month list / lesson list */
+          !showLessons ? (
+            <div>
+              {months.map(m=>(
+                <div key={m.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 0',borderBottom:`1px solid ${C.border}`,background:activeMonth===m.id?C.goldBg:'transparent',cursor:'pointer',paddingLeft:activeMonth===m.id?10:0,transition:'all 0.15s'}}>
+                  <div onClick={()=>{setActiveMonth(m.id);setShowLessons(true);setEditId(null);}} style={{flex:1,display:'flex',alignItems:'center',gap:12}}>
+                    <span style={{fontFamily:"'Noto Serif JP',serif",fontSize:18,color:m.is_open?C.gold:'#ccc'}}>{m.kanji}</span>
+                    <div>
+                      <div style={{fontSize:14,color:m.is_open?C.dark:C.muted}}>{m.label}</div>
+                      <div style={{fontSize:11,color:C.muted}}>→ уроки</div>
+                    </div>
+                  </div>
+                  <button onClick={()=>toggleOpen(m.id)}
+                    style={{padding:'5px 10px',background:m.is_open?C.greenBg:'#f5f5f5',border:`1px solid ${m.is_open?C.greenBorder:C.border}`,color:m.is_open?C.green:C.muted,fontSize:10,cursor:'pointer',minHeight:32}}>
+                    {m.is_open?'ОТКРЫТ':'ЗАКРЫТ'}
+                  </button>
                 </div>
-                <button onClick={()=>toggleOpen(m.id)}
-                  style={{padding:'2px 8px',background:m.is_open?C.greenBg:'#f5f5f5',border:`1px solid ${m.is_open?C.greenBorder:C.border}`,color:m.is_open?C.green:C.muted,fontSize:9,cursor:'pointer'}}>
-                  {m.is_open?'ОТКРЫТ':'ЗАКРЫТ'}
-                </button>
-              </div>
-            ))}
-          </div>
-
-          <div>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
-              <span style={{fontSize:13,color:C.dark}}>{months.find(m=>m.id===activeMonth)?.label} — {lessons.length} уроков</span>
-              <Btn onClick={doAdd} small>+ Урок</Btn>
+              ))}
             </div>
-            {lLoading&&<Spinner/>}
-            {lessons.map(lesson=>(
-              editId===lesson.id?(
-                <div key={lesson.id} style={{background:C.white,border:`2px solid ${C.gold}`,padding:'20px',marginBottom:2}}>
-                  <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12,marginBottom:12}}>
-                    <div><Label>Заголовок</Label><Input value={draft.title} onChange={v=>setDraft(d=>({...d,title:v}))} placeholder="Название урока"/></div>
-                    <div><Label>Подзаголовок</Label><Input value={draft.subtitle} onChange={v=>setDraft(d=>({...d,subtitle:v}))} placeholder="Тема урока"/></div>
+          ) : (
+            <div>
+              <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
+                <button onClick={()=>{setShowLessons(false);setEditId(null);}} style={{background:'none',border:'none',fontSize:18,color:C.muted,cursor:'pointer',padding:'4px'}}>←</button>
+                <span style={{fontSize:14,color:C.dark,flex:1}}>{months.find(m=>m.id===activeMonth)?.label} — {lessons.length} уроков</span>
+                <Btn onClick={doAdd} small>+ Урок</Btn>
+              </div>
+              {lLoading&&<Spinner/>}
+              {lessons.map(lesson=>(
+                editId===lesson.id ? (
+                  <LessonEditForm key={lesson.id} lesson={lesson} draft={draft} setDraft={setDraft} doSave={doSave} setEditId={setEditId} saving={saving} showToast={showToast} isMobile={isMobile}/>
+                ) : (
+                  <div key={lesson.id} style={{background:C.white,border:`1px solid ${C.border}`,padding:'12px 14px',marginBottom:2}}>
+                    <div style={{display:'flex',alignItems:'flex-start',gap:10,marginBottom:6}}>
+                      <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:12,color:'#ccc',fontWeight:600,minWidth:24,flexShrink:0}}>{String(lesson.num).padStart(2,'0')}</span>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:13,color:C.dark}}>{lesson.title}</div>
+                        <div style={{fontSize:10,color:C.muted,marginTop:2}}>{lesson.subtitle} · {lesson.duration}</div>
+                        {lesson.video_id&&<div style={{fontSize:10,color:lesson.video_status==='ready'?C.green:C.gold,marginTop:2}}>{lesson.video_status==='ready'?'✓ видео готово':lesson.video_status==='processing'?'⟳ обрабатывается':'↑ загружается'}</div>}
+                      </div>
+                    </div>
+                    <div style={{display:'flex',gap:6}}>
+                      <Btn onClick={()=>startEdit(lesson)} variant='ghost' small>Изменить</Btn>
+                      <Btn onClick={()=>doDelete(lesson.id)} variant='danger' small>✕</Btn>
+                    </div>
                   </div>
-                  <div style={{marginBottom:12}}><Label>Описание</Label><Textarea value={draft.text} onChange={v=>setDraft(d=>({...d,text:v}))} rows={3}/></div>
-                  <div style={{marginBottom:16}}>
-                    <Label>Видео урока</Label>
-                    <VideoInput videoUrl={draft.videoUrl||''} onChange={v=>setDraft(d=>({...d,videoUrl:v}))} onSave={doSave} saving={saving}/>
+                )
+              ))}
+            </div>
+          )
+        ) : (
+          /* Desktop layout */
+          <div style={{display:'grid',gridTemplateColumns:'220px 1fr',gap:2}}>
+            <div style={{background:C.white,border:`1px solid ${C.border}`}}>
+              <div style={{padding:'10px 14px',fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',borderBottom:`1px solid ${C.border}`}}>Месяцы 2026</div>
+              {months.map(m=>(
+                <div key={m.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'11px 14px',borderBottom:`1px solid ${C.border}`,background:activeMonth===m.id?C.goldBg:'#fff',cursor:'pointer'}}>
+                  <div onClick={()=>{setActiveMonth(m.id);setEditId(null);}} style={{flex:1,display:'flex',alignItems:'center',gap:10}}>
+                    <span style={{fontFamily:"'Noto Serif JP',serif",fontSize:14,color:m.is_open?C.gold:'#ccc'}}>{m.kanji}</span>
+                    <span style={{fontSize:12,color:m.is_open?C.dark:C.muted}}>{m.label}</span>
                   </div>
-                  <div style={{display:'flex',gap:8}}>
-                    <Btn onClick={doSave} variant='success' small loading={saving}>Сохранить урок</Btn>
-                    <Btn onClick={()=>setEditId(null)} variant='ghost' small>Отмена</Btn>
-                  </div>
+                  <button onClick={()=>toggleOpen(m.id)}
+                    style={{padding:'2px 8px',background:m.is_open?C.greenBg:'#f5f5f5',border:`1px solid ${m.is_open?C.greenBorder:C.border}`,color:m.is_open?C.green:C.muted,fontSize:9,cursor:'pointer'}}>
+                    {m.is_open?'ОТКРЫТ':'ЗАКРЫТ'}
+                  </button>
                 </div>
-              ):(
-                <div key={lesson.id} style={{display:'flex',alignItems:'center',gap:12,padding:'13px 16px',background:C.white,border:`1px solid ${C.border}`,marginBottom:2}}>
-                  <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:12,color:'#ccc',minWidth:24,fontWeight:600}}>{String(lesson.num).padStart(2,'0')}</span>
-                  <div style={{flex:1}}>
-                    <div style={{fontSize:13,color:C.dark}}>{lesson.title}</div>
-                    <div style={{fontSize:10,color:C.muted,marginTop:2}}>{lesson.subtitle} · {lesson.duration}</div>
-                    {(lesson.video_url||lesson.videoUrl)&&<div style={{fontSize:10,color:C.green,marginTop:2}}>✓ видео добавлено</div>}
+              ))}
+            </div>
+            <div>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
+                <span style={{fontSize:13,color:C.dark}}>{months.find(m=>m.id===activeMonth)?.label} — {lessons.length} уроков</span>
+                <Btn onClick={doAdd} small>+ Урок</Btn>
+              </div>
+              {lLoading&&<Spinner/>}
+              {lessons.map(lesson=>(
+                editId===lesson.id ? (
+                  <LessonEditForm key={lesson.id} lesson={lesson} draft={draft} setDraft={setDraft} doSave={doSave} setEditId={setEditId} saving={saving} showToast={showToast} isMobile={isMobile}/>
+                ) : (
+                  <div key={lesson.id} style={{display:'flex',alignItems:'center',gap:12,padding:'13px 16px',background:C.white,border:`1px solid ${C.border}`,marginBottom:2}}>
+                    <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:12,color:'#ccc',minWidth:24,fontWeight:600}}>{String(lesson.num).padStart(2,'0')}</span>
+                    <div style={{flex:1}}>
+                      <div style={{fontSize:13,color:C.dark}}>{lesson.title}</div>
+                      <div style={{fontSize:10,color:C.muted,marginTop:2}}>{lesson.subtitle} · {lesson.duration}</div>
+                      {lesson.video_id&&<div style={{fontSize:10,color:lesson.video_status==='ready'?C.green:C.gold,marginTop:2}}>{lesson.video_status==='ready'?'✓ видео готово':lesson.video_status==='processing'?'⟳ обрабатывается':'↑ загружается'}</div>}
+                    </div>
+                    <div style={{display:'flex',gap:6}}>
+                      <Btn onClick={()=>startEdit(lesson)} variant='ghost' small>Изменить</Btn>
+                      <Btn onClick={()=>doDelete(lesson.id)} variant='danger' small>✕</Btn>
+                    </div>
                   </div>
-                  <div style={{display:'flex',gap:6}}>
-                    <Btn onClick={()=>startEdit(lesson)} variant='ghost' small>Изменить</Btn>
-                    <Btn onClick={()=>doDelete(lesson.id)} variant='danger' small>✕</Btn>
-                  </div>
-                </div>
-              )
-            ))}
+                )
+              ))}
+            </div>
           </div>
-        </div>
+        )}
       </div>
     </div>
   );
 }
 
 // ═══════════════════════════════════════════════════════════════
-// 5. ИККАДЖО — ПОЛНЫЙ РЕДАКТОР
+// 5. ИККАДЖО
 // ═══════════════════════════════════════════════════════════════
-function SectionIkkajo({showToast}){
+function SectionIkkajo({showToast,isMobile}){
   const {techniques,loading,saving,getTechContent,saveTechInfo,saveMistakes,saveVideos} = useTechniques();
-  const [selectedId, setSelectedId] = useState(null);
-  const [filterKyu,  setFilterKyu]  = useState('all');
-  const [activeTab,  setActiveTab]  = useState('info');
-
-  // Локальный draft для редактирования
+  const [selectedId,  setSelectedId]  = useState(null);
+  const [filterKyu,   setFilterKyu]   = useState('all');
+  const [activeTab,   setActiveTab]   = useState('info');
+  const [showEditor,  setShowEditor]  = useState(false); // mobile nav
   const [draft, setDraft] = useState(null);
 
   const filtered = filterKyu==='all' ? techniques : techniques.filter(t=>t.kyu===filterKyu);
   const tech     = techniques.find(t=>t.id===selectedId);
-  const content  = selectedId ? getTechContent(selectedId) : null;
 
   const selectTech = (t) => {
     setSelectedId(t.id);
@@ -710,204 +932,454 @@ function SectionIkkajo({showToast}){
         variations: cnt.videos.variations.map(v=>({...v})),
       },
     });
+    if(isMobile) setShowEditor(true);
   };
 
-  const doSaveInfo = async () => {
-    const {ok} = await saveTechInfo(selectedId,draft);
-    if(ok) showToast('Основная информация сохранена');
-  };
-  const doSaveMistakes = async () => {
-    const {ok} = await saveMistakes(selectedId, draft.mistakes||[]);
-    if(ok) showToast('Ошибки сохранены');
-  };
-  const doSaveVideos = async (catId) => {
-    const {ok} = await saveVideos(selectedId, catId, draft.videos?.[catId]||[]);
-    if(ok) showToast(`Видео «${VIDEO_CAT_LABELS[catId]}» сохранено`);
+  const doSaveInfo     = async () => { const {ok} = await saveTechInfo(selectedId,draft);                                 if(ok) showToast('Информация сохранена'); };
+  const doSaveMistakes = async () => { const {ok} = await saveMistakes(selectedId, draft.mistakes||[]);                  if(ok) showToast('Ошибки сохранены'); };
+  const doSaveVideos   = async (catId) => {
+    const { ok, data } = await saveVideos(selectedId, catId, draft.videos?.[catId]||[]);
+    if (ok) {
+      // Replace temp nv- IDs with real DB UUIDs returned from insert
+      if (data?.length) {
+        setDraft(d => ({
+          ...d,
+          videos: {
+            ...d.videos,
+            [catId]: data.map(row => ({
+              id:           row.id,
+              title:        row.title,
+              duration:     row.duration,
+              video_id:     row.video_id     ?? null,
+              video_status: row.video_status ?? 'none',
+            })),
+          },
+        }));
+      }
+      showToast(`Видео «${VIDEO_CAT_LABELS[catId]}» сохранено`);
+    }
   };
 
   const TABS = [{id:'info',label:'Основное'},{id:'videos',label:'Видео'},{id:'principles',label:'Принципы'},{id:'mistakes',label:'Ошибки'},{id:'sensei',label:'Сэнсэй'}];
 
   if(loading) return <Spinner/>;
+  const pad = isMobile ? '0 16px 16px' : '24px 36px';
 
-  return(
-    <div>
-      <SectionHeader title="Редактор Иккаджо" subtitle="Полное редактирование контента техник"/>
-      <div style={{padding:'24px 36px'}}>
-        <div style={{display:'grid',gridTemplateColumns:'240px 1fr',gap:2,alignItems:'start'}}>
-
-          {/* Список */}
-          <div style={{background:C.white,border:`1px solid ${C.border}`}}>
-            <div style={{padding:'10px 12px',borderBottom:`1px solid ${C.border}`}}>
-              <Select value={filterKyu} onChange={setFilterKyu} options={[{value:'all',label:'Все уровни'},...LEVELS_LIST.slice(0,6).map(l=>({value:l,label:LEVEL_LABELS[l]}))]}/>
-            </div>
-            {filtered.map(t=>{
-              const cnt = getTechContent(t.id);
-              return(
-                <div key={t.id} onClick={()=>selectTech(t)}
-                  style={{padding:'11px 14px',borderBottom:`1px solid ${C.border}`,cursor:'pointer',background:selectedId===t.id?C.goldBg:'#fff',borderLeft:`2px solid ${selectedId===t.id?C.gold:'transparent'}`}}>
-                  <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
-                    <span style={{fontSize:13,color:C.dark,fontWeight:selectedId===t.id?500:400}}>{t.name_ru}</span>
-                    <span style={{fontSize:9,color:C.gold,background:C.goldBg,border:`1px solid ${C.goldBorder}`,padding:'1px 6px'}}>{LEVEL_LABELS[t.kyu]||t.kyu}</span>
-                  </div>
-                  <div style={{display:'flex',gap:5}}>
-                    {cnt.principles?.length>0&&<span style={{fontSize:9,color:C.green}}>道</span>}
-                    {cnt.mistakes?.length>0&&<span style={{fontSize:9,color:C.red}}>✕</span>}
-                    {cnt.senseiQuote&&<span style={{fontSize:9,color:C.gold}}>«»</span>}
-                    {Object.values(cnt.videos||{}).some(a=>a.length>0)&&<span style={{fontSize:9,color:C.blue}}>▶</span>}
-                  </div>
-                </div>
-              );
-            })}
+  const editorJSX = (
+    tech&&draft ? (
+      <div style={{background:C.white,border:`1px solid ${C.border}`}}>
+        <div style={{padding:'12px 16px',borderBottom:`1px solid ${C.border}`,display:'flex',alignItems:'center',justifyContent:'space-between',gap:8}}>
+          <div style={{minWidth:0}}>
+            <div style={{fontSize:15,color:C.dark,fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{tech.name_ru}</div>
+            <div style={{fontSize:11,color:C.muted}}>{tech.id} · {LEVEL_LABELS[draft.kyu]||draft.kyu}</div>
           </div>
+          {isMobile && <button onClick={()=>setShowEditor(false)} style={{background:'none',border:'none',fontSize:18,color:C.muted,cursor:'pointer',flexShrink:0}}>←</button>}
+        </div>
 
-          {/* Редактор */}
-          {tech&&draft?(
-            <div style={{background:C.white,border:`1px solid ${C.border}`}}>
-              <div style={{padding:'14px 20px',borderBottom:`1px solid ${C.border}`,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                <div>
-                  <div style={{fontSize:16,color:C.dark,fontWeight:500}}>{tech.name_ru}</div>
-                  <div style={{fontSize:11,color:C.muted}}>{tech.id} · {draft.section} · {LEVEL_LABELS[draft.kyu]||draft.kyu}</div>
+        <div style={{display:'flex',borderBottom:`1px solid ${C.border}`,overflowX:'auto',background:C.bg}}>
+          {TABS.map(tab=>(
+            <button key={tab.id} onClick={()=>setActiveTab(tab.id)}
+              style={{padding:'10px 14px',background:activeTab===tab.id?C.white:'transparent',border:'none',borderBottom:`2px solid ${activeTab===tab.id?C.gold:'transparent'}`,color:activeTab===tab.id?C.dark:C.muted,fontSize:12,cursor:'pointer',whiteSpace:'nowrap',marginBottom:-1,fontWeight:activeTab===tab.id?500:400,minHeight:40}}>
+              {tab.label}
+            </button>
+          ))}
+        </div>
+
+        <div style={{padding:isMobile?'16px':'22px'}}>
+          {activeTab==='info'&&(
+            <div style={{display:'flex',flexDirection:'column',gap:14}}>
+              <div><Label>Название (рус)</Label><Input value={draft.nameRu} onChange={v=>setDraft(d=>({...d,nameRu:v}))} placeholder="Русское название"/></div>
+              <div><Label>Раздел</Label><Input value={draft.section} onChange={v=>setDraft(d=>({...d,section:v}))} placeholder="Tachiai"/></div>
+              <div><Label>Уровень</Label><Select value={draft.kyu} onChange={v=>setDraft(d=>({...d,kyu:v}))} options={LEVELS_LIST.slice(0,6).map(l=>({value:l,label:LEVEL_LABELS[l]}))}/></div>
+              <div><Label>Описание техники</Label><Textarea value={draft.description} onChange={v=>setDraft(d=>({...d,description:v}))} placeholder="Краткое описание…" rows={4}/></div>
+              <div style={{display:'flex',justifyContent:'flex-end'}}><Btn onClick={doSaveInfo} variant='success' loading={saving}>Сохранить</Btn></div>
+            </div>
+          )}
+
+          {activeTab==='videos'&&(
+            <div>
+              {VIDEO_CAT_IDS.map(catId=>{
+                const catVids = draft.videos?.[catId]||[];
+                const addV    = ()=>setDraft(d=>({...d,videos:{...d.videos,[catId]:[...catVids,{id:`nv-${Date.now()}`,title:'Новое видео',duration:'00:00',video_id:null,video_status:'none'}]}}));
+                const updV    = (vid,field,val)=>setDraft(d=>({...d,videos:{...d.videos,[catId]:catVids.map(v=>v.id===vid.id?{...v,[field]:val}:v)}}));
+                const delV    = (vid)=>setDraft(d=>({...d,videos:{...d.videos,[catId]:catVids.filter(v=>v.id!==vid.id)}}));
+                return(
+                  <div key={catId} style={{marginBottom:24}}>
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10,flexWrap:'wrap',gap:8}}>
+                      <div style={{display:'flex',alignItems:'center',gap:8}}>
+                        <span style={{width:8,height:8,background:VIDEO_CAT_COLORS[catId],display:'inline-block'}}/>
+                        <span style={{fontSize:12,color:C.dark,fontWeight:500}}>{VIDEO_CAT_LABELS[catId]}</span>
+                        <span style={{fontSize:10,color:C.muted}}>({catVids.length})</span>
+                      </div>
+                      <div style={{display:'flex',gap:8}}>
+                        <Btn onClick={addV} small>+ Видео</Btn>
+                        <Btn onClick={()=>doSaveVideos(catId)} variant='success' small loading={saving}>Сохранить</Btn>
+                      </div>
+                    </div>
+                    {catVids.length===0&&<div style={{padding:'14px',border:`1px dashed ${C.border}`,fontSize:12,color:C.muted,textAlign:'center'}}>Видео не добавлено</div>}
+                    {catVids.map(vid=>(
+                      <div key={vid.id} style={{background:C.bg,border:`1px solid ${C.border}`,padding:'14px',marginBottom:6}}>
+                        <div style={{display:'flex',gap:8,marginBottom:10,alignItems:'flex-end',flexWrap:'wrap'}}>
+                          <div style={{flex:2,minWidth:120}}><Label>Название</Label><Input value={vid.title} onChange={v=>updV(vid,'title',v)} placeholder="Название видео"/></div>
+                          <div style={{flex:1,minWidth:70}}><Label>Длина</Label><Input value={vid.duration} onChange={v=>updV(vid,'duration',v)} placeholder="0:00"/></div>
+                          <Btn onClick={()=>delV(vid)} variant='danger' small>✕</Btn>
+                        </div>
+                        <KinescopeUploader
+                          techniqueVideoId={vid.id?.startsWith('nv-') ? undefined : vid.id}
+                          currentVideoId={vid.video_id}
+                          currentStatus={vid.video_status}
+                          onComplete={({videoId,status})=>{
+                            updV(vid,'video_id',videoId);
+                            updV(vid,'video_status',status);
+                            updV(vid,'video_provider','kinescope');
+                            doSaveVideos(catId);
+                          }}
+                        />
+                      </div>
+                    ))}
+                  </div>
+                );
+              })}
+            </div>
+          )}
+
+          {activeTab==='principles'&&(
+            <div>
+              <div style={{fontSize:11,color:C.muted,marginBottom:14,padding:'10px 14px',background:C.goldBg,border:`1px solid ${C.goldBorder}`}}>
+                Отображаются пользователю в блоке «道 Ключевые принципы»
+              </div>
+              {(draft.principles||[]).map((p,i)=>(
+                <div key={i} style={{display:'flex',gap:8,marginBottom:8,alignItems:'center'}}>
+                  <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:13,color:'#ccc',minWidth:24,fontWeight:600}}>{String(i+1).padStart(2,'0')}</span>
+                  <div style={{flex:1}}><Input value={p} onChange={v=>{const a=[...draft.principles];a[i]=v;setDraft(d=>({...d,principles:a}));}} placeholder={`Принцип ${i+1}…`}/></div>
+                  <Btn onClick={()=>setDraft(d=>({...d,principles:d.principles.filter((_,j)=>j!==i)}))} variant='danger' small>✕</Btn>
                 </div>
-              </div>
-
-              <div style={{display:'flex',borderBottom:`1px solid ${C.border}`,overflowX:'auto',background:C.bg}}>
-                {TABS.map(tab=>(
-                  <button key={tab.id} onClick={()=>setActiveTab(tab.id)}
-                    style={{padding:'10px 18px',background:activeTab===tab.id?C.white:'transparent',border:'none',borderBottom:`2px solid ${activeTab===tab.id?C.gold:'transparent'}`,color:activeTab===tab.id?C.dark:C.muted,fontSize:12,cursor:'pointer',whiteSpace:'nowrap',marginBottom:-1,fontWeight:activeTab===tab.id?500:400}}>
-                    {tab.label}
-                  </button>
-                ))}
-              </div>
-
-              <div style={{padding:'22px'}}>
-
-                {activeTab==='info'&&(
-                  <div style={{display:'flex',flexDirection:'column',gap:14}}>
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-                      <div><Label>Название (рус)</Label><Input value={draft.nameRu} onChange={v=>setDraft(d=>({...d,nameRu:v}))} placeholder="Русское название"/></div>
-                      <div><Label>Latin ID (ключ)</Label><Input value={tech.id} onChange={()=>{}} placeholder="Неизменяемый ID"/></div>
-                    </div>
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
-                      <div><Label>Раздел</Label><Input value={draft.section} onChange={v=>setDraft(d=>({...d,section:v}))} placeholder="Tachiai"/></div>
-                      <div><Label>Уровень</Label><Select value={draft.kyu} onChange={v=>setDraft(d=>({...d,kyu:v}))} options={LEVELS_LIST.slice(0,6).map(l=>({value:l,label:LEVEL_LABELS[l]}))}/></div>
-                    </div>
-                    <div><Label>Описание техники</Label><Textarea value={draft.description} onChange={v=>setDraft(d=>({...d,description:v}))} placeholder="Краткое описание…" rows={4}/></div>
-                    <div style={{display:'flex',justifyContent:'flex-end'}}>
-                      <Btn onClick={doSaveInfo} variant='success' loading={saving}>Сохранить</Btn>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab==='videos'&&(
-                  <div>
-                    {VIDEO_CAT_IDS.map(catId=>{
-                      const catVids = draft.videos?.[catId]||[];
-                      const addV    = ()=>setDraft(d=>({...d,videos:{...d.videos,[catId]:[...catVids,{id:`nv-${Date.now()}`,title:'Новое видео',duration:'00:00',video_url:'',videoUrl:''}]}}));
-                      const updV    = (vid,field,val)=>setDraft(d=>({...d,videos:{...d.videos,[catId]:catVids.map(v=>v.id===vid.id?{...v,[field]:val,videoUrl:field==='video_url'?val:v.videoUrl}:v)}}));
-                      const delV    = (vid)=>setDraft(d=>({...d,videos:{...d.videos,[catId]:catVids.filter(v=>v.id!==vid.id)}}));
-                      return(
-                        <div key={catId} style={{marginBottom:28}}>
-                          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:10}}>
-                            <div style={{display:'flex',alignItems:'center',gap:8}}>
-                              <span style={{width:8,height:8,background:VIDEO_CAT_COLORS[catId],display:'inline-block'}}/>
-                              <span style={{fontSize:12,color:C.dark,fontWeight:500}}>{VIDEO_CAT_LABELS[catId]}</span>
-                              <span style={{fontSize:10,color:C.muted}}>({catVids.length})</span>
-                            </div>
-                            <div style={{display:'flex',gap:8}}>
-                              <Btn onClick={addV} small>+ Видео</Btn>
-                              <Btn onClick={()=>doSaveVideos(catId)} variant='success' small loading={saving}>Сохранить</Btn>
-                            </div>
-                          </div>
-                          {catVids.length===0&&<div style={{padding:'14px',border:`1px dashed ${C.border}`,fontSize:12,color:C.muted,textAlign:'center'}}>Видео не добавлено</div>}
-                          {catVids.map(vid=>(
-                            <div key={vid.id} style={{background:C.bg,border:`1px solid ${C.border}`,padding:'16px',marginBottom:6}}>
-                              <div style={{display:'grid',gridTemplateColumns:'1fr 90px auto',gap:8,marginBottom:12,alignItems:'end'}}>
-                                <div><Label>Название</Label><Input value={vid.title} onChange={v=>updV(vid,'title',v)} placeholder="Название видео"/></div>
-                                <div><Label>Длина</Label><Input value={vid.duration} onChange={v=>updV(vid,'duration',v)} placeholder="0:00"/></div>
-                                <div style={{paddingBottom:1}}><Btn onClick={()=>delV(vid)} variant='danger' small>✕</Btn></div>
-                              </div>
-                              <VideoInput
-                                videoUrl={vid.video_url||vid.videoUrl||''}
-                                onChange={v=>updV(vid,'video_url',v)}
-                                onSave={()=>doSaveVideos(catId)}
-                                saving={saving}
-                              />
-                            </div>
-                          ))}
-                        </div>
-                      );
-                    })}
-                  </div>
-                )}
-
-                {activeTab==='principles'&&(
-                  <div>
-                    <div style={{fontSize:11,color:C.muted,marginBottom:18,padding:'10px 14px',background:C.goldBg,border:`1px solid ${C.goldBorder}`}}>
-                      Отображаются пользователю в блоке «道 Ключевые принципы»
-                    </div>
-                    {(draft.principles||[]).map((p,i)=>(
-                      <div key={i} style={{display:'flex',gap:8,marginBottom:8,alignItems:'center'}}>
-                        <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:13,color:'#ccc',minWidth:24,fontWeight:600}}>{String(i+1).padStart(2,'0')}</span>
-                        <div style={{flex:1}}>
-                          <Input value={p} onChange={v=>{const a=[...draft.principles];a[i]=v;setDraft(d=>({...d,principles:a}));}} placeholder={`Принцип ${i+1}…`}/>
-                        </div>
-                        <Btn onClick={()=>setDraft(d=>({...d,principles:d.principles.filter((_,j)=>j!==i)}))} variant='danger' small>✕</Btn>
-                      </div>
-                    ))}
-                    <div style={{display:'flex',gap:8,marginTop:14}}>
-                      <Btn onClick={()=>setDraft(d=>({...d,principles:[...(d.principles||[]),'']}))} variant='ghost'>+ Добавить принцип</Btn>
-                      <Btn onClick={doSaveInfo} variant='success' loading={saving}>Сохранить</Btn>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab==='mistakes'&&(
-                  <div>
-                    <div style={{fontSize:11,color:C.muted,marginBottom:18,padding:'10px 14px',background:C.redBg,border:`1px solid ${C.redBorder}`}}>
-                      Отображаются в блоке с красной полосой «✕ Типичные ошибки»
-                    </div>
-                    {(draft.mistakes||[]).map((m,i)=>(
-                      <div key={i} style={{background:C.bg,border:`1px solid ${C.border}`,borderLeft:`3px solid ${C.red}`,padding:'16px',marginBottom:8}}>
-                        <div style={{display:'flex',justifyContent:'space-between',marginBottom:10}}>
-                          <span style={{fontSize:10,color:C.red}}>Ошибка {i+1}</span>
-                          <Btn onClick={()=>setDraft(d=>({...d,mistakes:d.mistakes.filter((_,j)=>j!==i)}))} variant='danger' small>Удалить</Btn>
-                        </div>
-                        <div style={{marginBottom:8}}><Label>Заголовок</Label><Input value={m.title} onChange={v=>{const a=[...draft.mistakes];a[i]={...a[i],title:v};setDraft(d=>({...d,mistakes:a}));}}/></div>
-                        <div><Label>Описание</Label><Textarea value={m.desc} onChange={v=>{const a=[...draft.mistakes];a[i]={...a[i],desc:v};setDraft(d=>({...d,mistakes:a}));}} rows={2}/></div>
-                      </div>
-                    ))}
-                    <div style={{display:'flex',gap:8,marginTop:14}}>
-                      <Btn onClick={()=>setDraft(d=>({...d,mistakes:[...(d.mistakes||[]),{title:'',desc:''}]}))} variant='ghost'>+ Добавить ошибку</Btn>
-                      <Btn onClick={doSaveMistakes} variant='success' loading={saving}>Сохранить</Btn>
-                    </div>
-                  </div>
-                )}
-
-                {activeTab==='sensei'&&(
-                  <div>
-                    <div style={{fontSize:11,color:C.muted,marginBottom:18,padding:'10px 14px',background:C.goldBg,border:`1px solid ${C.goldBorder}`}}>
-                      Прямая речь сэнсэя — блок с золотой чертой внизу страницы техники. Кавычки добавляются автоматически.
-                    </div>
-                    <Textarea value={draft.senseiQuote} onChange={v=>setDraft(d=>({...d,senseiQuote:v}))} placeholder="Комментарий сэнсэя без кавычек…" rows={5}/>
-                    {draft.senseiQuote&&(
-                      <div style={{marginTop:16,padding:'16px 20px',background:C.bg,border:`1px solid ${C.border}`,borderLeft:`2px solid ${C.goldBorder}`}}>
-                        <div style={{fontSize:9,color:C.muted,marginBottom:10,letterSpacing:1}}>ПРЕВЬЮ</div>
-                        <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:15,color:'#555',fontStyle:'italic',lineHeight:1.8}}>«{draft.senseiQuote}»</div>
-                      </div>
-                    )}
-                    <div style={{display:'flex',justifyContent:'flex-end',marginTop:14}}>
-                      <Btn onClick={doSaveInfo} variant='success' loading={saving}>Сохранить</Btn>
-                    </div>
-                  </div>
-                )}
+              ))}
+              <div style={{display:'flex',gap:8,marginTop:14,flexWrap:'wrap'}}>
+                <Btn onClick={()=>setDraft(d=>({...d,principles:[...(d.principles||[]),'']}))} variant='ghost'>+ Добавить принцип</Btn>
+                <Btn onClick={doSaveInfo} variant='success' loading={saving}>Сохранить</Btn>
               </div>
             </div>
-          ):(
-            <div style={{background:C.white,border:`1px solid ${C.border}`,display:'flex',alignItems:'center',justifyContent:'center',minHeight:320,color:C.muted,fontSize:12}}>
-              Выберите технику из списка слева
+          )}
+
+          {activeTab==='mistakes'&&(
+            <div>
+              <div style={{fontSize:11,color:C.muted,marginBottom:14,padding:'10px 14px',background:C.redBg,border:`1px solid ${C.redBorder}`}}>
+                Отображаются в блоке с красной полосой «✕ Типичные ошибки»
+              </div>
+              {(draft.mistakes||[]).map((m,i)=>(
+                <div key={i} style={{background:C.bg,border:`1px solid ${C.border}`,borderLeft:`3px solid ${C.red}`,padding:'14px',marginBottom:8}}>
+                  <div style={{display:'flex',justifyContent:'space-between',marginBottom:10}}>
+                    <span style={{fontSize:10,color:C.red}}>Ошибка {i+1}</span>
+                    <Btn onClick={()=>setDraft(d=>({...d,mistakes:d.mistakes.filter((_,j)=>j!==i)}))} variant='danger' small>Удалить</Btn>
+                  </div>
+                  <div style={{marginBottom:8}}><Label>Заголовок</Label><Input value={m.title} onChange={v=>{const a=[...draft.mistakes];a[i]={...a[i],title:v};setDraft(d=>({...d,mistakes:a}));}}/></div>
+                  <div><Label>Описание</Label><Textarea value={m.desc} onChange={v=>{const a=[...draft.mistakes];a[i]={...a[i],desc:v};setDraft(d=>({...d,mistakes:a}));}} rows={2}/></div>
+                </div>
+              ))}
+              <div style={{display:'flex',gap:8,marginTop:14,flexWrap:'wrap'}}>
+                <Btn onClick={()=>setDraft(d=>({...d,mistakes:[...(d.mistakes||[]),{title:'',desc:''}]}))} variant='ghost'>+ Добавить ошибку</Btn>
+                <Btn onClick={doSaveMistakes} variant='success' loading={saving}>Сохранить</Btn>
+              </div>
+            </div>
+          )}
+
+          {activeTab==='sensei'&&(
+            <div>
+              <div style={{fontSize:11,color:C.muted,marginBottom:14,padding:'10px 14px',background:C.goldBg,border:`1px solid ${C.goldBorder}`}}>
+                Прямая речь сэнсэя — блок с золотой чертой внизу страницы техники. Кавычки добавляются автоматически.
+              </div>
+              <Textarea value={draft.senseiQuote} onChange={v=>setDraft(d=>({...d,senseiQuote:v}))} placeholder="Комментарий сэнсэя без кавычек…" rows={5}/>
+              {draft.senseiQuote&&(
+                <div style={{marginTop:14,padding:'14px 18px',background:C.bg,border:`1px solid ${C.border}`,borderLeft:`2px solid ${C.goldBorder}`}}>
+                  <div style={{fontSize:9,color:C.muted,marginBottom:8,letterSpacing:1}}>ПРЕВЬЮ</div>
+                  <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:15,color:'#555',fontStyle:'italic',lineHeight:1.8}}>«{draft.senseiQuote}»</div>
+                </div>
+              )}
+              <div style={{display:'flex',justifyContent:'flex-end',marginTop:14}}>
+                <Btn onClick={doSaveInfo} variant='success' loading={saving}>Сохранить</Btn>
+              </div>
             </div>
           )}
         </div>
+      </div>
+    ) : (
+      <div style={{background:C.white,border:`1px solid ${C.border}`,display:'flex',alignItems:'center',justifyContent:'center',minHeight:200,color:C.muted,fontSize:12}}>
+        Выберите технику из списка
+      </div>
+    )
+  );
+
+  return(
+    <div>
+      <SectionHeader title="Редактор Иккаджо" subtitle="Полное редактирование контента техник" isMobile={isMobile}/>
+      <div style={{padding:pad}}>
+        {isMobile ? (
+          showEditor ? (
+            {editorJSX}
+          ) : (
+            <div>
+              <div style={{marginBottom:12}}><Select value={filterKyu} onChange={setFilterKyu} options={[{value:'all',label:'Все уровни'},...LEVELS_LIST.slice(0,6).map(l=>({value:l,label:LEVEL_LABELS[l]}))]}/></div>
+              {filtered.map(t=>{
+                const cnt = getTechContent(t.id);
+                return(
+                  <div key={t.id} onClick={()=>selectTech(t)}
+                    style={{padding:'12px 14px',borderBottom:`1px solid ${C.border}`,cursor:'pointer',background:selectedId===t.id?C.goldBg:'#fff',borderLeft:`3px solid ${selectedId===t.id?C.gold:C.border}`}}>
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
+                      <span style={{fontSize:13,color:C.dark,fontWeight:selectedId===t.id?500:400}}>{t.name_ru}</span>
+                      <span style={{fontSize:9,color:C.gold,background:C.goldBg,border:`1px solid ${C.goldBorder}`,padding:'1px 6px'}}>{LEVEL_LABELS[t.kyu]||t.kyu}</span>
+                    </div>
+                    <div style={{display:'flex',gap:6,alignItems:'center'}}>
+                      {cnt.principles?.length>0&&<span style={{fontSize:10,color:C.green}}>道</span>}
+                      {cnt.mistakes?.length>0&&<span style={{fontSize:10,color:C.red}}>✕</span>}
+                      {cnt.senseiQuote&&<span style={{fontSize:10,color:C.gold}}>«»</span>}
+                      {Object.values(cnt.videos||{}).some(a=>a.length>0)&&<span style={{fontSize:10,color:C.blue}}>▶</span>}
+                      <span style={{fontSize:10,color:C.muted,marginLeft:'auto'}}>→</span>
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+          )
+        ) : (
+          <div style={{display:'grid',gridTemplateColumns:'240px 1fr',gap:2,alignItems:'start'}}>
+            <div style={{background:C.white,border:`1px solid ${C.border}`}}>
+              <div style={{padding:'10px 12px',borderBottom:`1px solid ${C.border}`}}>
+                <Select value={filterKyu} onChange={setFilterKyu} options={[{value:'all',label:'Все уровни'},...LEVELS_LIST.slice(0,6).map(l=>({value:l,label:LEVEL_LABELS[l]}))]}/>
+              </div>
+              {filtered.map(t=>{
+                const cnt = getTechContent(t.id);
+                return(
+                  <div key={t.id} onClick={()=>selectTech(t)}
+                    style={{padding:'11px 14px',borderBottom:`1px solid ${C.border}`,cursor:'pointer',background:selectedId===t.id?C.goldBg:'#fff',borderLeft:`2px solid ${selectedId===t.id?C.gold:'transparent'}`}}>
+                    <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
+                      <span style={{fontSize:13,color:C.dark,fontWeight:selectedId===t.id?500:400}}>{t.name_ru}</span>
+                      <span style={{fontSize:9,color:C.gold,background:C.goldBg,border:`1px solid ${C.goldBorder}`,padding:'1px 6px'}}>{LEVEL_LABELS[t.kyu]||t.kyu}</span>
+                    </div>
+                    <div style={{display:'flex',gap:5}}>
+                      {cnt.principles?.length>0&&<span style={{fontSize:9,color:C.green}}>道</span>}
+                      {cnt.mistakes?.length>0&&<span style={{fontSize:9,color:C.red}}>✕</span>}
+                      {cnt.senseiQuote&&<span style={{fontSize:9,color:C.gold}}>«»</span>}
+                      {Object.values(cnt.videos||{}).some(a=>a.length>0)&&<span style={{fontSize:9,color:C.blue}}>▶</span>}
+                    </div>
+                  </div>
+                );
+              })}
+            </div>
+            {editorJSX}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+
+// ═══════════════════════════════════════════════════════════════
+// SECTION ДОСТУПЫ — ручная выдача/отзыв через user_access
+// ═══════════════════════════════════════════════════════════════
+const ACCESS_MONTH_OPTIONS = [
+  {value:'jan',label:'Январь'},{value:'feb',label:'Февраль'},
+  {value:'mar',label:'Март'},{value:'apr',label:'Апрель'},
+  {value:'may',label:'Май'},{value:'jun',label:'Июнь'},
+  {value:'jul',label:'Июль'},{value:'aug',label:'Август'},
+  {value:'sep',label:'Сентябрь'},{value:'oct',label:'Октябрь'},
+  {value:'nov',label:'Ноябрь'},{value:'dec',label:'Декабрь'},
+];
+// Секции Ikkajo — из единого конфига, не хардкод
+const ACCESS_SECTION_OPTIONS = [
+  {value:'ikkajo', label:'Иккаджо (весь)'},
+  ...IKKAJO_SECTION_OPTIONS,
+];
+
+function SectionAccess({showToast,isMobile}){
+  const {users,loading:uLoading} = useUsers();
+  const [selectedUserId, setSelectedUserId] = useState('');
+  const [type,      setType]      = useState('month');
+  const [reference, setReference] = useState('jan');
+  const [granting,  setGranting]  = useState(false);
+  const {rows:accessRows, loading:aLoading, reload} = useAdminUserAccess(selectedUserId);
+
+  const refOptions = type === 'month' ? ACCESS_MONTH_OPTIONS : ACCESS_SECTION_OPTIONS;
+
+  const doGrant = async () => {
+    if (!selectedUserId) { showToast('Выберите пользователя'); return; }
+    setGranting(true);
+    const {ok,error} = await grantAccess({userId:selectedUserId, type, reference});
+    setGranting(false);
+    if(ok){ showToast('Доступ выдан'); reload(); }
+    else showToast('Ошибка: ' + error);
+  };
+
+  const doRevoke = async (row) => {
+    const {ok,error} = await revokeAccess({userId:selectedUserId, type:row.type, reference:row.reference});
+    if(ok){ showToast('Доступ отозван'); reload(); }
+    else showToast('Ошибка: ' + error);
+  };
+
+  const pad = isMobile ? '0 16px 24px' : '24px 36px';
+  const refLabel = {
+    jan:'Январь',feb:'Февраль',mar:'Март',apr:'Апрель',
+    may:'Май',jun:'Июнь',jul:'Июль',aug:'Август',
+    sep:'Сентябрь',oct:'Октябрь',nov:'Ноябрь',dec:'Декабрь',
+    ikkajo:'Иккаджо (весь)',
+    // Секции Ikkajo — из конфига
+    ...IKKAJO_LABELS,
+  };
+
+  if(uLoading) return <Spinner/>;
+  return(
+    <div>
+      <SectionHeader title="Доступы" subtitle="Ручная выдача и отзыв" isMobile={isMobile}/>
+      <div style={{padding:pad}}>
+        {/* Grant form */}
+        <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'18px 16px',marginBottom:12}}>
+          <div style={{fontSize:11,color:C.gold,letterSpacing:1.5,textTransform:'uppercase',marginBottom:12}}>Выдать доступ</div>
+          <div style={{display:'flex',flexDirection:'column',gap:10}}>
+            <div>
+              <Label>Пользователь</Label>
+              <Select value={selectedUserId} onChange={v=>{setSelectedUserId(v);}} options={[{value:'',label:'— выберите —'},...users.map(u=>({value:u.id,label:`${u.name} (${u.email})`}))]}/>
+            </div>
+            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
+              <div>
+                <Label>Тип</Label>
+                <Select value={type} onChange={v=>{setType(v);setReference(v==='month'?'jan':'ikkajo');}} options={[{value:'month',label:'Месяц'},{value:'section',label:'Раздел'}]}/>
+              </div>
+              <div>
+                <Label>Раздел / Месяц</Label>
+                <Select value={reference} onChange={setReference} options={refOptions}/>
+              </div>
+            </div>
+            <Btn onClick={doGrant} variant='success' small loading={granting}>Выдать доступ</Btn>
+          </div>
+        </div>
+
+        {/* Existing access for selected user */}
+        {selectedUserId && (
+          <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'18px 16px'}}>
+            <div style={{fontSize:11,color:C.gold,letterSpacing:1.5,textTransform:'uppercase',marginBottom:10}}>
+              Текущие доступы
+            </div>
+            {aLoading && <Spinner/>}
+            {!aLoading && accessRows.length===0 && <div style={{fontSize:12,color:C.muted}}>Нет выданных доступов</div>}
+            {accessRows.map(row=>(
+              <div key={row.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'8px 0',borderBottom:`1px solid ${C.border}`,fontSize:12,gap:8}}>
+                <div>
+                  <span style={{color:C.gold,marginRight:6}}>{row.type==='month'?'📅':'🔑'}</span>
+                  <span style={{color:C.dark}}>{refLabel[row.reference]||row.reference}</span>
+                  {row.amount>0 && <span style={{color:C.muted,fontSize:10,marginLeft:8}}>{row.amount?.toLocaleString()} ₽</span>}
+                </div>
+                <button onClick={()=>doRevoke(row)}
+                  style={{fontSize:10,color:C.red,background:'none',border:`1px solid ${C.redBorder}`,padding:'3px 10px',cursor:'pointer'}}>
+                  Отозвать
+                </button>
+              </div>
+            ))}
+          </div>
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SECTION БАЗА ЗНАНИЙ — управление knowledge_items
+// ═══════════════════════════════════════════════════════════════
+function SectionKnowledge({showToast,isMobile}){
+  const {items,loading,saving,saveItem,deleteItem,reload} = useKnowledge({adminMode:true});
+  const [editId,  setEditId]  = useState(null);
+  const [draft,   setDraft]   = useState({});
+
+  const startEdit = (item) => { setEditId(item.id||'new'); setDraft({...item}); };
+  const startNew  = ()     => { setEditId('new'); setDraft({title:'',subtitle:'',content:'',is_published:false,sort_order:items.length}); };
+
+  const doSave = async () => {
+    const {ok,error} = await saveItem(draft);
+    if(ok){ setEditId(null); showToast('Сохранено'); reload(); }
+    else showToast('Ошибка: '+error);
+  };
+  const doDelete = async (id) => {
+    const {ok,error} = await deleteItem(id);
+    if(ok){ showToast('Удалено'); if(editId===id) setEditId(null); }
+    else showToast('Ошибка: '+error);
+  };
+
+  const pad = isMobile ? '0 16px 24px' : '24px 36px';
+  if(loading) return <Spinner/>;
+
+  return(
+    <div>
+      <SectionHeader title="База знаний" subtitle={`${items.length} материалов`} isMobile={isMobile}/>
+      <div style={{padding:pad}}>
+        <div style={{marginBottom:12}}>
+          <Btn onClick={startNew} small>+ Новый материал</Btn>
+        </div>
+
+        {/* Edit form */}
+        {editId && (
+          <div style={{background:C.white,border:`2px solid ${C.gold}`,padding:'18px 16px',marginBottom:12}}>
+            <div style={{fontSize:11,color:C.gold,letterSpacing:1.5,textTransform:'uppercase',marginBottom:12}}>
+              {editId==='new'?'Новый материал':'Редактирование'}
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:12}}>
+              <div><Label>Заголовок</Label><Input value={draft.title||''} onChange={v=>setDraft(d=>({...d,title:v}))} placeholder="Название"/></div>
+              <div><Label>Подзаголовок</Label><Input value={draft.subtitle||''} onChange={v=>setDraft(d=>({...d,subtitle:v}))} placeholder="Краткое описание"/></div>
+              <div><Label>Контент (Markdown)</Label><Textarea value={draft.content||''} onChange={v=>setDraft(d=>({...d,content:v}))} rows={6} placeholder="Текст материала…"/></div>
+              <div style={{display:'flex',alignItems:'center',gap:10}}>
+                <input type="checkbox" id="kb_pub" checked={!!draft.is_published} onChange={e=>setDraft(d=>({...d,is_published:e.target.checked}))}/>
+                <label htmlFor="kb_pub" style={{fontSize:12,color:C.dark,cursor:'pointer'}}>Опубликовано</label>
+              </div>
+            </div>
+
+            {/* Kinescope video */}
+            <div style={{marginBottom:14}}>
+              <Label>Видео (Kinescope)</Label>
+              {editId && editId!=='new' ? (
+                <KinescopeUploader
+                  lessonId={draft.id}
+                  currentVideoId={draft.video_id}
+                  currentStatus={draft.video_status}
+                  onComplete={({videoId,status})=>{
+                    setDraft(d=>({...d,video_id:videoId,video_status:status,video_provider:'kinescope'}));
+                    showToast('Видео загружено');
+                  }}
+                />
+              ) : (
+                <div style={{padding:'10px 12px',background:C.goldBg,border:`1px solid ${C.goldBorder}`,fontSize:11,color:C.muted}}>
+                  Сначала сохраните материал, затем загрузите видео
+                </div>
+              )}
+            </div>
+
+            <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+              <Btn onClick={doSave} variant='success' small loading={saving}>Сохранить</Btn>
+              <Btn onClick={()=>setEditId(null)} variant='ghost' small>Отмена</Btn>
+              {editId!=='new' && (
+                <Btn onClick={()=>doDelete(editId)} variant='danger' small>Удалить</Btn>
+              )}
+            </div>
+          </div>
+        )}
+
+        {/* Items list */}
+        {items.map(item=>(
+          <div key={item.id}
+            style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',background:editId===item.id?C.goldBg:C.white,border:`1px solid ${C.border}`,borderTop:'none',cursor:'pointer'}}
+            onClick={()=>startEdit(item)}>
+            <div style={{flex:1,minWidth:0}}>
+              <div style={{fontSize:13,color:C.dark,fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.title||'Без названия'}</div>
+              {item.subtitle&&<div style={{fontSize:11,color:C.muted}}>{item.subtitle}</div>}
+              <div style={{display:'flex',gap:8,marginTop:4}}>
+                {item.is_published
+                  ? <span style={{fontSize:9,color:C.green,background:C.greenBg,border:`1px solid ${C.greenBorder}`,padding:'1px 6px'}}>опубликовано</span>
+                  : <span style={{fontSize:9,color:C.muted,background:'#f5f5f5',border:'1px solid #ddd',padding:'1px 6px'}}>черновик</span>
+                }
+                {item.video_id&&<span style={{fontSize:9,color:C.gold,background:C.goldBg,border:`1px solid ${C.goldBorder}`,padding:'1px 6px'}}>▶ видео</span>}
+              </div>
+            </div>
+            <span style={{fontSize:12,color:C.muted,flexShrink:0}}>→</span>
+          </div>
+        ))}
       </div>
     </div>
   );
@@ -916,148 +1388,7 @@ function SectionIkkajo({showToast}){
 // ═══════════════════════════════════════════════════════════════
 // 6. КОММЕНТАРИИ
 // ═══════════════════════════════════════════════════════════════
-function SectionAccess({showToast}) {
-  const {users, loading: uLoading} = useUsers();
-  const [userId,    setUserId]    = useState('');
-  const [accessType, setAccessType] = useState('month');
-  const [reference,  setReference]  = useState('jan');
-  const [saving,    setSaving]    = useState(false);
-  const [accList,   setAccList]   = useState([]);
-  const [accLoading,setAccLoading]= useState(false);
-
-  const MONTH_REFS = [
-    {value:'jan',label:'Январь'},{value:'feb',label:'Февраль'},{value:'mar',label:'Март'},
-    {value:'apr',label:'Апрель'},{value:'may',label:'Май'},{value:'jun',label:'Июнь'},
-    {value:'jul',label:'Июль'},{value:'aug',label:'Август'},{value:'sep',label:'Сентябрь'},
-    {value:'oct',label:'Октябрь'},{value:'nov',label:'Ноябрь'},{value:'dec',label:'Декабрь'},
-  ];
-  const SECTION_REFS = [{value:'ikkajo',label:'Иккаджо'}];
-  const refs = accessType === 'month' ? MONTH_REFS : SECTION_REFS;
-
-  // При смене типа — сбрасываем reference на первый
-  const handleTypeChange = (v) => {
-    setAccessType(v);
-    setReference(v === 'month' ? 'jan' : 'ikkajo');
-  };
-
-  const loadUserAccess = async (uid) => {
-    setUserId(uid);
-    if (!uid) { setAccList([]); return; }
-    setAccLoading(true);
-    const { supabase } = await import('@/lib/supabase');
-    const { data: { session } } = await supabase.auth.getSession();
-    const res = await fetch(`/api/admin/user-access?user_id=${uid}`, {
-      headers: { Authorization: `Bearer ${session?.access_token}` },
-    });
-    if (res.ok) setAccList(await res.json());
-    setAccLoading(false);
-  };
-
-  const doGrant = async () => {
-    if (!userId) { alert('Выберите пользователя'); return; }
-    setSaving(true);
-    const { supabase } = await import('@/lib/supabase');
-    const { data: { session } } = await supabase.auth.getSession();
-    const res = await fetch('/api/admin/grant-access', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', Authorization: `Bearer ${session?.access_token}` },
-      body: JSON.stringify({ user_id: userId, type: accessType, reference }),
-    });
-    setSaving(false);
-    if (res.ok) {
-      showToast('Доступ выдан');
-      loadUserAccess(userId);
-    } else {
-      const e = await res.json();
-      alert('Ошибка: ' + (e.error || res.status));
-    }
-  };
-
-  const doRevoke = async (item) => {
-    if (!confirm(`Отозвать доступ ${item.type}:${item.reference}?`)) return;
-    const { supabase } = await import('@/lib/supabase');
-    const { data: { session } } = await supabase.auth.getSession();
-    const res = await fetch('/api/admin/grant-access', {
-      method: 'POST',
-      headers: { 'Content-Type':'application/json', Authorization: `Bearer ${session?.access_token}` },
-      body: JSON.stringify({ user_id: userId, type: item.type, reference: item.reference, revoke: true }),
-    });
-    if (res.ok) { showToast('Доступ отозван'); loadUserAccess(userId); }
-  };
-
-  return (
-    <div>
-      <SectionHeader title="Управление доступами"/>
-      <div style={{padding:'24px 36px'}}>
-
-        {/* Форма выдачи */}
-        <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'24px',marginBottom:20}}>
-          <Label>Выдать доступ вручную</Label>
-          <div style={{display:'grid',gridTemplateColumns:'1fr 140px 200px auto',gap:8,marginTop:12,alignItems:'flex-end'}}>
-            <div>
-              <div style={{fontSize:10,color:C.muted,marginBottom:4}}>Пользователь</div>
-              <Select
-                value={userId}
-                onChange={loadUserAccess}
-                options={[{value:'',label:'— выберите —'},...users.map(u=>({value:u.id,label:u.name}))]}
-              />
-            </div>
-            <div>
-              <div style={{fontSize:10,color:C.muted,marginBottom:4}}>Тип</div>
-              <Select
-                value={accessType}
-                onChange={handleTypeChange}
-                options={[{value:'month',label:'Месяц'},{value:'section',label:'Раздел'}]}
-              />
-            </div>
-            <div>
-              <div style={{fontSize:10,color:C.muted,marginBottom:4}}>Период / раздел</div>
-              <Select value={reference} onChange={setReference} options={refs}/>
-            </div>
-            <button
-              onClick={doGrant}
-              disabled={saving || !userId}
-              style={{padding:'10px 18px',background:saving||!userId?'#ccc':C.dark,color:'#fff',border:'none',fontSize:12,cursor:saving||!userId?'default':'pointer',whiteSpace:'nowrap'}}>
-              {saving ? '…' : '⊕ Выдать'}
-            </button>
-          </div>
-        </div>
-
-        {/* Текущие доступы выбранного пользователя */}
-        {userId && (
-          <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'20px 24px'}}>
-            <div style={{fontSize:10,color:C.muted,letterSpacing:1.2,textTransform:'uppercase',marginBottom:12}}>
-              Доступы пользователя
-            </div>
-            {accLoading ? <Spinner/> : accList.length === 0 ? (
-              <div style={{fontSize:12,color:'#bbb',padding:'12px 0'}}>Нет активных доступов</div>
-            ) : (
-              <div style={{display:'flex',flexDirection:'column',gap:2}}>
-                {accList.map((item,i) => (
-                  <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'10px 12px',background:C.bg,fontSize:12}}>
-                    <span style={{fontSize:9,padding:'2px 7px',background:item.type==='month'?'#e8f0fa':C.goldBg,color:item.type==='month'?'#3060b0':C.gold,border:`1px solid ${item.type==='month'?'#c0d4f0':C.goldBorder}`}}>
-                      {item.type==='month'?'Месяц':'Раздел'}
-                    </span>
-                    <span style={{flex:1,color:C.dark}}>{item.reference}</span>
-                    <span style={{color:C.muted}}>{item.paid_at ? new Date(item.paid_at).toLocaleDateString('ru-RU') : '—'}</span>
-                    <span style={{color:C.gold}}>{item.amount > 0 ? `${item.amount} ₽` : 'Вручную'}</span>
-                    <button
-                      onClick={() => doRevoke(item)}
-                      style={{padding:'4px 10px',background:'transparent',border:`1px solid ${C.border}`,color:C.muted,fontSize:11,cursor:'pointer'}}>
-                      Отозвать
-                    </button>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
-        )}
-      </div>
-    </div>
-  );
-}
-
-function SectionComments({showToast}){
+function SectionComments({showToast,isMobile}){
   const {comments,loading,markReplied} = useComments();
   const [replyOpen, setReplyOpen] = useState({});
   const [replyText, setReplyText] = useState({});
@@ -1072,29 +1403,29 @@ function SectionComments({showToast}){
 
   const unreplied = comments.filter(c=>!c.replied);
   const replied   = comments.filter(c=>c.replied);
-
   if(loading) return <Spinner/>;
+  const pad = isMobile ? '0 16px 24px' : '24px 36px';
 
   return(
     <div>
-      <SectionHeader title="Комментарии" subtitle={`${unreplied.length} требуют ответа`}/>
-      <div style={{padding:'24px 36px'}}>
-        <div style={{display:'grid',gridTemplateColumns:'repeat(3,1fr)',gap:2,marginBottom:24}}>
-          <StatCard label="Всего"      value={comments.length}   sub="комментариев"/>
-          <StatCard label="Без ответа" value={unreplied.length}  sub="ждут ответа"  accent={unreplied.length>0?'#c07820':C.muted}/>
-          <StatCard label="Обработано" value={replied.length}    sub="отвечено"     accent={C.green}/>
-        </div>
+      <SectionHeader title="Комментарии" subtitle={`${unreplied.length} требуют ответа`} isMobile={isMobile}/>
+      <div style={{padding:pad}}>
+        <StatGrid cols={3} isMobile={isMobile}>
+          <StatCard label="Всего"      value={comments.length}  sub="комментариев"/>
+          <StatCard label="Без ответа" value={unreplied.length} sub="ждут ответа"  accent={unreplied.length>0?'#c07820':C.muted}/>
+          <StatCard label="Обработано" value={replied.length}   sub="отвечено"     accent={C.green}/>
+        </StatGrid>
 
         {unreplied.length>0&&(
-          <div style={{marginBottom:24}}>
-            <div style={{fontSize:9,color:'#c07820',letterSpacing:1.5,textTransform:'uppercase',marginBottom:12}}>Без ответа</div>
+          <div style={{marginBottom:20}}>
+            <div style={{fontSize:9,color:'#c07820',letterSpacing:1.5,textTransform:'uppercase',marginBottom:10}}>Без ответа</div>
             {unreplied.map(c=>(
-              <div key={c.id} style={{background:C.white,border:`1px solid ${C.border}`,borderLeft:'3px solid #c07820',padding:'16px 18px',marginBottom:2}}>
+              <div key={c.id} style={{background:C.white,border:`1px solid ${C.border}`,borderLeft:'3px solid #c07820',padding:'14px 16px',marginBottom:2}}>
                 <div style={{fontSize:10,color:C.gold,marginBottom:8}}>{c.lesson_id}</div>
-                <div style={{display:'flex',gap:12,marginBottom:12}}>
+                <div style={{display:'flex',gap:10,marginBottom:12}}>
                   <div style={{width:32,height:32,borderRadius:'50%',background:C.goldBg,border:`1px solid ${C.goldBorder}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,color:C.gold,flexShrink:0}}>{(c.user_name||'?')[0]}</div>
-                  <div style={{flex:1}}>
-                    <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4,flexWrap:'wrap'}}>
                       <span style={{fontSize:13,color:C.dark,fontWeight:500}}>{c.user_name||'—'}</span>
                       <span style={{fontSize:10,color:C.muted}}>{c.created_at}</span>
                     </div>
@@ -1104,7 +1435,7 @@ function SectionComments({showToast}){
                 {replyOpen[c.id]?(
                   <div>
                     <Textarea value={replyText[c.id]||''} onChange={v=>setReplyText(p=>({...p,[c.id]:v}))} placeholder="Ответ сэнсэя…" rows={2}/>
-                    <div style={{display:'flex',gap:8,marginTop:8}}>
+                    <div style={{display:'flex',gap:8,marginTop:8,flexWrap:'wrap'}}>
                       <Btn onClick={()=>sendReply(c.id)} variant='success' small>Отправить</Btn>
                       <Btn onClick={()=>setReplyOpen(p=>({...p,[c.id]:false}))} variant='ghost' small>Отмена</Btn>
                     </div>
@@ -1119,14 +1450,14 @@ function SectionComments({showToast}){
 
         {replied.length>0&&(
           <div>
-            <div style={{fontSize:9,color:C.green,letterSpacing:1.5,textTransform:'uppercase',marginBottom:12}}>Обработанные</div>
+            <div style={{fontSize:9,color:C.green,letterSpacing:1.5,textTransform:'uppercase',marginBottom:10}}>Обработанные</div>
             {replied.map(c=>(
-              <div key={c.id} style={{background:C.white,border:`1px solid ${C.border}`,borderLeft:`3px solid ${C.green}`,padding:'16px 18px',marginBottom:2}}>
+              <div key={c.id} style={{background:C.white,border:`1px solid ${C.border}`,borderLeft:`3px solid ${C.green}`,padding:'14px 16px',marginBottom:2}}>
                 <div style={{fontSize:10,color:C.gold,marginBottom:8}}>{c.lesson_id}</div>
-                <div style={{display:'flex',gap:12}}>
+                <div style={{display:'flex',gap:10}}>
                   <div style={{width:32,height:32,borderRadius:'50%',background:'#f5f5f5',border:`1px solid ${C.border}`,display:'flex',alignItems:'center',justifyContent:'center',fontSize:13,color:C.muted,flexShrink:0}}>{(c.user_name||'?')[0]}</div>
-                  <div style={{flex:1}}>
-                    <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4}}>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4,flexWrap:'wrap'}}>
                       <span style={{fontSize:13,color:C.dark,fontWeight:500}}>{c.user_name||'—'}</span>
                       <span style={{fontSize:10,color:C.muted}}>{c.created_at}</span>
                     </div>

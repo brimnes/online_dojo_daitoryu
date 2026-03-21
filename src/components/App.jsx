@@ -7,45 +7,31 @@ import IkkajoPage from './IkkajoPage';
 import TechniquePage from './TechniquePage';
 import MonthPage from './MonthPage';
 import LessonPage from './LessonPage';
+import KnowledgePage from './KnowledgePage';
+import KnowledgeItemPage from './KnowledgeItemPage';
+import { INITIAL_COMMENTS } from '@/data/months';
+import { USER } from '@/data/users';
+import { registerServiceWorker } from '@/lib/mobile';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
-  const [authLoading, setAuthLoading] = useState(true);
-
-  useEffect(() => {
-    // Восстанавливаем сессию при перезагрузке страницы
-    import('@/lib/supabase').then(({ supabase }) => {
-      supabase.auth.getSession().then(async ({ data: { session } }) => {
-        if (session?.user) {
-          const { data: profile } = await supabase
-            .from('profiles')
-            .select('*')
-            .eq('id', session.user.id)
-            .single();
-          setCurrentUser(profile || { id: session.user.id, email: session.user.email, name: session.user.email.split('@')[0] });
-        }
-        setAuthLoading(false);
-      });
-
-      // Слушаем изменения сессии (логин/логаут)
-      const { data: { subscription } } = supabase.auth.onAuthStateChange(async (event, session) => {
-        if (event === 'SIGNED_OUT' || !session) {
-          setCurrentUser(null);
-        }
-      });
-      return () => subscription.unsubscribe();
-    });
-  }, []);
   const [route,    setRoute]    = useState({ page: 'dashboard' });
   const [watched,  setWatched]  = useState({});
-  const [comments, setComments] = useState({});
+  const [comments, setComments] = useState(INITIAL_COMMENTS);
+
+  // Register PWA service worker once
+  useEffect(() => {
+    registerServiceWorker();
+  }, []);
 
   const nav = {
-    dashboard: ()                   => setRoute({ page: 'dashboard' }),
-    ikkajo:    ()                   => setRoute({ page: 'ikkajo' }),
-    technique: (kyu, section, tech) => setRoute({ page: 'technique', kyu, section, tech }),
-    month:     (monthId)            => setRoute({ page: 'month', monthId }),
-    lesson:    (monthId, lessonId)  => setRoute({ page: 'lesson', monthId, lessonId }),
+    dashboard:     ()                   => setRoute({ page: 'dashboard' }),
+    ikkajo:        ()                   => setRoute({ page: 'ikkajo' }),
+    technique:     (kyu, section, tech) => setRoute({ page: 'technique', kyu, section, tech }),
+    month:         (monthId)            => setRoute({ page: 'month', monthId }),
+    lesson:        (monthId, lessonId)  => setRoute({ page: 'lesson', monthId, lessonId }),
+    knowledge:     ()                   => setRoute({ page: 'knowledge' }),
+    knowledgeItem: (itemId)             => setRoute({ page: 'knowledge_item', itemId }),
   };
 
   const toggleWatched = (id) =>
@@ -53,7 +39,7 @@ export default function App() {
 
   const addComment = (lessonId, text) => {
     if (!text.trim()) return;
-    const name = currentUser?.name || 'Ученик';
+    const name = currentUser?.name || USER.name;
     setComments(prev => ({
       ...prev,
       [lessonId]: [...(prev[lessonId] || []), {
@@ -67,13 +53,7 @@ export default function App() {
     }));
   };
 
-  if (authLoading) {
-    return (
-      <div style={{ minHeight:'100vh', display:'flex', alignItems:'center', justifyContent:'center', background:'#f5f3ee', fontFamily:"'Jost',sans-serif", color:'#999', fontSize:13 }}>
-        Загрузка…
-      </div>
-    );
-  }
+  const user = currentUser ? { ...USER, ...currentUser } : USER;
 
   if (!currentUser) {
     return <AuthPage onSuccess={(userData) => setCurrentUser(userData)} />;
@@ -82,7 +62,7 @@ export default function App() {
   return (
     <>
       {route.page === 'dashboard' && (
-        <Dashboard nav={nav} watched={watched} user={currentUser} onLogout={async () => { const { supabase } = await import('@/lib/supabase'); await supabase.auth.signOut(); setCurrentUser(null); }} />
+        <Dashboard nav={nav} watched={watched} user={user} onLogout={() => setCurrentUser(null)} />
       )}
       {route.page === 'ikkajo' && (
         <IkkajoPage nav={nav} />
@@ -113,6 +93,12 @@ export default function App() {
           comments={comments}
           addComment={addComment}
         />
+      )}
+      {route.page === 'knowledge' && (
+        <KnowledgePage nav={nav} />
+      )}
+      {route.page === 'knowledge_item' && (
+        <KnowledgeItemPage nav={nav} itemId={route.itemId} />
       )}
     </>
   );

@@ -3,12 +3,14 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { C } from '@/lib/utils';
 import { BELT, KYU_DATA, FLAT_INDEX } from '@/data/techniques';
-import { useTechniques } from '@/lib/db';
+import { useTechniques, useUserAccessRows, hasIkkajoSectionAccess } from '@/lib/db';
+import { IKKAJO_SECTION_KEYS as IKKAJO_SECTIONS } from '@/lib/ikkajoSections';
 
 export default function IkkajoPage({ nav }) {
   const [activeKyu, setActiveKyu] = useState('6kyu');
   const cur = KYU_DATA.find(k => k.id === activeKyu);
   const { videos } = useTechniques();
+  const { rows: userAccess, loading: accessLoading } = useUserAccessRows();
 
   // Счётчик видео по технике из Supabase
   const videoCountByTech = useMemo(() => {
@@ -29,11 +31,15 @@ export default function IkkajoPage({ nav }) {
         <div style={{ fontFamily: "'Noto Serif JP', serif", fontSize: 72, color: '#ece7de', lineHeight: 1, flexShrink: 0 }}>一</div>
         <div style={{ flex: 1 }}>
           <div style={{ fontSize: 9, color: '#b0a080', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6 }}>База техник · Раздел первый</div>
-          <h1 style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 30, fontWeight: 600, color: C.dark, marginBottom: 6 }}>Иккаджо</h1>
+          <h1 style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: 26, color: '#c8a84a', marginBottom: 6 }}>Иккаджо</h1>
           <p style={{ fontSize: 13, color: '#888', lineHeight: 1.6, maxWidth: 440 }}>Программа ученических степеней от 6 кю до 1 кю.</p>
         </div>
         <div style={{ width: 260, flexShrink: 0 }}>
-          <SearchBar onSelect={({ kyu, section, tech }) => nav.technique(kyu, section, tech)} />
+          <SearchBar
+          userAccess={userAccess}
+          accessLoading={accessLoading}
+          onSelect={({ kyu, section, tech }) => nav.technique(kyu, section, tech)}
+        />
         </div>
       </div>
 
@@ -56,28 +62,45 @@ export default function IkkajoPage({ nav }) {
         {cur?.note && (
           <div style={{ padding: '10px 14px', background: C.light, border: `1px solid ${C.goldBorder}`, fontSize: 12, color: C.gold, marginBottom: 16 }}>↳ {cur.note}</div>
         )}
-        {cur?.sections.map(sec => (
-          <div key={sec.id} style={{ marginBottom: 28 }}>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0 8px', borderBottom: `1px solid ${C.border}`, marginBottom: 2 }}>
-              <div>
-                <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, fontWeight: 600, color: C.dark, marginRight: 8 }}>{sec.nameRu}</span>
-                <span style={{ fontSize: 11, color: '#bbb' }}>{sec.name}</span>
+        {cur?.sections.map(sec => {
+          // Проверяем доступ: если sec.id совпадает с ключом раздела Ikkajo
+          const sectionKey = sec.id?.toLowerCase();
+          const isIkkajoSection = IKKAJO_SECTIONS.includes(sectionKey);
+          // accessLoading=true → rows ещё не пришли → canAccess=false (не показываем контент)
+          const canAccess = !accessLoading && (!isIkkajoSection || hasIkkajoSectionAccess(userAccess, sectionKey));
+          console.log(`[IkkajoPage] sec=${sectionKey} isIkkajoSection=${isIkkajoSection} canAccess=${canAccess} loading=${accessLoading} ua=`, userAccess);
+          return (
+            <div key={sec.id} style={{ marginBottom: 28 }}>
+              <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '10px 0 8px', borderBottom: `1px solid ${C.border}`, marginBottom: 2 }}>
+                <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                  {!canAccess && <span style={{ fontSize: 12 }}>🔒</span>}
+                  <span style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: 16, color: canAccess ? '#c8a84a' : C.muted, marginRight: 8 }}>{sec.nameRu}</span>
+                  <span style={{ fontSize: 11, color: '#bbb' }}>{sec.name}</span>
+                </div>
+                <span style={{ fontSize: 11, color: C.muted }}>{sec.subtitle}</span>
               </div>
-              <span style={{ fontSize: 11, color: C.muted }}>{sec.subtitle}</span>
+              {canAccess ? (
+                <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 1, background: '#e8e0d0' }}>
+                  {sec.techniques.map((tech, i) => (
+                    <TechCard
+                      key={tech.id}
+                      tech={tech}
+                      index={i}
+                      videoCount={videoCountByTech[tech.name] || 0}
+                      onClick={() => nav.technique(cur, sec, tech)}
+                    />
+                  ))}
+                </div>
+              ) : (
+                <div style={{ padding: '24px 16px', background: '#faf8f4', border: '1px solid #e8e0d0', textAlign: 'center' }}>
+                  <div style={{ fontSize: 20, marginBottom: 8 }}>🔒</div>
+                  <div style={{ fontSize: 13, color: C.muted, marginBottom: 4 }}>Раздел недоступен</div>
+                  <div style={{ fontSize: 11, color: '#bbb' }}>Приобретите доступ к разделу «{sec.nameRu}»</div>
+                </div>
+              )}
             </div>
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(240px, 1fr))', gap: 1, background: '#e8e0d0' }}>
-              {sec.techniques.map((tech, i) => (
-                <TechCard
-                  key={tech.id}
-                  tech={tech}
-                  index={i}
-                  videoCount={videoCountByTech[tech.name] || 0}
-                  onClick={() => nav.technique(cur, sec, tech)}
-                />
-              ))}
-            </div>
-          </div>
-        ))}
+          );
+        })}
       </div>
     </div>
   );
@@ -102,7 +125,7 @@ function TechCard({ tech, index, videoCount, onClick }) {
   );
 }
 
-function SearchBar({ onSelect }) {
+function SearchBar({ onSelect, userAccess = [], accessLoading = false }) {
   const [q, setQ] = useState('');
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -142,7 +165,13 @@ function SearchBar({ onSelect }) {
                 const b = BELT[kyu.belt] || {};
                 return (
                   <div key={`${kyu.id}-${tech.id}`}
-                    onClick={() => { onSelect({ kyu, section, tech }); setQ(''); setOpen(false); }}
+                    onClick={() => {
+                      // Не пускаем в закрытый раздел Ikkajo
+                      const sk = section.id?.toLowerCase();
+                      const blocked = !accessLoading && IKKAJO_SECTIONS.includes(sk) && !hasIkkajoSectionAccess(userAccess, sk);
+                      if (blocked) { alert(`Раздел «${section.nameRu}» недоступен`); return; }
+                      onSelect({ kyu, section, tech }); setQ(''); setOpen(false);
+                    }}
                     style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 16px', cursor: 'pointer', borderBottom: '1px solid #f5f2ec' }}
                     onMouseEnter={e => e.currentTarget.style.background = C.light}
                     onMouseLeave={e => e.currentTarget.style.background = '#fff'}>

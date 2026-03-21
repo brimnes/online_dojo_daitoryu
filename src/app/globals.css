@@ -24,7 +24,7 @@ textarea { cursor: text; }
 ::-webkit-scrollbar-track { background: #f5f3ee; }
 ::-webkit-scrollbar-thumb { background: #d0c8b8; border-radius: 2px; }
 
-/* Shared animations */
+/* ─── Shared animations ──────────────────────────────────────── */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(6px); }
   to   { opacity: 1; transform: translateY(0);   }
@@ -38,3 +38,120 @@ input::placeholder,
 textarea::placeholder { color: #ccc; }
 select option         { color: #1a1a1a; }
 iframe                { display: block; }
+
+/* ═══════════════════════════════════════════════════════════════
+   TYPOGRAPHIC SYSTEM — Online Dojo / Daito-ryu
+   ═══════════════════════════════════════════════════════════════
+
+   Arkhip       → DISPLAY ONLY: логотип, hero-заголовки, крупные
+                  section titles (h2 страниц). Редко. Акцентно.
+                  НЕ использовать: формы, кнопки, навигация, карточки.
+
+   Jost         → UI DEFAULT: всё остальное — кнопки, nav, формы,
+                  карточки, вкладки, кабинет, мелкий текст, sub-labels.
+
+   Cormorant    → EDITORIAL: цитаты сэнсэя, длинные описания техник,
+                  тексты статей базы знаний, rich-text блоки.
+
+   Noto Serif JP → иероглифы / кандзи (декоративные акценты)
+   ─────────────────────────────────────────────────────────────── */
+
+/* ── Font utilities ── */
+.font-display   { font-family: var(--font-arkhip), system-ui, sans-serif; }
+.font-ui        { font-family: var(--font-jost), 'Jost', sans-serif; }
+.font-editorial { font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif; }
+
+/* ── Section / page titles — Arkhip + Takeda gold ── */
+.section-title {
+  font-family: var(--font-arkhip), system-ui, sans-serif;
+  color: #c8a84a;
+  letter-spacing: 0.01em;
+  line-height: 1.15;
+}
+
+/* ── Sub-section headings — Arkhip, темнее ── */
+.section-subtitle {
+  font-family: var(--font-arkhip), system-ui, sans-serif;
+  color: #1a1a1a;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+}
+
+/* ── Brand / logo text ── */
+.brand-text {
+  font-family: var(--font-arkhip), system-ui, sans-serif;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: #c8a84a;
+}
+
+/* ── Long-form editorial text ── */
+.article-text {
+  font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
+  font-size: 17px;
+  line-height: 1.85;
+  color: #444;
+}
+
+/* ── Sensei quote block ── */
+.sensei-quote {
+  font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 15px;
+  line-height: 1.85;
+  color: #555;
+}
+
+/* ── UI label / nav text ── */
+.ui-label {
+  font-family: var(--font-jost), 'Jost', sans-serif;
+  font-size: 11px;
+  letter-spacing: 0.05em;
+}
+
+/* ── Overline / eyebrow label (tiny uppercase) ── */
+.overline {
+  font-family: var(--font-jost), 'Jost', sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #b0a080;
+}
+
+/* ── h1/h2 defaults for pages that use semantic HTML ── */
+h1, h2 {
+  font-family: var(--font-arkhip), system-ui, sans-serif;
+  line-height: 1.15;
+}
+
+/* ── Mobile nav bottom area ── */
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #fff;
+  border-top: 1px solid #e8e0d0;
+  display: flex;
+  align-items: stretch;
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 100;
+}
+.mobile-bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 4px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  color: #999;
+  font-family: var(--font-jost), 'Jost', sans-serif;
+  min-height: 56px;
+}
+.has-bottom-nav {
+  padding-bottom: calc(56px + env(safe-area-inset-bottom));
+}

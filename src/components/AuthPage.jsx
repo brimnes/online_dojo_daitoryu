@@ -1,7 +1,9 @@
 'use client';
 
 import { useState } from 'react';
+import { useIsMobile } from '@/lib/mobile';
 import { SELF_LEVELS } from '@/data/users';
+import TakedaMon from '@/components/TakedaMon';
 
 // ─── Цвета платформы ───────────────────────────────────────────
 const C = {
@@ -107,6 +109,7 @@ const STEPS = [
 // ─── ГЛАВНЫЙ КОМПОНЕНТ ─────────────────────────────────────────
 export default function AuthPage({ onSuccess }) {
   const [mode, setMode] = useState('login'); // 'login' | 'register'
+  const isMobile = useIsMobile();
 
   return (
     <div style={{
@@ -115,11 +118,11 @@ export default function AuthPage({ onSuccess }) {
       fontFamily:"'Jost',sans-serif",
     }}>
 
-      {/* ── Левая декоративная панель ── */}
+      {/* ── Левая декоративная панель (desktop only) ── */}
       <div style={{
         width:400, flexShrink:0,
         background:`linear-gradient(160deg, #1a1710 0%, #0f0d0a 60%, #1c1a14 100%)`,
-        display:'flex', flexDirection:'column', justifyContent:'space-between',
+        display: isMobile ? 'none' : 'flex', flexDirection:'column', justifyContent:'space-between',
         padding:'48px 44px', position:'relative', overflow:'hidden',
       }}>
         {/* Фоновый кандзи */}
@@ -133,15 +136,15 @@ export default function AuthPage({ onSuccess }) {
         {/* Логотип */}
         <div>
           <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:48 }}>
-            <div style={{ fontFamily:"'Noto Serif JP',serif", fontSize:32, color:C.goldLight, lineHeight:1 }}>合</div>
+            <TakedaMon size={44} color="#c8a84a" />
             <div>
-              <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:14, fontWeight:600, letterSpacing:4, color:'#f0e8d0' }}>ONLINE DOJO</div>
+              <div style={{ fontFamily:"var(--font-arkhip), system-ui, sans-serif", fontSize:12, letterSpacing:'0.14em', color:'#c8a84a', textTransform:'uppercase' }}>ONLINE DOJO</div>
               <div style={{ fontSize:9, color:'rgba(200,168,74,0.6)', marginTop:3, letterSpacing:1.5 }}>ДАЙТО-РЮ АЙКИДЗЮДЗЮЦУ</div>
             </div>
           </div>
 
           <div style={{ marginBottom:32 }}>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:36, fontWeight:300, color:'#f0e8d0', lineHeight:1.3, marginBottom:16 }}>
+            <div style={{ fontFamily:"var(--font-arkhip), system-ui, sans-serif", fontSize:28, color:'#c8a84a', lineHeight:1.3, marginBottom:16 }}>
               Школа<br/>
               <span style={{ color:C.goldLight, fontStyle:'italic' }}>Станислава<br/>Копина</span>
             </div>
@@ -162,8 +165,15 @@ export default function AuthPage({ onSuccess }) {
       </div>
 
       {/* ── Правая форма ── */}
-      <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent:'center', padding:'48px 60px', overflowY:'auto' }}>
-        <div style={{ width:'100%', maxWidth:460 }}>
+      <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent: isMobile ? 'flex-start' : 'center', padding: isMobile ? 'max(20px, env(safe-area-inset-top)) 20px 20px' : '48px 60px', overflowY:'auto' }}>
+        {/* Mobile logo */}
+        {isMobile && (
+          <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:28, alignSelf:'flex-start' }}>
+            <TakedaMon size={32} color={C.gold} />
+            <div style={{ fontFamily:"var(--font-arkhip), system-ui, sans-serif", fontSize:12, letterSpacing:'0.12em', color:'#c8a84a', textTransform:'uppercase' }}>ONLINE DOJO</div>
+          </div>
+        )}
+        <div style={{ width:'100%', maxWidth: isMobile ? '100%' : 460 }}>
           {/* Переключатель режима */}
           <div style={{ display:'flex', background:C.white, border:`1px solid ${C.border}`, marginBottom:36, padding:3 }}>
             {[{id:'login',label:'Вход'},{id:'register',label:'Регистрация'}].map(m=>(
@@ -225,7 +235,7 @@ function LoginForm({ onSuccess, onRegister }) {
   return (
     <div>
       <div style={{ marginBottom:28 }}>
-        <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:28, fontWeight:600, color:C.dark, marginBottom:6 }}>С возвращением</div>
+        <div style={{ fontFamily:"var(--font-jost), 'Jost', sans-serif", fontSize:22, fontWeight:600, color:'#1a1a1a', marginBottom:6 }}>С возвращением</div>
         <div style={{ fontSize:13, color:C.muted }}>Войдите в свой кабинет</div>
       </div>
 
@@ -248,7 +258,7 @@ function LoginForm({ onSuccess, onRegister }) {
         </div>
 
         <button onClick={handleSubmit} disabled={loading}
-          style={{ padding:'14px', background:loading?'#444':C.dark, color:'#fff', border:'none', fontSize:13, cursor:'pointer', fontFamily:"'Jost',sans-serif", fontWeight:500, letterSpacing:0.5, transition:'background 0.15s' }}>
+          style={{ padding:'14px', background:loading?'#444':C.dark, color:'#fff', border:'none', fontSize:13, cursor:'pointer', fontFamily:"'Jost',sans-serif", fontWeight:500, letterSpacing:0.5, transition:'background 0.15s', minHeight:44 }}>
           {loading ? 'Вход…' : 'Войти'}
         </button>
       </div>
@@ -377,7 +387,7 @@ function RegisterForm({ onSuccess, onLogin }) {
       {step === 0 && (
         <div className="auth-anim">
           <div style={{ marginBottom:24 }}>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:26, fontWeight:600, color:C.dark, marginBottom:4 }}>Создайте аккаунт</div>
+            <div style={{ fontFamily:"var(--font-jost), 'Jost', sans-serif", fontSize:20, fontWeight:600, color:'#1a1a1a', marginBottom:4 }}>Создайте аккаунт</div>
             <div style={{ fontSize:13, color:C.muted }}>Основные данные для входа</div>
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
@@ -409,7 +419,7 @@ function RegisterForm({ onSuccess, onLogin }) {
       {step === 1 && (
         <div className="auth-anim">
           <div style={{ marginBottom:24 }}>
-            <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:26, fontWeight:600, color:C.dark, marginBottom:4 }}>Расскажите о себе</div>
+            <div style={{ fontFamily:"var(--font-jost), 'Jost', sans-serif", fontSize:20, fontWeight:600, color:'#1a1a1a', marginBottom:4 }}>Расскажите о себе</div>
             <div style={{ fontSize:13, color:C.muted }}>Эта информация поможет сэнсэю узнать вас лучше</div>
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:18 }}>
