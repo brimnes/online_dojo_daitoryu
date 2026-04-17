@@ -2,13 +2,20 @@
  * src/lib/access.js
  * Pure helper functions for checking user_access rows.
  * No hooks, no side effects — safe to import anywhere.
- *
- * userAccessRows = array of { type, reference } from user_access table
  */
 
-// Единственный источник правды для section keys — ikkajoSections.js
-export { IKKAJO_SECTION_KEYS as IKKAJO_SECTIONS, IKKAJO_SECTION_LABELS } from '@/lib/ikkajoSections';
 import { IKKAJO_SECTION_KEYS } from '@/lib/ikkajoSections';
+
+// Реэкспорт для обратной совместимости — компоненты импортируют отсюда
+export { IKKAJO_SECTION_KEYS as IKKAJO_SECTIONS } from '@/lib/ikkajoSections';
+
+// IKKAJO_SECTION_LABELS определён здесь напрямую — не зависит от версии ikkajoSections.js
+export const IKKAJO_SECTION_LABELS = {
+  tachiai:        'Тачиай',
+  idori:          'Идори',
+  ushirodori:     'Усиродори',
+  hanzahandachi:  'Хандза-хандати',
+};
 
 /** Доступ к конкретному месяцу */
 export function hasMonthAccess(userAccessRows, monthId) {

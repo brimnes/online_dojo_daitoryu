@@ -9,6 +9,7 @@ import { useMonths, useLessons, useUserAccessRows, hasMonthAccess, useKnowledge 
 import TakedaMon from '@/components/TakedaMon';
 import { hasIkkajoFullAccess, hasIkkajoSectionAccess, IKKAJO_SECTIONS, IKKAJO_SECTION_LABELS, getAccessibleIkkajoSections } from '@/lib/access';
 import { useProducts } from '@/lib/useProducts';
+import { supabase } from '@/lib/supabase';
 
 const TABS = [
   { id: 'knowledge', label: 'База знаний'   },
@@ -566,13 +567,46 @@ function TabMyAccess({ userAccess, loading, isMobile }) {
 // ── Вкладка: Купить доступ ───────────────────────────────────────────────────
 function TabUnlockAccess({ userAccess, isMobile }) {
   const { products, loading } = useProducts();
+  const [buyingId, setBuyingId] = useState(null); // id продукта в процессе оплаты
+  const [buyError, setBuyError] = useState('');
   const ua = userAccess || [];
 
-  const handleBuy = (product) => {
-    // Заглушка — здесь будет интеграция с YooKassa
-    console.log('[Buy]', product);
-    alert(`Оплата: ${product.title} — ${product.price?.toLocaleString()} ₽
-(интеграция оплаты будет добавлена позже)`);
+  const handleBuy = async (product) => {
+    setBuyingId(product.id);
+    setBuyError('');
+    try {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (!session?.access_token) throw new Error('Не авторизован');
+
+      const res = await fetch('/api/yookassa/create-payment', {
+        method:  'POST',
+        headers: {
+          'Content-Type':  'application/json',
+          'Authorization': `Bearer ${session.access_token}`,
+        },
+        body: JSON.stringify({ product_id: product.id }),
+      });
+
+      const data = await res.json();
+
+      if (!res.ok) {
+        if (res.status === 409) {
+          setBuyError('У вас уже есть этот доступ');
+        } else {
+          setBuyError(data.error || 'Ошибка при создании платежа');
+        }
+        return;
+      }
+
+      // Редиректим на страницу оплаты ЮKassa
+      window.location.href = data.confirmation_url;
+
+    } catch (err) {
+      console.error('[handleBuy]', err);
+      setBuyError('Ошибка соединения');
+    } finally {
+      setBuyingId(null);
+    }
   };
 
   if (loading) return (
@@ -585,20 +619,29 @@ function TabUnlockAccess({ userAccess, isMobile }) {
 
   const hasFull = hasIkkajoFullAccess(ua);
 
-  const CardBtn = ({ product, hasAccess }) => (
-    <button
-      disabled={hasAccess}
-      onClick={() => !hasAccess && handleBuy(product)}
-      style={{
-        marginTop: 12, padding: '9px 18px', fontSize: 12, cursor: hasAccess ? 'default' : 'pointer',
-        background: hasAccess ? '#f0faf4' : C.dark,
-        color:      hasAccess ? '#2d7a4a' : '#fff',
-        border:     hasAccess ? '1px solid #b8e0c8' : 'none',
-        fontWeight: 600, width: '100%', minHeight: 40,
-      }}>
-      {hasAccess ? '✓ Уже доступно' : `Купить — ${product.price?.toLocaleString()} ₽`}
-    </button>
-  );
+  const CardBtn = ({ product, hasAccess }) => {
+    const isBuying = buyingId === product.id;
+    return (
+      <>
+        <button
+          disabled={hasAccess || isBuying}
+          onClick={() => !hasAccess && !isBuying && handleBuy(product)}
+          style={{
+            marginTop: 12, padding: '9px 18px', fontSize: 12,
+            cursor: (hasAccess || isBuying) ? 'default' : 'pointer',
+            background: hasAccess ? '#f0faf4' : isBuying ? '#555' : C.dark,
+            color:      hasAccess ? '#2d7a4a' : '#fff',
+            border:     hasAccess ? '1px solid #b8e0c8' : 'none',
+            fontWeight: 600, width: '100%', minHeight: 40, transition: 'background 0.15s',
+          }}>
+          {hasAccess ? '✓ Уже доступно' : isBuying ? 'Переход к оплате…' : `Купить — ${product.price?.toLocaleString()} ₽`}
+        </button>
+        {buyError && buyingId === null && (
+          <div style={{ marginTop: 6, fontSize: 11, color: '#a03030' }}>{buyError}</div>
+        )}
+      </>
+    );
+  };
 
   const sectionStyle = { marginBottom: 24 };
   const headerStyle  = { padding: '10px 0', marginBottom: 12, borderBottom: `2px solid ${C.border}` };
