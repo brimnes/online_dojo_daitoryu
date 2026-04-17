@@ -42,26 +42,40 @@ export async function POST(request) {
     else if (type === 'video.processing') video_status = 'processing';
     else return NextResponse.json({ ok: true });
 
-    const updatePayload = { video_status };
+    // lessons: поля video_duration, video_poster_url
+    const lessonPayload = { video_status };
     if (video_status === 'ready') {
-      if (duration) updatePayload.video_duration = String(duration);
-      if (poster)   updatePayload.video_poster_url = poster;
+      if (duration) lessonPayload.video_duration    = String(duration);
+      if (poster)   lessonPayload.video_poster_url  = poster;
     }
 
+    // technique_videos: поле duration (не video_duration!)
+    const techPayload = { video_status };
+    if (video_status === 'ready') {
+      if (duration) techPayload.duration = String(duration);
+    }
+
+    console.log('[webhook] updating video_id:', videoId, 'status:', video_status);
+
     // Update lessons table
-    const { error: lessonErr } = await supabaseAdmin
+    const { data: lessonData, error: lessonErr } = await supabaseAdmin
       .from('lessons')
-      .update(updatePayload)
-      .eq('video_id', videoId);
+      .update(lessonPayload)
+      .eq('video_id', videoId)
+      .select('id,title,video_status');
 
     // Update technique_videos table
-    const { error: techErr } = await supabaseAdmin
+    const { data: techData, error: techErr } = await supabaseAdmin
       .from('technique_videos')
-      .update(updatePayload)
-      .eq('video_id', videoId);
+      .update(techPayload)
+      .eq('video_id', videoId)
+      .select('id,title,video_status');
 
-    if (lessonErr) console.error('[webhook] lessons update:', lessonErr);
-    if (techErr)   console.error('[webhook] technique_videos update:', techErr);
+    if (lessonErr) console.error('[webhook] lessons update error:', lessonErr);
+    else console.log('[webhook] lessons updated:', lessonData?.length, 'rows', lessonData);
+
+    if (techErr)   console.error('[webhook] technique_videos update error:', techErr);
+    else console.log('[webhook] technique_videos updated:', techData?.length, 'rows', techData);
 
     return NextResponse.json({ ok: true });
 

@@ -444,9 +444,22 @@ export function useLessons(monthId) {
 
   const deleteLesson = useCallback(async (id) => {
     if (!IS_DB_CONNECTED) { setLessons(prev => prev.filter(l => l.id !== id)); return { ok: true }; }
-    const { error } = await supabase.from('lessons').delete().eq('id', id);
-    if (!error) setLessons(prev => prev.filter(l => l.id !== id));
-    return { ok: !error };
+    // Сначала удаляем зависимые записи (FK: lesson_progress → lessons)
+    await supabase.from('lesson_progress').delete().eq('lesson_id', id);
+    await supabase.from('comments').delete().eq('lesson_id', id);
+    // Теперь удаляем урок
+    const { error, data } = await supabase
+      .from('lessons')
+      .delete()
+      .eq('id', id)
+      .select(); // .select() — чтобы убедиться что строка реально удалена
+    if (error) {
+      console.error('[deleteLesson] error:', error);
+      return { ok: false, error: error.message };
+    }
+    console.log('[deleteLesson] deleted:', data);
+    setLessons(prev => prev.filter(l => l.id !== id));
+    return { ok: true };
   }, []);
 
   return { lessons, loading, saving, saveLesson, addLesson, deleteLesson, reload };
@@ -559,12 +572,16 @@ export function useTechniques() {
     }
     await supabase.from('technique_videos').delete().eq('technique_id', techId).eq('category', category);
     const toInsert = newVideos.map((v, i) => ({
-      technique_id: techId,
+      technique_id:   techId,
       category,
-      title:        v.title,
-      duration:     v.duration,
-      video_url:    v.video_url || v.videoUrl || '',
-      sort_order:   i,
+      title:          v.title,
+      duration:       v.duration,
+      video_url:      v.video_url || v.videoUrl || '',
+      sort_order:     i,
+      // ── Сохраняем видео-поля — без этого video_id теряется при save ──
+      ...(v.video_id       != null  && { video_id:       v.video_id }),
+      ...(v.video_status   != null  && { video_status:   v.video_status }),
+      ...(v.video_provider != null  && { video_provider: v.video_provider }),
     }));
     const { data, error } = await supabase.from('technique_videos').insert(toInsert).select();
     if (!error) setVideos(prev => [...prev.filter(v => !(v.technique_id === techId && v.category === category)), ...(data || [])]);

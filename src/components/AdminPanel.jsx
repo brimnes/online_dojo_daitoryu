@@ -748,9 +748,13 @@ function LessonEditForm({ draft, setDraft, doSave, setEditId, saving, showToast,
           lessonId={draft.id}
           currentVideoId={draft.video_id}
           currentStatus={draft.video_status}
-          onComplete={({videoId,status})=>{
-            setDraft(d=>({...d,video_id:videoId,video_status:status,video_provider:'kinescope'}));
-            showToast('Видео загружено');
+          onComplete={async ({videoId,status})=>{
+            const updated = {...draft,video_id:videoId,video_status:status,video_provider:'kinescope'};
+            setDraft(updated);
+            // Сразу сохраняем video_id в БД — не ждём ручного нажатия "Сохранить"
+            const {ok,error} = await saveLesson(updated);
+            if(ok) showToast('Видео загружено и сохранено');
+            else showToast('Видео загружено, но не сохранено: ' + error);
           }}
         />
       </div>
@@ -785,7 +789,8 @@ function SectionMonths({showToast,isMobile}){
     if(isMobile) setShowLessons(true);
   };
   const doDelete = async (id) => {
-    await deleteLesson(id);
+    const {ok, error} = await deleteLesson(id);
+    if(!ok) { showToast('Ошибка удаления: ' + (error||'неизвестная ошибка')); return; }
     if(editId===id) setEditId(null);
     showToast('Урок удалён');
   };
