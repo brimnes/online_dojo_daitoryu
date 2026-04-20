@@ -578,10 +578,12 @@ export function useTechniques() {
       duration:       v.duration,
       video_url:      v.video_url || v.videoUrl || '',
       sort_order:     i,
-      // ── Сохраняем видео-поля — без этого video_id теряется при save ──
-      ...(v.video_id       != null  && { video_id:       v.video_id }),
-      ...(v.video_status   != null  && { video_status:   v.video_status }),
-      ...(v.video_provider != null  && { video_provider: v.video_provider }),
+      // ВАЖНО: video_id/video_status/video_provider всегда присутствуют как ключи —
+      // supabase-js строит ?columns= из ключей первой записи.
+      // Если ключа нет у первой записи — он игнорируется для ВСЕХ записей.
+      video_id:       v.video_id       ?? null,
+      video_status:   v.video_status   ?? 'none',
+      video_provider: v.video_provider ?? null,
     }));
     const { data, error } = await supabase.from('technique_videos').insert(toInsert).select();
     if (!error) setVideos(prev => [...prev.filter(v => !(v.technique_id === techId && v.category === category)), ...(data || [])]);
