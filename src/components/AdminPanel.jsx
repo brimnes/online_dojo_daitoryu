@@ -942,10 +942,19 @@ function SectionIkkajo({showToast,isMobile}){
 
   const doSaveInfo     = async () => { const {ok} = await saveTechInfo(selectedId,draft);                                 if(ok) showToast('Информация сохранена'); };
   const doSaveMistakes = async () => { const {ok} = await saveMistakes(selectedId, draft.mistakes||[]);                  if(ok) showToast('Ошибки сохранены'); };
-  const doSaveVideos   = async (catId) => {
-    const { ok, data } = await saveVideos(selectedId, catId, draft.videos?.[catId]||[]);
+  // videoOverride: { vidId, fields } — применяется к конкретному vid.id прямо при save,
+  // не завися от async state. Нужно когда onComplete вызывает doSaveVideos сразу после updV.
+  const doSaveVideos = async (catId, videoOverride) => {
+    // Берём текущий список видео из draft
+    let catVids = draft.videos?.[catId] || [];
+    // Применяем override синхронно — state к этому моменту ещё не обновился
+    if (videoOverride) {
+      catVids = catVids.map(v =>
+        v.id === videoOverride.vidId ? { ...v, ...videoOverride.fields } : v
+      );
+    }
+    const { ok, data } = await saveVideos(selectedId, catId, catVids);
     if (ok) {
-      // Replace temp nv- IDs with real DB UUIDs returned from insert
       if (data?.length) {
         setDraft(d => ({
           ...d,
@@ -957,11 +966,14 @@ function SectionIkkajo({showToast,isMobile}){
               duration:     row.duration,
               video_id:     row.video_id     ?? null,
               video_status: row.video_status ?? 'none',
+              video_provider: row.video_provider ?? null,
             })),
           },
         }));
       }
       showToast(`Видео «${VIDEO_CAT_LABELS[catId]}» сохранено`);
+    } else {
+      showToast('Ошибка сохранения видео');
     }
   };
 
@@ -1034,10 +1046,15 @@ function SectionIkkajo({showToast,isMobile}){
                           currentVideoId={vid.video_id}
                           currentStatus={vid.video_status}
                           onComplete={({videoId,status})=>{
+                            // Обновляем local state для UI
                             updV(vid,'video_id',videoId);
                             updV(vid,'video_status',status);
                             updV(vid,'video_provider','kinescope');
-                            doSaveVideos(catId);
+                            // Сохраняем в БД с override — state ещё не обновился!
+                            doSaveVideos(catId, {
+                              vidId: vid.id,
+                              fields: { video_id: videoId, video_status: status, video_provider: 'kinescope' },
+                            });
                           }}
                         />
                       </div>
