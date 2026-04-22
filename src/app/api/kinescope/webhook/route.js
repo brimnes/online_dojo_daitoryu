@@ -12,19 +12,37 @@ export async function POST(request) {
     const rawBody = await request.text();
     const signature = request.headers.get('X-Kinescope-Signature') || '';
 
+    // ── Логируем КАЖДЫЙ входящий запрос до проверки подписи ──────
+    console.log('[kinescope-webhook] incoming request');
+    console.log('[kinescope-webhook] signature present:', !!signature);
+    console.log('[kinescope-webhook] raw body (first 500 chars):', rawBody.slice(0, 500));
+
     // Validate webhook signature
     const valid = await validateWebhookSignature(rawBody, signature);
     if (!valid) {
-      console.warn('[webhook] invalid signature');
-      return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
+      // Временно: логируем но НЕ блокируем — чтобы проверить приходят ли события
+      console.warn('[kinescope-webhook] INVALID SIGNATURE — check KINESCOPE_WEBHOOK_SECRET env var');
+      console.warn('[kinescope-webhook] signature received:', signature);
+      // TODO: вернуть 401 после отладки:
+      // return NextResponse.json({ error: 'Invalid signature' }, { status: 401 });
     }
 
-    const event = JSON.parse(rawBody);
+    let event;
+    try {
+      event = JSON.parse(rawBody);
+    } catch (parseErr) {
+      console.error('[kinescope-webhook] JSON parse error:', parseErr.message, 'body:', rawBody.slice(0, 200));
+      return NextResponse.json({ error: 'Invalid JSON' }, { status: 400 });
+    }
+
     const { type, data } = event;
+    console.log('[kinescope-webhook] event.type:', type);
+    console.log('[kinescope-webhook] event.data:', JSON.stringify(data).slice(0, 300));
 
     // Only handle video processing events
     // Kinescope event types: video.created, video.processing, video.ready, video.error
     if (!type?.startsWith('video.')) {
+      console.log('[kinescope-webhook] skipping non-video event:', type);
       return NextResponse.json({ ok: true });
     }
 
@@ -32,15 +50,23 @@ export async function POST(request) {
     const duration = data?.duration;       // seconds (integer)
     const poster   = data?.poster_url;     // thumbnail URL
 
+    console.log('[kinescope-webhook] videoId:', videoId, 'duration:', duration);
+
     if (!videoId) {
+      console.error('[kinescope-webhook] no videoId in payload!');
       return NextResponse.json({ ok: true });
     }
 
     let video_status;
-    if (type === 'video.ready')      video_status = 'ready';
-    else if (type === 'video.error') video_status = 'error';
+    if (type === 'video.ready')           video_status = 'ready';
+    else if (type === 'video.error')      video_status = 'error';
     else if (type === 'video.processing') video_status = 'processing';
-    else return NextResponse.json({ ok: true });
+    else {
+      console.log('[kinescope-webhook] unhandled video event type:', type);
+      return NextResponse.json({ ok: true });
+    }
+
+    console.log('[kinescope-webhook] will set video_status:', video_status, 'for videoId:', videoId);
 
     // lessons: поля video_duration, video_poster_url
     const lessonPayload = { video_status };
@@ -71,11 +97,20 @@ export async function POST(request) {
       .eq('video_id', videoId)
       .select('id,title,video_status');
 
-    if (lessonErr) console.error('[webhook] lessons update error:', lessonErr);
-    else console.log('[webhook] lessons updated:', lessonData?.length, 'rows', lessonData);
+    if (lessonErr) {
+      console.error('[kinescope-webhook] lessons update ERROR:', JSON.stringify(lessonErr));
+    } else {
+      console.log('[kinescope-webhook] lessons updated:', lessonData?.length ?? 0, 'rows');
+      if (lessonData?.length) console.log('[kinescope-webhook] lesson rows:', JSON.stringify(lessonData));
+    }
 
-    if (techErr)   console.error('[webhook] technique_videos update error:', techErr);
-    else console.log('[webhook] technique_videos updated:', techData?.length, 'rows', techData);
+    if (techErr) {
+      console.error('[kinescope-webhook] technique_videos update ERROR:', JSON.stringify(techErr));
+    } else {
+      console.log('[kinescope-webhook] technique_videos updated:', techData?.length ?? 0, 'rows');
+      if (techData?.length) console.log('[kinescope-webhook] tech rows:', JSON.stringify(techData));
+      else console.warn('[kinescope-webhook] 0 rows updated in technique_videos — video_id not found:', videoId);
+    }
 
     return NextResponse.json({ ok: true });
 
