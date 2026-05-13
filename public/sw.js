@@ -1,7 +1,7 @@
 // Online Dojo — Service Worker
 // Кэширует shell приложения для работы оффлайн и быстрого старта
 
-const CACHE_NAME = 'online-dojo-v1';
+const CACHE_NAME = 'online-dojo-v2'; // bump при каждом деплое
 
 // Ресурсы для предварительного кэширования (app shell)
 const PRECACHE_URLS = [
@@ -36,23 +36,28 @@ self.addEventListener('fetch', (event) => {
   // Только GET-запросы
   if (event.request.method !== 'GET') return;
 
-  // Supabase API — всегда сеть, не кэшировать
-  if (event.request.url.includes('supabase.co')) return;
+  const url = event.request.url;
 
-  // YouTube / Vimeo iframes — не кэшировать
+  // API-запросы — никогда не кэшировать (данные должны быть свежими)
+  if (url.includes('/api/')) return;
+
+  // Внешние домены — не кэшировать
   if (
-    event.request.url.includes('youtube.com') ||
-    event.request.url.includes('vimeo.com')
+    url.includes('youtube.com') ||
+    url.includes('vimeo.com') ||
+    url.includes('kinescope.io') ||
+    url.includes('supabase.co')
   ) return;
 
   event.respondWith(
     fetch(event.request)
       .then((response) => {
-        // Кэшируем успешные ответы (только same-origin)
+        // Кэшируем только same-origin статику (JS, CSS, шрифты, иконки)
         if (
           response.ok &&
           response.type === 'basic' &&
-          event.request.url.startsWith(self.location.origin)
+          url.startsWith(self.location.origin) &&
+          !url.includes('/api/')
         ) {
           const clone = response.clone();
           caches.open(CACHE_NAME).then((cache) => {

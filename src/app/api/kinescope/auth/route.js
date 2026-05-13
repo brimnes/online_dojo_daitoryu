@@ -30,8 +30,8 @@ export async function POST(request) {
       return NextResponse.json({ error: 'Bad Request' }, { status: 400 });
     }
 
-    // 2. Find which lesson or technique_video this video_id belongs to
-    const [lesson, techVideo] = await Promise.all([
+    // 2. Параллельно: ищем видео и пользователя одним батчем
+    const [lesson, techVideo, user] = await Promise.all([
       prisma.lesson.findFirst({
         where:  { videoId: video_id },
         select: { id: true, monthId: true },
@@ -40,48 +40,40 @@ export async function POST(request) {
         where:  { videoId: video_id },
         select: { id: true, techniqueId: true },
       }),
+      prisma.user.findUnique({
+        where:  { id: viewer_id },
+        select: { role: true, status: true },
+      }),
     ]);
-
-    // 3. Look up the viewer's role (viewer_id = our user UUID)
-    const user = await prisma.user.findUnique({
-      where:  { id: viewer_id },
-      select: { role: true, status: true },
-    });
 
     // Admins and teachers can watch everything
     if (user?.role === 'admin' || user?.role === 'teacher') {
       return NextResponse.json({ allow: true });
     }
 
-    // 4a. Lesson video → check user_access for the month
+    // 3a. Lesson video → параллельно: month.isOpen + user_access
     if (lesson) {
-      const month = await prisma.month.findUnique({
-        where:  { id: lesson.monthId },
-        select: { isOpen: true },
-      });
+      const [month, access] = await Promise.all([
+        prisma.month.findUnique({
+          where:  { id: lesson.monthId },
+          select: { isOpen: true },
+        }),
+        prisma.userAccess.findFirst({
+          where: { userId: viewer_id, type: 'month', reference: lesson.monthId },
+        }),
+      ]);
 
-      if (month?.isOpen) {
-        return NextResponse.json({ allow: true });
-      }
-
-      const access = await prisma.userAccess.findFirst({
-        where: { userId: viewer_id, type: 'month', reference: lesson.monthId },
-      });
-
-      if (access) return NextResponse.json({ allow: true });
-
+      if (month?.isOpen || access) return NextResponse.json({ allow: true });
       return NextResponse.json({ error: 'No access to this month' }, { status: 403 });
     }
 
-    // 4b. Technique video → check user_access for ikkajo section
+    // 3b. Technique video → проверяем доступ к ikkajo
     if (techVideo) {
-      // All techniques are currently under ikkajo
       const access = await prisma.userAccess.findFirst({
         where: { userId: viewer_id, type: 'section', reference: 'ikkajo' },
       });
 
       if (access) return NextResponse.json({ allow: true });
-
       return NextResponse.json({ error: 'No access to this section' }, { status: 403 });
     }
 

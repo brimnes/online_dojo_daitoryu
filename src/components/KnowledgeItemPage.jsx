@@ -5,7 +5,7 @@ import { C } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
 import KinescopePlayer from '@/components/KinescopePlayer';
 
-export default function KnowledgeItemPage({ nav, itemId }) {
+export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
   const isMobile = useIsMobile();
   const [item,     setItem]     = useState(null);
   const [loading,  setLoading]  = useState(true);
@@ -66,6 +66,7 @@ export default function KnowledgeItemPage({ nav, itemId }) {
           <KinescopePlayer
             videoId={item.video_id}
             videoStatus={item.video_status || 'ready'}
+            viewerId={viewerId}
             title={item.title}
           />
         </div>

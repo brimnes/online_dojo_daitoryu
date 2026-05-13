@@ -95,6 +95,7 @@ export default function App() {
           section={route.section}
           tech={route.tech}
           onBack={nav.ikkajo}
+          viewerId={user.id}
         />
       )}
       {route.page === 'month' && (
@@ -114,13 +115,14 @@ export default function App() {
           toggleWatched={toggleWatched}
           comments={comments}
           addComment={addComment}
+          viewerId={user.id}
         />
       )}
       {route.page === 'knowledge' && (
         <KnowledgePage nav={nav} />
       )}
       {route.page === 'knowledge_item' && (
-        <KnowledgeItemPage nav={nav} itemId={route.itemId} />
+        <KnowledgeItemPage nav={nav} itemId={route.itemId} viewerId={user.id} />
       )}
     </>
   );

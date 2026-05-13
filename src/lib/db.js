@@ -195,17 +195,9 @@ export function useMonthsWithLessons() {
   const reload = useCallback(async () => {
     setLoading(true);
     try {
-      const [monthsData, allLessons] = await Promise.all([
-        api('/api/months'),
-        // Загружаем уроки для всех месяцев параллельно
-        Promise.all(MOCK_MONTHS.map(m =>
-          api(`/api/lessons?month_id=${m.id}`).catch(() => [])
-        )).then(results => results.flat()),
-      ]);
-      setMonths(monthsData.map(m => ({
-        ...m,
-        lessons: allLessons.filter(l => l.month_id === m.id),
-      })));
+      // Один запрос вместо 12 — месяцы + уроки сразу
+      const data = await api('/api/months?with_lessons=1');
+      setMonths(data);
     } catch {
       setMonths(MOCK_MONTHS.map(m => ({ ...m, lessons: [] })));
     } finally {

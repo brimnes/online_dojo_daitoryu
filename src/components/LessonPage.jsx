@@ -6,7 +6,7 @@ import { useMonths, useLessons } from '@/lib/db';
 import KinescopePlayer from '@/components/KinescopePlayer';
 
 
-export default function LessonPage({ nav, monthId, lessonId, watched, toggleWatched, comments, addComment }) {
+export default function LessonPage({ nav, monthId, lessonId, watched, toggleWatched, comments, addComment, viewerId }) {
   const { months } = useMonths();
   const { lessons, reload } = useLessons(monthId);
 
@@ -61,6 +61,7 @@ export default function LessonPage({ nav, monthId, lessonId, watched, toggleWatc
         <KinescopePlayer
           videoId={lesson.video_id}
           videoStatus={lesson.video_status}
+          viewerId={viewerId}
           posterUrl={lesson.video_poster_url}
           title={lesson.title}
           duration={lesson.duration}

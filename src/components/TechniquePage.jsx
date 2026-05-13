@@ -8,7 +8,7 @@ import { useTechniques, useUserAccessRows } from '@/lib/db';
 import { hasIkkajoSectionAccess } from '@/lib/access';
 import { IKKAJO_SECTION_KEYS as IKKAJO_SECTIONS } from '@/lib/ikkajoSections';
 
-export default function TechniquePage({ kyu, section, tech, onBack }) {
+export default function TechniquePage({ kyu, section, tech, onBack, viewerId }) {
   const belt = BELT[kyu.belt] || { color: '#ccc', border: '#aaa', label: '' };
   const [cat, setCat] = useState('overview');
   const [vid, setVid] = useState(null);
@@ -70,6 +70,7 @@ export default function TechniquePage({ kyu, section, tech, onBack }) {
           <KinescopePlayer
             videoId={vid.video_id}
             videoStatus={vid.video_status}
+            viewerId={viewerId}
             title={vid.title}
             duration={vid.duration}
           />

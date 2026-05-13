@@ -1,30 +1,17 @@
 'use client';
 
-import { useState, useEffect } from 'react';
-
 /**
  * KinescopePlayer
  *
  * Props:
  *   videoId     — Kinescope video ID (from lessons.video_id)
  *   videoStatus — 'uploading' | 'processing' | 'ready' | 'error' | 'none' | null
+ *   viewerId    — текущий user.id (передаётся пропом из App/компонента, не фетчится)
  *   posterUrl   — optional thumbnail URL
  *   title       — for placeholder display
  *   duration    — for placeholder display
- *
- * The Kinescope Authorization Backend will call /api/kinescope/auth
- * and receive the viewer's Supabase user ID via the `viewer_id` param.
  */
-export default function KinescopePlayer({ videoId, videoStatus, posterUrl, title, duration }) {
-  const [viewerId, setViewerId] = useState(null);
-
-  // Получаем id текущего пользователя для передачи Kinescope Authorization Backend
-  useEffect(() => {
-    fetch('/api/auth/me')
-      .then(r => r.ok ? r.json() : null)
-      .then(data => { if (data?.user?.id) setViewerId(data.user.id); })
-      .catch(() => {});
-  }, []);
+export default function KinescopePlayer({ videoId, videoStatus, viewerId, posterUrl, title, duration }) {
 
   // Not ready states
   if (!videoId || !videoStatus || videoStatus === 'none') {
