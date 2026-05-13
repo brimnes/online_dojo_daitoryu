@@ -1,9 +1,7 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
-
-// Fallback data while Supabase not connected or for dev
+// Fallback data — used when API is unavailable
 const MOCK_PRODUCTS = [
   // Months
   { id: 'p-jan', type: 'month', reference: 'jan', title: 'Январь',    description: 'Основы дистанции и базовые захваты.',        price: 1990, is_active: true, sort_order: 1  },
@@ -34,18 +32,10 @@ export function useProducts() {
   useEffect(() => {
     (async () => {
       try {
-        const { data, error } = await supabase
-          .from('products')
-          .select('*')
-          .eq('is_active', true)
-          .order('sort_order');
-
-        if (error || !data?.length) {
-          // Supabase not connected or table doesn't exist yet — use mock
-          setProducts(MOCK_PRODUCTS);
-        } else {
-          setProducts(data);
-        }
+        const res = await fetch('/api/products');
+        if (!res.ok) throw new Error('not ok');
+        const data = await res.json();
+        setProducts(data?.length ? data : MOCK_PRODUCTS);
       } catch {
         setProducts(MOCK_PRODUCTS);
       }

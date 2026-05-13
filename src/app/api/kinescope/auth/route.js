@@ -5,7 +5,7 @@
  * Request: POST { video_id, viewer_id, ... }
  * Header:  X-Kinescope-Auth: <AUTH_BACKEND_SECRET>
  *
- * We check Supabase: does this viewer have access to this video's lesson/technique?
+ * viewer_id = наш user UUID (сохранён при миграции из Supabase).
  * Response 200 = allow, 403 = deny.
  *
  * Setup in Kinescope dashboard:
@@ -13,13 +13,8 @@
  */
 
 import { NextResponse } from 'next/server';
-import { createClient } from '@supabase/supabase-js';
 import { validateAuthBackendRequest } from '@/lib/kinescope';
-
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY
-);
+import { prisma } from '@/lib/prisma.js';
 
 export async function POST(request) {
   try {
@@ -36,73 +31,56 @@ export async function POST(request) {
     }
 
     // 2. Find which lesson or technique_video this video_id belongs to
-    const [{ data: lesson }, { data: techVideo }] = await Promise.all([
-      supabaseAdmin.from('lessons').select('id, month_id').eq('video_id', video_id).maybeSingle(),
-      supabaseAdmin.from('technique_videos').select('id, technique_id').eq('video_id', video_id).maybeSingle(),
+    const [lesson, techVideo] = await Promise.all([
+      prisma.lesson.findFirst({
+        where:  { videoId: video_id },
+        select: { id: true, monthId: true },
+      }),
+      prisma.techniqueVideo.findFirst({
+        where:  { videoId: video_id },
+        select: { id: true, techniqueId: true },
+      }),
     ]);
 
-    // 3. Look up the viewer's profile (viewer_id = Supabase user UUID)
-    const { data: profile } = await supabaseAdmin
-      .from('profiles')
-      .select('role, level')
-      .eq('id', viewer_id)
-      .maybeSingle();
+    // 3. Look up the viewer's role (viewer_id = our user UUID)
+    const user = await prisma.user.findUnique({
+      where:  { id: viewer_id },
+      select: { role: true, status: true },
+    });
 
     // Admins and teachers can watch everything
-    if (profile?.role === 'admin' || profile?.role === 'teacher') {
+    if (user?.role === 'admin' || user?.role === 'teacher') {
       return NextResponse.json({ allow: true });
     }
 
     // 4a. Lesson video → check user_access for the month
     if (lesson) {
-      // Check if month is open (free) or user has paid access
-      const { data: monthData } = await supabaseAdmin
-        .from('months')
-        .select('is_open')
-        .eq('id', lesson.month_id)
-        .maybeSingle();
+      const month = await prisma.month.findUnique({
+        where:  { id: lesson.monthId },
+        select: { isOpen: true },
+      });
 
-      if (monthData?.is_open) {
+      if (month?.isOpen) {
         return NextResponse.json({ allow: true });
       }
 
-      const { data: access } = await supabaseAdmin
-        .from('user_access')
-        .select('id')
-        .eq('user_id', viewer_id)
-        .eq('type', 'month')
-        .eq('reference', lesson.month_id)
-        .maybeSingle();
+      const access = await prisma.userAccess.findFirst({
+        where: { userId: viewer_id, type: 'month', reference: lesson.monthId },
+      });
 
-      if (access) {
-        return NextResponse.json({ allow: true });
-      }
+      if (access) return NextResponse.json({ allow: true });
 
       return NextResponse.json({ error: 'No access to this month' }, { status: 403 });
     }
 
     // 4b. Technique video → check user_access for ikkajo section
     if (techVideo) {
-      const { data: technique } = await supabaseAdmin
-        .from('techniques')
-        .select('section')
-        .eq('id', techVideo.technique_id)
-        .maybeSingle();
+      // All techniques are currently under ikkajo
+      const access = await prisma.userAccess.findFirst({
+        where: { userId: viewer_id, type: 'section', reference: 'ikkajo' },
+      });
 
-      // Map technique section to section reference (ikkajo etc.)
-      const sectionRef = 'ikkajo'; // all techniques are currently under ikkajo
-
-      const { data: access } = await supabaseAdmin
-        .from('user_access')
-        .select('id')
-        .eq('user_id', viewer_id)
-        .eq('type', 'section')
-        .eq('reference', sectionRef)
-        .maybeSingle();
-
-      if (access) {
-        return NextResponse.json({ allow: true });
-      }
+      if (access) return NextResponse.json({ allow: true });
 
       return NextResponse.json({ error: 'No access to this section' }, { status: 403 });
     }

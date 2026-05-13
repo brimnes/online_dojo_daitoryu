@@ -1,28 +1,31 @@
-// src/app/api/yookassa/webhook/route.js
-import { createClient } from '@supabase/supabase-js';
+/**
+ * POST /api/yookassa/webhook
+ *
+ * Принимает события от ЮKassa.
+ * При payment.succeeded:
+ *   1. Защита от дублей по provider_payment_id
+ *   2. Обновляем/создаём запись в payments
+ *   3. Выдаём доступ через user_access (upsert)
+ */
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-);
+import { prisma } from '@/lib/prisma.js';
 
-// Типы контента для user_access
 const MONTH_REFS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
 
-export async function POST(req) {
+export async function POST(request) {
   try {
-    const body = await req.json();
+    const body = await request.json();
     console.log('[YooKassa webhook] event:', body.event, 'payment_id:', body.object?.id);
 
-    // ── Обрабатываем только payment.succeeded ─────────────────────
+    // Обрабатываем только payment.succeeded
     if (body.event !== 'payment.succeeded') {
       return Response.json({ ok: true });
     }
 
-    const payment  = body.object;
+    const payment   = body.object;
     const paymentId = payment?.id;
-    const meta     = payment?.metadata || {};
-    const userId   = meta.user_id;
+    const meta      = payment?.metadata || {};
+    const userId    = meta.user_id;
     const productId = meta.product_id;
 
     if (!paymentId || !userId || !productId) {
@@ -30,82 +33,78 @@ export async function POST(req) {
       return Response.json({ error: 'Missing fields' }, { status: 400 });
     }
 
-    // ── Защита от дублей по provider_payment_id ───────────────────
-    const { data: existing } = await supabaseAdmin
-      .from('payments')
-      .select('id, status')
-      .eq('provider_payment_id', paymentId)
-      .maybeSingle();
+    // Защита от дублей по provider_payment_id
+    const existing = await prisma.payment.findUnique({
+      where:  { providerPaymentId: paymentId },
+      select: { id: true, status: true },
+    });
 
     if (existing?.status === 'succeeded') {
       console.log('[webhook] already processed, skipping:', paymentId);
       return Response.json({ ok: true });
     }
 
-    // ── Находим продукт ───────────────────────────────────────────
-    const { data: product } = await supabaseAdmin
-      .from('products')
-      .select('*')
-      .eq('id', productId)
-      .single();
+    // Находим продукт
+    const product = await prisma.product.findUnique({
+      where: { id: productId },
+    });
 
     if (!product) {
       console.error('[webhook] product not found:', productId);
       return Response.json({ error: 'Product not found' }, { status: 404 });
     }
 
-    const paidAt = new Date().toISOString();
+    const paidAt = new Date();
 
-    // ── Обновляем/создаём запись в payments ───────────────────────
+    // Обновляем/создаём запись в payments
     if (existing) {
-      await supabaseAdmin
-        .from('payments')
-        .update({
-          status:      'succeeded',
-          paid_at:     paidAt,
-          raw_payload: body,
-        })
-        .eq('provider_payment_id', paymentId);
+      await prisma.payment.update({
+        where: { providerPaymentId: paymentId },
+        data:  { status: 'succeeded', paidAt, rawPayload: body },
+      });
     } else {
-      await supabaseAdmin.from('payments').insert({
-        user_id:             userId,
-        product_id:          productId,
-        product_title:       product.title,
-        product_type:        product.type,
-        product_reference:   product.reference,
-        amount:              product.price,
-        currency:            'RUB',
-        status:              'succeeded',
-        payment_provider:    'yookassa',
-        provider_payment_id: paymentId,
-        paid_at:             paidAt,
-        raw_payload:         body,
+      await prisma.payment.create({
+        data: {
+          userId,
+          productId,
+          productTitle:      product.title,
+          productType:       product.type,
+          productReference:  product.reference,
+          amount:            product.price,
+          currency:          'RUB',
+          status:            'succeeded',
+          paymentProvider:   'yookassa',
+          providerPaymentId: paymentId,
+          paidAt,
+          rawPayload:        body,
+        },
       });
     }
 
-    // ── Выдаём доступ через user_access ──────────────────────────
-    // Определяем type: месяцы → 'month', разделы Ikkajo → 'section'
+    // Выдаём доступ через user_access
     const accessType = MONTH_REFS.includes(product.reference) ? 'month' : 'section';
 
-    // upsert — безопасно если доступ уже выдан
-    const { error: accessError } = await supabaseAdmin
-      .from('user_access')
-      .upsert(
-        {
-          user_id:   userId,
+    try {
+      await prisma.userAccess.upsert({
+        where: {
+          userId_type_reference: { userId, type: accessType, reference: product.reference },
+        },
+        create: {
+          userId,
           type:      accessType,
           reference: product.reference,
-          paid_at:   paidAt,
-          amount:    product.price,
+          paidAt,
+          amount:    Math.round(Number(product.price)),
         },
-        { onConflict: 'user_id,type,reference' }
-      );
-
-    if (accessError) {
-      console.error('[webhook] failed to grant access:', accessError);
-      // Не возвращаем ошибку ЮKassa — платёж принят, разберёмся вручную
-    } else {
+        update: {
+          paidAt,
+          amount: Math.round(Number(product.price)),
+        },
+      });
       console.log(`[webhook] access granted: user=${userId} type=${accessType} ref=${product.reference}`);
+    } catch (accessErr) {
+      console.error('[webhook] failed to grant access:', accessErr);
+      // Не возвращаем ошибку ЮKassa — платёж принят, разберёмся вручную
     }
 
     return Response.json({ ok: true });

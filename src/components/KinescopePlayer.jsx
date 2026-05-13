@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { supabase } from '@/lib/supabase';
 
 /**
  * KinescopePlayer
@@ -19,11 +18,12 @@ import { supabase } from '@/lib/supabase';
 export default function KinescopePlayer({ videoId, videoStatus, posterUrl, title, duration }) {
   const [viewerId, setViewerId] = useState(null);
 
-  // Get current Supabase user ID to pass as viewer_id to Kinescope
+  // Получаем id текущего пользователя для передачи Kinescope Authorization Backend
   useEffect(() => {
-    supabase.auth.getUser().then(({ data: { user } }) => {
-      if (user) setViewerId(user.id);
-    });
+    fetch('/api/auth/me')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.user?.id) setViewerId(data.user.id); })
+      .catch(() => {});
   }, []);
 
   // Not ready states

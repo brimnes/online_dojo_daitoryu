@@ -8,7 +8,7 @@ import {
   useAdminUserAccess, useKnowledge,
   grantAccess, revokeAccess,
 } from '@/lib/db';
-import { IS_DB_CONNECTED } from '@/lib/supabase';
+// Supabase removed — always connected to Timeweb PostgreSQL
 import { IKKAJO_SECTION_OPTIONS, IKKAJO_SECTION_LABELS as IKKAJO_LABELS } from '@/lib/ikkajoSections';
 import KinescopeUploader from '@/components/KinescopeUploader';
 
@@ -123,8 +123,8 @@ function Toast({ show, text }) {
 }
 function DBBadge() {
   return (
-    <div style={{padding:'4px 10px',background:IS_DB_CONNECTED?C.greenBg:C.goldBg,border:`1px solid ${IS_DB_CONNECTED?C.greenBorder:C.goldBorder}`,fontSize:9,color:IS_DB_CONNECTED?C.green:C.gold,letterSpacing:0.5}}>
-      {IS_DB_CONNECTED ? '● Supabase подключён' : '○ Mock-режим'}
+    <div style={{padding:'4px 10px',background:C.greenBg,border:`1px solid ${C.greenBorder}`,fontSize:9,color:C.green,letterSpacing:0.5}}>
+      ● Timeweb подключён
     </div>
   );
 }

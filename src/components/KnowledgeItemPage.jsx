@@ -3,7 +3,6 @@
 import { useState, useEffect } from 'react';
 import { C } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
-import { supabase } from '@/lib/supabase';
 import KinescopePlayer from '@/components/KinescopePlayer';
 
 export default function KnowledgeItemPage({ nav, itemId }) {
@@ -16,15 +15,13 @@ export default function KnowledgeItemPage({ nav, itemId }) {
     if (!itemId) { setNotFound(true); setLoading(false); return; }
     (async () => {
       setLoading(true);
-      const { data, error } = await supabase
-        .from('knowledge_items')
-        .select('*')
-        .eq('id', itemId)
-        .eq('is_published', true)
-        .single();
-
-      if (error || !data) setNotFound(true);
-      else setItem(data);
+      try {
+        const res = await fetch(`/api/knowledge/${itemId}`);
+        if (!res.ok) { setNotFound(true); }
+        else { setItem(await res.json()); }
+      } catch {
+        setNotFound(true);
+      }
       setLoading(false);
     })();
   }, [itemId]);

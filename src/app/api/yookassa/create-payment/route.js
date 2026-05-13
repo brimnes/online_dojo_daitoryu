@@ -1,55 +1,43 @@
-// src/app/api/yookassa/create-payment/route.js
-import { createClient } from '@supabase/supabase-js';
+/**
+ * POST /api/yookassa/create-payment
+ *
+ * Полный флоу создания платежа:
+ * 1. Авторизация (JWT cookie)
+ * 2. Поиск продукта (по UUID или по reference для mock-id вида 'p-jan')
+ * 3. Проверка — нет ли уже доступа
+ * 4. Создание платежа в ЮKassa
+ * 5. Сохранение pending-записи в payments
+ * 6. Возврат confirmation_url
+ */
+
 import { randomUUID } from 'crypto';
+import { prisma } from '@/lib/prisma.js';
+import { requireAuth } from '@/lib/auth-server.js';
 
-const supabaseAdmin = createClient(
-  process.env.NEXT_PUBLIC_SUPABASE_URL,
-  process.env.SUPABASE_SERVICE_ROLE_KEY,
-);
-
-export async function POST(req) {
+export async function POST(request) {
   try {
-    // ── 1. Авторизация пользователя ──────────────────────────────
-    const authHeader = req.headers.get('authorization');
-    if (!authHeader?.startsWith('Bearer ')) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
-    const token = authHeader.slice(7);
-    const { data: { user }, error: authError } = await supabaseAdmin.auth.getUser(token);
-    if (authError || !user) {
-      return Response.json({ error: 'Unauthorized' }, { status: 401 });
-    }
+    // 1. Авторизация
+    const { user, error } = await requireAuth(request);
+    if (error) return error;
 
-    // ── 2. Получаем product_id из тела запроса ────────────────────
-    const { product_id } = await req.json();
+    // 2. Получаем product_id из тела запроса
+    const { product_id } = await request.json();
     if (!product_id) {
       return Response.json({ error: 'product_id is required' }, { status: 400 });
     }
 
-    // ── 3. Находим продукт в Supabase ─────────────────────────────
-    // Сначала ищем по UUID, затем по reference (для совместимости с mock-id вида 'p-jan')
-    let product = null;
+    // 3. Находим продукт
+    // Попытка 1: поиск по UUID
+    let product = await prisma.product.findFirst({
+      where: { id: product_id, isActive: true },
+    });
 
-    // Попытка 1: поиск по id
-    const { data: byId } = await supabaseAdmin
-      .from('products')
-      .select('*')
-      .eq('id', product_id)
-      .eq('is_active', true)
-      .maybeSingle();
-
-    if (byId) {
-      product = byId;
-    } else {
-      // Попытка 2: mock-id вида 'p-jan' → reference = 'jan'
+    // Попытка 2: mock-id вида 'p-jan' → reference = 'jan'
+    if (!product) {
       const reference = product_id.replace(/^p-/, '');
-      const { data: byRef } = await supabaseAdmin
-        .from('products')
-        .select('*')
-        .eq('reference', reference)
-        .eq('is_active', true)
-        .maybeSingle();
-      product = byRef || null;
+      product = await prisma.product.findFirst({
+        where: { reference, isActive: true },
+      });
     }
 
     if (!product) {
@@ -57,20 +45,16 @@ export async function POST(req) {
       return Response.json({ error: 'Product not found', product_id }, { status: 404 });
     }
 
-    // ── 4. Проверяем — нет ли уже активного доступа ───────────────
-    const { data: existingAccess } = await supabaseAdmin
-      .from('user_access')
-      .select('id')
-      .eq('user_id', user.id)
-      .eq('type', product.type)
-      .eq('reference', product.reference)
-      .maybeSingle();
+    // 4. Проверяем — нет ли уже активного доступа
+    const existingAccess = await prisma.userAccess.findFirst({
+      where: { userId: user.id, type: product.type, reference: product.reference },
+    });
 
     if (existingAccess) {
       return Response.json({ error: 'Access already granted' }, { status: 409 });
     }
 
-    // ── 5. Создаём платёж в ЮKassa ────────────────────────────────
+    // 5. Создаём платёж в ЮKassa
     const idempotenceKey = randomUUID();
     const credentials    = Buffer.from(
       `${process.env.YOOKASSA_SHOP_ID}:${process.env.YOOKASSA_SECRET_KEY}`
@@ -85,7 +69,7 @@ export async function POST(req) {
       },
       body: JSON.stringify({
         amount: {
-          value:    Number(product.price).toFixed(2), // цена в рублях, ЮKassa формат: "1990.00"
+          value:    Number(product.price).toFixed(2),
           currency: 'RUB',
         },
         confirmation: {
@@ -93,7 +77,7 @@ export async function POST(req) {
           return_url: `${process.env.NEXT_PUBLIC_APP_URL}/payment/success?type=${product.type}&ref=${product.reference}`,
         },
         capture:     true,
-        description: `${product.title}`,
+        description: product.title,
         metadata: {
           user_id:    user.id,
           product_id: product.id,
@@ -109,21 +93,23 @@ export async function POST(req) {
 
     const payment = await ykRes.json();
 
-    // ── 6. Сохраняем платёж в БД со статусом pending ─────────────
-    await supabaseAdmin.from('payments').insert({
-      user_id:            user.id,
-      product_id:         product.id,
-      product_title:      product.title,
-      product_type:       product.type,
-      product_reference:  product.reference,
-      amount:             product.price,
-      currency:           'RUB',
-      status:             'pending',
-      payment_provider:   'yookassa',
-      provider_payment_id: payment.id,
+    // 6. Сохраняем платёж в БД со статусом pending
+    await prisma.payment.create({
+      data: {
+        userId:             user.id,
+        productId:          product.id,
+        productTitle:       product.title,
+        productType:        product.type,
+        productReference:   product.reference,
+        amount:             product.price,
+        currency:           'RUB',
+        status:             'pending',
+        paymentProvider:    'yookassa',
+        providerPaymentId:  payment.id,
+      },
     });
 
-    // ── 7. Возвращаем URL для редиректа ───────────────────────────
+    // 7. Возвращаем URL для редиректа
     return Response.json({
       confirmation_url: payment.confirmation.confirmation_url,
       payment_id:       payment.id,
@@ -136,5 +122,5 @@ export async function POST(req) {
 }
 
 export async function GET() {
-  return Response.json({ ok: true, route: "create-payment" });
+  return Response.json({ ok: true, route: 'create-payment' });
 }

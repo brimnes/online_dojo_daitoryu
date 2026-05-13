@@ -1,130 +1,33 @@
 /**
  * src/lib/db.js
  *
- * Слой доступа к данным — работает в двух режимах:
- *   1. Supabase  — если заданы NEXT_PUBLIC_SUPABASE_URL и NEXT_PUBLIC_SUPABASE_ANON_KEY
- *   2. Mock data — если ключи не заданы (для локальной разработки)
+ * Слой доступа к данным — все запросы идут через внутренние API routes (/api/*).
+ * Компоненты импортируют только хуки из этого файла, не зная ничего о Prisma или БД.
  *
- * Компоненты импортируют только хуки из этого файла,
- * не зная ничего о конкретном источнике данных.
+ * Аутентификация: httpOnly cookie 'dojo_token' передаётся браузером автоматически.
  */
 
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
-import { supabase, IS_DB_CONNECTED } from './supabase';
 
 // ─────────────────────────────────────────────────────────────
-// MOCK DATA (используется когда Supabase не подключён)
+// MOCK DATA — используется как fallback при ошибке загрузки
 // ─────────────────────────────────────────────────────────────
 
-const MOCK_USERS = [
-  { id:'u1', name:'Алексей Воронов',  email:'voronov@mail.ru',    level:'1dan', role:'student', status:'active',   joined_at:'2021-01-12', self_level:'1dan',  sensei_name:'',                     experience:'Занимаюсь айкидзюдзюцу с 2018 года. Особый интерес к Иккаджо.' },
-  { id:'u2', name:'Михаил Орлов',     email:'orlov@mail.ru',      level:'3kyu', role:'student', status:'active',   joined_at:'2022-03-05', self_level:'3kyu',  sensei_name:'',                     experience:'Начинал самостоятельно по видео, потом нашёл школу Копина.' },
-  { id:'u3', name:'Анна Соколова',    email:'sokolova@gmail.com', level:'5kyu', role:'student', status:'active',   joined_at:'2022-09-18', self_level:'none',  sensei_name:'',                     experience:'Пришла из Айкидо Айкикай, хочу углубить технику.' },
-  { id:'u4', name:'Дмитрий Волков',   email:'volkov@yandex.ru',   level:'2kyu', role:'student', status:'active',   joined_at:'2022-11-22', self_level:'2kyu',  sensei_name:'Иван Петров',          experience:'10 лет дзюдо, 3 года Дайто-рю.' },
-  { id:'u5', name:'Елена Петрова',    email:'petrova@mail.ru',    level:'4kyu', role:'student', status:'inactive', joined_at:'2023-02-07', self_level:'none',  sensei_name:'',                     experience:'' },
-  { id:'u6', name:'Сергей Новиков',   email:'novikov@gmail.com',  level:'6kyu', role:'student', status:'active',   joined_at:'2023-06-14', self_level:'none',  sensei_name:'',                     experience:'Совсем новичок, первый раз в боевых искусствах.' },
-  { id:'u7', name:'Ольга Смирнова',   email:'smirnova@mail.ru',   level:'1kyu', role:'teacher', status:'active',   joined_at:'2023-09-03', self_level:'1kyu',  sensei_name:'Станислав Копин',      experience:'Ассистент сэнсэя Копина. Веду отдельные занятия.' },
-];
-
-const MOCK_ACCESS = [
-  { id:1,  user_id:'u1', type:'month',   reference:'jan', amount:1990, paid_at:'2026-01-01' },
-  { id:2,  user_id:'u1', type:'month',   reference:'feb', amount:1990, paid_at:'2026-02-01' },
-  { id:3,  user_id:'u1', type:'month',   reference:'mar', amount:1990, paid_at:'2026-03-01' },
-  { id:4,  user_id:'u1', type:'section', reference:'ikkajo', amount:2900, paid_at:'2024-09-20' },
-  { id:5,  user_id:'u2', type:'month',   reference:'jan', amount:1990, paid_at:'2026-01-01' },
-  { id:6,  user_id:'u2', type:'month',   reference:'feb', amount:1990, paid_at:'2026-02-01' },
-  { id:7,  user_id:'u3', type:'month',   reference:'jan', amount:1990, paid_at:'2026-01-01' },
-  { id:8,  user_id:'u4', type:'month',   reference:'jan', amount:1990, paid_at:'2026-01-01' },
-  { id:9,  user_id:'u4', type:'month',   reference:'feb', amount:1990, paid_at:'2026-02-01' },
-  { id:10, user_id:'u4', type:'month',   reference:'mar', amount:1990, paid_at:'2026-03-01' },
-  { id:11, user_id:'u4', type:'section', reference:'ikkajo', amount:2900, paid_at:'2025-10-15' },
-  { id:12, user_id:'u7', type:'month',   reference:'jan', amount:1990, paid_at:'2026-01-01' },
-  { id:13, user_id:'u7', type:'month',   reference:'feb', amount:1990, paid_at:'2026-02-01' },
-  { id:14, user_id:'u7', type:'month',   reference:'mar', amount:1990, paid_at:'2026-03-01' },
-  { id:15, user_id:'u7', type:'section', reference:'ikkajo', amount:2900, paid_at:'2025-11-05' },
-];
-
-const MOCK_EXAMS = [
-  { id:1, user_id:'u2', user_name:'Михаил Орлов',   target_level:'2kyu', status:'pending',  teacher_note:'', requested_at:'2026-02-20' },
-  { id:2, user_id:'u3', user_name:'Анна Соколова',  target_level:'4kyu', status:'pending',  teacher_note:'', requested_at:'2026-02-18' },
-  { id:3, user_id:'u6', user_name:'Сергей Новиков', target_level:'5kyu', status:'approved', teacher_note:'Уверенное исполнение.', requested_at:'2026-02-15' },
-];
-
-// MOCK_MONTHS: все is_open=false — source of truth только user_access
-// is_open в таблице months используется только для административного "всем открыть"
-// в dev/demo режиме тоже ничего не открыто по умолчанию
 const MOCK_MONTHS = [
-  {id:'jan',label:'Январь',   kanji:'一',is_open:false, sort_order:1,  description:'Основы дистанции и базовые захваты.'},
-  {id:'feb',label:'Февраль',  kanji:'二',is_open:false, sort_order:2,  description:'Укэми — техника падений.'},
-  {id:'mar',label:'Март',     kanji:'三',is_open:false, sort_order:3,  description:'Кихон — базовая техника.'},
-  {id:'apr',label:'Апрель',   kanji:'四',is_open:false, sort_order:4,  description:'Ирими — вход. Управление балансом укэ.'},
-  {id:'may',label:'Май',      kanji:'五',is_open:false, sort_order:5,  description:'Тэнкан — разворот.'},
-  {id:'jun',label:'Июнь',     kanji:'六',is_open:false, sort_order:6,  description:'Атэми — вспомогательные удары.'},
-  {id:'jul',label:'Июль',     kanji:'七',is_open:false, sort_order:7,  description:'Работа с дзё.'},
-  {id:'aug',label:'Август',   kanji:'八',is_open:false, sort_order:8,  description:'Работа с вооружённым партнёром.'},
-  {id:'sep',label:'Сентябрь', kanji:'九',is_open:false, sort_order:9,  description:'Подготовка к аттестации.'},
-  {id:'oct',label:'Октябрь',  kanji:'十',is_open:false, sort_order:10, description:'Оё — прикладные техники.'},
-  {id:'nov',label:'Ноябрь',  kanji:'十一',is_open:false, sort_order:11, description:'Рандори — свободная практика.'},
-  {id:'dec',label:'Декабрь', каnji:'十二',is_open:false, sort_order:12, description:'Итоги года.'},
-];
-
-const MOCK_LESSONS = [
-  {id:'jan-1',month_id:'jan',num:1,title:'Введение в Дайто-рю',       subtitle:'История и философия школы',   duration:'18:40',video_url:'',text:'Знакомство с корнями школы Дайто-рю Айкидзюдзюцу.'},
-  {id:'jan-2',month_id:'jan',num:2,title:'Этикет додзё',               subtitle:'Рэй — уважение и дисциплина',duration:'12:15',video_url:'',text:'Правила поведения в додзё.'},
-  {id:'jan-3',month_id:'jan',num:3,title:'Базовые стойки',             subtitle:'Шизентай, Хамни, Айханми',   duration:'22:30',video_url:'',text:'Три базовые стойки школы.'},
-  {id:'feb-1',month_id:'feb',num:1,title:'Принцип Кокю',               subtitle:'Дыхание как основа техники', duration:'20:15',video_url:'',text:'Кокю — принцип расширения и сжатия энергии.'},
-  {id:'feb-2',month_id:'feb',num:2,title:'Кокю-хо стоя',               subtitle:'Базовое упражнение',         duration:'24:30',video_url:'',text:'Классическое упражнение Кокю-хо.'},
-  {id:'mar-1',month_id:'mar',num:1,title:'Кихон — базовая техника',    subtitle:'Что такое кихон',            duration:'17:30',video_url:'',text:'Кихон — язык движения.'},
-  {id:'mar-2',month_id:'mar',num:2,title:'Иппондори — разбор',         subtitle:'Первая техника программы',   duration:'29:15',video_url:'',text:'Детальный разбор Иппондори.'},
-  {id:'mar-3',month_id:'mar',num:3,title:'Иппондори — детали захвата', subtitle:'Работа кистей',              duration:'22:40',video_url:'',text:'Микродетали в захвате при Иппондори.'},
-];
-
-const MOCK_TECHNIQUES = [
-  {id:'Ippondori',    name_ru:'Иппондори',   kyu:'6kyu', section:'Tachiai', sort_order:1,
-    description:'Первая и фундаментальная техника Татиай. Контроль запястья.',
-    principles:['Движение начинается от бёдер — руки лишь направляют.','Сохраняйте низкий центр тяжести.','Непрерывный контакт с укэ.','Входите через расслабление, не через силу.'],
-    sensei_quote:'Иппондори — не техника захвата, это техника единения. Цель — управлять центром тяжести укэ.'},
-  {id:'Kurumadaoshi', name_ru:'Курумадаоси', kyu:'6kyu', section:'Tachiai', sort_order:2,
-    description:'Техника переворота через круговое движение.',
-    principles:['Вращение происходит вокруг оси тела укэ.','Скорость важнее силы.'],
-    sensei_quote:'Вы не опрокидываете человека — вы становитесь осью его падения.'},
-  {id:'Shihonage',    name_ru:'Сихонагэ',    kyu:'4kyu', section:'Tachiai', sort_order:3,
-    description:'Бросок в четыре стороны — одна из важнейших техник.',
-    principles:['Рука укэ ведётся по дуге над его головой.','Разворот выполняется под рукой.'],
-    sensei_quote:'Сихонагэ — техника на все случаи жизни.'},
-  {id:'Kotegaeshi',   name_ru:'Котэгаэси',   kyu:'4kyu', section:'Tachiai', sort_order:4,
-    description:'Выворот запястья с одновременным броском.',
-    principles:['Захват кисти должен быть мягким, но точным.','Выворот происходит по оси предплечья укэ.'],
-    sensei_quote:'Котэгаэси — не ломающая техника. Цель — создать болевое ощущение достаточное для броска.'},
-];
-
-const MOCK_TECHNIQUE_MISTAKES = [
-  {id:1, technique_id:'Ippondori',  title:'Тянуть руками',   description:'Попытка выполнить технику силой рук вместо тела.', sort_order:1},
-  {id:2, technique_id:'Ippondori',  title:'Потеря оси',      description:'Нарушение вертикальной оси разрушает структуру.',   sort_order:2},
-  {id:3, technique_id:'Ippondori',  title:'Разрыв контакта', description:'Любой разрыв даёт укэ возможность освободиться.',   sort_order:3},
-  {id:4, technique_id:'Shihonage',  title:'Прямая траектория',description:'Попытка вести руку по прямой вместо дуги.',        sort_order:1},
-  {id:5, technique_id:'Shihonage',  title:'Слабый финал',    description:'Недостаточное давление в финальной фазе.',          sort_order:2},
-  {id:6, technique_id:'Kotegaeshi', title:'Захват пальцами', description:'Сильный захват пальцами вместо ладонного.',         sort_order:1},
-];
-
-const MOCK_TECHNIQUE_VIDEOS = [
-  {id:'ip-v1', technique_id:'Ippondori',  category:'overview',   title:'Иппондори — Общий вид',       duration:'4:12', video_url:'', sort_order:1},
-  {id:'ip-v2', technique_id:'Ippondori',  category:'overview',   title:'Иппондори — Ура-хэнка',       duration:'3:40', video_url:'', sort_order:2},
-  {id:'ip-v3', technique_id:'Ippondori',  category:'details',    title:'Иппондори — Работа рук',      duration:'3:20', video_url:'', sort_order:1},
-  {id:'ip-v4', technique_id:'Ippondori',  category:'details',    title:'Иппондори — Позиция корпуса', duration:'2:55', video_url:'', sort_order:2},
-  {id:'ip-v5', technique_id:'Ippondori',  category:'mistakes',   title:'Иппондори — Ошибки',          duration:'2:30', video_url:'', sort_order:1},
-  {id:'ip-v6', technique_id:'Ippondori',  category:'variations', title:'Иппондори — Вариации',        duration:'4:15', video_url:'', sort_order:1},
-  {id:'ku-v1', technique_id:'Kurumadaoshi',category:'overview',  title:'Курумадаоси — Общий вид',     duration:'3:55', video_url:'', sort_order:1},
-  {id:'sh-v1', technique_id:'Shihonage',  category:'overview',   title:'Сихонагэ — Базовая форма',    duration:'6:00', video_url:'', sort_order:1},
-];
-
-const MOCK_COMMENTS = [
-  {id:1, lesson_id:'jan-2', user_id:'u3', user_name:'Анна Соколова',  text:'Вопрос: при входе в додзё поклон от двери или с татами?',                        created_at:'2026-01-16', replied:false},
-  {id:2, lesson_id:'mar-2', user_id:'u4', user_name:'Дмитрий Волков', text:'После многих повторений начинаю чувствовать разницу.',                           created_at:'2026-03-03', replied:true},
-  {id:3, lesson_id:'jan-1', user_id:'u2', user_name:'Михаил Орлов',   text:'Очень полезное введение. Впервые понял разницу между Айкидо и Дайто-рю.',         created_at:'2026-01-15', replied:false},
-  {id:4, lesson_id:'jan-3', user_id:'u6', user_name:'Сергей Новиков', text:'Сложно держать расслабленную руку при захвате — как развить это?',               created_at:'2026-01-20', replied:false},
+  {id:'jan',label:'Январь',   kanji:'一', is_open:false, sort_order:1,  description:'Основы дистанции и базовые захваты.'},
+  {id:'feb',label:'Февраль',  kanji:'二', is_open:false, sort_order:2,  description:'Укэми — техника падений.'},
+  {id:'mar',label:'Март',     kanji:'三', is_open:false, sort_order:3,  description:'Кихон — базовая техника.'},
+  {id:'apr',label:'Апрель',   kanji:'四', is_open:false, sort_order:4,  description:'Ирими — вход. Управление балансом укэ.'},
+  {id:'may',label:'Май',      kanji:'五', is_open:false, sort_order:5,  description:'Тэнкан — разворот.'},
+  {id:'jun',label:'Июнь',     kanji:'六', is_open:false, sort_order:6,  description:'Атэми — вспомогательные удары.'},
+  {id:'jul',label:'Июль',     kanji:'七', is_open:false, sort_order:7,  description:'Работа с дзё.'},
+  {id:'aug',label:'Август',   kanji:'八', is_open:false, sort_order:8,  description:'Работа с вооружённым партнёром.'},
+  {id:'sep',label:'Сентябрь', kanji:'九', is_open:false, sort_order:9,  description:'Подготовка к аттестации.'},
+  {id:'oct',label:'Октябрь',  kanji:'十', is_open:false, sort_order:10, description:'Оё — прикладные техники.'},
+  {id:'nov',label:'Ноябрь',   kanji:'十一',is_open:false, sort_order:11, description:'Рандори — свободная практика.'},
+  {id:'dec',label:'Декабрь',  kanji:'十二',is_open:false, sort_order:12, description:'Итоги года.'},
 ];
 
 // ─────────────────────────────────────────────────────────────
@@ -134,6 +37,19 @@ const MOCK_COMMENTS = [
 function fmtDate(iso) {
   if (!iso) return '';
   return new Date(iso).toLocaleDateString('ru-RU');
+}
+
+async function api(path, options = {}) {
+  const res = await fetch(path, {
+    ...options,
+    headers: { 'Content-Type': 'application/json', ...(options.headers || {}) },
+    body: options.body ? JSON.stringify(options.body) : undefined,
+  });
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({}));
+    throw new Error(err.error || `HTTP ${res.status}`);
+  }
+  return res.json();
 }
 
 // ─────────────────────────────────────────────────────────────
@@ -147,35 +63,33 @@ export function useUsers() {
 
   const load = useCallback(async () => {
     setLoading(true);
-    if (!IS_DB_CONNECTED) {
-      // fallback: mock
-      setUsers(MOCK_USERS.map(u => ({ ...u, joined_at: fmtDate(u.joined_at) })));
+    try {
+      const data = await api('/api/admin/users');
+      setUsers(data.map(u => ({ ...u, joined_at: fmtDate(u.joined_at) })));
+    } catch (e) {
+      setError(e.message);
+    } finally {
       setLoading(false);
-      return;
     }
-    const { data, error } = await supabase.from('profiles').select('id,name,email,level,role,status,joined_at,self_level,sensei_name,experience').order('joined_at');
-    if (error) setError(error.message);
-    else setUsers((data || []).map(u => ({ ...u, joined_at: fmtDate(u.joined_at) })));
-    setLoading(false);
   }, []);
 
   useEffect(() => { load(); }, [load]);
 
   const updateLevel = useCallback(async (userId, level) => {
-    if (!IS_DB_CONNECTED) {
+    try {
+      await api(`/api/admin/users/${userId}`, { method: 'PATCH', body: { level } });
       setUsers(prev => prev.map(u => u.id === userId ? { ...u, level } : u));
       return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
     }
-    const { error } = await supabase.from('profiles').update({ level }).eq('id', userId);
-    if (!error) setUsers(prev => prev.map(u => u.id === userId ? { ...u, level } : u));
-    return { ok: !error, error: error?.message };
   }, []);
 
   return { users, loading, error, updateLevel, reload: load };
 }
 
 // ─────────────────────────────────────────────────────────────
-// HOOK: useAccess (оплаты и доступы)
+// HOOK: useAccess
 // ─────────────────────────────────────────────────────────────
 
 export function useAccess() {
@@ -183,37 +97,26 @@ export function useAccess() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const load = async () => {
-      if (!IS_DB_CONNECTED) {
-        setAccess(MOCK_ACCESS.map(a => ({ ...a, paid_at: fmtDate(a.paid_at) })));
-        setLoading(false);
-        return;
-      }
-      const { data } = await supabase
-        .from('user_access')
-        .select('*, profiles(name)')
-        .order('paid_at', { ascending: false });
-      setAccess((data || []).map(a => ({
-        ...a,
-        user_name: a.profiles?.name,
-        paid_at: fmtDate(a.paid_at),
-        // desc для отображения в таблице
-        desc: a.type === 'month'
-          ? `${a.reference.charAt(0).toUpperCase() + a.reference.slice(1)} 2026`
-          : `База — ${a.reference}`,
-      })));
-      setLoading(false);
-    };
-    load();
+    api('/api/admin/access')
+      .then(data => {
+        setAccess(data.map(a => ({
+          ...a,
+          paid_at: fmtDate(a.paid_at),
+          desc: a.type === 'month'
+            ? `${a.reference.charAt(0).toUpperCase() + a.reference.slice(1)} 2026`
+            : `База — ${a.reference}`,
+        })));
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
-  // Формат платежей совместимый с компонентом SectionPayments
   const payments = access.map(a => ({
     id:       a.id,
     userId:   a.user_id,
-    userName: a.user_name || a.profiles?.name || '—',
+    userName: a.user_name || '—',
     date:     a.paid_at,
-    desc:     a.desc || (a.type === 'month' ? `${a.reference} 2026` : `База — ${a.reference}`),
+    desc:     a.desc,
     amount:   a.amount,
     type:     a.type,
   }));
@@ -230,90 +133,59 @@ export function useExams() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const load = async () => {
-      if (!IS_DB_CONNECTED) {
-        setExams(MOCK_EXAMS.map(e => ({ ...e, date: fmtDate(e.requested_at) })));
-        setLoading(false);
-        return;
-      }
-      const { data } = await supabase
-        .from('exams')
-        .select('*, profiles!exams_user_id_fkey(name)')
-        .order('requested_at', { ascending: false });
-      setExams((data || []).map(e => ({
-        ...e,
-        user_name: e.profiles?.name,
-        date:      fmtDate(e.requested_at),
-        teacher_note: e.teacher_note || '',
-      })));
-      setLoading(false);
-    };
-    load();
+    api('/api/admin/exams')
+      .then(data => {
+        setExams(data.map(e => ({ ...e, date: fmtDate(e.requested_at) })));
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   const approveExam = useCallback(async (id, note, updateUsers) => {
-    const exam = exams.find(e => e.id === id);
-    if (!IS_DB_CONNECTED) {
+    try {
+      const exam = exams.find(e => e.id === id);
+      await api(`/api/admin/exams/${id}`, { method: 'PATCH', body: { status: 'approved', teacher_note: note } });
       setExams(prev => prev.map(e => e.id === id ? { ...e, status: 'approved', teacher_note: note } : e));
-      if (updateUsers) updateUsers(exam.user_id, exam.target_level);
+      if (updateUsers && exam) updateUsers(exam.user_id, exam.target_level);
       return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
     }
-    const { error } = await supabase
-      .from('exams')
-      .update({ status: 'approved', teacher_note: note, resolved_at: new Date().toISOString() })
-      .eq('id', id);
-    if (!error) {
-      setExams(prev => prev.map(e => e.id === id ? { ...e, status: 'approved', teacher_note: note } : e));
-      // Триггер в БД обновит уровень автоматически, но обновляем локально тоже
-      if (updateUsers) updateUsers(exam.user_id, exam.target_level);
-    }
-    return { ok: !error, error: error?.message };
   }, [exams]);
 
   const rejectExam = useCallback(async (id, note) => {
-    if (!IS_DB_CONNECTED) {
+    try {
+      await api(`/api/admin/exams/${id}`, { method: 'PATCH', body: { status: 'rejected', teacher_note: note } });
       setExams(prev => prev.map(e => e.id === id ? { ...e, status: 'rejected', teacher_note: note } : e));
       return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
     }
-    const { error } = await supabase
-      .from('exams')
-      .update({ status: 'rejected', teacher_note: note, resolved_at: new Date().toISOString() })
-      .eq('id', id);
-    if (!error) setExams(prev => prev.map(e => e.id === id ? { ...e, status: 'rejected', teacher_note: note } : e));
-    return { ok: !error, error: error?.message };
   }, []);
 
   const addManualExam = useCallback(async ({ userId, userName, targetLevel, result, note }) => {
-    const newExam = {
-      id:           Date.now(),
-      user_id:      userId,
-      user_name:    userName,
-      target_level: targetLevel,
-      status:       result === 'passed' ? 'approved' : 'rejected',
-      teacher_note: note,
-      date:         new Date().toLocaleDateString('ru-RU'),
-      requested_at: new Date().toISOString(),
-    };
-    if (!IS_DB_CONNECTED) {
-      setExams(prev => [...prev, newExam]);
+    try {
+      const { exam } = await api('/api/admin/exams', {
+        method: 'POST',
+        body: { userId, targetLevel, status: result === 'passed' ? 'approved' : 'rejected', note },
+      });
+      setExams(prev => [...prev, {
+        ...exam,
+        user_name: userName,
+        date: new Date().toLocaleDateString('ru-RU'),
+        teacher_note: note,
+      }]);
       return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
     }
-    const { data, error } = await supabase
-      .from('exams')
-      .insert({ user_id: userId, target_level: targetLevel, status: newExam.status, teacher_note: note })
-      .select()
-      .single();
-    if (!error) setExams(prev => [...prev, { ...newExam, id: data.id }]);
-    return { ok: !error, error: error?.message };
   }, []);
 
   return { exams, loading, approveExam, rejectExam, addManualExam };
 }
 
-
 // ─────────────────────────────────────────────────────────────
 // HOOK: useMonthsWithLessons
-// Возвращает массив месяцев, у каждого month.lessons = [...]
 // ─────────────────────────────────────────────────────────────
 
 export function useMonthsWithLessons() {
@@ -322,29 +194,26 @@ export function useMonthsWithLessons() {
 
   const reload = useCallback(async () => {
     setLoading(true);
-    if (!IS_DB_CONNECTED) {
-      setMonths(MOCK_MONTHS.map(m => ({
+    try {
+      const [monthsData, allLessons] = await Promise.all([
+        api('/api/months'),
+        // Загружаем уроки для всех месяцев параллельно
+        Promise.all(MOCK_MONTHS.map(m =>
+          api(`/api/lessons?month_id=${m.id}`).catch(() => [])
+        )).then(results => results.flat()),
+      ]);
+      setMonths(monthsData.map(m => ({
         ...m,
-        lessons: MOCK_LESSONS.filter(l => l.month_id === m.id),
+        lessons: allLessons.filter(l => l.month_id === m.id),
       })));
+    } catch {
+      setMonths(MOCK_MONTHS.map(m => ({ ...m, lessons: [] })));
+    } finally {
       setLoading(false);
-      return;
     }
-    const [{ data: mData }, { data: lData }] = await Promise.all([
-      supabase.from('months').select('*').order('sort_order'),
-      supabase.from('lessons').select('*').order('month_id, num'),
-    ]);
-    const monthList  = mData  || [];
-    const lessonList = lData  || [];
-    setMonths(monthList.map(m => ({
-      ...m,
-      lessons: lessonList.filter(l => l.month_id === m.id),
-    })));
-    setLoading(false);
   }, []);
 
   useEffect(() => { reload(); }, [reload]);
-
   return { months, loading, reload };
 }
 
@@ -357,22 +226,22 @@ export function useMonths() {
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
-    const load = async () => {
-      if (!IS_DB_CONNECTED) { setMonths(MOCK_MONTHS); setLoading(false); return; }
-      const { data } = await supabase.from('months').select('*').order('sort_order');
-      setMonths(data || []);
-      setLoading(false);
-    };
-    load();
+    api('/api/months')
+      .then(data => setMonths(data))
+      .catch(() => setMonths(MOCK_MONTHS))
+      .finally(() => setLoading(false));
   }, []);
 
   const toggleOpen = useCallback(async (id) => {
     const month = months.find(m => m.id === id);
     const next  = !month?.is_open;
-    if (!IS_DB_CONNECTED) { setMonths(prev => prev.map(m => m.id === id ? { ...m, is_open: next } : m)); return { ok: true }; }
-    const { error } = await supabase.from('months').update({ is_open: next }).eq('id', id);
-    if (!error) setMonths(prev => prev.map(m => m.id === id ? { ...m, is_open: next } : m));
-    return { ok: !error };
+    try {
+      await api(`/api/months/${id}`, { method: 'PATCH', body: { is_open: next } });
+      setMonths(prev => prev.map(m => m.id === id ? { ...m, is_open: next } : m));
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
   }, [months]);
 
   return { months, loading, toggleOpen };
@@ -390,76 +259,61 @@ export function useLessons(monthId) {
   const reload = useCallback(async () => {
     if (!monthId) return;
     setLoading(true);
-    if (!IS_DB_CONNECTED) {
-      setLessons(MOCK_LESSONS.filter(l => l.month_id === monthId));
+    try {
+      const data = await api(`/api/lessons?month_id=${monthId}`);
+      setLessons(data);
+    } catch {
+      setLessons([]);
+    } finally {
       setLoading(false);
-      return;
     }
-    const { data } = await supabase
-      .from('lessons')
-      .select('*')
-      .eq('month_id', monthId)
-      .order('num');
-    setLessons(data || []);
-    setLoading(false);
   }, [monthId]);
 
   useEffect(() => { reload(); }, [reload]);
 
   const saveLesson = useCallback(async (lesson) => {
     setSaving(true);
-    const patch = {
-      title:          lesson.title,
-      subtitle:       lesson.subtitle,
-      text:           lesson.text,
-      duration:       lesson.duration,
-      video_url:      lesson.video_url || lesson.videoUrl || '',
-      ...(lesson.video_id       !== undefined && { video_id:       lesson.video_id }),
-      ...(lesson.video_status   !== undefined && { video_status:   lesson.video_status }),
-      ...(lesson.video_provider !== undefined && { video_provider: lesson.video_provider }),
-    };
-    if (!IS_DB_CONNECTED) {
-      setLessons(prev => prev.map(l => l.id === lesson.id ? { ...l, ...patch } : l));
-      setSaving(false);
+    try {
+      await api(`/api/lessons/${lesson.id}`, {
+        method: 'PATCH',
+        body: {
+          title:          lesson.title,
+          subtitle:       lesson.subtitle,
+          text:           lesson.text,
+          duration:       lesson.duration,
+          video_url:      lesson.video_url || lesson.videoUrl || '',
+          ...(lesson.video_id       !== undefined && { video_id:       lesson.video_id }),
+          ...(lesson.video_status   !== undefined && { video_status:   lesson.video_status }),
+          ...(lesson.video_provider !== undefined && { video_provider: lesson.video_provider }),
+        },
+      });
+      setLessons(prev => prev.map(l => l.id === lesson.id ? { ...l, ...lesson } : l));
       return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    } finally {
+      setSaving(false);
     }
-    const { error } = await supabase.from('lessons').update(patch).eq('id', lesson.id);
-    if (!error) setLessons(prev => prev.map(l => l.id === lesson.id ? { ...l, ...patch } : l));
-    setSaving(false);
-    return { ok: !error, error: error?.message };
   }, []);
 
-  const addLesson = useCallback(async (monthId) => {
-    const num    = (lessons.length || 0) + 1;
-    const newId  = `${monthId}-${Date.now()}`;
-    const newL   = { id: newId, month_id: monthId, num, title: 'Новый урок', subtitle: '', text: '', duration: '00:00', video_url: '' };
-    if (!IS_DB_CONNECTED) {
-      setLessons(prev => [...prev, newL]);
-      return { ok: true, lesson: newL };
+  const addLesson = useCallback(async (mId) => {
+    try {
+      const { lesson } = await api('/api/lessons', { method: 'POST', body: { month_id: mId } });
+      setLessons(prev => [...prev, lesson]);
+      return { ok: true, lesson };
+    } catch (e) {
+      return { ok: false, error: e.message };
     }
-    const { data, error } = await supabase.from('lessons').insert(newL).select().single();
-    if (!error) setLessons(prev => [...prev, data]);
-    return { ok: !error, lesson: error ? newL : data };
-  }, [lessons]);
+  }, []);
 
   const deleteLesson = useCallback(async (id) => {
-    if (!IS_DB_CONNECTED) { setLessons(prev => prev.filter(l => l.id !== id)); return { ok: true }; }
-    // Сначала удаляем зависимые записи (FK: lesson_progress → lessons)
-    await supabase.from('lesson_progress').delete().eq('lesson_id', id);
-    await supabase.from('comments').delete().eq('lesson_id', id);
-    // Теперь удаляем урок
-    const { error, data } = await supabase
-      .from('lessons')
-      .delete()
-      .eq('id', id)
-      .select(); // .select() — чтобы убедиться что строка реально удалена
-    if (error) {
-      console.error('[deleteLesson] error:', error);
-      return { ok: false, error: error.message };
+    try {
+      await api(`/api/lessons/${id}`, { method: 'DELETE' });
+      setLessons(prev => prev.filter(l => l.id !== id));
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
     }
-    console.log('[deleteLesson] deleted:', data);
-    setLessons(prev => prev.filter(l => l.id !== id));
-    return { ok: true };
   }, []);
 
   return { lessons, loading, saving, saveLesson, addLesson, deleteLesson, reload };
@@ -477,37 +331,24 @@ export function useTechniques() {
   const [saving,     setSaving]     = useState(false);
 
   useEffect(() => {
-    const load = async () => {
-      if (!IS_DB_CONNECTED) {
-        setTechniques(MOCK_TECHNIQUES);
-        setMistakes(MOCK_TECHNIQUE_MISTAKES);
-        setVideos(MOCK_TECHNIQUE_VIDEOS);
-        setLoading(false);
-        return;
-      }
-      const [t, m, v] = await Promise.all([
-        supabase.from('techniques').select('*').order('sort_order'),
-        supabase.from('technique_mistakes').select('*').order('sort_order'),
-        supabase.from('technique_videos').select('*').order('sort_order'),
-      ]);
-      setTechniques(t.data || []);
-      setMistakes(m.data || []);
-      setVideos(v.data || []);
-      setLoading(false);
-    };
-    load();
+    api('/api/techniques')
+      .then(({ techniques: t, mistakes: m, videos: v }) => {
+        setTechniques(t || []);
+        setMistakes(m   || []);
+        setVideos(v     || []);
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
-  // Возвращает контент конкретной техники в удобном формате
   const getTechContent = useCallback((techId) => {
     const tech = techniques.find(t => t.id === techId) || {};
     const sort = (a, b) => (a.sort_order ?? 0) - (b.sort_order ?? 0);
     return {
-      description: tech.description   || '',
-      // principles может прийти как null из Supabase если jsonb не заполнен
+      description: tech.description || '',
       principles:  Array.isArray(tech.principles) ? tech.principles : [],
-      senseiQuote: tech.sensei_quote   || '',
-      mistakes:     mistakes.filter(m => m.technique_id === techId).sort(sort),
+      senseiQuote: tech.sensei_quote || '',
+      mistakes:    mistakes.filter(m => m.technique_id === techId).sort(sort),
       videos: {
         overview:   videos.filter(v => v.technique_id === techId && v.category === 'overview').sort(sort),
         details:    videos.filter(v => v.technique_id === techId && v.category === 'details').sort(sort),
@@ -517,78 +358,62 @@ export function useTechniques() {
     };
   }, [techniques, mistakes, videos]);
 
-  // Сохранить основную инфо + принципы + цитату сэнсэя
   const saveTechInfo = useCallback(async (techId, patch) => {
     setSaving(true);
-    const dbPatch = {
-      name_ru:      patch.nameRu,
-      kyu:          patch.kyu,
-      section:      patch.section,
-      description:  patch.description,
-      principles:   patch.principles,
-      sensei_quote: patch.senseiQuote,
-    };
-    if (!IS_DB_CONNECTED) {
-      setTechniques(prev => prev.map(t => t.id === techId ? { ...t, ...dbPatch } : t));
-      setSaving(false);
+    try {
+      await api(`/api/techniques/${techId}`, {
+        method: 'PATCH',
+        body: {
+          name_ru:      patch.nameRu,
+          kyu:          patch.kyu,
+          section:      patch.section,
+          description:  patch.description,
+          principles:   patch.principles,
+          sensei_quote: patch.senseiQuote,
+        },
+      });
+      setTechniques(prev => prev.map(t => t.id === techId ? { ...t, ...patch, name_ru: patch.nameRu, sensei_quote: patch.senseiQuote } : t));
       return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    } finally {
+      setSaving(false);
     }
-    const { error } = await supabase.from('techniques').update(dbPatch).eq('id', techId);
-    if (!error) setTechniques(prev => prev.map(t => t.id === techId ? { ...t, ...dbPatch } : t));
-    setSaving(false);
-    return { ok: !error };
   }, []);
 
-  // Сохранить ошибки (полная замена набора для техники)
   const saveMistakes = useCallback(async (techId, newMistakes) => {
     setSaving(true);
-    if (!IS_DB_CONNECTED) {
-      setMistakes(prev => [
-        ...prev.filter(m => m.technique_id !== techId),
-        ...newMistakes.map((m, i) => ({ ...m, id: m.id || `m-${Date.now()}-${i}`, technique_id: techId, sort_order: i })),
-      ]);
-      setSaving(false);
+    try {
+      const { mistakes: updated } = await api(`/api/techniques/${techId}/mistakes`, {
+        method: 'POST',
+        body: { mistakes: newMistakes },
+      });
+      setMistakes(prev => [...prev.filter(m => m.technique_id !== techId), ...(updated || [])]);
       return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    } finally {
+      setSaving(false);
     }
-    // Удаляем старые, вставляем новые
-    await supabase.from('technique_mistakes').delete().eq('technique_id', techId);
-    const toInsert = newMistakes.map((m, i) => ({ technique_id: techId, title: m.title, description: m.desc || m.description, sort_order: i }));
-    const { data, error } = await supabase.from('technique_mistakes').insert(toInsert).select();
-    if (!error) setMistakes(prev => [...prev.filter(m => m.technique_id !== techId), ...(data || [])]);
-    setSaving(false);
-    return { ok: !error };
   }, []);
 
-  // Сохранить видео одной категории
   const saveVideos = useCallback(async (techId, category, newVideos) => {
     setSaving(true);
-    if (!IS_DB_CONNECTED) {
+    try {
+      const { data: updated } = await api(`/api/techniques/${techId}/videos/${category}`, {
+        method: 'POST',
+        body: { videos: newVideos },
+      });
       setVideos(prev => [
         ...prev.filter(v => !(v.technique_id === techId && v.category === category)),
-        ...newVideos.map((v, i) => ({ ...v, technique_id: techId, category, sort_order: i })),
+        ...(updated || []),
       ]);
+      return { ok: true, data: updated || [] };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    } finally {
       setSaving(false);
-      return { ok: true };
     }
-    await supabase.from('technique_videos').delete().eq('technique_id', techId).eq('category', category);
-    const toInsert = newVideos.map((v, i) => ({
-      technique_id:   techId,
-      category,
-      title:          v.title,
-      duration:       v.duration,
-      video_url:      v.video_url || v.videoUrl || '',
-      sort_order:     i,
-      // ВАЖНО: video_id/video_status/video_provider всегда присутствуют как ключи —
-      // supabase-js строит ?columns= из ключей первой записи.
-      // Если ключа нет у первой записи — он игнорируется для ВСЕХ записей.
-      video_id:       v.video_id       ?? null,
-      video_status:   v.video_status   ?? 'none',
-      video_provider: v.video_provider ?? null,
-    }));
-    const { data, error } = await supabase.from('technique_videos').insert(toInsert).select();
-    if (!error) setVideos(prev => [...prev.filter(v => !(v.technique_id === techId && v.category === category)), ...(data || [])]);
-    setSaving(false);
-    return { ok: !error, data: data || [] };
   }, []);
 
   return { techniques, videos, mistakes, loading, saving, getTechContent, saveTechInfo, saveMistakes, saveVideos };
@@ -596,9 +421,6 @@ export function useTechniques() {
 
 // ─────────────────────────────────────────────────────────────
 // HOOK: useUserAccess
-// Возвращает Set оплаченных доступов текущего пользователя.
-// accessSet.has('month:jan') → true если доступ к январю открыт
-// accessSet.has('section:ikkajo') → true если куплено иккаджо
 // ─────────────────────────────────────────────────────────────
 
 export function useUserAccess() {
@@ -607,23 +429,19 @@ export function useUserAccess() {
 
   const reload = useCallback(async () => {
     setLoading(true);
-    if (!IS_DB_CONNECTED) {
+    try {
+      const data = await api('/api/user/access');
+      setAccessSet(new Set(data.map(a => `${a.type}:${a.reference}`)));
+    } catch {
       setAccessSet(new Set());
+    } finally {
       setLoading(false);
-      return;
     }
-    const { data } = await supabase
-      .from('user_access')
-      .select('type, reference');
-    const set = new Set((data || []).map(a => `${a.type}:${a.reference}`));
-    setAccessSet(set);
-    setLoading(false);
   }, []);
 
   useEffect(() => { reload(); }, [reload]);
 
-  // Хелперы
-  const hasMonth   = useCallback((monthId)  => accessSet.has(`month:${monthId}`),   [accessSet]);
+  const hasMonth   = useCallback((monthId)   => accessSet.has(`month:${monthId}`),   [accessSet]);
   const hasSection = useCallback((sectionId) => accessSet.has(`section:${sectionId}`), [accessSet]);
 
   return { accessSet, hasMonth, hasSection, loading, reload };
@@ -638,99 +456,59 @@ export function useComments() {
   const [loading,  setLoading]  = useState(true);
 
   useEffect(() => {
-    const load = async () => {
-      if (!IS_DB_CONNECTED) { setComments(MOCK_COMMENTS); setLoading(false); return; }
-      const { data } = await supabase
-        .from('comments')
-        .select('*, profiles(name)')
-        .order('created_at', { ascending: false });
-      setComments((data || []).map(c => ({
-        ...c,
-        user_name:  c.profiles?.name,
-        created_at: fmtDate(c.created_at),
-        replied:    false, // Статус ответа хранить в отдельной таблице, пока mock
-      })));
-      setLoading(false);
-    };
-    load();
+    api('/api/admin/comments')
+      .then(data => {
+        setComments(data.map(c => ({ ...c, created_at: fmtDate(c.created_at) })));
+      })
+      .catch(() => {})
+      .finally(() => setLoading(false));
   }, []);
 
   const markReplied = useCallback((id) => {
     setComments(prev => prev.map(c => c.id === id ? { ...c, replied: true } : c));
-    // TODO: supabase.from('comment_replies').insert({ comment_id: id, text: replyText, admin_id: ... })
   }, []);
 
   return { comments, loading, markReplied };
 }
 
 // ─────────────────────────────────────────────────────────────
-// HOOK: useVideoUpload — загрузка на Supabase Storage
+// HOOK: useVideoUpload — устарел, заменён на KinescopeUploader
+// Оставлен для совместимости, но не выполняет реальной загрузки
 // ─────────────────────────────────────────────────────────────
 
 export function useVideoUpload() {
-  const [uploading,   setUploading]   = useState(false);
-  const [uploadError, setUploadError] = useState(null);
-
-  const uploadFile = useCallback(async (file, path) => {
-    setUploading(true);
-    setUploadError(null);
-
-    if (!IS_DB_CONNECTED) {
-      // Mock — возвращаем fake URL
-      await new Promise(r => setTimeout(r, 800)); // имитация загрузки
-      setUploading(false);
-      return { ok: true, url: `[file: ${file.name}]` };
-    }
-
-    const ext      = file.name.split('.').pop();
-    const filePath = `${path}.${ext}`;
-
-    const { error: upError } = await supabase.storage
-      .from('videos')
-      .upload(filePath, file, { upsert: true, contentType: file.type });
-
-    if (upError) {
-      setUploadError(upError.message);
-      setUploading(false);
-      return { ok: false, error: upError.message };
-    }
-
-    const { data: { publicUrl } } = supabase.storage
-      .from('videos')
-      .getPublicUrl(filePath);
-
-    setUploading(false);
-    return { ok: true, url: publicUrl };
-  }, []);
-
-  return { uploadFile, uploading, uploadError };
+  return {
+    uploadFile:  async () => ({ ok: false, error: 'Используйте KinescopeUploader' }),
+    uploading:   false,
+    uploadError: null,
+  };
 }
 
 // ─────────────────────────────────────────────────────────────
 // ACCESS HELPERS (pure functions, no hooks)
 // ─────────────────────────────────────────────────────────────
 
-// userAccessRows — массив {type, reference} из user_access текущего юзера
-
-// ─── Access helpers: единственный источник правды — ikkajoSections.js ───────
-// Переэкспортируем из access.js чтобы не ломать существующие импорты из db.js
 export { hasMonthAccess, hasIkkajoFullAccess, hasIkkajoSectionAccess, getAccessibleIkkajoSections } from '@/lib/access';
 export { IKKAJO_SECTION_KEYS as IKKAJO_SECTIONS, IKKAJO_SECTION_LABELS, IKKAJO_SECTION_KEYS } from '@/lib/ikkajoSections';
 
 // ─────────────────────────────────────────────────────────────
 // HOOK: useUserAccessRows
-// Для использования в Dashboard/IkkajoPage — возвращает сырые rows
 // ─────────────────────────────────────────────────────────────
+
 export function useUserAccessRows() {
   const [rows,    setRows]    = useState([]);
   const [loading, setLoading] = useState(true);
 
   const reload = useCallback(async () => {
     setLoading(true);
-    if (!IS_DB_CONNECTED) { setRows([]); setLoading(false); return; }
-    const { data } = await supabase.from('user_access').select('type, reference');
-    setRows(data || []);
-    setLoading(false);
+    try {
+      const data = await api('/api/user/access');
+      setRows(data);
+    } catch {
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
   }, []);
 
   useEffect(() => { reload(); }, [reload]);
@@ -740,42 +518,50 @@ export function useUserAccessRows() {
 // ─────────────────────────────────────────────────────────────
 // ADMIN: grantAccess / revokeAccess
 // ─────────────────────────────────────────────────────────────
+
 export async function grantAccess({ userId, type, reference }) {
-  const { error } = await supabase.from('user_access').upsert(
-    { user_id: userId, type, reference, paid_at: new Date().toISOString(), amount: 0 },
-    { onConflict: 'user_id,type,reference' }
-  );
-  return { ok: !error, error: error?.message };
+  try {
+    await api('/api/admin/grant-access', {
+      method: 'POST',
+      body: { user_id: userId, type, reference },
+    });
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
 }
 
 export async function revokeAccess({ userId, type, reference }) {
-  const { error } = await supabase
-    .from('user_access')
-    .delete()
-    .eq('user_id', userId)
-    .eq('type', type)
-    .eq('reference', reference);
-  return { ok: !error, error: error?.message };
+  try {
+    await api('/api/admin/grant-access', {
+      method: 'POST',
+      body: { user_id: userId, type, reference, revoke: true },
+    });
+    return { ok: true };
+  } catch (e) {
+    return { ok: false, error: e.message };
+  }
 }
 
 // ─────────────────────────────────────────────────────────────
 // HOOK: useAdminUserAccess
-// Для admin panel — список доступов конкретного юзера (с reload)
 // ─────────────────────────────────────────────────────────────
+
 export function useAdminUserAccess(userId) {
   const [rows,    setRows]    = useState([]);
   const [loading, setLoading] = useState(false);
 
   const reload = useCallback(async () => {
-    if (!userId || !IS_DB_CONNECTED) { setRows([]); return; }
+    if (!userId) { setRows([]); return; }
     setLoading(true);
-    const { data } = await supabase
-      .from('user_access')
-      .select('*')
-      .eq('user_id', userId)
-      .order('paid_at', { ascending: false });
-    setRows(data || []);
-    setLoading(false);
+    try {
+      const data = await api(`/api/admin/user-access?user_id=${userId}`);
+      setRows(data);
+    } catch {
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
   }, [userId]);
 
   useEffect(() => { reload(); }, [reload]);
@@ -784,8 +570,8 @@ export function useAdminUserAccess(userId) {
 
 // ─────────────────────────────────────────────────────────────
 // HOOK: useKnowledge
-// База знаний — CRUD для admin, read-only для пользователей
 // ─────────────────────────────────────────────────────────────
+
 export function useKnowledge({ adminMode = false } = {}) {
   const [items,   setItems]   = useState([]);
   const [loading, setLoading] = useState(true);
@@ -793,45 +579,56 @@ export function useKnowledge({ adminMode = false } = {}) {
 
   const reload = useCallback(async () => {
     setLoading(true);
-    if (!IS_DB_CONNECTED) { setItems([]); setLoading(false); return; }
-    const q = supabase.from('knowledge_items').select('*').order('sort_order');
-    if (!adminMode) q.eq('is_published', true);
-    const { data } = await q;
-    setItems(data || []);
-    setLoading(false);
+    try {
+      const url  = adminMode ? '/api/knowledge?admin=1' : '/api/knowledge';
+      const data = await api(url);
+      setItems(data);
+    } catch {
+      setItems([]);
+    } finally {
+      setLoading(false);
+    }
   }, [adminMode]);
 
   useEffect(() => { reload(); }, [reload]);
 
   const saveItem = useCallback(async (item) => {
     setSaving(true);
-    const patch = {
-      title:          item.title,
-      subtitle:       item.subtitle || '',
-      content:        item.content  || '',
-      sort_order:     item.sort_order ?? 0,
-      is_published:   item.is_published ?? false,
-      video_provider: item.video_provider || null,
-      video_id:       item.video_id       || null,
-      video_status:   item.video_status   || 'none',
-    };
-    let error;
-    if (item.id) {
-      ({ error } = await supabase.from('knowledge_items').update(patch).eq('id', item.id));
-      if (!error) setItems(prev => prev.map(i => i.id === item.id ? { ...i, ...patch } : i));
-    } else {
-      const { data, error: e } = await supabase.from('knowledge_items').insert(patch).select().single();
-      error = e;
-      if (!error && data) setItems(prev => [...prev, data]);
+    try {
+      const body = {
+        title:          item.title,
+        subtitle:       item.subtitle || '',
+        content:        item.content  || '',
+        sort_order:     item.sort_order ?? 0,
+        is_published:   item.is_published ?? false,
+        video_provider: item.video_provider || null,
+        video_id:       item.video_id       || null,
+        video_status:   item.video_status   || 'none',
+      };
+
+      if (item.id) {
+        const { item: updated } = await api(`/api/knowledge/${item.id}`, { method: 'PUT', body });
+        setItems(prev => prev.map(i => i.id === item.id ? updated : i));
+      } else {
+        const { item: created } = await api('/api/knowledge', { method: 'POST', body });
+        setItems(prev => [...prev, created]);
+      }
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    } finally {
+      setSaving(false);
     }
-    setSaving(false);
-    return { ok: !error, error: error?.message };
   }, []);
 
   const deleteItem = useCallback(async (id) => {
-    const { error } = await supabase.from('knowledge_items').delete().eq('id', id);
-    if (!error) setItems(prev => prev.filter(i => i.id !== id));
-    return { ok: !error, error: error?.message };
+    try {
+      await api(`/api/knowledge/${id}`, { method: 'DELETE' });
+      setItems(prev => prev.filter(i => i.id !== id));
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
   }, []);
 
   return { items, loading, saving, reload, saveItem, deleteItem };

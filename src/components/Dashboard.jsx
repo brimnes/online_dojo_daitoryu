@@ -9,7 +9,6 @@ import { useMonths, useLessons, useUserAccessRows, hasMonthAccess, useKnowledge 
 import TakedaMon from '@/components/TakedaMon';
 import { hasIkkajoFullAccess, hasIkkajoSectionAccess, IKKAJO_SECTIONS, IKKAJO_SECTION_LABELS, getAccessibleIkkajoSections } from '@/lib/access';
 import { useProducts } from '@/lib/useProducts';
-import { supabase } from '@/lib/supabase';
 
 const TABS = [
   { id: 'knowledge', label: 'База знаний'   },
@@ -575,15 +574,10 @@ function TabUnlockAccess({ userAccess, isMobile }) {
     setBuyingId(product.id);
     setBuyError('');
     try {
-      const { data: { session } } = await supabase.auth.getSession();
-      if (!session?.access_token) throw new Error('Не авторизован');
-
+      // Авторизация через httpOnly cookie — заголовок Authorization не нужен
       const res = await fetch('/api/yookassa/create-payment', {
         method:  'POST',
-        headers: {
-          'Content-Type':  'application/json',
-          'Authorization': `Bearer ${session.access_token}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ product_id: product.id }),
       });
 

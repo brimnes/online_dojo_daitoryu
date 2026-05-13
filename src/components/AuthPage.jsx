@@ -108,8 +108,14 @@ const STEPS = [
 
 // ─── ГЛАВНЫЙ КОМПОНЕНТ ─────────────────────────────────────────
 export default function AuthPage({ onSuccess }) {
-  const [mode, setMode] = useState('login'); // 'login' | 'register'
+  const [mode, setMode] = useState('login'); // 'login' | 'register' | 'set-password'
+  const [resetUserId, setResetUserId] = useState(null);
   const isMobile = useIsMobile();
+
+  const handleResetRequired = (userId) => {
+    setResetUserId(userId);
+    setMode('set-password');
+  };
 
   return (
     <div style={{
@@ -174,18 +180,22 @@ export default function AuthPage({ onSuccess }) {
           </div>
         )}
         <div style={{ width:'100%', maxWidth: isMobile ? '100%' : 460 }}>
-          {/* Переключатель режима */}
-          <div style={{ display:'flex', background:C.white, border:`1px solid ${C.border}`, marginBottom:36, padding:3 }}>
-            {[{id:'login',label:'Вход'},{id:'register',label:'Регистрация'}].map(m=>(
-              <button key={m.id} onClick={()=>setMode(m.id)}
-                style={{ flex:1, padding:'10px', background:mode===m.id?C.dark:'transparent', color:mode===m.id?'#fff':C.muted, border:'none', fontSize:12, cursor:'pointer', transition:'all 0.15s', fontFamily:"'Jost',sans-serif", fontWeight:mode===m.id?500:400 }}>
-                {m.label}
-              </button>
-            ))}
-          </div>
+          {/* Переключатель режима (скрыт при смене пароля) */}
+          {mode !== 'set-password' && (
+            <div style={{ display:'flex', background:C.white, border:`1px solid ${C.border}`, marginBottom:36, padding:3 }}>
+              {[{id:'login',label:'Вход'},{id:'register',label:'Регистрация'}].map(m=>(
+                <button key={m.id} onClick={()=>setMode(m.id)}
+                  style={{ flex:1, padding:'10px', background:mode===m.id?C.dark:'transparent', color:mode===m.id?'#fff':C.muted, border:'none', fontSize:12, cursor:'pointer', transition:'all 0.15s', fontFamily:"'Jost',sans-serif", fontWeight:mode===m.id?500:400 }}>
+                  {m.label}
+                </button>
+              ))}
+            </div>
+          )}
 
           <div className="auth-anim" key={mode}>
-            {mode==='login' ? <LoginForm onSuccess={onSuccess} onRegister={()=>setMode('register')}/> : <RegisterForm onSuccess={onSuccess} onLogin={()=>setMode('login')}/>}
+            {mode==='login'         && <LoginForm onSuccess={onSuccess} onRegister={()=>setMode('register')} onResetRequired={handleResetRequired}/>}
+            {mode==='register'      && <RegisterForm onSuccess={onSuccess} onLogin={()=>setMode('login')}/>}
+            {mode==='set-password'  && <SetPasswordForm userId={resetUserId} onSuccess={onSuccess} onBack={()=>setMode('login')}/>}
           </div>
         </div>
       </div>
@@ -194,7 +204,7 @@ export default function AuthPage({ onSuccess }) {
 }
 
 // ─── ФОРМА ВХОДА ───────────────────────────────────────────────
-function LoginForm({ onSuccess, onRegister }) {
+function LoginForm({ onSuccess, onRegister, onResetRequired }) {
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [errors,   setErrors]   = useState({});
@@ -213,23 +223,30 @@ function LoginForm({ onSuccess, onRegister }) {
     if (Object.keys(e).length) { setErrors(e); return; }
     setErrors({}); setServerErr(''); setLoading(true);
 
-    const { supabase } = await import('@/lib/supabase');
-    const { data, error } = await supabase.auth.signInWithPassword({ email, password });
-    setLoading(false);
+    try {
+      const res  = await fetch('/api/auth/login', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email, password }),
+      });
+      const data = await res.json();
+      setLoading(false);
 
-    if (error) {
-      setServerErr('Неверный email или пароль');
-      return;
+      if (!res.ok) {
+        if (data.resetRequired) {
+          // Перенаправляем на форму смены пароля
+          onResetRequired(data.userId);
+          return;
+        }
+        setServerErr(data.error || 'Неверный email или пароль');
+        return;
+      }
+
+      onSuccess(data.user);
+    } catch {
+      setLoading(false);
+      setServerErr('Ошибка соединения. Попробуйте ещё раз.');
     }
-
-    // Загружаем профиль
-    const { data: profile } = await supabase
-      .from('profiles')
-      .select('*')
-      .eq('id', data.user.id)
-      .single();
-
-    onSuccess(profile || { email, name: email.split('@')[0], id: data.user.id });
   };
 
   return (
@@ -273,6 +290,83 @@ function LoginForm({ onSuccess, onRegister }) {
   );
 }
 
+// ─── ФОРМА СМЕНЫ ПАРОЛЯ (для импортированных пользователей) ───
+function SetPasswordForm({ userId, onSuccess, onBack }) {
+  const [password,  setPassword]  = useState('');
+  const [password2, setPassword2] = useState('');
+  const [errors,    setErrors]    = useState({});
+  const [loading,   setLoading]   = useState(false);
+  const [serverErr, setServerErr] = useState('');
+
+  const validate = () => {
+    const e = {};
+    if (password.length < 6)        e.password  = 'Минимум 6 символов';
+    if (password !== password2)     e.password2 = 'Пароли не совпадают';
+    return e;
+  };
+
+  const handleSubmit = async () => {
+    const e = validate();
+    if (Object.keys(e).length) { setErrors(e); return; }
+    setErrors({}); setServerErr(''); setLoading(true);
+
+    try {
+      const res  = await fetch('/api/auth/set-password', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ userId, password }),
+      });
+      const data = await res.json();
+      setLoading(false);
+
+      if (!res.ok) { setServerErr(data.error || 'Ошибка при сохранении пароля'); return; }
+      onSuccess(data.user);
+    } catch {
+      setLoading(false);
+      setServerErr('Ошибка соединения. Попробуйте ещё раз.');
+    }
+  };
+
+  return (
+    <div>
+      <div style={{ marginBottom: 28 }}>
+        <div style={{ fontFamily:"var(--font-jost), 'Jost', sans-serif", fontSize:22, fontWeight:600, color:'#1a1a1a', marginBottom:6 }}>
+          Придумайте пароль
+        </div>
+        <div style={{ fontSize:13, color:C.muted, lineHeight:1.7 }}>
+          Ваш аккаунт был перенесён из старой системы.<br/>
+          Установите новый пароль для входа.
+        </div>
+      </div>
+
+      {serverErr && (
+        <div style={{ padding:'12px 14px', background:C.redBg, border:`1px solid ${C.redBorder}`, fontSize:13, color:C.red, marginBottom:20 }}>
+          {serverErr}
+        </div>
+      )}
+
+      <div style={{ display:'flex', flexDirection:'column', gap:18 }}>
+        <Field label="Новый пароль" hint="Минимум 6 символов" error={errors.password}>
+          <Input value={password} onChange={setPassword} placeholder="••••••••" type="password" error={!!errors.password}/>
+        </Field>
+        <Field label="Повторите пароль" error={errors.password2}>
+          <Input value={password2} onChange={setPassword2} placeholder="••••••••" type="password" error={!!errors.password2}/>
+        </Field>
+
+        <button onClick={handleSubmit} disabled={loading}
+          style={{ padding:'14px', background:loading?'#444':C.dark, color:'#fff', border:'none', fontSize:13, cursor:'pointer', fontFamily:"'Jost',sans-serif", fontWeight:500, transition:'background 0.15s', minHeight:44 }}>
+          {loading ? 'Сохранение…' : 'Сохранить и войти'}
+        </button>
+
+        <button onClick={onBack}
+          style={{ background:'none', border:'none', fontSize:12, color:C.muted, cursor:'pointer', fontFamily:"'Jost',sans-serif" }}>
+          ← Вернуться к входу
+        </button>
+      </div>
+    </div>
+  );
+}
+
 // ─── ФОРМА РЕГИСТРАЦИИ (многошаговая) ─────────────────────────
 function RegisterForm({ onSuccess, onLogin }) {
   const [step, setStep] = useState(0); // 0 = аккаунт, 1 = профиль, 2 = готово
@@ -308,52 +402,42 @@ function RegisterForm({ onSuccess, onLogin }) {
     setStep(1);
   };
 
+  // Сохраняем пользователя после регистрации, чтобы передать в onSuccess
+  const [registeredUser, setRegisteredUser] = useState(null);
+
   const handleStep2 = async () => {
     setLoading(true);
     setServerErr('');
 
-    const { supabase } = await import('@/lib/supabase');
-
-    // 1. Создаём пользователя в Supabase Auth
-    const { data, error } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { name } },
-    });
-
-    if (error) {
+    try {
+      const res  = await fetch('/api/auth/register', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ email, password, name, selfLevel, senseiName, experience }),
+      });
+      const data = await res.json();
       setLoading(false);
-      setServerErr(error.message);
-      return;
-    }
 
-    // 2. Триггер создаёт запись в profiles, но дополняем данными профиля
-    if (data.user) {
-      await supabase.from('profiles').upsert({
-        id:           data.user.id,
-        email,
-        name,
-        role:         'student',
-        status:       'active',
-        self_level:   selfLevel,
-        sensei_name:  senseiName,
-        experience,
-        joined_at:    new Date().toISOString(),
-      }, { onConflict: 'id' });
-    }
+      if (!res.ok) {
+        if (res.status === 409) {
+          setServerErr('Пользователь с таким email уже существует');
+        } else {
+          setServerErr(data.error || 'Ошибка при регистрации');
+        }
+        return;
+      }
 
-    setLoading(false);
-    setStep(2);
+      setRegisteredUser(data.user);
+      setStep(2);
+    } catch {
+      setLoading(false);
+      setServerErr('Ошибка соединения. Попробуйте ещё раз.');
+    }
   };
 
-  // Шаг завершён — входим (сессия уже создана через signUp)
-  const handleDone = async () => {
-    const { supabase } = await import('@/lib/supabase');
-    const { data: { user } } = await supabase.auth.getUser();
-    const { data: profile } = user
-      ? await supabase.from('profiles').select('*').eq('id', user.id).single()
-      : { data: null };
-    onSuccess(profile || { name, email, level: '6kyu', role: 'student' });
+  // Шаг завершён — передаём пользователя в родительский компонент
+  const handleDone = () => {
+    onSuccess(registeredUser || { name, email, level: '6kyu', role: 'student' });
   };
 
   const selfLevelLabel = SELF_LEVELS.find(l => l.id === selfLevel)?.label || '—';

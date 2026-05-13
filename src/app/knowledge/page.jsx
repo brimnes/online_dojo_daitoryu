@@ -2,7 +2,6 @@
 
 import { useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 import { useKnowledge } from '@/lib/db';
 import { C } from '@/lib/utils';
 
@@ -21,10 +20,9 @@ export default function KnowledgePage() {
 
   // Auth guard — любой авторизованный пользователь имеет доступ
   useEffect(() => {
-    (async () => {
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) router.replace('/');
-    })();
+    fetch('/api/auth/me')
+      .then(r => { if (!r.ok) router.replace('/'); })
+      .catch(() => router.replace('/'));
   }, [router]);
 
   return (

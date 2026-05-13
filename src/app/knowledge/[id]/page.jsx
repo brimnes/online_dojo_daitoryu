@@ -2,7 +2,6 @@
 
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
-import { supabase } from '@/lib/supabase';
 import { C } from '@/lib/utils';
 
 const KinescopePlayer = ({ videoId }) => (
@@ -26,24 +25,19 @@ export default function KnowledgeItemPage() {
   const [notFound,setNotFound]= useState(false);
 
   useEffect(() => {
-    (async () => {
-      // Auth guard
-      const { data: { user } } = await supabase.auth.getUser();
-      if (!user) { router.replace('/'); return; }
+    if (!id) { setNotFound(true); setLoading(false); return; }
 
-      if (!id) { setNotFound(true); setLoading(false); return; }
-
-      const { data, error } = await supabase
-        .from('knowledge_items')
-        .select('*')
-        .eq('id', id)
-        .eq('is_published', true)
-        .single();
-
-      if (error || !data) { setNotFound(true); }
-      else { setItem(data); }
-      setLoading(false);
-    })();
+    fetch(`/api/knowledge/${id}`)
+      .then(r => {
+        if (r.status === 401) { router.replace('/'); return null; }
+        if (!r.ok) { setNotFound(true); setLoading(false); return null; }
+        return r.json();
+      })
+      .then(data => {
+        if (data) setItem(data);
+        setLoading(false);
+      })
+      .catch(() => { setNotFound(true); setLoading(false); });
   }, [id, router]);
 
   if (loading) return (

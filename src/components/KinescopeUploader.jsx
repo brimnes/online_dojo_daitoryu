@@ -14,7 +14,6 @@
  */
 
 import { useState, useRef, useCallback } from 'react';
-import { supabase } from '@/lib/supabase';
 
 const C = {
   gold: '#8B6914', goldBorder: '#e8dcc8', goldBg: '#faf6ee',
@@ -62,11 +61,6 @@ export default function KinescopeUploader({
   const fileRef  = useRef(null);
   const tusRef   = useRef(null);  // tus.Upload instance (for abort/resume)
 
-  const getToken = useCallback(async () => {
-    const { data: { session } } = await supabase.auth.getSession();
-    return session?.access_token ?? null;
-  }, []);
-
   // ── core upload ──────────────────────────────────────────────────────────
   const startUpload = useCallback(async (file) => {
     if (!file) return;
@@ -81,16 +75,11 @@ export default function KinescopeUploader({
     setErrorMsg('');
 
     try {
-      const token = await getToken();
-      if (!token) throw new Error('Не авторизован');
-
       // ── Step 1: get TUS endpoint from our backend ──────────────
+      // Авторизация через httpOnly cookie — заголовок не нужен
       const initRes = await fetch('/api/kinescope/upload-url', {
         method:  'POST',
-        headers: {
-          'Content-Type':  'application/json',
-          'Authorization': `Bearer ${token}`,
-        },
+        headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           lessonId,
           techniqueVideoId,
@@ -158,7 +147,7 @@ export default function KinescopeUploader({
         setErrorMsg(err.message || 'Ошибка загрузки');
       }
     }
-  }, [lessonId, techniqueVideoId, getToken, onComplete]);
+  }, [lessonId, techniqueVideoId, onComplete]);
 
   const handleFile   = useCallback((f) => { if (f) startUpload(f); }, [startUpload]);
   const handleDrop   = useCallback((e) => {

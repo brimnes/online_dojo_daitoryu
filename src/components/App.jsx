@@ -15,6 +15,7 @@ import { registerServiceWorker } from '@/lib/mobile';
 
 export default function App() {
   const [currentUser, setCurrentUser] = useState(null);
+  const [authChecked, setAuthChecked] = useState(false); // не мигать формой входа при загрузке
   const [route,    setRoute]    = useState({ page: 'dashboard' });
   const [watched,  setWatched]  = useState({});
   const [comments, setComments] = useState(INITIAL_COMMENTS);
@@ -23,6 +24,24 @@ export default function App() {
   useEffect(() => {
     registerServiceWorker();
   }, []);
+
+  // Восстанавливаем сессию из httpOnly cookie при загрузке страницы
+  useEffect(() => {
+    fetch('/api/auth/me')
+      .then(r => r.ok ? r.json() : null)
+      .then(data => {
+        if (data?.user) setCurrentUser(data.user);
+      })
+      .catch(() => {})
+      .finally(() => setAuthChecked(true));
+  }, []);
+
+  const handleLogout = async () => {
+    try {
+      await fetch('/api/auth/logout', { method: 'POST' });
+    } catch {}
+    setCurrentUser(null);
+  };
 
   const nav = {
     dashboard:     ()                   => setRoute({ page: 'dashboard' }),
@@ -53,6 +72,9 @@ export default function App() {
     }));
   };
 
+  // Пока не проверили cookie — не рендерим ничего (избегаем мигания формы входа)
+  if (!authChecked) return null;
+
   const user = currentUser ? { ...USER, ...currentUser } : USER;
 
   if (!currentUser) {
@@ -62,7 +84,7 @@ export default function App() {
   return (
     <>
       {route.page === 'dashboard' && (
-        <Dashboard nav={nav} watched={watched} user={user} onLogout={() => setCurrentUser(null)} />
+        <Dashboard nav={nav} watched={watched} user={user} onLogout={handleLogout} />
       )}
       {route.page === 'ikkajo' && (
         <IkkajoPage nav={nav} />
