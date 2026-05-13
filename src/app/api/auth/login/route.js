@@ -83,6 +83,6 @@ export async function POST(request) {
 
   } catch (e) {
     console.error('[POST /api/auth/login]', e);
-    return NextResponse.json({ error: 'Ошибка сервера' }, { status: 500 });
+    return NextResponse.json({ error: e.message || 'Ошибка сервера' }, { status: 500 });
   }
 }
