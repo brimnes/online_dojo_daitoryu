@@ -3,9 +3,9 @@
 import { useState } from 'react';
 import { C, hasLevel, levelIndex } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
-import { LEVELS, SELF_LEVELS, EXAMS, PAYS } from '@/data/users';
+import { LEVELS, SELF_LEVELS } from '@/data/users';
 import { DB_SECTIONS } from '@/data/techniques';
-import { useMonths, useLessons, useUserAccessRows, hasMonthAccess, useKnowledge } from '@/lib/db';
+import { useMonths, useLessons, useUserAccessRows, hasMonthAccess, useKnowledge, useUserExams, useUserPayments } from '@/lib/db';
 import TakedaMon from '@/components/TakedaMon';
 import { hasIkkajoFullAccess, hasIkkajoSectionAccess, IKKAJO_SECTIONS, IKKAJO_SECTION_LABELS, getAccessibleIkkajoSections } from '@/lib/access';
 import { useProducts } from '@/lib/useProducts';
@@ -146,8 +146,8 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
         >
           <div className="fade">
             {tab === 'knowledge' && <TabKnowledge nav={nav} isMobile={isMobile} />}
-            {tab === 'months'    && <TabMonths   nav={nav} watched={watched} user={u} userAccess={userAccess} isMobile={isMobile} />}
-            {tab === 'database'  && <TabDatabase nav={nav} setModal={setModal} user={u} userAccess={userAccess} isMobile={isMobile} />}
+            {tab === 'months'    && <TabMonths   nav={nav} watched={watched} user={u} userAccess={userAccess} isAdmin={isAdmin} isMobile={isMobile} />}
+            {tab === 'database'  && <TabDatabase nav={nav} setModal={setModal} user={u} userAccess={userAccess} isAdmin={isAdmin} isMobile={isMobile} />}
             {tab === 'profile'  && <TabProfile user={u} isMobile={isMobile} onLogout={onLogout} />}
           </div>
         </div>
@@ -205,7 +205,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
 }
 
 // ── Вкладка: Месяцы ──────────────────────────────────────────────
-function TabMonths({ nav, watched, user, userAccess, isMobile }) {
+function TabMonths({ nav, watched, user, userAccess, isAdmin, isMobile }) {
   const { months, loading } = useMonths();
   if (loading) return <div style={{ color: C.muted, fontSize: 13 }}>Загрузка…</div>;
 
@@ -217,24 +217,22 @@ function TabMonths({ nav, watched, user, userAccess, isMobile }) {
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(190px, 1fr))', gap: isMobile ? 8 : 10 }}>
         {(months ?? []).map(m => (
-          <MonthCard key={m.id} month={m} nav={nav} watched={watched} userAccess={userAccess} isMobile={isMobile} />
+          <MonthCard key={m.id} month={m} nav={nav} watched={watched} userAccess={userAccess} isAdmin={isAdmin} isMobile={isMobile} />
         ))}
       </div>
     </div>
   );
 }
 
-function MonthCard({ month: m, nav, watched, userAccess, isMobile }) {
+function MonthCard({ month: m, nav, watched, userAccess, isAdmin, isMobile }) {
   const { lessons } = useLessons(m.id);
   const watchedCount = (lessons ?? []).filter(l => watched[l.id]).length;
   const hasProg = (lessons ?? []).length > 0 && watchedCount > 0;
-  // Доступ: явный флаг из БД, или выданный admin через user_access
-  // SOURCE OF TRUTH: только user_access.
-  // m.is_open и m.paid намеренно ИСКЛЮЧЕНЫ — они обходят систему доступов.
-  // is_open в таблице months используется только для admin toggleOpen (показывает в расписании),
-  // но НЕ должен открывать контент пользователю.
-  const hasAccess = hasMonthAccess(userAccess ?? [], m.id);
-  console.log(`[access] month=${m.id} hasAccess=${hasAccess} userAccess=`, userAccess);
+  // SOURCE OF TRUTH для доступа: только user_access из БД.
+  // Исключения:
+  //   — admin видит всё (isAdmin bypass)
+  //   — m.is_open и m.paid намеренно ИСКЛЮЧЕНЫ: они управляют расписанием, не контентом.
+  const hasAccess = isAdmin || hasMonthAccess(userAccess ?? [], m.id);
 
   return (
     <div style={{ padding: isMobile ? '14px 12px' : '18px 16px', minHeight: isMobile ? 160 : 200, background: m.current ? '#fff' : hasAccess ? '#fdfcf8' : C.white, border: m.current ? '2px solid #c8a84a' : `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: 6, boxShadow: m.current ? '0 2px 16px rgba(139,105,20,0.07)' : 'none' }}>
@@ -296,7 +294,7 @@ function TabKnowledge({ nav, isMobile }) {
 }
 
 // ── Вкладка: База техник ──────────────────────────────────────────
-function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
+function TabDatabase({ nav, setModal, user, userAccess, isAdmin, isMobile }) {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 20, paddingBottom: 16, borderBottom: `2px solid ${C.border}`, flexWrap: 'wrap' }}>
@@ -306,10 +304,11 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
       <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         {(DB_SECTIONS ?? []).map(sec => {
           const avail  = hasLevel(user?.level || '6kyu', sec.requiredLevel);
-          // Доступ: старый флаг purchasedSections ИЛИ выданный admin через user_access
           const ua = userAccess ?? [];
           const hasFullIkkajo = ua.some(a => a.type === 'section' && a.reference === 'ikkajo');
-          const bought = (user?.purchasedSections || []).includes(sec.id)
+          // SOURCE OF TRUTH: только user_access из БД.
+          // Исключения: admin видит всё.
+          const bought = isAdmin
             || (sec.id === 'ikkajo' && hasFullIkkajo)
             || ua.some(a => a.type === 'section' && a.reference === sec.id);
           return (
@@ -343,13 +342,13 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
 function TabProfile({ user: u, isMobile, onLogout }) {
   const [sub, setSub] = useState('info');
   const { rows: userAccess, loading: accessLoading } = useUserAccessRows();
+  const { exams: userExams, loading: examsLoading }   = useUserExams();
+  const { payments: userPays, loading: paysLoading }  = useUserPayments();
   const usr   = u || {};
   const curLv = LEVELS.find(l => l.id === usr.level);
   const selfLvLabel = SELF_LEVELS.find(l => l.id === usr.selfLevel)?.label;
 
-  const userExams = usr.exams || EXAMS;
-  const userPays  = usr.pays  || PAYS;
-
+  // Группируем экзамены по уровню для отображения
   const grouped = [];
   const seen = {};
   (userExams ?? []).forEach(ex => {
@@ -438,9 +437,16 @@ function TabProfile({ user: u, isMobile, onLogout }) {
       {/* Exams tab */}
       {sub === 'exams' && (
         <div style={{ border: `1px solid ${C.border}`, borderTop: 'none' }}>
-          {grouped.map((g, gi) => {
+          {examsLoading && (
+            <div style={{ padding: '24px 16px', color: C.muted, fontSize: 13, background: C.white }}>Загрузка…</div>
+          )}
+          {!examsLoading && grouped.length === 0 && (
+            <div style={{ padding: '24px 16px', color: C.muted, fontSize: 13, background: C.white }}>Экзаменов пока нет</div>
+          )}
+          {!examsLoading && grouped.map((g, gi) => {
             const lv     = LEVELS.find(l => l.id === g.level);
-            const passed = g.attempts.some(a => a.result);
+            // passed если хотя бы одна попытка approved
+            const passed = g.attempts.some(a => a.status === 'approved');
             const isDan  = g.level.includes('dan');
             return (
               <div key={g.level} style={{ borderTop: gi === 0 ? `1px solid ${C.border}` : '1px solid #ece8e0', background: isDan ? '#fdfcf8' : C.white }}>
@@ -451,13 +457,19 @@ function TabProfile({ user: u, isMobile, onLogout }) {
                   </div>
                   <span style={{ fontSize: 10, color: '#bbb' }}>{g.attempts.length} попыток</span>
                 </div>
-                {g.attempts.map((ex) => (
-                  <div key={ex.id} style={{ display: 'flex', gap: 10, padding: '8px 16px 8px 28px', borderTop: '1px solid #f5f2ec', background: ex.result ? 'transparent' : '#fff8f7', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
-                    <div style={{ fontSize: 11, color: C.muted, minWidth: 74 }}>{ex.date}</div>
-                    <div style={{ fontSize: 11, color: ex.result ? '#3a8a5a' : '#b04030', fontWeight: 600, marginRight: 8 }}>{ex.result ? '✓' : '✗'}</div>
-                    <div style={{ fontSize: 11, color: '#888' }}>{ex.comment}</div>
-                  </div>
-                ))}
+                {g.attempts.map((ex) => {
+                  const isApproved = ex.status === 'approved';
+                  const isPending  = ex.status === 'pending';
+                  const statusColor = isApproved ? '#3a8a5a' : isPending ? '#b08030' : '#b04030';
+                  const statusIcon  = isApproved ? '✓' : isPending ? '⏳' : '✗';
+                  return (
+                    <div key={ex.id} style={{ display: 'flex', gap: 10, padding: '8px 16px 8px 28px', borderTop: '1px solid #f5f2ec', background: isApproved ? 'transparent' : isPending ? '#fffdf5' : '#fff8f7', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+                      <div style={{ fontSize: 11, color: C.muted, minWidth: 74 }}>{ex.date}</div>
+                      <div style={{ fontSize: 11, color: statusColor, fontWeight: 600, marginRight: 8 }}>{statusIcon}</div>
+                      <div style={{ fontSize: 11, color: '#888' }}>{ex.comment}</div>
+                    </div>
+                  );
+                })}
               </div>
             );
           })}
@@ -467,7 +479,13 @@ function TabProfile({ user: u, isMobile, onLogout }) {
       {/* Payments tab */}
       {sub === 'payments' && (
         <div style={{ border: `1px solid ${C.border}`, borderTop: 'none' }}>
-          {(userPays ?? []).map(p => (
+          {paysLoading && (
+            <div style={{ padding: '24px 16px', color: C.muted, fontSize: 13, background: C.white }}>Загрузка…</div>
+          )}
+          {!paysLoading && userPays.length === 0 && (
+            <div style={{ padding: '24px 16px', color: C.muted, fontSize: 13, background: C.white }}>Оплат пока нет</div>
+          )}
+          {!paysLoading && userPays.map(p => (
             <div key={p.id} style={{ display: 'grid', gridTemplateColumns: isMobile ? 'auto 1fr auto' : '90px 1fr 100px', padding: '13px 16px', fontSize: 12, background: C.white, borderBottom: '1px solid #f5f5f5', alignItems: 'center', gap: 8 }}>
               <span style={{ color: C.muted, fontSize: isMobile ? 10 : 12, whiteSpace: 'nowrap' }}>{p.date}</span>
               <span style={{ color: C.dark, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.desc}</span>

@@ -561,6 +561,60 @@ export function useAdminUserAccess(userId) {
 }
 
 // ─────────────────────────────────────────────────────────────
+// HOOK: useUserExams — экзамены текущего пользователя
+// ─────────────────────────────────────────────────────────────
+
+export function useUserExams() {
+  const [exams,   setExams]   = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState(null);
+
+  const reload = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await api('/api/user/exams');
+      setExams(data);
+    } catch (e) {
+      setError(e.message);
+      setExams([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { reload(); }, [reload]);
+  return { exams, loading, error, reload };
+}
+
+// ─────────────────────────────────────────────────────────────
+// HOOK: useUserPayments — платежи текущего пользователя
+// ─────────────────────────────────────────────────────────────
+
+export function useUserPayments() {
+  const [payments, setPayments] = useState([]);
+  const [loading,  setLoading]  = useState(true);
+  const [error,    setError]    = useState(null);
+
+  const reload = useCallback(async () => {
+    setLoading(true);
+    setError(null);
+    try {
+      const data = await api('/api/user/payments');
+      setPayments(data);
+    } catch (e) {
+      setError(e.message);
+      setPayments([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { reload(); }, [reload]);
+  return { payments, loading, error, reload };
+}
+
+// ─────────────────────────────────────────────────────────────
 // HOOK: useKnowledge
 // ─────────────────────────────────────────────────────────────
 
