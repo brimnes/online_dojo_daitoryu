@@ -206,8 +206,14 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
 
 // ── Вкладка: Месяцы ──────────────────────────────────────────────
 function TabMonths({ nav, watched, user, userAccess, isAdmin, isMobile }) {
-  const { months, loading } = useMonths();
-  if (loading) return <div style={{ color: C.muted, fontSize: 13 }}>Загрузка…</div>;
+  const { months,   loading: monthsLoading }   = useMonths();
+  const { products, loading: productsLoading } = useProducts();
+
+  if (monthsLoading) return <div style={{ color: C.muted, fontSize: 13 }}>Загрузка…</div>;
+
+  // Индекс продуктов по reference для быстрого поиска
+  const productByRef = {};
+  (products ?? []).forEach(p => { if (p.type === 'month') productByRef[p.reference] = p; });
 
   return (
     <div>
@@ -217,46 +223,126 @@ function TabMonths({ nav, watched, user, userAccess, isAdmin, isMobile }) {
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(190px, 1fr))', gap: isMobile ? 8 : 10 }}>
         {(months ?? []).map(m => (
-          <MonthCard key={m.id} month={m} nav={nav} watched={watched} userAccess={userAccess} isAdmin={isAdmin} isMobile={isMobile} />
+          <MonthCard
+            key={m.id}
+            month={m}
+            nav={nav}
+            watched={watched}
+            userAccess={userAccess}
+            isAdmin={isAdmin}
+            product={productByRef[m.id] ?? null}
+            isMobile={isMobile}
+          />
         ))}
       </div>
     </div>
   );
 }
 
-function MonthCard({ month: m, nav, watched, userAccess, isAdmin, isMobile }) {
+function MonthCard({ month: m, nav, watched, userAccess, isAdmin, product, isMobile }) {
   const { lessons } = useLessons(m.id);
+  const [buying,   setBuying]   = useState(false);
+  const [buyError, setBuyError] = useState('');
+
   const watchedCount = (lessons ?? []).filter(l => watched[l.id]).length;
-  const hasProg = (lessons ?? []).length > 0 && watchedCount > 0;
-  // SOURCE OF TRUTH для доступа: только user_access из БД.
-  // Исключения:
-  //   — admin видит всё (isAdmin bypass)
-  //   — m.is_open и m.paid намеренно ИСКЛЮЧЕНЫ: они управляют расписанием, не контентом.
+  const hasProg      = (lessons ?? []).length > 0 && watchedCount > 0;
+
+  // ─── SOURCE OF TRUTH для доступа ────────────────────────────────
+  // Только user_access из БД. admin всегда открыт.
+  // m.is_open и m.paid намеренно ИСКЛЮЧЕНЫ: они управляют расписанием, не контентом.
   const hasAccess = isAdmin || hasMonthAccess(userAccess ?? [], m.id);
 
+  // ─── Оплата конкретного месяца ───────────────────────────────────
+  const handleBuy = async () => {
+    if (!product || buying) return;
+    setBuying(true);
+    setBuyError('');
+    try {
+      const res  = await fetch('/api/yookassa/create-payment', {
+        method:  'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body:    JSON.stringify({ product_id: product.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) {
+        setBuyError(res.status === 409 ? 'Доступ уже есть' : (data.error || 'Ошибка'));
+        return;
+      }
+      window.location.href = data.confirmation_url;
+    } catch {
+      setBuyError('Ошибка соединения');
+    } finally {
+      setBuying(false);
+    }
+  };
+
+  // ─── Визуальные состояния ────────────────────────────────────────
+  const cardBg     = hasAccess ? '#fdfcf8' : '#f8f8f8';
+  const cardBorder = m.current  ? '2px solid #c8a84a'
+                   : hasAccess  ? `1px solid ${C.goldBorder}`
+                   :              `1px solid ${C.border}`;
+  const kanjiColor = hasAccess ? '#d4b96a' : '#d8d8d8';
+  const shadow     = m.current ? '0 2px 16px rgba(139,105,20,0.07)' : 'none';
+
   return (
-    <div style={{ padding: isMobile ? '14px 12px' : '18px 16px', minHeight: isMobile ? 160 : 200, background: m.current ? '#fff' : hasAccess ? '#fdfcf8' : C.white, border: m.current ? '2px solid #c8a84a' : `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', gap: 6, boxShadow: m.current ? '0 2px 16px rgba(139,105,20,0.07)' : 'none' }}>
-      {m.current && <div style={{ fontSize: 8, color: C.gold, background: '#faf0d8', border: '1px solid #e0c870', padding: '2px 7px', letterSpacing: 1, textTransform: 'uppercase', alignSelf: 'flex-start' }}>Текущий</div>}
-      <div style={{ fontFamily: "'Noto Serif JP', serif", fontSize: isMobile ? 16 : 20, color: '#e0e0e0', lineHeight: 1 }}>{m.kanji}</div>
-      <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: isMobile ? 15 : 17, fontWeight: 600, color: C.dark }}>{m.label}</div>
+    <div style={{ padding: isMobile ? '14px 12px' : '18px 16px', minHeight: isMobile ? 160 : 200, background: cardBg, border: cardBorder, display: 'flex', flexDirection: 'column', gap: 6, boxShadow: shadow }}>
+
+      {/* Статус-бейдж */}
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: 18 }}>
+        {m.current && (
+          <span style={{ fontSize: 8, color: C.gold, background: '#faf0d8', border: '1px solid #e0c870', padding: '2px 7px', letterSpacing: 1, textTransform: 'uppercase' }}>Текущий</span>
+        )}
+        {!hasAccess && (
+          <span style={{ fontSize: 9, color: '#bbb', marginLeft: 'auto' }}>🔒</span>
+        )}
+        {hasAccess && !m.current && (
+          <span style={{ fontSize: 9, color: '#4a8a5a', marginLeft: 'auto' }}>✓ открыт</span>
+        )}
+      </div>
+
+      {/* Кандзи и название */}
+      <div style={{ fontFamily: "'Noto Serif JP', serif", fontSize: isMobile ? 16 : 20, color: kanjiColor, lineHeight: 1 }}>{m.kanji}</div>
+      <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: isMobile ? 15 : 17, fontWeight: 600, color: hasAccess ? C.dark : '#999' }}>{m.label}</div>
+
       {!isMobile && (
-        <div style={{ fontSize: 11, color: '#888', lineHeight: 1.6, flex: 1 }}>{m.description || m.desc}</div>
+        <div style={{ fontSize: 11, color: hasAccess ? '#888' : '#bbb', lineHeight: 1.6, flex: 1 }}>{m.description || m.desc}</div>
       )}
-      {hasProg && (
+
+      {/* Прогресс (только для открытых) */}
+      {hasAccess && hasProg && (
         <div>
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
             <span style={{ fontSize: 9, color: C.muted }}>{watchedCount} / {(lessons ?? []).length} уроков</span>
           </div>
           <div style={{ height: 2, background: '#e8e0d0', borderRadius: 2 }}>
-            <div style={{ height: '100%', width: `${((lessons ?? []).length ? (watchedCount / (lessons ?? []).length) * 100 : 0)}%`, background: C.gold, borderRadius: 2 }} />
+            <div style={{ height: '100%', width: `${(lessons ?? []).length ? (watchedCount / (lessons ?? []).length) * 100 : 0}%`, background: C.gold, borderRadius: 2 }} />
           </div>
         </div>
       )}
+
+      {/* CTA */}
       <div style={{ marginTop: 'auto', paddingTop: 8 }}>
-        {hasAccess
-          ? <button onClick={() => nav.month(m.id)} style={{ padding: isMobile ? '9px 12px' : '7px 14px', background: C.dark, color: '#fff', border: 'none', fontSize: 12, cursor: 'pointer', minHeight: 44, width: isMobile ? '100%' : 'auto' }}>Войти →</button>
-          : <button style={{ padding: isMobile ? '9px 12px' : '7px 14px', background: 'transparent', color: '#888', border: `1px solid ${C.border}`, fontSize: isMobile ? 11 : 12, cursor: 'pointer', minHeight: 44, width: isMobile ? '100%' : 'auto' }}>🔒 Нет доступа</button>
-        }
+        {hasAccess ? (
+          <button
+            onClick={() => nav.month(m.id)}
+            style={{ padding: isMobile ? '9px 12px' : '7px 14px', background: C.dark, color: '#fff', border: 'none', fontSize: 12, cursor: 'pointer', minHeight: 44, width: isMobile ? '100%' : 'auto' }}>
+            Войти →
+          </button>
+        ) : product ? (
+          <div>
+            <button
+              onClick={handleBuy}
+              disabled={buying}
+              style={{ padding: isMobile ? '9px 12px' : '7px 14px', background: buying ? '#f5f0e8' : 'transparent', color: buying ? C.muted : C.gold, border: `1px solid ${buying ? C.border : '#c8a84a'}`, fontSize: isMobile ? 11 : 12, cursor: buying ? 'default' : 'pointer', minHeight: 44, width: isMobile ? '100%' : 'auto', transition: 'all 0.15s' }}>
+              {buying ? 'Переход к оплате…' : `Купить — ${product.price?.toLocaleString('ru-RU')} ₽`}
+            </button>
+            {buyError && (
+              <div style={{ fontSize: 10, color: '#a03030', marginTop: 4 }}>{buyError}</div>
+            )}
+          </div>
+        ) : (
+          <span style={{ fontSize: 11, color: '#bbb' }}>Недоступно</span>
+        )}
       </div>
     </div>
   );
