@@ -146,8 +146,8 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
         >
           <div className="fade">
             {tab === 'knowledge' && <TabKnowledge nav={nav} isMobile={isMobile} />}
-            {tab === 'months'    && <TabMonths   nav={nav} watched={watched} user={u} userAccess={userAccess} isAdmin={isAdmin} isMobile={isMobile} />}
-            {tab === 'database'  && <TabDatabase nav={nav} setModal={setModal} user={u} userAccess={userAccess} isAdmin={isAdmin} isMobile={isMobile} />}
+            {tab === 'months'    && <TabMonths   nav={nav} watched={watched} user={u} userAccess={userAccess} accessLoading={accessLoading} isMobile={isMobile} />}
+            {tab === 'database'  && <TabDatabase nav={nav} setModal={setModal} user={u} userAccess={userAccess} isMobile={isMobile} />}
             {tab === 'profile'  && <TabProfile user={u} isMobile={isMobile} onLogout={onLogout} />}
           </div>
         </div>
@@ -205,7 +205,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
 }
 
 // ── Вкладка: Месяцы ──────────────────────────────────────────────
-function TabMonths({ nav, watched, user, userAccess, isAdmin, isMobile }) {
+function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) {
   const { months,   loading: monthsLoading }   = useMonths();
   const { products, loading: productsLoading } = useProducts();
 
@@ -229,7 +229,7 @@ function TabMonths({ nav, watched, user, userAccess, isAdmin, isMobile }) {
             nav={nav}
             watched={watched}
             userAccess={userAccess}
-            isAdmin={isAdmin}
+            accessLoading={accessLoading}
             product={productByRef[m.id] ?? null}
             isMobile={isMobile}
           />
@@ -239,7 +239,7 @@ function TabMonths({ nav, watched, user, userAccess, isAdmin, isMobile }) {
   );
 }
 
-function MonthCard({ month: m, nav, watched, userAccess, isAdmin, product, isMobile }) {
+function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product, isMobile }) {
   const { lessons } = useLessons(m.id);
   const [buying,   setBuying]   = useState(false);
   const [buyError, setBuyError] = useState('');
@@ -248,9 +248,10 @@ function MonthCard({ month: m, nav, watched, userAccess, isAdmin, product, isMob
   const hasProg      = (lessons ?? []).length > 0 && watchedCount > 0;
 
   // ─── SOURCE OF TRUTH для доступа ────────────────────────────────
-  // Только user_access из БД. admin всегда открыт.
-  // m.is_open и m.paid намеренно ИСКЛЮЧЕНЫ: они управляют расписанием, не контентом.
-  const hasAccess = isAdmin || hasMonthAccess(userAccess ?? [], m.id);
+  // ТОЛЬКО user_access из БД: type='month', reference=m.id.
+  // Никаких bypass: ни isAdmin, ни mock, ни products, ни is_open.
+  // Пока accessLoading=true — доступ неизвестен, CTA нейтральный.
+  const hasAccess = !accessLoading && hasMonthAccess(userAccess ?? [], m.id);
 
   // ─── Оплата конкретного месяца ───────────────────────────────────
   const handleBuy = async () => {
@@ -322,7 +323,10 @@ function MonthCard({ month: m, nav, watched, userAccess, isAdmin, product, isMob
 
       {/* CTA */}
       <div style={{ marginTop: 'auto', paddingTop: 8 }}>
-        {hasAccess ? (
+        {/* Пока грузится access state — нейтральная заглушка, без мигания */}
+        {accessLoading ? (
+          <div style={{ height: 36, background: '#eeebe5', borderRadius: 2, width: isMobile ? '100%' : 80 }} />
+        ) : hasAccess ? (
           <button
             onClick={() => nav.month(m.id)}
             style={{ padding: isMobile ? '9px 12px' : '7px 14px', background: C.dark, color: '#fff', border: 'none', fontSize: 12, cursor: 'pointer', minHeight: 44, width: isMobile ? '100%' : 'auto' }}>
@@ -380,7 +384,7 @@ function TabKnowledge({ nav, isMobile }) {
 }
 
 // ── Вкладка: База техник ──────────────────────────────────────────
-function TabDatabase({ nav, setModal, user, userAccess, isAdmin, isMobile }) {
+function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
   return (
     <div>
       <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 20, paddingBottom: 16, borderBottom: `2px solid ${C.border}`, flexWrap: 'wrap' }}>
@@ -393,9 +397,8 @@ function TabDatabase({ nav, setModal, user, userAccess, isAdmin, isMobile }) {
           const ua = userAccess ?? [];
           const hasFullIkkajo = ua.some(a => a.type === 'section' && a.reference === 'ikkajo');
           // SOURCE OF TRUTH: только user_access из БД.
-          // Исключения: admin видит всё.
-          const bought = isAdmin
-            || (sec.id === 'ikkajo' && hasFullIkkajo)
+          // Никаких bypass: ни isAdmin, ни mock.
+          const bought = (sec.id === 'ikkajo' && hasFullIkkajo)
             || ua.some(a => a.type === 'section' && a.reference === sec.id);
           return (
             <div key={sec.id} style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? 12 : 18, padding: isMobile ? '16px' : '20px 18px', background: C.white, border: `1px solid ${C.border}`, borderTop: 'none', opacity: avail ? 1 : 0.4, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
