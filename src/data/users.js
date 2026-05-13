@@ -1,14 +1,13 @@
-// В реальном проекте — из Supabase Auth + profiles table
+// Базовые поля UI — перезаписываются данными из /api/auth/me при входе.
+// НЕ содержит access-полей: purchasedSections, access, role — они приходят из БД.
 export const USER = {
-  name:              'Алексей Воронов',
-  email:             'voronov@mail.ru',
-  level:             '1dan',
-  purchasedSections: ['ikkajo'],
-  // Поля из анкеты при регистрации:
-  selfLevel:   '1dan',
-  senseiName:  '',
-  experience:  'Занимаюсь айкидзюдзюцу с 2018 года. До этого 5 лет дзюдо. Начал с нуля под руководством Станислава Копина, прошёл путь от 6 кю до 1 дана. Особый интерес к техникам Иккаджо и принципу кокю.',
-  joinedAt:    '12.01.2021',
+  name:      '',
+  email:     '',
+  level:     '6kyu',
+  selfLevel: '',
+  senseiName:'',
+  experience:'',
+  joinedAt:  '',
 };
 
 export const LEVELS = [

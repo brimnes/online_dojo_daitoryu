@@ -148,7 +148,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
             {tab === 'knowledge' && <TabKnowledge nav={nav} isMobile={isMobile} />}
             {tab === 'months'    && <TabMonths   nav={nav} watched={watched} user={u} userAccess={userAccess} accessLoading={accessLoading} isMobile={isMobile} />}
             {tab === 'database'  && <TabDatabase nav={nav} setModal={setModal} user={u} userAccess={userAccess} isMobile={isMobile} />}
-            {tab === 'profile'  && <TabProfile user={u} isMobile={isMobile} onLogout={onLogout} />}
+            {tab === 'profile'  && <TabProfile user={u} userAccess={userAccess} accessLoading={accessLoading} isMobile={isMobile} onLogout={onLogout} />}
           </div>
         </div>
       </main>
@@ -428,9 +428,10 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
 }
 
 // ── Вкладка: Профиль ──────────────────────────────────────────────
-function TabProfile({ user: u, isMobile, onLogout }) {
+// userAccess и accessLoading приходят из Dashboard (единственный useUserAccessRows).
+// Это исключает двойной fetch и гарантирует единый источник данных по всему Dashboard.
+function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) {
   const [sub, setSub] = useState('info');
-  const { rows: userAccess, loading: accessLoading } = useUserAccessRows();
   const { exams: userExams, loading: examsLoading }   = useUserExams();
   const { payments: userPays, loading: paysLoading }  = useUserPayments();
   const usr   = u || {};
@@ -614,6 +615,17 @@ function TabMyAccess({ userAccess, loading, isMobile }) {
 
   const ua = userAccess || [];
   const fullIkkajo = hasIkkajoFullAccess(ua);
+
+  // ── DEBUG: лог для диагностики фантомных доступов ──────────────
+  // Убрать после подтверждения что phantom-access исчезли.
+  const displayedAccess = {
+    months:   ALL_MONTHS.filter(m => hasMonthAccess(ua, m)),
+    sections: IKKAJO_SECTIONS.filter(s => hasIkkajoSectionAccess(ua, s)),
+    fullIkkajo,
+  };
+  console.log('[TabMyAccess] accessRows (raw):', JSON.stringify(ua));
+  console.log('[TabMyAccess] displayedAccess:', JSON.stringify(displayedAccess));
+  // ────────────────────────────────────────────────────────────────
 
   const rowStyle = { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderBottom: `1px solid ${C.border}`, fontSize: 13, background: C.white };
   const tick = (has) => (

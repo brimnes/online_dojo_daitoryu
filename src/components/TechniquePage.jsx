@@ -16,11 +16,14 @@ export default function TechniquePage({ kyu, section, tech, onBack, viewerId }) 
   const { getTechContent, loading } = useTechniques();
   const { rows: userAccess, loading: accessLoading } = useUserAccessRows();
 
-  // Access gate: проверяем, есть ли доступ к разделу Ikkajo
+  // Access gate: проверяем доступ к разделу Ikkajo.
+  // ВАЖНО: пока accessLoading=true — rows ещё не пришли → canAccess=false (не показываем).
+  // Инвертированный паттерн из TechniquePage был: accessLoading || ... — это БАГ,
+  // он открывал секцию пока грузился access state. Исправлено на !accessLoading && ...
   const sectionKey = section?.id?.toLowerCase();
   const isIkkajoSection = IKKAJO_SECTIONS.includes(sectionKey);
-  const canAccess = accessLoading || !isIkkajoSection || hasIkkajoSectionAccess(userAccess, sectionKey);
-  console.log(`[TechniquePage] section=${sectionKey} canAccess=${canAccess} loading=${accessLoading}`, userAccess);
+  const canAccess = !accessLoading && (!isIkkajoSection || hasIkkajoSectionAccess(userAccess, sectionKey));
+  console.log(`[TechniquePage] section=${sectionKey} isIkkajo=${isIkkajoSection} canAccess=${canAccess} loading=${accessLoading} rows=`, userAccess);
 
   // getTechContent возвращает { description, principles, senseiQuote, mistakes, videos:{overview,details,mistakes,variations} }
   const content = loading ? { description:'', principles:[], senseiQuote:'', mistakes:[], videos:{} }
