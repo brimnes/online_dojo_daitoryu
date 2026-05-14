@@ -11,19 +11,32 @@ import { hasIkkajoFullAccess, hasIkkajoSectionAccess, IKKAJO_SECTIONS, IKKAJO_SE
 import { useProducts } from '@/lib/useProducts';
 
 const TABS = [
-  { id: 'knowledge', label: 'База знаний'   },
-  { id: 'months',    label: 'Месяцы 2026'   },
-  { id: 'database',  label: 'База техник'   },
-  { id: 'profile',   label: 'Личный кабинет'},
+  { id: 'knowledge', label: 'База знаний',    kanji: '智', num: '01' },
+  { id: 'months',    label: 'Месяцы 2026',    kanji: '月', num: '02' },
+  { id: 'database',  label: 'База техник',    kanji: '技', num: '03' },
+  { id: 'profile',   label: 'Личный кабинет', kanji: '人', num: '04' },
 ];
 
 // ── Bottom nav items ──────────────────────────────────────────────
 const BOTTOM_TABS = [
-  { id: 'knowledge', label: 'Знания', icon: '📖' },
-  { id: 'months',    label: 'Месяцы', icon: '📅' },
-  { id: 'database',  label: 'База',   icon: '⛩' },
-  { id: 'profile',   label: 'Профиль',icon: '👤' },
+  { id: 'knowledge', label: 'Знания', icon: '智' },
+  { id: 'months',    label: 'Месяцы', icon: '月' },
+  { id: 'database',  label: 'База',   icon: '技' },
+  { id: 'profile',   label: 'Профиль',icon: '人' },
 ];
+
+// ── Sidebar palette (всегда тёмная, независимо от темы) ──────────
+const SB = {
+  bg:       '#0a0807',
+  bgGrad:   'linear-gradient(180deg, #16130f 0%, #0a0807 30%, #13110e 100%)',
+  surface:  '#13110e',
+  ink:      '#ede5d3',
+  ink2:     '#c2b59c',
+  muted:    '#7a6c52',
+  hairline: '#1f1a16',
+  accent:   '#b73828',
+  gold:     '#b8923a',
+};
 
 export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
   const [tab, setTab]     = useState('months');
@@ -39,66 +52,84 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
 
       {/* ── Sidebar (desktop only) ── */}
       {!isMobile && (
-        <aside style={{ width: 240, background: C.white, borderRight: `1px solid ${C.border}`, display: 'flex', flexDirection: 'column', flexShrink: 0, position: 'sticky', top: 0, height: '100vh' }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '22px 20px 18px' }}>
-            <TakedaMon size={34} color={C.gold} />
+        <aside style={{ width: 260, background: SB.bgGrad, borderRight: `1px solid ${SB.hairline}`, display: 'flex', flexDirection: 'column', flexShrink: 0, position: 'sticky', top: 0, height: '100vh', boxShadow: 'inset -1px 0 0 rgba(184,146,58,0.06)' }}>
+          {/* top accent stripe */}
+          <div style={{ height: 2, background: `linear-gradient(90deg, transparent, ${SB.accent} 30%, ${SB.gold} 70%, transparent)`, opacity: 0.5, flexShrink: 0 }} />
+
+          {/* brand */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '26px 24px 20px' }}>
+            <TakedaMon size={28} color={SB.gold} />
             <div>
-              <div style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: 12, letterSpacing: '0.12em', color: '#c8a84a', textTransform: 'uppercase' }}>ONLINE DOJO</div>
-              <div style={{ fontSize: 9, color: '#b0a080', marginTop: 2 }}>Дайто-рю Айкидзюдзюцу</div>
+              <div style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: 10, letterSpacing: '0.22em', color: SB.ink, fontWeight: 600, textTransform: 'uppercase' }}>ONLINE DAITO-RYU</div>
+              <div style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 10, color: SB.gold, letterSpacing: '0.18em', marginTop: 3, opacity: 0.75 }}>合気柔術</div>
             </div>
           </div>
 
-          <div style={{ height: 1, background: '#ede8e0' }} />
+          <div style={{ height: 1, background: SB.hairline }} />
 
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, padding: '14px 20px' }}>
-            <div style={{ width: 34, height: 34, borderRadius: '50%', border: `1px solid ${C.goldBorder}`, background: C.light, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 16, color: C.gold, flexShrink: 0 }}>
-              {(u.name || '?')[0]}
+          {/* user card */}
+          <div style={{ padding: '18px 24px' }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
+              <div style={{ width: 38, height: 38, borderRadius: '50%', border: `1px solid ${SB.gold}`, background: SB.surface, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: 17, color: SB.gold, flexShrink: 0 }}>
+                {(u.name || '?')[0]}
+              </div>
+              <div style={{ minWidth: 0 }}>
+                <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 13, fontWeight: 500, color: SB.ink, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.name}</div>
+                <div style={{ fontSize: 10, color: SB.muted, marginTop: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{u.email}</div>
+              </div>
             </div>
-            <div>
-              <div style={{ fontSize: 12, fontWeight: 500, color: C.dark }}>{u.name}</div>
-              <div style={{ fontSize: 10, color: C.muted, marginTop: 1 }}>{u.email}</div>
-            </div>
-          </div>
-
-          {curLv && (
-            <div style={{ margin: '0 14px 12px', padding: '10px 12px', background: C.light, border: `1px solid ${C.goldBorder}` }}>
-              <div style={{ fontSize: 9, color: '#b0a080', letterSpacing: 1.2, textTransform: 'uppercase', marginBottom: 3 }}>Текущий уровень</div>
-              <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 14, fontWeight: 600, color: '#8B6914' }}>{curLv.label}</div>
-              {curLv.program && (
-                <div style={{ fontSize: 10, color: C.gold, marginTop: 2 }}>
-                  Программа: {DB_SECTIONS.find(d => d.id === curLv.program)?.label}
+            {curLv && (
+              <div style={{ background: 'rgba(0,0,0,0.25)', border: `1px solid ${SB.hairline}`, padding: '10px 12px' }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 3 }}>
+                  <span style={{ fontSize: 9, color: SB.muted, letterSpacing: '0.18em', textTransform: 'uppercase' }}>текущий уровень</span>
+                  {curLv.program && <span style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 11, color: SB.gold }}>段</span>}
                 </div>
-              )}
-            </div>
-          )}
+                <div style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: 15, letterSpacing: '0.05em', color: SB.ink, fontWeight: 500 }}>{curLv.label}</div>
+                {curLv.program && (
+                  <div style={{ fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: 11, color: SB.muted, marginTop: 2 }}>
+                    {DB_SECTIONS.find(d => d.id === curLv.program)?.label}
+                  </div>
+                )}
+              </div>
+            )}
+          </div>
 
-          <div style={{ height: 1, background: '#ede8e0' }} />
+          <div style={{ height: 1, background: SB.hairline }} />
 
-          <nav style={{ flex: 1, paddingTop: 6 }}>
-            {TABS.map(({ id, label }) => (
-              <button key={id} onClick={() => setTab(id)}
-                style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 8, padding: '11px 20px', background: 'none', border: 'none', color: tab === id ? C.dark : C.muted, fontSize: 12, textAlign: 'left', cursor: 'pointer', fontWeight: tab === id ? 600 : 400 }}>
-                {tab === id && <span style={{ width: 4, height: 4, borderRadius: '50%', background: C.gold, flexShrink: 0 }} />}
-                {label}
-              </button>
-            ))}
+          {/* nav */}
+          <nav style={{ flex: 1, paddingTop: 10 }}>
+            {TABS.map(({ id, label, kanji, num }) => {
+              const isA = tab === id;
+              return (
+                <button key={id} onClick={() => setTab(id)}
+                  style={{ width: '100%', display: 'flex', alignItems: 'center', gap: 12, padding: '11px 24px', background: 'none', border: 'none', borderLeft: `2px solid ${isA ? SB.accent : 'transparent'}`, background: isA ? 'rgba(0,0,0,0.3)' : 'transparent', cursor: 'pointer', textAlign: 'left' }}>
+                  <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 10, color: isA ? SB.accent : SB.muted, letterSpacing: '0.06em', flexShrink: 0 }}>{num}</span>
+                  <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 13, color: isA ? SB.ink : SB.ink2, fontWeight: isA ? 600 : 400, flex: 1 }}>{label}</span>
+                  <span style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 13, color: isA ? SB.gold : SB.muted, opacity: 0.8 }}>{kanji}</span>
+                </button>
+              );
+            })}
           </nav>
 
-          <div style={{ height: 1, background: '#ede8e0' }} />
-          <div style={{ padding: '10px 14px', display: 'flex', flexDirection: 'column', gap: 6 }}>
-            <a href="/admin"
-              style={{ display: 'block', padding: '7px 12px', background: 'none', border: `1px solid #c8a84a`, color: '#8B6914', fontSize: 11, cursor: 'pointer', textAlign: 'left', textDecoration: 'none' }}>
-              ⚙ Панель управления
-            </a>
-            <button onClick={onLogout} style={{ padding: '7px 12px', background: 'none', border: `1px solid ${C.border}`, color: '#bbb', fontSize: 11, cursor: 'pointer', textAlign: 'left' }}>
-              Выйти
+          <div style={{ height: 1, background: SB.hairline }} />
+          <div style={{ padding: '12px 24px', display: 'flex', flexDirection: 'column', gap: 6 }}>
+            {isAdmin && (
+              <a href="/admin"
+                style={{ display: 'block', padding: '7px 0', background: 'none', border: 'none', color: SB.muted, fontSize: 11, cursor: 'pointer', textAlign: 'left', textDecoration: 'none', letterSpacing: '0.06em' }}>
+                ⚙ Панель управления
+              </a>
+            )}
+            <button onClick={onLogout} style={{ padding: '7px 0', background: 'none', border: 'none', color: SB.muted, fontSize: 11, cursor: 'pointer', textAlign: 'left', letterSpacing: '0.06em' }}>
+              ↳ Выйти
             </button>
           </div>
+          {/* bottom kanji decoration */}
+          <div style={{ padding: '8px 24px 16px', textAlign: 'right', fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 11, color: SB.gold, letterSpacing: '0.2em', opacity: 0.3 }}>武道</div>
         </aside>
       )}
 
       {/* ── Main content ── */}
-      <main style={{ flex: 1, background: C.bg, minHeight: '100vh' }}>
+      <main style={{ flex: 1, background: '#f0ebe0', minHeight: '100vh' }}>
 
         {/* Mobile top header */}
         {isMobile && (
@@ -106,19 +137,19 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
             display: 'flex',
             alignItems: 'center',
             padding: `max(12px, env(safe-area-inset-top)) 16px 12px`,
-            background: C.white,
-            borderBottom: `1px solid ${C.border}`,
+            background: SB.bg,
+            borderBottom: `1px solid ${SB.hairline}`,
             position: 'sticky',
             top: 0,
             zIndex: 50,
             gap: 10,
           }}>
-            <TakedaMon size={28} color={C.gold} />
-            <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 14, fontWeight: 600, color: '#1a1a1a', flex: 1 }}>
+            <TakedaMon size={24} color={SB.gold} />
+            <span style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: 11, letterSpacing: '0.14em', color: SB.ink, flex: 1, textTransform: 'uppercase' }}>
               {TABS.find(t => t.id === tab)?.label}
             </span>
             {curLv && (
-              <span style={{ padding: '3px 8px', background: C.light, border: `1px solid ${C.goldBorder}`, color: C.gold, fontSize: 10 }}>
+              <span style={{ padding: '3px 8px', border: `1px solid ${SB.hairline}`, color: SB.gold, fontSize: 10, fontFamily: "var(--font-jost), 'Jost', sans-serif" }}>
                 {curLv.label}
               </span>
             )}
@@ -127,12 +158,17 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
 
         {/* Desktop header */}
         {!isMobile && (
-          <header style={{ display: 'flex', alignItems: 'center', padding: '16px 36px', background: C.white, borderBottom: `1px solid ${C.border}`, position: 'sticky', top: 0, zIndex: 10 }}>
-            <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 15, fontWeight: 600, color: '#1a1a1a', flex: 1 }}>
-              {TABS.find(t => t.id === tab)?.label}
-            </span>
+          <header style={{ display: 'flex', alignItems: 'center', padding: '18px 40px', background: '#faf5e8', borderBottom: '1px solid #d2c7b0', position: 'sticky', top: 0, zIndex: 10 }}>
+            <div style={{ flex: 1 }}>
+              <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 9, letterSpacing: '0.22em', color: '#9a8860', textTransform: 'uppercase', marginBottom: 2 }}>
+                {TABS.find(t => t.id === tab)?.num} / 04
+              </div>
+              <span style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: 14, letterSpacing: '0.12em', color: '#15120e', textTransform: 'uppercase' }}>
+                {TABS.find(t => t.id === tab)?.label}
+              </span>
+            </div>
             {curLv && (
-              <span style={{ padding: '3px 9px', background: C.light, border: `1px solid ${C.goldBorder}`, color: C.gold, fontSize: 11 }}>
+              <span style={{ padding: '4px 12px', background: 'transparent', border: '1px solid #c8a84a', color: '#8B6914', fontSize: 11, fontFamily: "var(--font-jost), 'Jost', sans-serif", letterSpacing: '0.06em' }}>
                 {curLv.label}
               </span>
             )}
@@ -140,7 +176,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
         )}
 
         <div
-          style={{ padding: isMobile ? '16px' : '32px 36px' }}
+          style={{ padding: isMobile ? '16px' : '40px 48px' }}
           className={isMobile ? 'has-bottom-nav' : ''}
           key={tab}
         >
@@ -155,25 +191,24 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
 
       {/* ── Bottom navigation (mobile only) ── */}
       {isMobile && (
-        <nav className="mobile-bottom-nav">
+        <nav style={{ position: 'fixed', bottom: 0, left: 0, right: 0, background: SB.bg, borderTop: `1px solid ${SB.hairline}`, display: 'flex', alignItems: 'stretch', paddingBottom: 'env(safe-area-inset-bottom)', zIndex: 100 }}>
           {BOTTOM_TABS.map(({ id, label, icon }) => (
             <button
               key={id}
-              className="mobile-bottom-nav-item"
               onClick={() => setTab(id)}
-              style={{ color: tab === id ? C.gold : C.muted }}
+              style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 4px', background: 'none', border: 'none', cursor: 'pointer', color: tab === id ? SB.gold : SB.muted, minHeight: 60, position: 'relative' }}
             >
-              <span style={{ fontSize: 20 }}>{icon}</span>
-              <span className="nav-label" style={{ fontSize: 11, fontWeight: tab === id ? 600 : 400 }}>{label}</span>
               {tab === id && (
-                <span style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 24, height: 2, background: C.gold, borderRadius: 1 }} />
+                <span style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 24, height: 1.5, background: SB.accent }} />
               )}
+              <span style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 18, lineHeight: 1 }}>{icon}</span>
+              <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 10, marginTop: 3, letterSpacing: '0.04em', fontWeight: tab === id ? 600 : 400 }}>{label}</span>
             </button>
           ))}
           {isAdmin && (
-            <a href="/admin" className="mobile-bottom-nav-item" style={{ color: C.muted, textDecoration: 'none' }}>
-              <span style={{ fontSize: 20 }}>⚙️</span>
-              <span className="nav-label" style={{ fontSize: 11 }}>Admin</span>
+            <a href="/admin" style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', padding: '10px 4px', color: SB.muted, textDecoration: 'none', minHeight: 60 }}>
+              <span style={{ fontSize: 18, lineHeight: 1 }}>⚙</span>
+              <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 10, marginTop: 3 }}>Admin</span>
             </a>
           )}
         </nav>
@@ -182,19 +217,19 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
       {/* ── Modal покупки ── */}
       {modal && (
         <div onClick={() => setModal(null)}
-          style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.35)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, padding: 20 }}>
+          style={{ position: 'fixed', inset: 0, background: 'rgba(10,8,7,0.7)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 300, padding: 20 }}>
           <div onClick={e => e.stopPropagation()}
-            style={{ background: C.white, border: `1px solid ${C.border}`, padding: isMobile ? '32px 24px' : '44px 40px', width: '100%', maxWidth: 380, textAlign: 'center', boxShadow: '0 8px 40px rgba(0,0,0,0.12)' }}>
-            <div style={{ fontFamily: "'Noto Serif JP', serif", fontSize: 48, color: C.gold, lineHeight: 1, marginBottom: 12 }}>{modal.kanji}</div>
-            <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 18, fontWeight: 600, color: '#1a1a1a', marginBottom: 4 }}>{modal.label}</div>
-            <div style={{ fontSize: 11, color: C.muted, marginBottom: 12 }}>{modal.sublabel} · {modal.techniques} техник</div>
-            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 36, fontWeight: 300, color: C.dark, marginBottom: 6 }}>{modal.price}</div>
-            <p style={{ fontSize: 11, color: '#888', lineHeight: 1.7, marginBottom: 20 }}>Разовая оплата — постоянный доступ без ограничений.</p>
-            <button style={{ width: '100%', padding: '12px', background: C.dark, color: '#fff', border: 'none', fontSize: 13, cursor: 'pointer', marginBottom: 8, minHeight: 44 }}>
+            style={{ background: '#faf5e8', border: '1px solid #d2c7b0', padding: isMobile ? '32px 24px' : '44px 48px', width: '100%', maxWidth: 400, textAlign: 'center', boxShadow: '0 40px 80px -20px rgba(0,0,0,0.5)' }}>
+            <div style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 56, color: '#c8a84a', lineHeight: 1, marginBottom: 16 }}>{modal.kanji}</div>
+            <div style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: 20, letterSpacing: '0.06em', color: '#15120e', marginBottom: 6, textTransform: 'uppercase' }}>{modal.label}</div>
+            <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 11, color: '#9a8860', marginBottom: 20, letterSpacing: '0.06em' }}>{modal.sublabel} · {modal.techniques} техник</div>
+            <div style={{ fontFamily: "var(--font-cormorant), serif", fontSize: 42, fontWeight: 300, color: '#15120e', marginBottom: 8, lineHeight: 1 }}>{modal.price}</div>
+            <p style={{ fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: 14, color: '#6f6452', lineHeight: 1.7, marginBottom: 28 }}>Разовая оплата — постоянный доступ без ограничений.</p>
+            <button style={{ width: '100%', padding: '14px', background: '#15120e', color: '#ede5d3', border: 'none', fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer', marginBottom: 10, minHeight: 44 }}>
               Перейти к оплате
             </button>
             <button onClick={() => setModal(null)}
-              style={{ width: '100%', padding: '10px', background: 'none', border: 'none', color: '#ccc', fontSize: 12, cursor: 'pointer', minHeight: 44 }}>
+              style={{ width: '100%', padding: '10px', background: 'none', border: 'none', fontFamily: "var(--font-jost), 'Jost', sans-serif", color: '#b0a080', fontSize: 12, cursor: 'pointer', minHeight: 44 }}>
               Отмена
             </button>
           </div>
@@ -217,15 +252,20 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 20, paddingBottom: 16, borderBottom: `2px solid ${C.border}`, flexWrap: 'wrap' }}>
-        <h2 style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 20 : 24, color: '#c8a84a' }}>Месяцы 2026</h2>
-        <span style={{ fontSize: 12, color: C.muted }}>1 990 ₽ / месяц</span>
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 9, letterSpacing: '0.28em', color: '#9a8860', textTransform: 'uppercase', marginBottom: 8 }}>02 · Учебный год</div>
+        <h2 style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 28 : 38, color: '#15120e', letterSpacing: '0.03em', lineHeight: 1.1, marginBottom: 8 }}>Месяцы Дайто-рю</h2>
+        <div style={{ fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: 15, color: '#6f6452', lineHeight: 1.6 }}>
+          Программа от Введения через Иккаджо к экзамену 3 кю. 1 990 ₽ за месяц.
+        </div>
+        <div style={{ height: 1, background: '#d2c7b0', marginTop: 20 }} />
       </div>
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(190px, 1fr))', gap: isMobile ? 8 : 10 }}>
-        {(months ?? []).map(m => (
+        {(months ?? []).map((m, idx) => (
           <MonthCard
             key={m.id}
             month={m}
+            monthIndex={idx + 1}
             nav={nav}
             watched={watched}
             userAccess={userAccess}
@@ -239,7 +279,7 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
   );
 }
 
-function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product, isMobile }) {
+function MonthCard({ month: m, monthIndex, nav, watched, userAccess, accessLoading, product, isMobile }) {
   const { lessons } = useLessons(m.id);
   const [buying,   setBuying]   = useState(false);
   const [buyError, setBuyError] = useState('');
@@ -278,58 +318,84 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
   };
 
   // ─── Визуальные состояния ────────────────────────────────────────
-  const cardBg     = hasAccess ? '#fdfcf8' : '#f8f8f8';
-  const cardBorder = m.current  ? '2px solid #c8a84a'
-                   : hasAccess  ? `1px solid ${C.goldBorder}`
-                   :              `1px solid ${C.border}`;
-  const kanjiColor = hasAccess ? '#d4b96a' : '#d8d8d8';
-  const shadow     = m.current ? '0 2px 16px rgba(139,105,20,0.07)' : 'none';
+  const locked   = !accessLoading && !hasAccess;
+  const cardBg   = m.current
+    ? 'linear-gradient(155deg, #fdfcf4 0%, #faf6e8 60%, #f5efd8 100%)'
+    : locked ? '#f5f2eb' : '#faf6ec';
+  const cardBorder = m.current
+    ? '1px solid #c8a84a'
+    : locked ? '1px dashed #d2c7b0' : '1px solid #d8cdb8';
+  const kanjiOp  = locked ? 0.12 : m.current ? 0.15 : 0.13;
+  const shadow   = m.current
+    ? '0 1px 0 #c8a84a inset, 0 8px 32px -8px rgba(139,105,20,0.18)'
+    : locked ? 'none' : '0 2px 12px -4px rgba(20,16,10,0.08)';
+
+  const totalLessons = (lessons ?? []).length;
+  const progress = totalLessons > 0 ? watchedCount / totalLessons : 0;
 
   return (
-    <div style={{ padding: isMobile ? '14px 12px' : '18px 16px', minHeight: isMobile ? 160 : 200, background: cardBg, border: cardBorder, display: 'flex', flexDirection: 'column', gap: 6, boxShadow: shadow }}>
+    <div style={{ position: 'relative', padding: isMobile ? '14px 12px' : '20px 18px', minHeight: isMobile ? 160 : 210, background: cardBg, border: cardBorder, display: 'flex', flexDirection: 'column', gap: 6, boxShadow: shadow, overflow: 'hidden' }}>
+
+      {/* Кандзи водяной знак */}
+      <div style={{ position: 'absolute', top: -6, right: 6, fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: isMobile ? 72 : 100, color: m.current ? '#c8a84a' : '#8B6914', opacity: kanjiOp, lineHeight: 1, pointerEvents: 'none', fontWeight: 300 }}>{m.kanji}</div>
+
+      {/* Текущий — маленький ромб */}
+      {m.current && (
+        <div style={{ position: 'absolute', top: 12, left: 12, width: 6, height: 6, background: '#c8a84a', transform: 'rotate(45deg)' }} />
+      )}
 
       {/* Статус-бейдж */}
-      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: 18 }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: 18, position: 'relative', marginTop: m.current ? 6 : 0 }}>
+        <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 9, letterSpacing: '0.22em', color: m.current ? '#8B6914' : '#b0a080', fontWeight: 600 }}>
+          {monthIndex?.toString().padStart(2, '0')} / 12
+        </span>
         {m.current && (
-          <span style={{ fontSize: isMobile ? 10 : 8, color: C.gold, background: '#faf0d8', border: '1px solid #e0c870', padding: '2px 7px', letterSpacing: 1, textTransform: 'uppercase' }}>Текущий</span>
+          <span style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: 8, letterSpacing: '0.28em', color: '#8B6914', textTransform: 'uppercase', border: '1px solid #c8a84a', padding: '2px 8px' }}>текущий</span>
         )}
-        {!hasAccess && (
-          <span style={{ fontSize: isMobile ? 12 : 9, color: '#bbb', marginLeft: 'auto' }}>🔒</span>
+        {locked && !m.current && (
+          <span style={{ fontSize: 10, color: '#c8c0b0' }}>🔒</span>
         )}
         {hasAccess && !m.current && (
-          <span style={{ fontSize: isMobile ? 12 : 9, color: '#4a8a5a', marginLeft: 'auto' }}>✓ открыт</span>
+          <span style={{ fontSize: 10, color: '#5a8a6a' }}>✓</span>
         )}
       </div>
 
-      {/* Кандзи и название */}
-      <div style={{ fontFamily: "'Noto Serif JP', serif", fontSize: isMobile ? 16 : 20, color: kanjiColor, lineHeight: 1 }}>{m.kanji}</div>
-      <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: isMobile ? 15 : 17, fontWeight: 600, color: hasAccess ? C.dark : '#999' }}>{m.label}</div>
+      {/* Название */}
+      <div style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 20 : 26, letterSpacing: '0.04em', textTransform: 'uppercase', color: locked ? '#b0a080' : '#15120e', position: 'relative', fontWeight: 500, lineHeight: 0.95, marginTop: 2 }}>{m.label}</div>
+      <div style={{ fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: isMobile ? 13 : 14, color: locked ? '#c0b89a' : '#6f6452', position: 'relative', marginTop: 2 }}>{m.subtitle || m.description || m.desc}</div>
 
-      {!isMobile && (
-        <div style={{ fontSize: 11, color: hasAccess ? '#888' : '#bbb', lineHeight: 1.6, flex: 1 }}>{m.description || m.desc}</div>
-      )}
-
-      {/* Прогресс (только для открытых) */}
-      {hasAccess && hasProg && (
-        <div>
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 4 }}>
-            <span style={{ fontSize: 9, color: C.muted }}>{watchedCount} / {(lessons ?? []).length} уроков</span>
+      {/* Прогресс */}
+      <div style={{ marginTop: 'auto', paddingTop: isMobile ? 10 : 14, position: 'relative' }}>
+        {hasAccess && hasProg ? (
+          <>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 10, color: '#9a8860', letterSpacing: '0.1em' }}>{watchedCount} / {totalLessons} уроков</span>
+              <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 10, color: '#b73828', letterSpacing: '0.1em', fontWeight: 600 }}>{Math.round(progress * 100)}%</span>
+            </div>
+            <div style={{ height: 2, background: '#e0d8c8' }}>
+              <div style={{ height: '100%', width: `${progress * 100}%`, background: '#b73828', transition: 'width 0.4s ease' }} />
+            </div>
+          </>
+        ) : hasAccess ? (
+          <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 10, color: '#b0a080', letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            {totalLessons > 0 ? `${totalLessons} уроков · не начат` : 'Скоро'}
+          </span>
+        ) : product ? (
+          <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+            <span style={{ fontFamily: "var(--font-cormorant), serif", fontSize: 15, color: '#6f6452' }}>{product.price?.toLocaleString('ru-RU')} ₽</span>
+            <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 10, color: '#8B6914', letterSpacing: '0.16em', textTransform: 'uppercase' }}>Открыть →</span>
           </div>
-          <div style={{ height: 2, background: '#e8e0d0', borderRadius: 2 }}>
-            <div style={{ height: '100%', width: `${(lessons ?? []).length ? (watchedCount / (lessons ?? []).length) * 100 : 0}%`, background: C.gold, borderRadius: 2 }} />
-          </div>
-        </div>
-      )}
+        ) : null}
+      </div>
 
       {/* CTA */}
-      <div style={{ marginTop: 'auto', paddingTop: 8 }}>
-        {/* Пока грузится access state — нейтральная заглушка, без мигания */}
+      <div style={{ paddingTop: 8 }}>
         {accessLoading ? (
-          <div style={{ height: 36, background: '#eeebe5', borderRadius: 2, width: isMobile ? '100%' : 80 }} />
+          <div style={{ height: 36, background: '#ece8e0', width: isMobile ? '100%' : 80 }} />
         ) : hasAccess ? (
           <button
             onClick={() => nav.month(m.id)}
-            style={{ padding: isMobile ? '11px 12px' : '7px 14px', background: C.dark, color: '#fff', border: 'none', fontSize: isMobile ? 14 : 12, cursor: 'pointer', minHeight: 44, width: isMobile ? '100%' : 'auto', fontWeight: isMobile ? 600 : 400 }}>
+            style={{ padding: isMobile ? '11px 12px' : '8px 16px', background: '#15120e', color: '#ede5d3', border: 'none', fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: isMobile ? 13 : 11, letterSpacing: '0.1em', cursor: 'pointer', minHeight: 44, width: isMobile ? '100%' : 'auto' }}>
             Войти →
           </button>
         ) : product ? (
@@ -337,15 +403,13 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
             <button
               onClick={handleBuy}
               disabled={buying}
-              style={{ padding: isMobile ? '11px 12px' : '7px 14px', background: buying ? '#f5f0e8' : 'transparent', color: buying ? C.muted : C.gold, border: `1px solid ${buying ? C.border : '#c8a84a'}`, fontSize: isMobile ? 13 : 12, cursor: buying ? 'default' : 'pointer', minHeight: 44, width: isMobile ? '100%' : 'auto', transition: 'all 0.15s' }}>
+              style={{ padding: isMobile ? '11px 12px' : '8px 16px', background: buying ? '#f0ebe0' : 'transparent', color: buying ? '#b0a080' : '#8B6914', border: `1px solid ${buying ? '#d8cdb8' : '#c8a84a'}`, fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: isMobile ? 13 : 11, letterSpacing: '0.08em', cursor: buying ? 'default' : 'pointer', minHeight: 44, width: isMobile ? '100%' : 'auto', transition: 'all 0.15s' }}>
               {buying ? 'Переход к оплате…' : `Купить — ${product.price?.toLocaleString('ru-RU')} ₽`}
             </button>
-            {buyError && (
-              <div style={{ fontSize: 10, color: '#a03030', marginTop: 4 }}>{buyError}</div>
-            )}
+            {buyError && <div style={{ fontSize: 10, color: '#a03030', marginTop: 4 }}>{buyError}</div>}
           </div>
         ) : (
-          <span style={{ fontSize: 11, color: '#bbb' }}>Недоступно</span>
+          <span style={{ fontSize: 11, color: '#c0b89a' }}>Недоступно</span>
         )}
       </div>
     </div>
@@ -358,9 +422,10 @@ function TabKnowledge({ nav, isMobile }) {
   if (loading) return <div style={{ color: C.muted, fontSize: 13 }}>Загрузка…</div>;
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 20, paddingBottom: 16, borderBottom: `2px solid ${C.border}`, flexWrap: 'wrap' }}>
-        <h2 style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 20 : 24, color: '#c8a84a' }}>База знаний</h2>
-        <span style={{ fontSize: 12, color: C.muted }}>Бесплатно для всех</span>
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 9, letterSpacing: '0.28em', color: '#9a8860', textTransform: 'uppercase', marginBottom: 8 }}>01 · Открыто для всех</div>
+        <h2 style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 28 : 38, color: '#15120e', letterSpacing: '0.03em', lineHeight: 1.1 }}>База знаний</h2>
+        <div style={{ height: 1, background: '#d2c7b0', marginTop: 16 }} />
       </div>
       {items.length === 0 && <div style={{ fontSize: 13, color: C.muted }}>Материалы скоро появятся</div>}
       <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
@@ -387,9 +452,10 @@ function TabKnowledge({ nav, isMobile }) {
 function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 20, paddingBottom: 16, borderBottom: `2px solid ${C.border}`, flexWrap: 'wrap' }}>
-        <h2 style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 20 : 24, color: '#c8a84a' }}>База техник</h2>
-        <span style={{ fontSize: 12, color: C.muted }}>Разовая покупка · Постоянный доступ</span>
+      <div style={{ marginBottom: 24 }}>
+        <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 9, letterSpacing: '0.28em', color: '#9a8860', textTransform: 'uppercase', marginBottom: 8 }}>03 · Разовая покупка</div>
+        <h2 style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 28 : 38, color: '#15120e', letterSpacing: '0.03em', lineHeight: 1.1 }}>База техник</h2>
+        <div style={{ height: 1, background: '#d2c7b0', marginTop: 16 }} />
       </div>
       <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
         {(DB_SECTIONS ?? []).map(sec => {

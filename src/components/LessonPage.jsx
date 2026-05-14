@@ -33,29 +33,29 @@ export default function LessonPage({ nav, monthId, lessonId, watched, toggleWatc
     <header style={{
       display: 'flex', alignItems: 'center', gap: 10,
       padding: `max(12px, env(safe-area-inset-top)) 16px 12px`,
-      background: '#fff',
-      borderBottom: `1px solid ${C.border}`,
+      background: '#0a0807',
+      borderBottom: '1px solid #1f1a16',
       position: 'sticky', top: 0, zIndex: 50,
     }}>
       <button
         onClick={onBack}
         style={{
           background: 'none', border: 'none', cursor: 'pointer',
-          fontSize: 22, color: C.gold, padding: '0 4px',
+          fontSize: 22, color: '#b8923a', padding: '0 4px',
           display: 'flex', alignItems: 'center',
           minWidth: 36, minHeight: 44,
         }}
       >‹</button>
       <span style={{
-        fontFamily: "var(--font-jost), 'Jost', sans-serif",
-        fontSize: 15, fontWeight: 600, color: '#1a1a1a', flex: 1,
+        fontFamily: "var(--font-arkhip), system-ui, sans-serif",
+        fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#ede5d3', flex: 1,
         overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
       }}>{title}</span>
     </header>
   );
 
   return (
-    <div className="fade" style={{ minHeight: '100vh', background: C.bg }}>
+    <div className="fade" style={{ minHeight: '100vh', background: '#f0ebe0' }}>
 
       {/* ── Мобильный хедер ── */}
       {isMobile && (
@@ -69,35 +69,35 @@ export default function LessonPage({ nav, monthId, lessonId, watched, toggleWatc
 
         {/* Десктопный breadcrumb */}
         {!isMobile && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28, fontSize: 13, flexWrap: 'wrap' }}>
-            <button onClick={nav.dashboard} style={{ background: 'none', border: 'none', color: C.gold, cursor: 'pointer', padding: '4px 0', minHeight: 44 }}>← Месяцы</button>
-            <span style={{ color: '#ddd' }}>/</span>
-            <button onClick={nav.back} style={{ background: 'none', border: 'none', color: C.gold, cursor: 'pointer', padding: '4px 0', minHeight: 44 }}>{month?.label}</button>
-            <span style={{ color: '#ddd' }}>/</span>
-            <span style={{ color: C.dark }}>Урок {lesson.num}. {lesson.title}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 32, flexWrap: 'wrap' }}>
+            <button onClick={nav.dashboard} style={{ background: 'none', border: 'none', fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 11, letterSpacing: '0.1em', color: '#9a8860', cursor: 'pointer', padding: '4px 0', minHeight: 44 }}>← Месяцы</button>
+            <span style={{ color: '#d2c7b0' }}>/</span>
+            <button onClick={nav.back} style={{ background: 'none', border: 'none', fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 11, letterSpacing: '0.1em', color: '#9a8860', cursor: 'pointer', padding: '4px 0', minHeight: 44 }}>{month?.label}</button>
+            <span style={{ color: '#d2c7b0' }}>/</span>
+            <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 11, color: '#6f6452', letterSpacing: '0.06em' }}>Урок {lesson.num}</span>
           </div>
         )}
 
         {/* Заголовок урока */}
-        <div style={{ marginBottom: isMobile ? 0 : 24, padding: isMobile ? '16px 16px 0' : 0 }}>
+        <div style={{ marginBottom: isMobile ? 0 : 28, padding: isMobile ? '16px 16px 0' : 0 }}>
           {/* Метаданные */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: isMobile ? 14 : 13, color: '#ccc', fontWeight: 600 }}>
-              Урок {String(lesson.num).padStart(2, '0')}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12, flexWrap: 'wrap' }}>
+            <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: isMobile ? 11 : 9, letterSpacing: '0.22em', color: '#b0a080', fontWeight: 600 }}>
+              {String(lesson.num).padStart(2, '0')}
             </span>
-            <span style={{ color: '#ddd', fontSize: 11 }}>·</span>
-            <span style={{ fontSize: isMobile ? 13 : 11, color: C.muted }}>{lesson.duration}</span>
-            <span style={{ color: '#ddd', fontSize: 11 }}>·</span>
-            <span style={{ fontSize: isMobile ? 13 : 11, color: C.muted }}>{month?.label} 2026</span>
+            <span style={{ color: '#d2c7b0', fontSize: 9 }}>·</span>
+            <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: isMobile ? 11 : 9, color: '#9a8860', letterSpacing: '0.1em' }}>{lesson.duration}</span>
+            <span style={{ color: '#d2c7b0', fontSize: 9 }}>·</span>
+            <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: isMobile ? 11 : 9, color: '#9a8860', letterSpacing: '0.1em' }}>{month?.label} 2026</span>
           </div>
 
           {/* Название + кнопка «Просмотрено» */}
-          <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: isMobile ? 'wrap' : 'nowrap', marginBottom: isMobile ? 14 : 0 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: isMobile ? 'wrap' : 'nowrap', marginBottom: isMobile ? 14 : 0 }}>
             <div>
-              <h1 style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 20 : 26, color: '#c8a84a', marginBottom: 6 }}>
+              <h1 style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 22 : 30, letterSpacing: '0.02em', color: '#15120e', marginBottom: 8, lineHeight: 1.15 }}>
                 {lesson.title}
               </h1>
-              <div style={{ fontSize: isMobile ? 14 : 13, color: C.gold, letterSpacing: 0.3 }}>{lesson.subtitle}</div>
+              <div style={{ fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: isMobile ? 14 : 15, color: '#7a6e5a' }}>{lesson.subtitle}</div>
             </div>
             <button
               onClick={() => toggleWatched(lessonId)}

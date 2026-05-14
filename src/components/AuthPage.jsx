@@ -7,16 +7,16 @@ import TakedaMon from '@/components/TakedaMon';
 
 // ─── Цветовая палитра ──────────────────────────────────────────
 const C = {
-  bg:         '#f5f3ee',
-  white:      '#fff',
-  border:     '#d8d0c0',
-  gold:       '#7a5c0f',        // тёмнее для контраста на светлом фоне
-  goldLight:  '#c8a84a',        // акцент на тёмном фоне
-  goldBorder: '#e0d0b0',
-  goldBg:     '#faf6ee',
-  dark:       '#111111',        // почти чёрный — сильный контраст
-  muted:      '#666',           // был #999 — теперь темнее и читаемее
-  light:      '#fdfcf8',
+  bg:         '#f0ebe0',
+  white:      '#faf8f4',
+  border:     '#d2c7b0',
+  gold:       '#9a8860',
+  goldLight:  '#b8923a',
+  goldBorder: '#d2c7b0',
+  goldBg:     '#faf5e8',
+  dark:       '#15120e',
+  muted:      '#7a6e5a',
+  light:      '#f0ebe0',
   green:      '#2d7a4a',
   greenBg:    '#f0faf4',
   greenBorder:'#b8e0c8',

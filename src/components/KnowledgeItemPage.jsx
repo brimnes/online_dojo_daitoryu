@@ -1,7 +1,6 @@
 'use client';
 
 import { useState, useEffect } from 'react';
-import { C } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
 import KinescopePlayer from '@/components/KinescopePlayer';
 
@@ -27,33 +26,33 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
   }, [itemId]);
 
   if (loading) return (
-    <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', color: C.muted, fontSize: 13 }}>
+    <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "var(--font-jost), 'Jost', sans-serif", color: '#9a8860', fontSize: 13, letterSpacing: '0.06em' }}>
       Загрузка…
     </div>
   );
 
   if (notFound) return (
     <div style={{ padding: '60px 32px', textAlign: 'center', display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 14 }}>
-      <div style={{ fontSize: 13, color: C.muted }}>Материал не найден</div>
-      <button onClick={nav.knowledge} style={{ fontSize: 12, color: C.gold, background: 'none', border: 'none', cursor: 'pointer' }}>
+      <div style={{ fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: 16, color: '#9a8860' }}>Материал не найден</div>
+      <button onClick={nav.knowledge} style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 12, color: '#9a8860', background: 'none', border: 'none', cursor: 'pointer', letterSpacing: '0.08em' }}>
         ← К базе знаний
       </button>
     </div>
   );
 
   return (
-    <div className="fade" style={{ minHeight: '100vh', background: C.bg }}>
+    <div className="fade" style={{ minHeight: '100vh', background: '#f0ebe0' }}>
 
       {/* ── Мобильный sticky хедер ── */}
       {isMobile && (
         <header style={{
           display: 'flex', alignItems: 'center', gap: 10,
           padding: `max(12px, env(safe-area-inset-top)) 16px 12px`,
-          background: '#fff', borderBottom: `1px solid ${C.border}`,
+          background: '#0a0807', borderBottom: '1px solid #1f1a16',
           position: 'sticky', top: 0, zIndex: 50,
         }}>
-          <button onClick={nav.back} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, color: C.gold, padding: '0 4px', display: 'flex', alignItems: 'center', minWidth: 36, minHeight: 44 }}>‹</button>
-          <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 15, fontWeight: 600, color: '#1a1a1a', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+          <button onClick={nav.back} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, color: '#b8923a', padding: '0 4px', display: 'flex', alignItems: 'center', minWidth: 36, minHeight: 44 }}>‹</button>
+          <span style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#ede5d3', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
             {item.title}
           </span>
         </header>
@@ -63,21 +62,21 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
 
         {/* Десктопный breadcrumb */}
         {!isMobile && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24, fontSize: 13 }}>
-            <button onClick={nav.dashboard} style={{ background: 'none', border: 'none', color: C.gold, cursor: 'pointer', padding: '4px 0', minHeight: 44 }}>← Главная</button>
-            <span style={{ color: '#ddd' }}>/</span>
-            <button onClick={nav.back} style={{ background: 'none', border: 'none', color: C.gold, cursor: 'pointer', padding: '4px 0', minHeight: 44 }}>База знаний</button>
-            <span style={{ color: '#ddd' }}>/</span>
-            <span style={{ color: C.dark }}>{item.title}</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 32, fontSize: 11, flexWrap: 'wrap' }}>
+            <button onClick={nav.dashboard} style={{ background: 'none', border: 'none', fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 11, letterSpacing: '0.1em', color: '#9a8860', cursor: 'pointer', padding: '4px 0', minHeight: 44, display: 'flex', alignItems: 'center' }}>← Главная</button>
+            <span style={{ color: '#d2c7b0' }}>/</span>
+            <button onClick={nav.back} style={{ background: 'none', border: 'none', fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 11, letterSpacing: '0.1em', color: '#9a8860', cursor: 'pointer', padding: '4px 0', minHeight: 44, display: 'flex', alignItems: 'center' }}>База знаний</button>
+            <span style={{ color: '#d2c7b0' }}>/</span>
+            <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 11, color: '#6f6452', letterSpacing: '0.06em' }}>{item.title}</span>
           </div>
         )}
 
         {/* Title */}
-        <h1 style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 22 : 26, color: '#c8a84a', marginBottom: 6 }}>
+        <h1 style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 24 : 32, letterSpacing: '0.03em', color: '#15120e', marginBottom: 8, lineHeight: 1.1 }}>
           {item.title}
         </h1>
         {item.subtitle && (
-          <div style={{ fontSize: isMobile ? 14 : 13, color: C.muted, marginBottom: 24 }}>{item.subtitle}</div>
+          <div style={{ fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: isMobile ? 16 : 17, color: '#6f6452', marginBottom: 28, lineHeight: 1.6 }}>{item.subtitle}</div>
         )}
 
         {/* Video */}
@@ -95,11 +94,11 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
         {/* Content */}
         {item.content && (
           <div style={{
-            fontSize: isMobile ? 17 : 14, lineHeight: isMobile ? 1.9 : 1.85, color: '#444',
-            background: C.white, border: `1px solid ${C.border}`,
+            fontSize: isMobile ? 17 : 15, lineHeight: isMobile ? 1.9 : 1.85, color: '#3d3228',
+            background: '#faf8f4', border: '1px solid #d2c7b0',
             padding: isMobile ? '20px 16px' : '28px 30px',
             whiteSpace: 'pre-wrap',
-            fontFamily: "'Cormorant Garamond', serif",
+            fontFamily: "var(--font-cormorant), serif",
           }}>
             {item.content}
           </div>
@@ -107,10 +106,10 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
 
         {/* Back button */}
         {!isMobile && (
-          <div style={{ marginTop: 32, paddingTop: 20, borderTop: `1px solid ${C.border}` }}>
+          <div style={{ marginTop: 32, paddingTop: 20, borderTop: '1px solid #d2c7b0' }}>
             <button
               onClick={nav.back}
-              style={{ background: 'none', border: 'none', color: C.gold, fontSize: 14, cursor: 'pointer', padding: 0, minHeight: 44 }}>
+              style={{ background: 'none', border: 'none', fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 12, letterSpacing: '0.1em', color: '#9a8860', cursor: 'pointer', padding: 0, minHeight: 44, display: 'flex', alignItems: 'center' }}>
               ← Назад к базе знаний
             </button>
           </div>
