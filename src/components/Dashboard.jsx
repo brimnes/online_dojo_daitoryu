@@ -164,7 +164,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
               style={{ color: tab === id ? C.gold : C.muted }}
             >
               <span style={{ fontSize: 20 }}>{icon}</span>
-              <span className="nav-label" style={{ fontSize: 10, fontWeight: tab === id ? 600 : 400 }}>{label}</span>
+              <span className="nav-label" style={{ fontSize: 11, fontWeight: tab === id ? 600 : 400 }}>{label}</span>
               {tab === id && (
                 <span style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 24, height: 2, background: C.gold, borderRadius: 1 }} />
               )}
@@ -173,7 +173,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
           {isAdmin && (
             <a href="/admin" className="mobile-bottom-nav-item" style={{ color: C.muted, textDecoration: 'none' }}>
               <span style={{ fontSize: 20 }}>⚙️</span>
-              <span className="nav-label" style={{ fontSize: 10 }}>Admin</span>
+              <span className="nav-label" style={{ fontSize: 11 }}>Admin</span>
             </a>
           )}
         </nav>
@@ -291,13 +291,13 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
       {/* Статус-бейдж */}
       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', minHeight: 18 }}>
         {m.current && (
-          <span style={{ fontSize: 8, color: C.gold, background: '#faf0d8', border: '1px solid #e0c870', padding: '2px 7px', letterSpacing: 1, textTransform: 'uppercase' }}>Текущий</span>
+          <span style={{ fontSize: isMobile ? 10 : 8, color: C.gold, background: '#faf0d8', border: '1px solid #e0c870', padding: '2px 7px', letterSpacing: 1, textTransform: 'uppercase' }}>Текущий</span>
         )}
         {!hasAccess && (
-          <span style={{ fontSize: 9, color: '#bbb', marginLeft: 'auto' }}>🔒</span>
+          <span style={{ fontSize: isMobile ? 12 : 9, color: '#bbb', marginLeft: 'auto' }}>🔒</span>
         )}
         {hasAccess && !m.current && (
-          <span style={{ fontSize: 9, color: '#4a8a5a', marginLeft: 'auto' }}>✓ открыт</span>
+          <span style={{ fontSize: isMobile ? 12 : 9, color: '#4a8a5a', marginLeft: 'auto' }}>✓ открыт</span>
         )}
       </div>
 
@@ -329,7 +329,7 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
         ) : hasAccess ? (
           <button
             onClick={() => nav.month(m.id)}
-            style={{ padding: isMobile ? '9px 12px' : '7px 14px', background: C.dark, color: '#fff', border: 'none', fontSize: 12, cursor: 'pointer', minHeight: 44, width: isMobile ? '100%' : 'auto' }}>
+            style={{ padding: isMobile ? '11px 12px' : '7px 14px', background: C.dark, color: '#fff', border: 'none', fontSize: isMobile ? 14 : 12, cursor: 'pointer', minHeight: 44, width: isMobile ? '100%' : 'auto', fontWeight: isMobile ? 600 : 400 }}>
             Войти →
           </button>
         ) : product ? (
@@ -337,7 +337,7 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
             <button
               onClick={handleBuy}
               disabled={buying}
-              style={{ padding: isMobile ? '9px 12px' : '7px 14px', background: buying ? '#f5f0e8' : 'transparent', color: buying ? C.muted : C.gold, border: `1px solid ${buying ? C.border : '#c8a84a'}`, fontSize: isMobile ? 11 : 12, cursor: buying ? 'default' : 'pointer', minHeight: 44, width: isMobile ? '100%' : 'auto', transition: 'all 0.15s' }}>
+              style={{ padding: isMobile ? '11px 12px' : '7px 14px', background: buying ? '#f5f0e8' : 'transparent', color: buying ? C.muted : C.gold, border: `1px solid ${buying ? C.border : '#c8a84a'}`, fontSize: isMobile ? 13 : 12, cursor: buying ? 'default' : 'pointer', minHeight: 44, width: isMobile ? '100%' : 'auto', transition: 'all 0.15s' }}>
               {buying ? 'Переход к оплате…' : `Купить — ${product.price?.toLocaleString('ru-RU')} ₽`}
             </button>
             {buyError && (

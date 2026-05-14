@@ -151,8 +151,45 @@ h1, h2 {
   text-decoration: none;
   color: #999;
   font-family: var(--font-jost), 'Jost', sans-serif;
-  min-height: 56px;
+  min-height: 60px;
 }
 .has-bottom-nav {
-  padding-bottom: calc(56px + env(safe-area-inset-bottom));
+  padding-bottom: calc(60px + env(safe-area-inset-bottom));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE TYPOGRAPHY OVERRIDES — комфортное чтение без приближения
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  html, body {
+    font-size: 16px;         /* базовый размер чуть крупнее на мобайле */
+  }
+
+  /* bottom nav label */
+  .mobile-bottom-nav-item .nav-label,
+  .nav-label {
+    font-size: 11px !important;
+  }
+
+  /* Мелкие overline-метки — минимум 11px */
+  .overline {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+  }
+
+  /* UI-label — 13px */
+  .ui-label {
+    font-size: 13px;
+  }
+
+  /* Редакционный текст — комфортный размер */
+  .article-text {
+    font-size: 18px;
+    line-height: 1.9;
+  }
+
+  .sensei-quote {
+    font-size: 17px;
+    line-height: 1.9;
+  }
 }

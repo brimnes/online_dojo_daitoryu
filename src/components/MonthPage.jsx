@@ -36,13 +36,34 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched }) {
   }
 
   return (
-    <div className="fade" style={{ padding: isMobile ? '16px' : '32px 40px', maxWidth: 1100, margin: '0 auto' }}>
-      {/* Breadcrumb */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: isMobile ? 16 : 28, fontSize: 12, flexWrap: 'wrap' }}>
-        <button onClick={nav.dashboard} style={{ background: 'none', border: 'none', color: C.gold, cursor: 'pointer', padding: '4px 0', minHeight: 44, display: 'flex', alignItems: 'center' }}>← Месяцы</button>
-        <span style={{ color: '#ddd' }}>/</span>
-        <span style={{ color: C.dark }}>{month?.label} 2026</span>
-      </div>
+    <div className="fade" style={{ minHeight: '100vh', background: C.bg }}>
+
+      {/* ── Мобильный sticky хедер ── */}
+      {isMobile && (
+        <header style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          padding: `max(12px, env(safe-area-inset-top)) 16px 12px`,
+          background: '#fff', borderBottom: `1px solid ${C.border}`,
+          position: 'sticky', top: 0, zIndex: 50,
+        }}>
+          <button onClick={nav.back} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, color: C.gold, padding: '0 4px', display: 'flex', alignItems: 'center', minWidth: 36, minHeight: 44 }}>‹</button>
+          <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 15, fontWeight: 600, color: '#1a1a1a', flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>
+            {month?.label} 2026
+          </span>
+          {progress === 100 && <span style={{ fontSize: 11, color: '#3a8a5a' }}>✓</span>}
+        </header>
+      )}
+
+    <div style={{ padding: isMobile ? '16px 16px 40px' : '32px 40px', maxWidth: 1100, margin: '0 auto' }}>
+
+      {/* Десктопный breadcrumb */}
+      {!isMobile && (
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28, fontSize: 13, flexWrap: 'wrap' }}>
+          <button onClick={nav.dashboard} style={{ background: 'none', border: 'none', color: C.gold, cursor: 'pointer', padding: '4px 0', minHeight: 44, display: 'flex', alignItems: 'center' }}>← Месяцы</button>
+          <span style={{ color: '#ddd' }}>/</span>
+          <span style={{ color: C.dark }}>{month?.label} 2026</span>
+        </div>
+      )}
 
       {/* Header */}
       <div style={{ display: 'flex', alignItems: 'flex-start', gap: isMobile ? 14 : 28, marginBottom: isMobile ? 20 : 32, paddingBottom: isMobile ? 16 : 28, borderBottom: `2px solid ${C.border}`, flexWrap: 'wrap' }}>
@@ -50,17 +71,17 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched }) {
           <div style={{ fontFamily: "'Noto Serif JP', serif", fontSize: 88, color: '#ece7de', lineHeight: 1, flexShrink: 0, marginTop: -8 }}>{month?.kanji}</div>
         )}
         {isMobile && (
-          <div style={{ fontFamily: "'Noto Serif JP', serif", fontSize: 44, color: '#ece7de', lineHeight: 1, flexShrink: 0 }}>{month?.kanji}</div>
+          <div style={{ fontFamily: "'Noto Serif JP', serif", fontSize: 52, color: '#ece7de', lineHeight: 1, flexShrink: 0 }}>{month?.kanji}</div>
         )}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontSize: 9, color: '#b0a080', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>Учебный модуль · 2026</div>
-          <h1 style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 22 : 30, color: '#c8a84a', marginBottom: 8 }}>{month?.label}</h1>
-          <p style={{ fontSize: 13, color: '#888', lineHeight: 1.7, maxWidth: 500, marginBottom: 20 }}>{month?.description || month?.desc}</p>
+          <div style={{ fontSize: isMobile ? 11 : 9, color: '#b0a080', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 8 }}>Учебный модуль · 2026</div>
+          <h1 style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 24 : 30, color: '#c8a84a', marginBottom: 8 }}>{month?.label}</h1>
+          <p style={{ fontSize: isMobile ? 14 : 13, color: '#888', lineHeight: 1.75, maxWidth: 500, marginBottom: 20 }}>{month?.description || month?.desc}</p>
           <div style={{ display: 'flex', alignItems: 'center', gap: 16, flexWrap: 'wrap' }}>
             <div style={{ flex: 1, maxWidth: 320, minWidth: 180 }}>
               <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-                <span style={{ fontSize: 11, color: C.muted }}>Прогресс</span>
-                <span style={{ fontSize: 11, color: progress === 100 ? '#3a8a5a' : C.gold, fontWeight: 600 }}>
+                <span style={{ fontSize: isMobile ? 13 : 11, color: C.muted }}>Прогресс</span>
+                <span style={{ fontSize: isMobile ? 13 : 11, color: progress === 100 ? '#3a8a5a' : C.gold, fontWeight: 600 }}>
                   {watchedCount} из {safelessons.length} уроков
                 </span>
               </div>
@@ -69,7 +90,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched }) {
               </div>
             </div>
             {progress === 100 && (
-              <span style={{ fontSize: 11, color: '#3a8a5a', background: '#f0faf4', border: '1px solid #b8e0c8', padding: '3px 10px' }}>✓ Месяц завершён</span>
+              <span style={{ fontSize: isMobile ? 13 : 11, color: '#3a8a5a', background: '#f0faf4', border: '1px solid #b8e0c8', padding: '3px 10px' }}>✓ Месяц завершён</span>
             )}
           </div>
         </div>
@@ -90,6 +111,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched }) {
         ))}
       </div>
     </div>
+    </div>
   );
 }
 
@@ -105,10 +127,10 @@ function LessonCard({ lesson, watched, onOpen, onToggleWatched, isMobile }) {
       style={{ background: watched ? '#fdfcf8' : '#fff', cursor: 'pointer', transition: 'background 0.12s', padding: isMobile ? '14px' : '20px 20px 16px' }}>
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: '#ddd', fontWeight: 600, minWidth: 22 }}>
+          <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: isMobile ? 15 : 13, color: '#ddd', fontWeight: 600, minWidth: 22 }}>
             {String(lesson.num).padStart(2, '0')}
           </span>
-          <span style={{ fontSize: 10, color: C.muted, background: '#f0ede8', padding: '2px 7px', letterSpacing: 0.5 }}>{lesson.duration}</span>
+          <span style={{ fontSize: isMobile ? 12 : 10, color: C.muted, background: '#f0ede8', padding: '2px 7px', letterSpacing: 0.5 }}>{lesson.duration}</span>
         </div>
         <button onClick={onToggleWatched}
           title={watched ? 'Снять отметку' : 'Отметить просмотренным'}
@@ -127,16 +149,16 @@ function LessonCard({ lesson, watched, onOpen, onToggleWatched, isMobile }) {
         <div style={{ position: 'absolute', bottom: 8, right: 10, fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>{lesson.duration}</div>
       </div>
       <div style={{ marginBottom: 4 }}>
-        <div style={{ fontSize: 15, fontWeight: 500, color: C.dark, marginBottom: 4, lineHeight: 1.3 }}>{lesson.title}</div>
-        <div style={{ fontSize: 11, color: C.gold, letterSpacing: 0.3, marginBottom: 8 }}>{lesson.subtitle}</div>
+        <div style={{ fontSize: isMobile ? 16 : 15, fontWeight: 500, color: C.dark, marginBottom: 4, lineHeight: 1.35 }}>{lesson.title}</div>
+        <div style={{ fontSize: isMobile ? 13 : 11, color: C.gold, letterSpacing: 0.3, marginBottom: 8 }}>{lesson.subtitle}</div>
         {!isMobile && (
           <div style={{ fontSize: 12, color: '#888', lineHeight: 1.6, display: '-webkit-box', WebkitLineClamp: 2, WebkitBoxOrient: 'vertical', overflow: 'hidden' }}>
             {lesson.text}
           </div>
         )}
       </div>
-      <div style={{ marginTop: isMobile ? 6 : 12 }}>
-        <span style={{ fontSize: 11, color: active ? C.gold : C.muted, transition: 'color 0.15s' }}>Открыть урок →</span>
+      <div style={{ marginTop: isMobile ? 8 : 12 }}>
+        <span style={{ fontSize: isMobile ? 13 : 11, color: active ? C.gold : C.muted, transition: 'color 0.15s' }}>Открыть урок →</span>
       </div>
     </div>
   );
