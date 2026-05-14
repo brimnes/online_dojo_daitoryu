@@ -16,16 +16,16 @@ import KinescopeUploader from '@/components/KinescopeUploader';
 // ЦВЕТА
 // ═══════════════════════════════════════════════════════════════
 const C = {
-  bg:          '#f5f3ee',
-  white:       '#fff',
-  border:      '#e8e0d0',
-  gold:        '#8B6914',
-  goldLight:   '#c8a84a',
-  goldBorder:  '#e8dcc8',
-  goldBg:      '#faf6ee',
-  dark:        '#1a1a1a',
-  muted:       '#999',
-  light:       '#fdfcf8',
+  bg:          '#f0ebe0',
+  white:       '#faf8f4',
+  border:      '#d2c7b0',
+  gold:        '#b8923a',
+  goldLight:   '#b8923a',
+  goldBorder:  '#d2c7b0',
+  goldBg:      '#faf5e8',
+  dark:        '#15120e',
+  muted:       '#9a8860',
+  light:       '#f0ebe0',
   green:       '#2d7a4a',
   greenBg:     '#f0faf4',
   greenBorder: '#b8e0c8',
@@ -214,16 +214,16 @@ export default function AdminPanel({ onExit }) {
 
   const SidebarContent = () => (
     <>
-      <div style={{padding:'16px 18px',borderBottom:`1px solid ${C.border}`}}>
-        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
-          <div style={{fontFamily:"'Noto Serif JP',serif",fontSize:24,color:C.gold,lineHeight:1}}>合</div>
+      <div style={{padding:'20px 18px 16px',borderBottom:'1px solid #1f1a16'}}>
+        <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:12}}>
+          <div style={{fontFamily:"var(--font-noto),'Noto Serif JP',serif",fontSize:26,color:'#b8923a',lineHeight:1}}>合</div>
           <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:12,fontWeight:600,letterSpacing:3,color:C.dark}}>ADMIN</div>
-            <div style={{fontSize:9,color:C.muted,letterSpacing:1}}>ONLINE DOJO</div>
+            <div style={{fontFamily:"var(--font-arkhip),system-ui,sans-serif",fontSize:10,letterSpacing:'0.2em',textTransform:'uppercase',color:'#ede5d3',lineHeight:1.3}}>ADMIN</div>
+            <div style={{fontFamily:"var(--font-jost),'Jost',sans-serif",fontSize:9,color:'#5a4e3a',letterSpacing:'0.1em',textTransform:'uppercase',marginTop:3}}>ONLINE DOJO</div>
           </div>
           {isMobile && (
             <button onClick={()=>setDrawerOpen(false)}
-              style={{marginLeft:'auto',background:'none',border:'none',fontSize:20,color:C.muted,cursor:'pointer',lineHeight:1,padding:'4px'}}>
+              style={{marginLeft:'auto',background:'none',border:'none',fontSize:18,color:'#5a4e3a',cursor:'pointer',lineHeight:1,padding:'4px'}}>
               ✕
             </button>
           )}
@@ -234,8 +234,8 @@ export default function AdminPanel({ onExit }) {
       <nav style={{flex:1,padding:'8px 0',overflowY:'auto'}}>
         {SECTIONS.map(s=>(
           <button key={s.id} onClick={()=>handleSectionSelect(s.id)}
-            style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'13px 18px',background:section===s.id?C.goldBg:'none',border:'none',borderLeft:`2px solid ${section===s.id?C.gold:'transparent'}`,color:section===s.id?C.dark:C.muted,fontSize:13,textAlign:'left',cursor:'pointer',transition:'all 0.12s',position:'relative',minHeight:44}}>
-            <span style={{fontSize:section===s.id?11:10,color:section===s.id?C.gold:'#ccc',fontFamily:s.id==='ikkajo'?"'Noto Serif JP',serif":'inherit'}}>{s.icon}</span>
+            style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'12px 18px',background:section===s.id?'rgba(184,146,58,0.12)':'transparent',border:'none',borderLeft:`2px solid ${section===s.id?'#b8923a':'transparent'}`,color:section===s.id?'#ede5d3':'#7a6c52',fontFamily:"var(--font-jost),'Jost',sans-serif",fontSize:12,letterSpacing:'0.06em',textAlign:'left',cursor:'pointer',transition:'all 0.12s',position:'relative',minHeight:44}}>
+            <span style={{fontSize:section===s.id?11:10,color:section===s.id?'#b8923a':'#3a3228',fontFamily:s.id==='ikkajo'?"var(--font-noto),'Noto Serif JP',serif":'inherit'}}>{s.icon}</span>
             {s.label}
             {s.id==='exams'&&pendingCount>0&&<span style={{marginLeft:'auto',background:C.red,color:'#fff',fontSize:9,padding:'1px 6px',borderRadius:10}}>{pendingCount}</span>}
           </button>
@@ -243,8 +243,8 @@ export default function AdminPanel({ onExit }) {
       </nav>
 
       {onExit && (
-        <div style={{borderTop:`1px solid ${C.border}`,padding:'12px 16px'}}>
-          <button onClick={onExit} style={{width:'100%',padding:'10px 12px',background:'none',border:`1px solid ${C.border}`,color:C.muted,fontSize:12,cursor:'pointer',textAlign:'left',minHeight:40}}>
+        <div style={{borderTop:'1px solid #1f1a16',padding:'12px 16px'}}>
+          <button onClick={onExit} style={{width:'100%',padding:'10px 12px',background:'none',border:'1px solid #1f1a16',fontFamily:"var(--font-jost),'Jost',sans-serif",color:'#5a4e3a',fontSize:11,letterSpacing:'0.08em',cursor:'pointer',textAlign:'left',minHeight:40}}>
             ← Вернуться на сайт
           </button>
         </div>
@@ -257,7 +257,7 @@ export default function AdminPanel({ onExit }) {
 
       {/* ── Desktop sidebar ─────────────────────────────────── */}
       {!isMobile && (
-        <aside style={{width:220,background:C.white,borderRight:`1px solid ${C.border}`,display:'flex',flexDirection:'column',flexShrink:0,position:'sticky',top:0,height:'100vh'}}>
+        <aside style={{width:220,background:'#0a0807',borderRight:'1px solid #1f1a16',display:'flex',flexDirection:'column',flexShrink:0,position:'sticky',top:0,height:'100vh'}}>
           <SidebarContent/>
         </aside>
       )}
@@ -266,13 +266,13 @@ export default function AdminPanel({ onExit }) {
       {isMobile && (
         <>
           {/* Top bar */}
-          <div style={{position:'fixed',top:0,left:0,right:0,zIndex:200,background:C.white,borderBottom:`1px solid ${C.border}`,display:'flex',alignItems:'center',padding:'0 16px',height:52}}>
+          <div style={{position:'fixed',top:0,left:0,right:0,zIndex:200,background:'#0a0807',borderBottom:'1px solid #1f1a16',display:'flex',alignItems:'center',padding:'0 16px',height:52}}>
             <button onClick={()=>setDrawerOpen(true)}
-              style={{background:'none',border:'none',fontSize:22,cursor:'pointer',color:C.dark,padding:'8px',marginRight:8,lineHeight:1,minWidth:40,minHeight:40}}>
+              style={{background:'none',border:'none',fontSize:20,cursor:'pointer',color:'#b8923a',padding:'8px',marginRight:8,lineHeight:1,minWidth:40,minHeight:40}}>
               ☰
             </button>
-            <div style={{fontFamily:"'Noto Serif JP',serif",fontSize:18,color:C.gold,marginRight:8}}>合</div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:13,fontWeight:600,letterSpacing:2,color:C.dark}}>
+            <div style={{fontFamily:"var(--font-noto),'Noto Serif JP',serif",fontSize:18,color:'#b8923a',marginRight:10}}>合</div>
+            <div style={{fontFamily:"var(--font-arkhip),system-ui,sans-serif",fontSize:10,letterSpacing:'0.2em',textTransform:'uppercase',color:'#ede5d3'}}>
               {SECTIONS.find(s=>s.id===section)?.label || 'ADMIN'}
             </div>
             {pendingCount>0 && (
@@ -290,8 +290,8 @@ export default function AdminPanel({ onExit }) {
           <aside style={{
             position:'fixed',top:0,left:0,bottom:0,
             width:280,
-            background:C.white,
-            borderRight:`1px solid ${C.border}`,
+            background:'#0a0807',
+            borderRight:'1px solid #1f1a16',
             display:'flex',flexDirection:'column',
             zIndex:300,
             transform:drawerOpen?'translateX(0)':'translateX(-100%)',
@@ -331,9 +331,9 @@ function SectionHeader({title,subtitle,action,isMobile}){
   return(
     <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',padding:isMobile?'20px 16px 16px':'28px 36px 20px',borderBottom:`1px solid ${C.border}`,background:C.white,flexWrap:'wrap',gap:8}}>
       <div>
-        <div style={{fontSize:9,color:C.gold,letterSpacing:2,textTransform:'uppercase',marginBottom:6}}>Управление</div>
-        <h1 style={{fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile?22:26,fontWeight:600,color:C.dark,margin:0}}>{title}</h1>
-        {subtitle&&<div style={{fontSize:12,color:C.muted,marginTop:3}}>{subtitle}</div>}
+        <div style={{fontFamily:"var(--font-jost),'Jost',sans-serif",fontSize:9,color:C.gold,letterSpacing:'0.28em',textTransform:'uppercase',marginBottom:8}}>Управление</div>
+        <h1 style={{fontFamily:"var(--font-arkhip),system-ui,sans-serif",fontSize:isMobile?22:28,letterSpacing:'0.03em',color:C.dark,margin:0,lineHeight:1.1}}>{title}</h1>
+        {subtitle&&<div style={{fontFamily:"var(--font-cormorant),serif",fontStyle:'italic',fontSize:isMobile?14:15,color:C.muted,marginTop:5,lineHeight:1.5}}>{subtitle}</div>}
       </div>
       {action}
     </div>
