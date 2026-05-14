@@ -520,12 +520,16 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
   });
 
   const SUB_TABS = [
-    { id:'info',     label:'Обо мне'    },
-    { id:'exams',    label:'Экзамены'   },
-    { id:'access',   label:'Мой доступ' },
-    { id:'unlock',   label:'Купить'     },
-    { id:'payments', label:'Оплаты'     },
+    { id:'info',     label:'Обо мне'  },
+    { id:'exams',    label:'Экзамены' },
+    { id:'access',   label:'Доступ'   },
+    { id:'unlock',   label:'Купить'   },
+    { id:'payments', label:'Оплаты'   },
   ];
+
+  // for level card
+  const LEVEL_KANJI_MAP = { '6kyu':'六','5kyu':'五','4kyu':'四','3kyu':'三','2kyu':'二','1kyu':'一','1dan':'初','2dan':'弐','3dan':'参' };
+  const KYU_STEPS = ['6kyu','5kyu','4kyu','3kyu','2kyu','1kyu','1dan'];
 
   const lvIndex  = levelIndex(usr.level ?? '6kyu');
   const lvTotal  = (LEVELS ?? []).length;
@@ -564,37 +568,64 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
             </div>
           </div>
 
-          {/* Level progress (desktop) */}
+          {/* Level card (desktop) */}
           {!isMobile && (
-            <div style={{ textAlign: 'right', flexShrink: 0 }}>
-              <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 9, color: D.muted, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>Прогресс</div>
-              <div style={{ display: 'flex', alignItems: 'flex-end', gap: 3, justifyContent: 'flex-end', marginBottom: 6 }}>
-                {(LEVELS ?? []).map((lv, i) => {
-                  const done = hasLevel(usr.level, lv.id);
-                  const isDan = lv.id.includes('dan');
-                  return (
-                    <div key={lv.id}
-                      title={lv.label}
-                      style={{ borderRadius: isDan ? 2 : '50%', background: done ? D.gold : '#e0d8c8', width: isDan ? 10 : 7, height: isDan ? 10 : 7, transform: isDan ? 'rotate(45deg)' : 'none', transition: 'background 0.2s' }} />
-                  );
-                })}
+            <div style={{ width: 200, flexShrink: 0, background: '#f5f0e8', border: `1px solid ${D.border}`, position: 'relative', padding: '18px 18px 14px', overflow: 'hidden', alignSelf: 'stretch', display: 'flex', flexDirection: 'column', justifyContent: 'space-between' }}>
+              {/* kanji watermark */}
+              <div style={{ position: 'absolute', right: 6, bottom: -10, fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 64, color: D.gold, opacity: 0.1, pointerEvents: 'none', lineHeight: 1, userSelect: 'none' }}>
+                {LEVEL_KANJI_MAP[usr.level] || '段'}
               </div>
-              <div style={{ fontFamily: "var(--font-cormorant), serif", fontSize: 13, color: D.muted, fontStyle: 'italic' }}>
-                {lvIndex + 1} / {lvTotal} ступеней
+              <div>
+                <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 9, letterSpacing: '0.2em', color: D.muted, textTransform: 'uppercase', marginBottom: 8 }}>Текущий уровень</div>
+                <div style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: 38, color: D.dark, lineHeight: 1, letterSpacing: '0.02em', marginBottom: 4 }}>
+                  {curLv?.label || '—'}
+                </div>
+                <div style={{ fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: 13, color: D.sub }}>
+                  {curLv?.program ? (DB_SECTIONS.find(d => d.id === curLv.program)?.label || 'Иккаджо') : '—'}
+                </div>
+              </div>
+              <div>
+                <div style={{ height: 1, background: D.border, margin: '14px 0 10px' }} />
+                <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 9, letterSpacing: '0.18em', color: D.muted, textTransform: 'uppercase', marginBottom: 8 }}>Путь к Сёдан</div>
+                <div style={{ display: 'flex', gap: 2, marginBottom: 5 }}>
+                  {KYU_STEPS.map(stepId => {
+                    const stepIdx  = LEVELS.findIndex(l => l.id === stepId);
+                    const done     = stepIdx >= 0 && stepIdx < lvIndex;
+                    const current  = stepId === usr.level;
+                    return (
+                      <div key={stepId} style={{ flex: 1, height: 3, background: done ? D.crimson : current ? D.gold : D.border, position: 'relative' }}>
+                        {current && <div style={{ position: 'absolute', top: -3, left: '50%', transform: 'translateX(-50%)', width: 8, height: 8, borderRadius: '50%', background: D.gold, border: '2px solid #f5f0e8', zIndex: 1 }} />}
+                      </div>
+                    );
+                  })}
+                </div>
+                <div style={{ display: 'flex', justifyContent: 'space-between' }}>
+                  <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 9, color: D.muted, letterSpacing: '0.1em' }}>6 КЮ</span>
+                  <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 9, color: D.muted, letterSpacing: '0.1em' }}>СЁДАН</span>
+                </div>
               </div>
             </div>
           )}
         </div>
 
-        {/* Level progress bar (mobile) */}
-        {isMobile && lvTotal > 0 && (
+        {/* Level progress bar (mobile) — segmented */}
+        {isMobile && (
           <div style={{ padding: '0 16px 16px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-              <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 9, color: D.muted, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Прогресс</span>
-              <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 10, color: D.gold }}>{lvIndex + 1} / {lvTotal}</span>
+              <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 9, color: D.muted, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Путь к Сёдан</span>
+              <span style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: 10, color: D.gold, letterSpacing: '0.06em' }}>{curLv?.label || '—'}</span>
             </div>
-            <div style={{ height: 2, background: '#e0d8c8' }}>
-              <div style={{ height: '100%', width: `${((lvIndex + 1) / lvTotal) * 100}%`, background: D.gold, transition: 'width 0.4s ease' }} />
+            <div style={{ display: 'flex', gap: 2 }}>
+              {KYU_STEPS.map(stepId => {
+                const stepIdx = LEVELS.findIndex(l => l.id === stepId);
+                const done    = stepIdx >= 0 && stepIdx < lvIndex;
+                const current = stepId === usr.level;
+                return (
+                  <div key={stepId} style={{ flex: 1, height: 3, background: done ? D.crimson : current ? D.gold : '#e0d8c8', position: 'relative' }}>
+                    {current && <div style={{ position: 'absolute', top: -2.5, left: '50%', transform: 'translateX(-50%)', width: 8, height: 8, borderRadius: '50%', background: D.gold, border: '2px solid #faf8f4' }} />}
+                  </div>
+                );
+              })}
             </div>
           </div>
         )}
@@ -604,7 +635,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
       <div style={{ display: 'flex', background: D.card, border: `1px solid ${D.border}`, borderBottom: 'none', overflowX: 'auto' }}>
         {SUB_TABS.map(t => (
           <button key={t.id} onClick={() => setSub(t.id)}
-            style={{ padding: isMobile ? '12px 13px' : '12px 20px', background: 'none', border: 'none', borderBottom: `2px solid ${sub === t.id ? D.crimson : 'transparent'}`, color: sub === t.id ? D.dark : D.muted, fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: isMobile ? 11 : 12, letterSpacing: '0.06em', cursor: 'pointer', fontWeight: sub === t.id ? 600 : 400, marginBottom: -1, whiteSpace: 'nowrap', minHeight: 44, transition: 'color 0.12s' }}>
+            style={{ padding: isMobile ? '13px 12px' : '13px 18px', background: 'none', border: 'none', borderBottom: `2px solid ${sub === t.id ? D.crimson : 'transparent'}`, color: sub === t.id ? D.dark : D.muted, fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 10 : 11, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer', marginBottom: -1, whiteSpace: 'nowrap', minHeight: 44, transition: 'color 0.12s' }}>
             {t.label}
           </button>
         ))}
@@ -655,30 +686,45 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
             const lv     = LEVELS.find(l => l.id === g.level);
             const passed = g.attempts.some(a => a.status === 'approved');
             const isDan  = g.level.includes('dan');
+            const grpKanji = LEVEL_KANJI_MAP[g.level] || '段';
             return (
-              <div key={g.level} style={{ borderTop: gi === 0 ? `1px solid ${D.border}` : `1px solid ${D.border}`, background: isDan ? '#faf5e8' : D.card }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '14px 20px' }}>
+              <div key={g.level} style={{ borderTop: `1px solid ${D.border}`, background: isDan ? '#faf5e8' : D.card }}>
+                {/* Group header */}
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '12px 20px', gap: 12 }}>
                   <div style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
-                    <span style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 16 : 18, letterSpacing: '0.05em', color: isDan ? D.gold : D.dark }}>{lv?.label}</span>
-                    <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 11, fontWeight: 600, color: passed ? D.green : D.crimson, background: passed ? D.greenBg : '#fdf2f0', border: `1px solid ${passed ? D.greenBd : '#e8c4be'}`, padding: '2px 8px', letterSpacing: '0.04em' }}>
-                      {passed ? '✓ Сдан' : '✗ Не сдан'}
+                    <span style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 18, color: isDan ? D.gold : D.crimson, lineHeight: 1 }}>{grpKanji}</span>
+                    <span style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 15 : 17, letterSpacing: '0.06em', color: isDan ? D.gold : D.dark }}>{lv?.label}</span>
+                    <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 10, letterSpacing: '0.12em', textTransform: 'uppercase', color: passed ? D.green : D.muted, background: passed ? D.greenBg : 'transparent', border: `1px solid ${passed ? D.greenBd : D.border}`, padding: '2px 8px' }}>
+                      {passed ? 'Сдан' : 'Не сдан'}
                     </span>
                   </div>
                   <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 10, color: D.muted, letterSpacing: '0.06em' }}>{g.attempts.length} попыток</span>
                 </div>
+
+                {/* Attempt rows */}
                 {g.attempts.map((ex) => {
                   const isApproved = ex.status === 'approved';
                   const isPending  = ex.status === 'pending';
-                  const statusColor = isApproved ? D.green : isPending ? '#8B6914' : D.crimson;
+                  const statusColor = isApproved ? D.green : isPending ? '#8a6814' : D.crimson;
                   const statusBg    = isApproved ? D.greenBg : isPending ? D.amberBg : '#fdf2f0';
                   const statusBd    = isApproved ? D.greenBd : isPending ? D.amberBd : '#e8c4be';
-                  const statusIcon  = isApproved ? '✓' : isPending ? '⏳' : '✗';
-                  const statusLabel = isApproved ? 'Одобрен' : isPending ? 'На проверке' : 'Отклонён';
+                  const statusLabel = isApproved ? 'СДАН' : isPending ? 'ПРОВЕРКА' : 'ОТКЛОНЁН';
                   return (
-                    <div key={ex.id} style={{ display: 'flex', gap: 12, padding: '10px 20px 10px 32px', borderTop: `1px solid ${D.border}`, background: D.bg, alignItems: 'flex-start', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
-                      <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 10, color: D.muted, minWidth: 76, flexShrink: 0, paddingTop: 1 }}>{ex.date}</span>
-                      <span style={{ fontSize: 11, color: statusColor, background: statusBg, border: `1px solid ${statusBd}`, padding: '1px 8px', flexShrink: 0, letterSpacing: '0.04em' }}>{statusIcon} {statusLabel}</span>
-                      {ex.comment && <span style={{ fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: 13, color: D.sub, flex: 1 }}>{ex.comment}</span>}
+                    <div key={ex.id} style={{
+                      display: 'grid',
+                      gridTemplateColumns: isMobile ? '80px 1fr 100px' : '100px 1fr 110px',
+                      gap: isMobile ? 8 : 12,
+                      padding: isMobile ? '10px 16px 10px 20px' : '10px 20px 10px 28px',
+                      borderTop: `1px solid ${D.border}`,
+                      background: D.bg,
+                      alignItems: 'center',
+                    }}>
+                      {/* date */}
+                      <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 10, color: D.muted, letterSpacing: '0.04em' }}>{ex.date}</span>
+                      {/* comment */}
+                      <span style={{ fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: isMobile ? 13 : 14, color: D.sub }}>{ex.comment || '—'}</span>
+                      {/* status badge */}
+                      <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 9, color: statusColor, background: statusBg, border: `1px solid ${statusBd}`, padding: '3px 7px', letterSpacing: '0.1em', textTransform: 'uppercase', textAlign: 'center', whiteSpace: 'nowrap' }}>{statusLabel}</span>
                     </div>
                   );
                 })}

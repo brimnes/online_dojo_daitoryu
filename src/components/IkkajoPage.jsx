@@ -6,6 +6,14 @@ import { BELT, KYU_DATA, FLAT_INDEX } from '@/data/techniques';
 import { useTechniques, useUserAccessRows, hasIkkajoSectionAccess } from '@/lib/db';
 import { IKKAJO_SECTION_KEYS as IKKAJO_SECTIONS } from '@/lib/ikkajoSections';
 
+// Kanji for each section (sections have no kanji in data)
+const SECTION_KANJI = {
+  tachiai:       '立合',
+  idori:         '居取',
+  ushirodori:    '後取',
+  hanzahandachi: '半座半立',
+};
+
 export default function IkkajoPage({ nav }) {
   const isMobile = useIsMobile();
   const [activeKyu, setActiveKyu] = useState('6kyu');
@@ -111,18 +119,27 @@ export default function IkkajoPage({ nav }) {
             const sectionKey = sec.id?.toLowerCase();
             const isIkkajoSection = IKKAJO_SECTIONS.includes(sectionKey);
             const canAccess = !accessLoading && (!isIkkajoSection || hasIkkajoSectionAccess(userAccess, sectionKey));
+            const secKanji = SECTION_KANJI[sectionKey] || '';
             return (
-              <div key={sec.id} style={{ marginBottom: isMobile ? 20 : 28 }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: isMobile ? '10px 0 10px' : '10px 0 8px', borderBottom: '1px solid #d2c7b0', marginBottom: 2, flexWrap: 'wrap', gap: 8 }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-                    {!canAccess && <span style={{ fontSize: 12, color: '#9a8860' }}>🔒</span>}
-                    <span style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 15 : 14, color: canAccess ? '#15120e' : '#b0a080', letterSpacing: '0.04em', marginRight: 8 }}>{sec.nameRu}</span>
-                    <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: isMobile ? 11 : 10, color: '#b0a080', letterSpacing: '0.06em' }}>{sec.name}</span>
+              <div key={sec.id} style={{ marginBottom: isMobile ? 24 : 36 }}>
+
+                {/* Section header */}
+                <div style={{ paddingBottom: isMobile ? 10 : 12, borderBottom: '2px solid #d2c7b0', marginBottom: 2 }}>
+                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: isMobile ? 8 : 12 }}>
+                      {!canAccess && <span style={{ fontSize: 11, color: '#b0a080', flexShrink: 0 }}>🔒</span>}
+                      {secKanji && (
+                        <span style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: isMobile ? 22 : 28, color: canAccess ? '#b8923a' : '#c8b99a', lineHeight: 1, flexShrink: 0 }}>{secKanji}</span>
+                      )}
+                      <span style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 17 : 20, color: canAccess ? '#15120e' : '#b0a080', letterSpacing: '0.04em' }}>{sec.nameRu}</span>
+                      <span style={{ fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: isMobile ? 13 : 14, color: '#9a8860' }}>{sec.name}</span>
+                    </div>
+                    <span style={{ fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: isMobile ? 12 : 13, color: '#9a8860' }}>{sec.subtitle}</span>
                   </div>
-                  <span style={{ fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: isMobile ? 13 : 12, color: '#9a8860' }}>{sec.subtitle}</span>
                 </div>
+
                 {canAccess ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(240px, 1fr))', gap: 1, background: '#d2c7b0' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: 1, background: '#d2c7b0' }}>
                     {sec.techniques.map((tech, i) => (
                       <TechCard
                         key={tech.id}
@@ -135,10 +152,16 @@ export default function IkkajoPage({ nav }) {
                     ))}
                   </div>
                 ) : (
-                  <div style={{ padding: isMobile ? '20px 16px' : '24px 16px', background: '#faf5e8', border: '1px dashed #d2c7b0', textAlign: 'center' }}>
-                    <div style={{ fontSize: 20, marginBottom: 8, color: '#b0a080' }}>🔒</div>
-                    <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: isMobile ? 13 : 12, color: '#9a8860', marginBottom: 4, letterSpacing: '0.06em' }}>Раздел недоступен</div>
-                    <div style={{ fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: isMobile ? 13 : 12, color: '#b0a080' }}>Приобретите доступ к разделу «{sec.nameRu}»</div>
+                  <div style={{ position: 'relative', padding: isMobile ? '28px 20px 24px' : '36px 40px', background: '#faf8f4', border: '1px dashed #d2c7b0', textAlign: 'center', overflow: 'hidden' }}>
+                    {/* kanji watermark */}
+                    {secKanji && (
+                      <div style={{ position: 'absolute', right: 16, bottom: -12, fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 80, color: '#b8923a', opacity: 0.07, pointerEvents: 'none', lineHeight: 1, userSelect: 'none' }}>{secKanji}</div>
+                    )}
+                    <div style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 13 : 12, letterSpacing: '0.12em', color: '#9a8860', marginBottom: 6, textTransform: 'uppercase' }}>Раздел недоступен</div>
+                    <div style={{ fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: isMobile ? 15 : 14, color: '#b0a080', marginBottom: 18 }}>«{sec.nameRu}» · 3 000 ₽</div>
+                    <button style={{ padding: isMobile ? '12px 28px' : '10px 28px', background: '#15120e', color: '#ede5d3', border: 'none', fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer', minHeight: 44 }}>
+                      Приобрести доступ
+                    </button>
                   </div>
                 )}
               </div>
