@@ -17,12 +17,12 @@ const MOCK_PRODUCTS = [
   { id: 'p-nov', type: 'month', reference: 'nov', title: 'Ноябрь',    description: 'Рандори — свободная практика.',              price: 1990, is_active: true, sort_order: 11 },
   { id: 'p-dec', type: 'month', reference: 'dec', title: 'Декабрь',   description: 'Итоги года.',                                price: 1990, is_active: true, sort_order: 12 },
   // Ikkajo sections
-  { id: 'p-tachiai',       type: 'section', reference: 'tachiai',       title: 'Тачиай',         description: 'Техники из стойки. Контроль пространства и дистанции.',      price: 4900, is_active: true, sort_order: 20 },
-  { id: 'p-idori',         type: 'section', reference: 'idori',         title: 'Идори',           description: 'Техники из положения сидя (сэйза).',                          price: 4900, is_active: true, sort_order: 21 },
-  { id: 'p-ushirodori',    type: 'section', reference: 'ushirodori',    title: 'Уширодори',       description: 'Техники защиты от захватов сзади.',                            price: 4900, is_active: true, sort_order: 22 },
-  { id: 'p-hanzahandachi', type: 'section', reference: 'hanzahandachi', title: 'Хандза-хандати',  description: 'Техники в смешанных позициях — один сидит, другой стоит.',      price: 4900, is_active: true, sort_order: 23 },
+  { id: 'p-tachiai',       type: 'section', reference: 'tachiai',       title: 'Тачиай',         description: 'Техники из стойки. Контроль пространства и дистанции.',      price: 3000, is_active: true, sort_order: 20 },
+  { id: 'p-idori',         type: 'section', reference: 'idori',         title: 'Идори',           description: 'Техники из положения сидя (сэйза).',                          price: 3000, is_active: true, sort_order: 21 },
+  { id: 'p-ushirodori',    type: 'section', reference: 'ushirodori',    title: 'Уширодори',       description: 'Техники защиты от захватов сзади.',                            price: 3000, is_active: true, sort_order: 22 },
+  { id: 'p-hanzahandachi', type: 'section', reference: 'hanzahandachi', title: 'Хандза-хандати',  description: 'Техники в смешанных позициях — один сидит, другой стоит.',      price: 3000, is_active: true, sort_order: 23 },
   // Full Ikkajo
-  { id: 'p-ikkajo', type: 'section', reference: 'ikkajo', title: 'Весь Иккаджо', description: 'Полный доступ ко всем разделам программы Иккаджо. Включает: Тачиай, Идори, Уширодори и Хандза-хандати.', price: 14900, is_active: true, sort_order: 30 },
+  { id: 'p-ikkajo', type: 'section', reference: 'ikkajo', title: 'Весь Иккаджо', description: 'Полный доступ ко всем разделам программы Иккаджо. Включает: Тачиай, Идори, Уширодори и Хандза-хандати.', price: 9900, is_active: true, sort_order: 30 },
 ];
 
 export function useProducts() {

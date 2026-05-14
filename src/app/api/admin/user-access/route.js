@@ -21,13 +21,15 @@ export async function GET(request) {
   try {
     const access = await prisma.userAccess.findMany({
       where:   { userId: targetUserId },
-      select:  { type: true, reference: true, amount: true, paidAt: true },
+      select:  { id: true, type: true, reference: true, amount: true, paidAt: true },
       orderBy: { paidAt: 'desc' },
     });
 
     // Возвращаем в snake_case для совместимости с фронтендом
+    // id нужен как React key для кнопок «Отозвать» в AdminPanel
     return NextResponse.json(
       access.map(a => ({
+        id:        a.id,
         type:      a.type,
         reference: a.reference,
         amount:    a.amount,

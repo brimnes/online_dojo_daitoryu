@@ -787,7 +787,7 @@ function TabUnlockAccess({ userAccess, isMobile }) {
       <div style={sectionStyle}>
         <div style={headerStyle}>
           <span style={labelStyle}>Разделы Иккаджо</span>
-          <span style={{ fontSize: 12, color: C.muted, marginLeft: 12 }}>4 900 ₽ / раздел</span>
+          <span style={{ fontSize: 12, color: C.muted, marginLeft: 12 }}>3 000 ₽ / раздел</span>
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: 8 }}>
           {sectionProducts.map(p => {
