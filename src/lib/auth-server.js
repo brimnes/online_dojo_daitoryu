@@ -78,18 +78,54 @@ export function clearAuthCookie(response) {
 // ─── Получение текущего пользователя из запроса ───────────────────────────────
 
 /**
- * Достаём JWT payload из cookie запроса.
+ * Достаём JWT payload из cookie запроса (NextRequest).
+ * Использует request.cookies.get() — Next.js App Router API,
+ * надёжнее чем ручной разбор заголовка Cookie.
  * Возвращает { userId, email, role } или null.
  */
 export function getTokenPayload(request) {
-  const cookieHeader = request.headers.get('cookie') || '';
-  const match = cookieHeader.match(new RegExp(`(?:^|;\\s*)${COOKIE_NAME}=([^;]+)`));
-  if (!match) return null;
-  return verifyToken(decodeURIComponent(match[1]));
+  const token = request.cookies.get(COOKIE_NAME)?.value;
+  if (!token) return null;
+  return verifyToken(token);
+}
+
+/**
+ * Поля пользователя, которые возвращаем из БД.
+ * Единственное место — не дублировать список полей.
+ */
+const USER_SELECT = {
+  id: true, email: true, name: true, role: true,
+  level: true, status: true, selfLevel: true,
+  senseiName: true, experience: true, joinedAt: true,
+};
+
+/**
+ * Загружаем полный профиль по JWT-токену (строка).
+ * Используется в Server Components (page.js через cookies() из next/headers).
+ * Возвращает объект User (JSON-serializable) или null.
+ */
+export async function getUserFromToken(token) {
+  if (!token) return null;
+  const payload = verifyToken(token);
+  if (!payload?.userId) return null;
+
+  const user = await prisma.user.findUnique({
+    where:  { id: payload.userId },
+    select: USER_SELECT,
+  });
+
+  if (!user || user.status === 'inactive') return null;
+
+  // Преобразуем Date → ISO-строку для безопасной передачи в Client Component
+  return {
+    ...user,
+    joinedAt: user.joinedAt ? user.joinedAt.toISOString() : null,
+  };
 }
 
 /**
  * Загружаем полный профиль пользователя из БД по токену.
+ * Используется в API routes.
  * Возвращает объект User из Prisma или null.
  */
 export async function getUserFromRequest(request) {
@@ -97,12 +133,8 @@ export async function getUserFromRequest(request) {
   if (!payload?.userId) return null;
 
   const user = await prisma.user.findUnique({
-    where: { id: payload.userId },
-    select: {
-      id: true, email: true, name: true, role: true,
-      level: true, status: true, selfLevel: true,
-      senseiName: true, experience: true, joinedAt: true,
-    },
+    where:  { id: payload.userId },
+    select: USER_SELECT,
   });
 
   // Если пользователь деактивирован — считаем неавторизованным

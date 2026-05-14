@@ -13,28 +13,60 @@ import { INITIAL_COMMENTS } from '@/data/months';
 import { USER } from '@/data/users';
 import { registerServiceWorker } from '@/lib/mobile';
 
-export default function App() {
-  const [currentUser, setCurrentUser] = useState(null);
-  const [authChecked, setAuthChecked] = useState(false); // не мигать формой входа при загрузке
+/**
+ * App — корневой клиентский компонент.
+ *
+ * initialUser передаётся из Server Component (page.js),
+ * который читает cookie dojo_token на сервере при каждом запросе.
+ *
+ * Это значит:
+ *   - при refresh сервер уже знает пользователя → нет flash login-страницы
+ *   - при browser back браузер получает SSR-HTML с правильным состоянием
+ *   - authChecked = true сразу (не нужно ждать JS-fetch)
+ *
+ * После монтирования делаем лёгкую клиентскую ревалидацию (один fetch):
+ *   - обновляем профиль, если сервер вернул устаревшие данные
+ *   - логаут если токен истёк с момента SSR
+ *   - НЕ блокируем рендер этим запросом
+ */
+export default function App({ initialUser = null }) {
+  // Сервер уже проверил cookie → стартуем с готовым пользователем
+  const [currentUser, setCurrentUser] = useState(initialUser);
+
+  // authChecked = true сразу: сервер выполнил проверку.
+  // Нет фазы "пустого экрана" при refresh.
+  const [authChecked] = useState(true);
+
   const [route,    setRoute]    = useState({ page: 'dashboard' });
   const [watched,  setWatched]  = useState({});
   const [comments, setComments] = useState(INITIAL_COMMENTS);
 
-  // Register PWA service worker once
+  // PWA service worker
   useEffect(() => {
     registerServiceWorker();
   }, []);
 
-  // Восстанавливаем сессию из httpOnly cookie при загрузке страницы
+  // Клиентская ревалидация сессии.
+  // Цель: поймать случаи, когда токен истёк с момента SSR,
+  // или синхронизировать обновлённый профиль пользователя.
+  // НЕ блокирует рендер — пользователь уже видит контент.
   useEffect(() => {
-    fetch('/api/auth/me')
+    fetch('/api/auth/me', { credentials: 'same-origin' })
       .then(r => r.ok ? r.json() : null)
       .then(data => {
-        if (data?.user) setCurrentUser(data.user);
+        if (data?.user) {
+          // Обновляем профиль свежими данными из БД
+          setCurrentUser(data.user);
+        } else if (initialUser) {
+          // Токен истёк с момента SSR — выходим
+          setCurrentUser(null);
+        }
+        // Если initialUser = null и data = null → уже показываем AuthPage, ничего не меняем
       })
-      .catch(() => {})
-      .finally(() => setAuthChecked(true));
-  }, []);
+      .catch(() => {
+        // Сетевая ошибка — сохраняем текущее состояние (не разлогиниваем)
+      });
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
 
   const handleLogout = async () => {
     try {
@@ -72,7 +104,7 @@ export default function App() {
     }));
   };
 
-  // Пока не проверили cookie — не рендерим ничего (избегаем мигания формы входа)
+  // authChecked всегда true (сервер уже проверил) — нет пустого экрана
   if (!authChecked) return null;
 
   const user = currentUser ? { ...USER, ...currentUser } : USER;
