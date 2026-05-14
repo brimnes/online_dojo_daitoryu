@@ -395,11 +395,20 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
         {(DB_SECTIONS ?? []).map(sec => {
           const avail  = hasLevel(user?.level || '6kyu', sec.requiredLevel);
           const ua = userAccess ?? [];
-          const hasFullIkkajo = ua.some(a => a.type === 'section' && a.reference === 'ikkajo');
-          // SOURCE OF TRUTH: только user_access из БД.
-          // Никаких bypass: ни isAdmin, ни mock.
-          const bought = (sec.id === 'ikkajo' && hasFullIkkajo)
-            || ua.some(a => a.type === 'section' && a.reference === sec.id);
+          // SOURCE OF TRUTH: только user_access из БД. Никаких bypass.
+          //
+          // Для Иккаджо: "открыт" если есть полный доступ (reference=ikkajo)
+          // ИЛИ куплен хотя бы один из разделов (tachiai/idori/ushirodori/hanzahandachi).
+          // В этом случае пользователь может войти в IkkajoPage и открытые разделы.
+          //
+          // Для остальных программ (nikkajo, sankajo): проверяем reference напрямую.
+          const hasFullIkkajo      = ua.some(a => a.type === 'section' && a.reference === 'ikkajo');
+          const hasAnyIkkajoSection = sec.id === 'ikkajo' &&
+            IKKAJO_SECTIONS.some(k => ua.some(a => a.type === 'section' && a.reference === k));
+          const bought =
+            sec.id === 'ikkajo'
+              ? hasFullIkkajo || hasAnyIkkajoSection
+              : ua.some(a => a.type === 'section' && a.reference === sec.id);
           return (
             <div key={sec.id} style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? 12 : 18, padding: isMobile ? '16px' : '20px 18px', background: C.white, border: `1px solid ${C.border}`, borderTop: 'none', opacity: avail ? 1 : 0.4, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
               <div style={{ fontFamily: "'Noto Serif JP', serif", fontSize: isMobile ? 24 : 32, minWidth: 36, textAlign: 'center', color: bought ? C.gold : avail ? C.dark : '#bbb', lineHeight: 1, flexShrink: 0 }}>{sec.kanji}</div>

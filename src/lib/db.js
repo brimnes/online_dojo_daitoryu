@@ -503,7 +503,20 @@ export function useUserAccessRows() {
     }
   }, []);
 
+  // Первоначальная загрузка
   useEffect(() => { reload(); }, [reload]);
+
+  // Рефетч при возврате на вкладку:
+  // - пользователь вернулся со страницы оплаты (ЮKassa → return_url → /)
+  // - администратор выдал доступ в другой вкладке
+  useEffect(() => {
+    const onVisible = () => {
+      if (document.visibilityState === 'visible') reload();
+    };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [reload]);
+
   return { rows, loading, reload };
 }
 
