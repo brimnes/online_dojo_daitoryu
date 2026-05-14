@@ -5,17 +5,17 @@ import { useIsMobile } from '@/lib/mobile';
 import { SELF_LEVELS } from '@/data/users';
 import TakedaMon from '@/components/TakedaMon';
 
-// ─── Цвета платформы ───────────────────────────────────────────
+// ─── Цветовая палитра ──────────────────────────────────────────
 const C = {
   bg:         '#f5f3ee',
   white:      '#fff',
-  border:     '#e8e0d0',
-  gold:       '#8B6914',
-  goldLight:  '#c8a84a',
-  goldBorder: '#e8dcc8',
+  border:     '#d8d0c0',
+  gold:       '#7a5c0f',        // тёмнее для контраста на светлом фоне
+  goldLight:  '#c8a84a',        // акцент на тёмном фоне
+  goldBorder: '#e0d0b0',
   goldBg:     '#faf6ee',
-  dark:       '#1a1a1a',
-  muted:      '#999',
+  dark:       '#111111',        // почти чёрный — сильный контраст
+  muted:      '#666',           // был #999 — теперь темнее и читаемее
   light:      '#fdfcf8',
   green:      '#2d7a4a',
   greenBg:    '#f0faf4',
@@ -30,11 +30,11 @@ function Field({ label, hint, error, children }) {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
       <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between' }}>
-        <label style={{ fontSize:10, color:C.muted, letterSpacing:1.2, textTransform:'uppercase' }}>{label}</label>
-        {hint && <span style={{ fontSize:10, color:'#bbb' }}>{hint}</span>}
+        <label style={{ fontSize:11, color:C.muted, letterSpacing:1.2, textTransform:'uppercase', fontWeight:500 }}>{label}</label>
+        {hint && <span style={{ fontSize:11, color:'#999' }}>{hint}</span>}
       </div>
       {children}
-      {error && <div style={{ fontSize:11, color:C.red }}>{error}</div>}
+      {error && <div style={{ fontSize:12, color:C.red }}>{error}</div>}
     </div>
   );
 }
@@ -47,12 +47,13 @@ function Input({ value, onChange, placeholder, type='text', error }) {
       placeholder={placeholder}
       onFocus={()=>setFocused(true)} onBlur={()=>setFocused(false)}
       style={{
-        padding:'11px 14px', fontSize:13,
+        padding:'13px 16px', fontSize:15,
         background:C.white,
         border:`1px solid ${error?C.red:focused?C.gold:C.border}`,
         outline:'none', color:C.dark, width:'100%',
         fontFamily:"'Jost',sans-serif",
         transition:'border-color 0.15s',
+        borderRadius: 0,
       }}
     />
   );
@@ -66,7 +67,7 @@ function Textarea({ value, onChange, placeholder, rows=4 }) {
       placeholder={placeholder} rows={rows}
       onFocus={()=>setFocused(true)} onBlur={()=>setFocused(false)}
       style={{
-        padding:'11px 14px', fontSize:13,
+        padding:'13px 16px', fontSize:15,
         background:C.white,
         border:`1px solid ${focused?C.gold:C.border}`,
         outline:'none', color:C.dark, width:'100%',
@@ -84,14 +85,14 @@ function Select({ value, onChange, options }) {
       value={value} onChange={e=>onChange(e.target.value)}
       onFocus={()=>setFocused(true)} onBlur={()=>setFocused(false)}
       style={{
-        padding:'11px 14px', fontSize:13,
+        padding:'13px 16px', fontSize:15,
         background:C.white,
         border:`1px solid ${focused?C.gold:C.border}`,
         outline:'none', color:value?C.dark:C.muted, width:'100%',
         fontFamily:"'Jost',sans-serif", cursor:'pointer',
         transition:'border-color 0.15s', appearance:'none',
-        backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23bbb'/%3E%3C/svg%3E")`,
-        backgroundRepeat:'no-repeat', backgroundPosition:'right 14px center',
+        backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E")`,
+        backgroundRepeat:'no-repeat', backgroundPosition:'right 16px center',
       }}
     >
       {options.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
@@ -124,68 +125,193 @@ export default function AuthPage({ onSuccess }) {
       fontFamily:"'Jost',sans-serif",
     }}>
 
-      {/* ── Левая декоративная панель (desktop only) ── */}
-      <div style={{
-        width:400, flexShrink:0,
-        background:`linear-gradient(160deg, #1a1710 0%, #0f0d0a 60%, #1c1a14 100%)`,
-        display: isMobile ? 'none' : 'flex', flexDirection:'column', justifyContent:'space-between',
-        padding:'48px 44px', position:'relative', overflow:'hidden',
-      }}>
-        {/* Фоновый кандзи */}
+      {/* ── Левая героическая панель (desktop only) ── */}
+      {!isMobile && (
         <div style={{
-          position:'absolute', bottom:-40, right:-20,
-          fontFamily:"'Noto Serif JP',serif", fontSize:320,
-          color:'rgba(200,168,74,0.04)', lineHeight:1, pointerEvents:'none',
-          userSelect:'none',
-        }}>合</div>
+          width: 460, flexShrink: 0,
+          background: `linear-gradient(170deg, #1a1710 0%, #0d0b08 55%, #161410 100%)`,
+          display: 'flex', flexDirection: 'column',
+          position: 'relative', overflow: 'hidden',
+        }}>
+          {/* Фоновый кандзи — декоративный */}
+          <div style={{
+            position:'absolute', bottom: -60, right: -30,
+            fontFamily:"'Noto Serif JP',serif", fontSize: 360,
+            color:'rgba(200,168,74,0.035)', lineHeight:1,
+            pointerEvents:'none', userSelect:'none',
+          }}>合</div>
 
-        {/* Логотип */}
-        <div>
-          <div style={{ display:'flex', alignItems:'center', gap:14, marginBottom:48 }}>
-            <TakedaMon size={44} color="#c8a84a" />
+          {/* Фото Станислава — нижняя половина, плавно растворяется */}
+          <div style={{
+            position: 'absolute', bottom: 0, left: 0, right: 0,
+            height: '52%',
+            overflow: 'hidden',
+          }}>
+            {/* Градиент-маска сверху (из тёмного в прозрачное) */}
+            <div style={{
+              position: 'absolute', top: 0, left: 0, right: 0, height: 120,
+              background: 'linear-gradient(to bottom, #0d0b08, transparent)',
+              zIndex: 2, pointerEvents: 'none',
+            }} />
+            {/* Градиент-маска снизу (небольшое затемнение для цитаты) */}
+            <div style={{
+              position: 'absolute', bottom: 0, left: 0, right: 0, height: 140,
+              background: 'linear-gradient(to top, rgba(13,11,8,0.85), transparent)',
+              zIndex: 2, pointerEvents: 'none',
+            }} />
+            <img
+              src="/images/stas-hero.jpg"
+              alt="Станислав Копин"
+              style={{
+                width: '100%', height: '100%',
+                objectFit: 'cover', objectPosition: 'center 15%',
+                display: 'block',
+              }}
+              onError={e => { e.currentTarget.parentElement.style.display = 'none'; }}
+            />
+          </div>
+
+          {/* Верхняя контентная часть */}
+          <div style={{ position: 'relative', zIndex: 3, padding: '44px 44px 0', flex: 1, display: 'flex', flexDirection: 'column' }}>
+            {/* Логотип */}
+            <div style={{ display:'flex', alignItems:'center', gap:18, marginBottom: 52 }}>
+              <TakedaMon size={68} color="#c8a84a" />
+              <div>
+                <div style={{
+                  fontFamily:"var(--font-arkhip), system-ui, sans-serif",
+                  fontSize: 13, letterSpacing:'0.16em',
+                  color:'#c8a84a', textTransform:'uppercase',
+                  lineHeight: 1.3,
+                }}>ONLINE DAITO-RYU DOJO</div>
+                <div style={{
+                  fontSize: 10, color:'rgba(200,168,74,0.55)',
+                  marginTop: 5, letterSpacing: 2,
+                  textTransform: 'uppercase',
+                }}>ДАЙТО-РЮ АЙКИДЗЮДЗЮЦУ</div>
+              </div>
+            </div>
+
+            {/* Заголовок */}
             <div>
-              <div style={{ fontFamily:"var(--font-arkhip), system-ui, sans-serif", fontSize:12, letterSpacing:'0.14em', color:'#c8a84a', textTransform:'uppercase' }}>ONLINE DOJO</div>
-              <div style={{ fontSize:9, color:'rgba(200,168,74,0.6)', marginTop:3, letterSpacing:1.5 }}>ДАЙТО-РЮ АЙКИДЗЮДЗЮЦУ</div>
+              <div style={{
+                fontFamily:"var(--font-arkhip), system-ui, sans-serif",
+                fontSize: 34, color:'#e8d49a',
+                lineHeight: 1.25, marginBottom: 18,
+                letterSpacing: '0.01em',
+              }}>
+                Онлайн-школа<br/>
+                <span style={{ color:'#c8a84a' }}>Станислава<br/>Копина</span>
+              </div>
+              <div style={{ width: 48, height: 2, background: 'rgba(200,168,74,0.5)', marginBottom: 22 }}/>
+              <p style={{
+                fontSize: 14, color:'rgba(240,232,208,0.5)',
+                lineHeight: 1.9, fontWeight: 300, maxWidth: 300,
+              }}>
+                Онлайн-платформа для изучения традиционного Дайто-рю Айкидзюдзюцу. Видеоуроки, техники, экзамены.
+              </p>
             </div>
           </div>
 
-          <div style={{ marginBottom:32 }}>
-            <div style={{ fontFamily:"var(--font-arkhip), system-ui, sans-serif", fontSize:28, color:'#c8a84a', lineHeight:1.3, marginBottom:16 }}>
-              Школа<br/>
-              <span style={{ color:C.goldLight, fontStyle:'italic' }}>Станислава<br/>Копина</span>
+          {/* Цитата внизу */}
+          <div style={{
+            position: 'relative', zIndex: 3,
+            padding: '0 44px 40px',
+            borderLeft: 'none',
+          }}>
+            <div style={{ borderLeft:'2px solid rgba(200,168,74,0.4)', paddingLeft: 18 }}>
+              <div style={{
+                fontFamily:"'Cormorant Garamond',serif",
+                fontSize: 15, fontStyle:'italic',
+                color:'rgba(240,232,208,0.5)', lineHeight: 1.8,
+              }}>
+                «Путь начинается с первого шага — не с совершенного шага»
+              </div>
+              <div style={{
+                fontSize: 10, color:'rgba(200,168,74,0.55)',
+                marginTop: 10, letterSpacing: 1.2, textTransform: 'uppercase',
+              }}>Сэнсэй Станислав Копин</div>
             </div>
-            <div style={{ width:40, height:1, background:C.goldBorder, marginBottom:20 }}/>
-            <p style={{ fontSize:13, color:'rgba(240,232,208,0.55)', lineHeight:1.9, fontWeight:300 }}>
-              Онлайн-платформа для изучения традиционного Дайто-рю Айкидзюдзюцу. Видеоуроки, техники, экзамены.
-            </p>
           </div>
         </div>
-
-        {/* Цитата внизу */}
-        <div style={{ borderLeft:`2px solid rgba(200,168,74,0.3)`, paddingLeft:16 }}>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:15, fontStyle:'italic', color:'rgba(240,232,208,0.45)', lineHeight:1.8 }}>
-            «Путь начинается с первого шага — не с совершенного шага»
-          </div>
-          <div style={{ fontSize:10, color:'rgba(200,168,74,0.5)', marginTop:8, letterSpacing:1 }}>СЭНСЭЙ СТАНИСЛАВ КОПИН</div>
-        </div>
-      </div>
+      )}
 
       {/* ── Правая форма ── */}
-      <div style={{ flex:1, display:'flex', flexDirection:'column', alignItems:'center', justifyContent: isMobile ? 'flex-start' : 'center', padding: isMobile ? 'max(20px, env(safe-area-inset-top)) 20px 20px' : '48px 60px', overflowY:'auto' }}>
-        {/* Mobile logo */}
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column',
+        alignItems: 'center',
+        justifyContent: isMobile ? 'flex-start' : 'center',
+        padding: isMobile
+          ? 'max(20px, env(safe-area-inset-top)) 20px 40px'
+          : '48px 60px',
+        overflowY: 'auto',
+        background: C.bg,
+      }}>
+
+        {/* Mobile hero ── */}
         {isMobile && (
-          <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom:28, alignSelf:'flex-start' }}>
-            <TakedaMon size={32} color={C.gold} />
-            <div style={{ fontFamily:"var(--font-arkhip), system-ui, sans-serif", fontSize:12, letterSpacing:'0.12em', color:'#c8a84a', textTransform:'uppercase' }}>ONLINE DOJO</div>
+          <div style={{
+            width: '100%',
+            background: 'linear-gradient(160deg, #1a1710 0%, #0d0b08 100%)',
+            padding: '36px 24px 32px',
+            marginBottom: 32,
+            position: 'relative', overflow: 'hidden',
+          }}>
+            {/* Декоративный кандзи */}
+            <div style={{
+              position: 'absolute', right: -10, bottom: -20,
+              fontFamily:"'Noto Serif JP',serif", fontSize: 160,
+              color:'rgba(200,168,74,0.05)', lineHeight:1,
+              pointerEvents:'none', userSelect:'none',
+            }}>合</div>
+
+            <div style={{ position: 'relative', zIndex: 1 }}>
+              {/* Логотип */}
+              <div style={{ display:'flex', alignItems:'center', gap:16, marginBottom: 28 }}>
+                <TakedaMon size={56} color="#c8a84a" />
+                <div>
+                  <div style={{
+                    fontFamily:"var(--font-arkhip), system-ui, sans-serif",
+                    fontSize: 12, letterSpacing:'0.15em',
+                    color:'#c8a84a', textTransform:'uppercase',
+                    lineHeight: 1.4,
+                  }}>ONLINE DAITO-RYU<br/>DOJO</div>
+                </div>
+              </div>
+
+              <div style={{
+                fontFamily:"var(--font-arkhip), system-ui, sans-serif",
+                fontSize: 22, color:'#e8d49a',
+                lineHeight: 1.3, marginBottom: 10,
+              }}>
+                Школа Станислава Копина
+              </div>
+              <div style={{ fontSize: 11, color:'rgba(200,168,74,0.6)', letterSpacing: 1.5, textTransform: 'uppercase' }}>
+                Дайто-рю Айкидзюдзюцу
+              </div>
+            </div>
           </div>
         )}
+
         <div style={{ width:'100%', maxWidth: isMobile ? '100%' : 460 }}>
-          {/* Переключатель режима (скрыт при смене пароля) */}
+          {/* Переключатель Вход / Регистрация */}
           {mode !== 'set-password' && (
-            <div style={{ display:'flex', background:C.white, border:`1px solid ${C.border}`, marginBottom:36, padding:3 }}>
+            <div style={{
+              display:'flex', background:C.white,
+              border:`1px solid ${C.border}`,
+              marginBottom: 32, padding: 3,
+            }}>
               {[{id:'login',label:'Вход'},{id:'register',label:'Регистрация'}].map(m=>(
                 <button key={m.id} onClick={()=>setMode(m.id)}
-                  style={{ flex:1, padding:'10px', background:mode===m.id?C.dark:'transparent', color:mode===m.id?'#fff':C.muted, border:'none', fontSize:12, cursor:'pointer', transition:'all 0.15s', fontFamily:"'Jost',sans-serif", fontWeight:mode===m.id?500:400 }}>
+                  style={{
+                    flex:1, padding:'11px',
+                    background: mode===m.id ? C.dark : 'transparent',
+                    color: mode===m.id ? '#fff' : C.muted,
+                    border:'none', fontSize:14, cursor:'pointer',
+                    transition:'all 0.15s',
+                    fontFamily:"'Jost',sans-serif",
+                    fontWeight: mode===m.id ? 600 : 400,
+                    letterSpacing: mode===m.id ? '0.02em' : 0,
+                  }}>
                   {m.label}
                 </button>
               ))}
@@ -234,7 +360,6 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
 
       if (!res.ok) {
         if (data.resetRequired) {
-          // Перенаправляем на форму смены пароля
           onResetRequired(data.userId);
           return;
         }
@@ -251,13 +376,17 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
 
   return (
     <div>
-      <div style={{ marginBottom:28 }}>
-        <div style={{ fontFamily:"var(--font-jost), 'Jost', sans-serif", fontSize:22, fontWeight:600, color:'#1a1a1a', marginBottom:6 }}>С возвращением</div>
-        <div style={{ fontSize:13, color:C.muted }}>Войдите в свой кабинет</div>
+      <div style={{ marginBottom: 28 }}>
+        <div style={{
+          fontFamily:"var(--font-arkhip), system-ui, sans-serif",
+          fontSize: 26, fontWeight: 400, color: C.dark,
+          marginBottom: 8, letterSpacing: '0.01em',
+        }}>С возвращением</div>
+        <div style={{ fontSize:14, color:C.muted }}>Войдите в свой кабинет</div>
       </div>
 
       {serverErr && (
-        <div style={{ padding:'12px 14px', background:C.redBg, border:`1px solid ${C.redBorder}`, fontSize:13, color:C.red, marginBottom:20 }}>
+        <div style={{ padding:'13px 16px', background:C.redBg, border:`1px solid ${C.redBorder}`, fontSize:14, color:C.red, marginBottom:20, lineHeight:1.5 }}>
           {serverErr}
         </div>
       )}
@@ -271,18 +400,25 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
         </Field>
 
         <div style={{ display:'flex', justifyContent:'flex-end' }}>
-          <button style={{ background:'none', border:'none', fontSize:11, color:C.gold, cursor:'pointer', padding:0 }}>Забыли пароль?</button>
+          <button style={{ background:'none', border:'none', fontSize:12, color:C.gold, cursor:'pointer', padding:0 }}>Забыли пароль?</button>
         </div>
 
         <button onClick={handleSubmit} disabled={loading}
-          style={{ padding:'14px', background:loading?'#444':C.dark, color:'#fff', border:'none', fontSize:13, cursor:'pointer', fontFamily:"'Jost',sans-serif", fontWeight:500, letterSpacing:0.5, transition:'background 0.15s', minHeight:44 }}>
+          style={{
+            padding:'15px', background: loading ? '#444' : C.dark,
+            color:'#fff', border:'none', fontSize:15,
+            cursor: loading ? 'default' : 'pointer',
+            fontFamily:"'Jost',sans-serif", fontWeight:600,
+            letterSpacing:'0.04em', transition:'background 0.15s',
+            minHeight:50, textTransform:'uppercase',
+          }}>
           {loading ? 'Вход…' : 'Войти'}
         </button>
       </div>
 
-      <div style={{ marginTop:24, textAlign:'center', fontSize:12, color:C.muted }}>
+      <div style={{ marginTop:24, textAlign:'center', fontSize:13, color:C.muted }}>
         Нет аккаунта?{' '}
-        <button onClick={onRegister} style={{ background:'none', border:'none', color:C.gold, cursor:'pointer', fontSize:12, fontFamily:"'Jost',sans-serif" }}>
+        <button onClick={onRegister} style={{ background:'none', border:'none', color:C.gold, cursor:'pointer', fontSize:13, fontFamily:"'Jost',sans-serif", fontWeight:600 }}>
           Зарегистрироваться
         </button>
       </div>
@@ -330,17 +466,20 @@ function SetPasswordForm({ userId, onSuccess, onBack }) {
   return (
     <div>
       <div style={{ marginBottom: 28 }}>
-        <div style={{ fontFamily:"var(--font-jost), 'Jost', sans-serif", fontSize:22, fontWeight:600, color:'#1a1a1a', marginBottom:6 }}>
+        <div style={{
+          fontFamily:"var(--font-arkhip), system-ui, sans-serif",
+          fontSize: 26, color: C.dark, marginBottom: 8,
+        }}>
           Придумайте пароль
         </div>
-        <div style={{ fontSize:13, color:C.muted, lineHeight:1.7 }}>
+        <div style={{ fontSize:14, color:C.muted, lineHeight:1.7 }}>
           Ваш аккаунт был перенесён из старой системы.<br/>
           Установите новый пароль для входа.
         </div>
       </div>
 
       {serverErr && (
-        <div style={{ padding:'12px 14px', background:C.redBg, border:`1px solid ${C.redBorder}`, fontSize:13, color:C.red, marginBottom:20 }}>
+        <div style={{ padding:'13px 16px', background:C.redBg, border:`1px solid ${C.redBorder}`, fontSize:14, color:C.red, marginBottom:20 }}>
           {serverErr}
         </div>
       )}
@@ -354,12 +493,19 @@ function SetPasswordForm({ userId, onSuccess, onBack }) {
         </Field>
 
         <button onClick={handleSubmit} disabled={loading}
-          style={{ padding:'14px', background:loading?'#444':C.dark, color:'#fff', border:'none', fontSize:13, cursor:'pointer', fontFamily:"'Jost',sans-serif", fontWeight:500, transition:'background 0.15s', minHeight:44 }}>
+          style={{
+            padding:'15px', background: loading ? '#444' : C.dark,
+            color:'#fff', border:'none', fontSize:15,
+            cursor: loading ? 'default' : 'pointer',
+            fontFamily:"'Jost',sans-serif", fontWeight:600,
+            letterSpacing:'0.04em', transition:'background 0.15s', minHeight:50,
+            textTransform:'uppercase',
+          }}>
           {loading ? 'Сохранение…' : 'Сохранить и войти'}
         </button>
 
         <button onClick={onBack}
-          style={{ background:'none', border:'none', fontSize:12, color:C.muted, cursor:'pointer', fontFamily:"'Jost',sans-serif" }}>
+          style={{ background:'none', border:'none', fontSize:13, color:C.muted, cursor:'pointer', fontFamily:"'Jost',sans-serif" }}>
           ← Вернуться к входу
         </button>
       </div>
@@ -369,15 +515,15 @@ function SetPasswordForm({ userId, onSuccess, onBack }) {
 
 // ─── ФОРМА РЕГИСТРАЦИИ (многошаговая) ─────────────────────────
 function RegisterForm({ onSuccess, onLogin }) {
-  const [step, setStep] = useState(0); // 0 = аккаунт, 1 = профиль, 2 = готово
+  const [step, setStep] = useState(0);
 
-  // Шаг 1 — данные аккаунта
+  // Шаг 1
   const [name,     setName]     = useState('');
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [password2,setPassword2]= useState('');
 
-  // Шаг 2 — профиль
+  // Шаг 2
   const [selfLevel,   setSelfLevel]   = useState('none');
   const [senseiName,  setSenseiName]  = useState('');
   const [experience,  setExperience]  = useState('');
@@ -402,7 +548,6 @@ function RegisterForm({ onSuccess, onLogin }) {
     setStep(1);
   };
 
-  // Сохраняем пользователя после регистрации, чтобы передать в onSuccess
   const [registeredUser, setRegisteredUser] = useState(null);
 
   const handleStep2 = async () => {
@@ -435,7 +580,6 @@ function RegisterForm({ onSuccess, onLogin }) {
     }
   };
 
-  // Шаг завершён — передаём пользователя в родительский компонент
   const handleDone = () => {
     onSuccess(registeredUser || { name, email, level: '6kyu', role: 'student' });
   };
@@ -448,20 +592,20 @@ function RegisterForm({ onSuccess, onLogin }) {
       <div style={{ display:'flex', alignItems:'center', gap:0, marginBottom:32 }}>
         {STEPS.map((s, i) => (
           <div key={s.id} style={{ display:'flex', alignItems:'center', flex: i < STEPS.length-1 ? 1 : 'none' }}>
-            <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:4 }}>
+            <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:5 }}>
               <div style={{
-                width:32, height:32,
+                width:34, height:34,
                 background: step > i ? C.green : step === i ? C.dark : C.bg,
                 border:`1px solid ${step > i ? C.green : step === i ? C.dark : C.border}`,
                 display:'flex', alignItems:'center', justifyContent:'center',
-                fontFamily:"'Noto Serif JP',serif", fontSize:12,
+                fontFamily:"'Noto Serif JP',serif", fontSize:13,
                 color: step >= i ? '#fff' : C.muted,
                 transition:'all 0.2s',
               }}>{step > i ? '✓' : s.kanji}</div>
-              <div style={{ fontSize:9, color: step===i ? C.dark : C.muted, letterSpacing:0.5, whiteSpace:'nowrap' }}>{s.label}</div>
+              <div style={{ fontSize:10, color: step===i ? C.dark : C.muted, letterSpacing:0.5, whiteSpace:'nowrap', fontWeight: step===i ? 600 : 400 }}>{s.label}</div>
             </div>
             {i < STEPS.length-1 && (
-              <div style={{ flex:1, height:1, background: step > i ? C.green : C.border, margin:'0 8px', marginBottom:18, transition:'background 0.2s' }}/>
+              <div style={{ flex:1, height:1, background: step > i ? C.green : C.border, margin:'0 8px', marginBottom:20, transition:'background 0.2s' }}/>
             )}
           </div>
         ))}
@@ -471,8 +615,11 @@ function RegisterForm({ onSuccess, onLogin }) {
       {step === 0 && (
         <div className="auth-anim">
           <div style={{ marginBottom:24 }}>
-            <div style={{ fontFamily:"var(--font-jost), 'Jost', sans-serif", fontSize:20, fontWeight:600, color:'#1a1a1a', marginBottom:4 }}>Создайте аккаунт</div>
-            <div style={{ fontSize:13, color:C.muted }}>Основные данные для входа</div>
+            <div style={{
+              fontFamily:"var(--font-arkhip), system-ui, sans-serif",
+              fontSize:24, color:C.dark, marginBottom:6,
+            }}>Создайте аккаунт</div>
+            <div style={{ fontSize:14, color:C.muted }}>Основные данные для входа</div>
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
             <Field label="ФИО" error={errors.name}>
@@ -488,13 +635,18 @@ function RegisterForm({ onSuccess, onLogin }) {
               <Input value={password2} onChange={setPassword2} placeholder="••••••••" type="password" error={!!errors.password2}/>
             </Field>
             <button onClick={handleStep1}
-              style={{ padding:'14px', background:C.dark, color:'#fff', border:'none', fontSize:13, cursor:'pointer', fontFamily:"'Jost',sans-serif", fontWeight:500, marginTop:4 }}>
+              style={{
+                padding:'15px', background:C.dark, color:'#fff', border:'none',
+                fontSize:15, cursor:'pointer', fontFamily:"'Jost',sans-serif",
+                fontWeight:600, marginTop:4, letterSpacing:'0.04em',
+                textTransform:'uppercase',
+              }}>
               Продолжить →
             </button>
           </div>
-          <div style={{ marginTop:24, textAlign:'center', fontSize:12, color:C.muted }}>
+          <div style={{ marginTop:24, textAlign:'center', fontSize:13, color:C.muted }}>
             Уже есть аккаунт?{' '}
-            <button onClick={onLogin} style={{ background:'none', border:'none', color:C.gold, cursor:'pointer', fontSize:12, fontFamily:"'Jost',sans-serif" }}>Войти</button>
+            <button onClick={onLogin} style={{ background:'none', border:'none', color:C.gold, cursor:'pointer', fontSize:13, fontFamily:"'Jost',sans-serif", fontWeight:600 }}>Войти</button>
           </div>
         </div>
       )}
@@ -503,15 +655,18 @@ function RegisterForm({ onSuccess, onLogin }) {
       {step === 1 && (
         <div className="auth-anim">
           <div style={{ marginBottom:24 }}>
-            <div style={{ fontFamily:"var(--font-jost), 'Jost', sans-serif", fontSize:20, fontWeight:600, color:'#1a1a1a', marginBottom:4 }}>Расскажите о себе</div>
-            <div style={{ fontSize:13, color:C.muted }}>Эта информация поможет сэнсэю узнать вас лучше</div>
+            <div style={{
+              fontFamily:"var(--font-arkhip), system-ui, sans-serif",
+              fontSize:24, color:C.dark, marginBottom:6,
+            }}>Расскажите о себе</div>
+            <div style={{ fontSize:14, color:C.muted }}>Эта информация поможет сэнсэю узнать вас лучше</div>
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:18 }}>
 
             <Field label="Ваш уровень в Дайто-рю" hint="По последней аттестации">
               <Select value={selfLevel} onChange={setSelfLevel} options={SELF_LEVELS}/>
               {selfLevel !== 'none' && (
-                <div style={{ fontSize:11, color:C.gold, marginTop:4 }}>
+                <div style={{ fontSize:12, color:C.gold, marginTop:4 }}>
                   Выбрано: {selfLevelLabel}. Официальный уровень будет подтверждён преподавателем.
                 </div>
               )}
@@ -519,7 +674,7 @@ function RegisterForm({ onSuccess, onLogin }) {
 
             <Field label="Имя вашего сэнсэя" hint="Необязательно">
               <Input value={senseiName} onChange={setSenseiName} placeholder="Если занимались у другого преподавателя…"/>
-              <div style={{ fontSize:11, color:'#bbb', marginTop:3 }}>Оставьте пустым, если ваш сэнсэй — Станислав Копин</div>
+              <div style={{ fontSize:12, color:'#aaa', marginTop:3 }}>Оставьте пустым, если ваш сэнсэй — Станислав Копин</div>
             </Field>
 
             <Field label="Ваш опыт и цели" hint="Необязательно">
@@ -531,17 +686,27 @@ function RegisterForm({ onSuccess, onLogin }) {
             </Field>
 
             {serverErr && (
-              <div style={{ padding:'12px 14px', background:'#fff8f7', border:'1px solid #e8c0c0', fontSize:13, color:'#a03030' }}>
+              <div style={{ padding:'13px 16px', background:'#fff8f7', border:'1px solid #e8c0c0', fontSize:14, color:'#a03030' }}>
                 {serverErr}
               </div>
             )}
             <div style={{ display:'flex', gap:10, marginTop:4 }}>
               <button onClick={()=>setStep(0)}
-                style={{ padding:'14px 20px', background:'transparent', color:C.muted, border:`1px solid ${C.border}`, fontSize:13, cursor:'pointer', fontFamily:"'Jost',sans-serif" }}>
+                style={{
+                  padding:'15px 20px', background:'transparent',
+                  color:C.muted, border:`1px solid ${C.border}`,
+                  fontSize:14, cursor:'pointer', fontFamily:"'Jost',sans-serif",
+                }}>
                 ← Назад
               </button>
               <button onClick={handleStep2} disabled={loading}
-                style={{ flex:1, padding:'14px', background:loading?'#444':C.dark, color:'#fff', border:'none', fontSize:13, cursor:'pointer', fontFamily:"'Jost',sans-serif", fontWeight:500 }}>
+                style={{
+                  flex:1, padding:'15px', background: loading ? '#444' : C.dark,
+                  color:'#fff', border:'none', fontSize:15,
+                  cursor: loading ? 'default' : 'pointer',
+                  fontFamily:"'Jost',sans-serif", fontWeight:600,
+                  letterSpacing:'0.04em', textTransform:'uppercase',
+                }}>
                 {loading ? 'Создание аккаунта…' : 'Завершить регистрацию'}
               </button>
             </div>
@@ -552,19 +717,25 @@ function RegisterForm({ onSuccess, onLogin }) {
       {/* ── Шаг 3: Готово ── */}
       {step === 2 && (
         <div className="auth-anim" style={{ textAlign:'center' }}>
-          <div style={{ width:64, height:64, background:C.greenBg, border:`1px solid ${C.greenBorder}`, borderRadius:'50%', display:'flex', alignItems:'center', justifyContent:'center', margin:'0 auto 24px', fontSize:24 }}>✓</div>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:28, fontWeight:600, color:C.dark, marginBottom:8 }}>
+          <div style={{
+            width:64, height:64,
+            background:C.greenBg, border:`1px solid ${C.greenBorder}`,
+            borderRadius:'50%',
+            display:'flex', alignItems:'center', justifyContent:'center',
+            margin:'0 auto 24px', fontSize:26,
+          }}>✓</div>
+          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:30, fontWeight:600, color:C.dark, marginBottom:8 }}>
             Добро пожаловать!
           </div>
-          <div style={{ fontSize:14, color:C.muted, lineHeight:1.8, marginBottom:8 }}>{name}</div>
-          <p style={{ fontSize:13, color:C.muted, lineHeight:1.8, marginBottom:8 }}>
+          <div style={{ fontSize:15, color:C.muted, lineHeight:1.8, marginBottom:8 }}>{name}</div>
+          <p style={{ fontSize:14, color:C.muted, lineHeight:1.8, marginBottom:8 }}>
             Ваш аккаунт создан. Преподаватель рассмотрит ваш уровень<br/>
             и подтвердит его в течение одного-двух рабочих дней.
           </p>
 
           {/* Сводка анкеты */}
           <div style={{ background:C.goldBg, border:`1px solid ${C.goldBorder}`, padding:'16px 20px', textAlign:'left', marginBottom:28 }}>
-            <div style={{ fontSize:9, color:C.gold, letterSpacing:1.5, textTransform:'uppercase', marginBottom:12 }}>Ваши данные</div>
+            <div style={{ fontSize:10, color:C.gold, letterSpacing:1.5, textTransform:'uppercase', marginBottom:12, fontWeight:600 }}>Ваши данные</div>
             <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
               {[
                 { label:'ФИО',       value: name },
@@ -572,13 +743,13 @@ function RegisterForm({ onSuccess, onLogin }) {
                 { label:'Уровень',   value: selfLevelLabel },
                 senseiName && { label:'Сэнсэй', value: senseiName },
               ].filter(Boolean).map(row => (
-                <div key={row.label} style={{ display:'flex', gap:10, fontSize:12 }}>
+                <div key={row.label} style={{ display:'flex', gap:10, fontSize:13 }}>
                   <span style={{ color:C.muted, minWidth:80 }}>{row.label}</span>
                   <span style={{ color:C.dark }}>{row.value}</span>
                 </div>
               ))}
               {experience && (
-                <div style={{ fontSize:12, marginTop:4 }}>
+                <div style={{ fontSize:13, marginTop:4 }}>
                   <div style={{ color:C.muted, marginBottom:4 }}>Об опыте</div>
                   <div style={{ color:C.dark, lineHeight:1.7 }}>{experience.slice(0,120)}{experience.length>120?'…':''}</div>
                 </div>
@@ -587,7 +758,13 @@ function RegisterForm({ onSuccess, onLogin }) {
           </div>
 
           <button onClick={handleDone}
-            style={{ width:'100%', padding:'14px', background:C.dark, color:'#fff', border:'none', fontSize:13, cursor:'pointer', fontFamily:"'Jost',sans-serif", fontWeight:500 }}>
+            style={{
+              width:'100%', padding:'15px',
+              background:C.dark, color:'#fff', border:'none',
+              fontSize:15, cursor:'pointer',
+              fontFamily:"'Jost',sans-serif", fontWeight:600,
+              letterSpacing:'0.04em', textTransform:'uppercase',
+            }}>
             Перейти в кабинет
           </button>
         </div>

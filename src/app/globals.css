@@ -11,6 +11,7 @@ html, body {
   color: #1a1a1a;
   font-family: var(--font-jost), 'Jost', sans-serif;
   -webkit-font-smoothing: antialiased;
+  font-size: 15px;
 }
 
 button, input, textarea, select {
@@ -88,31 +89,31 @@ iframe                { display: block; }
 /* ── Long-form editorial text ── */
 .article-text {
   font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
-  font-size: 17px;
+  font-size: 18px;
   line-height: 1.85;
-  color: #444;
+  color: #333;
 }
 
 /* ── Sensei quote block ── */
 .sensei-quote {
   font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
   font-style: italic;
-  font-size: 15px;
+  font-size: 16px;
   line-height: 1.85;
-  color: #555;
+  color: #444;
 }
 
 /* ── UI label / nav text ── */
 .ui-label {
   font-family: var(--font-jost), 'Jost', sans-serif;
-  font-size: 11px;
+  font-size: 12px;
   letter-spacing: 0.05em;
 }
 
 /* ── Overline / eyebrow label (tiny uppercase) ── */
 .overline {
   font-family: var(--font-jost), 'Jost', sans-serif;
-  font-size: 9px;
+  font-size: 10px;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: #b0a080;
