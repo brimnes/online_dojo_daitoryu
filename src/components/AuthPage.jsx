@@ -39,8 +39,14 @@ function Field({ label, hint, error, children }) {
   return (
     <div style={{ display:'flex', flexDirection:'column', gap:6 }}>
       <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between' }}>
-        <label style={{ fontSize:11, color:C.muted, letterSpacing:1.2, textTransform:'uppercase', fontWeight:500 }}>{label}</label>
-        {hint && <span style={{ fontSize:11, color:'#999' }}>{hint}</span>}
+        <label style={{
+          fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
+          fontSize:10, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase',
+        }}>{label}</label>
+        {hint && <span style={{
+          fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
+          fontSize:9, color:C.border, letterSpacing:'0.06em',
+        }}>{hint}</span>}
       </div>
       {children}
       {error && <div style={{ fontSize:12, color:C.red }}>{error}</div>}
@@ -57,9 +63,9 @@ function Input({ value, onChange, placeholder, type='text', error }) {
       onFocus={()=>setFocused(true)} onBlur={()=>setFocused(false)}
       style={{
         padding:'13px 16px', fontSize:15,
-        background:C.white,
+        background: C.surface,
         border:`1px solid ${error?C.red:focused?C.accent:C.border}`,
-        outline:'none', color:C.dark, width:'100%',
+        outline:'none', color:C.ink, width:'100%',
         fontFamily:"'Jost',sans-serif",
         transition:'border-color 0.15s',
         borderRadius: 0,
@@ -77,7 +83,7 @@ function Textarea({ value, onChange, placeholder, rows=4 }) {
       onFocus={()=>setFocused(true)} onBlur={()=>setFocused(false)}
       style={{
         padding:'13px 16px', fontSize:15,
-        background:C.white,
+        background: C.surface,
         border:`1px solid ${focused?C.accent:C.border}`,
         outline:'none', color:C.dark, width:'100%',
         fontFamily:"'Jost',sans-serif", lineHeight:1.7,
@@ -95,7 +101,7 @@ function Select({ value, onChange, options }) {
       onFocus={()=>setFocused(true)} onBlur={()=>setFocused(false)}
       style={{
         padding:'13px 16px', fontSize:15,
-        background:C.white,
+        background: C.surface,
         border:`1px solid ${focused?C.accent:C.border}`,
         outline:'none', color:value?C.dark:C.muted, width:'100%',
         fontFamily:"'Jost',sans-serif", cursor:'pointer',
@@ -150,6 +156,16 @@ export default function AuthPage({ onSuccess }) {
             pointerEvents:'none', userSelect:'none',
           }}>合</div>
 
+          {/* KanjiRail — вертикальный текст справа */}
+          <div style={{
+            position:'absolute', top: 48, right: 28,
+            writingMode:'vertical-rl', textOrientation:'upright',
+            fontFamily:"'Noto Serif JP', var(--font-noto), serif",
+            fontSize: 13, color:'rgba(183,56,40,0.22)',
+            letterSpacing:'0.45em', lineHeight:1.1,
+            pointerEvents:'none', userSelect:'none',
+          }}>大東流合気柔術</div>
+
           {/* Фото Станислава — нижняя половина, плавно растворяется */}
           <div style={{
             position: 'absolute', bottom: 0, left: 0, right: 0,
@@ -180,68 +196,37 @@ export default function AuthPage({ onSuccess }) {
             />
           </div>
 
-          {/* Верхняя контентная часть */}
-          <div style={{ position: 'relative', zIndex: 3, padding: '44px 44px 0', flex: 1, display: 'flex', flexDirection: 'column' }}>
-            {/* Логотип */}
-            <div style={{ display:'flex', alignItems:'center', gap:18, marginBottom: 52 }}>
-              <TakedaMon size={68} color="#b73828" />
-              <div>
-                <div style={{
-                  fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
-                  fontSize: 13, letterSpacing:'0.18em',
-                  color:'#b73828', textTransform:'uppercase',
-                  lineHeight: 1.3,
-                }}>Online Daito-ryu Dojo</div>
-                <div style={{
-                  fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
-                  fontSize: 9, color:'rgba(183,56,40,0.45)',
-                  marginTop: 5, letterSpacing: '0.16em',
-                  textTransform: 'uppercase',
-                }}>Дайто-рю Айкидзюдзюцу</div>
-              </div>
-            </div>
-
-            {/* Заголовок */}
-            <div>
+          {/* Верхняя часть — логотип маленький */}
+          <div style={{ position: 'relative', zIndex: 3, padding: '36px 40px 0', flex: 1, display: 'flex', flexDirection: 'column' }}>
+            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom: 'auto' }}>
+              <TakedaMon size={22} color="rgba(183,56,40,0.6)" />
               <div style={{
-                fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
-                fontSize: 36, color:'#ede5d3',
-                lineHeight: 1.2, marginBottom: 18,
-                letterSpacing: '0.03em', fontWeight: 400,
-              }}>
-                Онлайн-школа<br/>
-                <span style={{ color:'#b73828' }}>Станислава<br/>Копина</span>
-              </div>
-              <div style={{ width: 48, height: 1, background: 'rgba(183,56,40,0.45)', marginBottom: 22 }}/>
-              <p style={{
-                fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
-                fontSize: 15, color:'rgba(237,229,211,0.45)',
-                lineHeight: 1.95, fontWeight: 300, maxWidth: 300,
-              }}>
-                Онлайн-платформа для изучения традиционного Дайто-рю Айкидзюдзюцу. Видеоуроки, техники, экзамены.
-              </p>
+                fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
+                fontSize: 9, letterSpacing:'0.18em',
+                color:'rgba(183,56,40,0.5)', textTransform:'uppercase',
+              }}>Sensei Portrait · Dojo</div>
             </div>
           </div>
 
           {/* Цитата внизу */}
           <div style={{
             position: 'relative', zIndex: 3,
-            padding: '0 44px 40px',
-            borderLeft: 'none',
+            padding: '0 40px 44px',
           }}>
-            <div style={{ borderLeft:'2px solid rgba(183,56,40,0.35)', paddingLeft: 18 }}>
+            <div style={{ borderLeft:'2px solid rgba(183,56,40,0.3)', paddingLeft: 16 }}>
               <div style={{
                 fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
-                fontSize: 15, fontStyle:'italic',
-                color:'rgba(237,229,211,0.45)', lineHeight: 1.85,
+                fontSize: 16, fontStyle:'italic',
+                color:'rgba(237,229,211,0.55)', lineHeight: 1.9,
+                marginBottom: 12,
               }}>
-                «Путь начинается с первого шага — не с совершенного шага»
+                «Айки — это не сила. Это согласие с движением партнёра. Тысячи повторений — и тело само находит путь.»
               </div>
               <div style={{
                 fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
                 fontSize: 9, color:'rgba(183,56,40,0.45)',
-                marginTop: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
-              }}>Сэнсэй Станислав Копин</div>
+                letterSpacing: '0.14em', textTransform: 'uppercase',
+              }}>— Сэнсэй Станислав Копин</div>
             </div>
           </div>
         </div>
@@ -250,95 +235,54 @@ export default function AuthPage({ onSuccess }) {
       {/* ── Правая форма ── */}
       <div style={{
         flex: 1, display: 'flex', flexDirection: 'column',
-        alignItems: 'center',
-        justifyContent: isMobile ? 'flex-start' : 'center',
-        padding: isMobile
-          ? 'max(20px, env(safe-area-inset-top)) 20px 40px'
-          : '48px 60px',
-        overflowY: 'auto',
         background: C.bg,
+        overflowY: 'auto',
+        position: 'relative',
       }}>
 
-        {/* Mobile hero ── */}
-        {isMobile && (
+        {/* Brand header — верхний левый угол */}
+        <div style={{
+          display: 'flex', alignItems: 'center', gap: 10,
+          padding: isMobile
+            ? 'max(20px, env(safe-area-inset-top)) 24px 0'
+            : '28px 60px 0',
+        }}>
+          <TakedaMon size={14} color={C.accent} />
           <div style={{
-            width: '100%',
-            background: 'linear-gradient(160deg, #1a1710 0%, #0d0b08 100%)',
-            padding: '36px 24px 32px',
-            marginBottom: 32,
-            position: 'relative', overflow: 'hidden',
-          }}>
-            {/* Декоративный кандзи */}
-            <div style={{
-              position: 'absolute', right: -10, bottom: -20,
-              fontFamily:"'Noto Serif JP',serif", fontSize: 160,
-              color:'rgba(200,168,74,0.05)', lineHeight:1,
-              pointerEvents:'none', userSelect:'none',
-            }}>合</div>
+            fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
+            fontSize: 9, letterSpacing: '0.18em',
+            color: C.accent, textTransform: 'uppercase',
+          }}>Online Daito-ryu Dojo</div>
+        </div>
 
-            <div style={{ position: 'relative', zIndex: 1 }}>
-              {/* Логотип */}
-              <div style={{ display:'flex', alignItems:'center', gap:16, marginBottom: 28 }}>
-                <TakedaMon size={56} color="#b73828" />
-                <div>
-                  <div style={{
-                    fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
-                    fontSize: 13, letterSpacing:'0.16em',
-                    color:'#b73828', textTransform:'uppercase',
-                    lineHeight: 1.4,
-                  }}>Online Daito-ryu<br/>Dojo</div>
-                </div>
-              </div>
-
-              <div style={{
-                fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
-                fontSize: 22, color:'#ede5d3',
-                lineHeight: 1.3, marginBottom: 10, fontWeight: 400,
-                letterSpacing: '0.03em',
-              }}>
-                Школа Станислава Копина
-              </div>
-              <div style={{
-                fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
-                fontSize: 9, color:'rgba(183,56,40,0.5)', letterSpacing: '0.14em', textTransform: 'uppercase',
-              }}>
-                Дайто-рю Айкидзюдзюцу
-              </div>
+        {/* Центральная зона с формой */}
+        <div style={{
+          flex: 1, display: 'flex', flexDirection: 'column',
+          alignItems: 'center', justifyContent: 'center',
+          padding: isMobile ? '32px 24px 24px' : '40px 60px',
+        }}>
+          <div style={{ width: '100%', maxWidth: 420 }}>
+            <div className="auth-anim" key={mode}>
+              {mode==='login'        && <LoginForm onSuccess={onSuccess} onRegister={()=>setMode('register')} onResetRequired={handleResetRequired}/>}
+              {mode==='register'     && <RegisterForm onSuccess={onSuccess} onLogin={()=>setMode('login')}/>}
+              {mode==='set-password' && <SetPasswordForm userId={resetUserId} onSuccess={onSuccess} onBack={()=>setMode('login')}/>}
             </div>
           </div>
-        )}
+        </div>
 
-        <div style={{ width:'100%', maxWidth: isMobile ? '100%' : 460 }}>
-          {/* Переключатель Вход / Регистрация */}
-          {mode !== 'set-password' && (
-            <div style={{
-              display:'flex', background:C.surface,
-              border:`1px solid ${C.border}`,
-              marginBottom: 32, padding: 3,
-            }}>
-              {[{id:'login',label:'Вход'},{id:'register',label:'Регистрация'}].map(m=>(
-                <button key={m.id} onClick={()=>setMode(m.id)}
-                  style={{
-                    flex:1, padding:'11px',
-                    background: mode===m.id ? C.ink : 'transparent',
-                    color: mode===m.id ? '#ede5d3' : C.muted,
-                    border:'none', fontSize:13, cursor:'pointer',
-                    transition:'all 0.15s',
-                    fontFamily:"'Jost',sans-serif",
-                    fontWeight: mode===m.id ? 500 : 400,
-                    letterSpacing: mode===m.id ? '0.04em' : 0,
-                  }}>
-                  {m.label}
-                </button>
-              ))}
-            </div>
-          )}
-
-          <div className="auth-anim" key={mode}>
-            {mode==='login'         && <LoginForm onSuccess={onSuccess} onRegister={()=>setMode('register')} onResetRequired={handleResetRequired}/>}
-            {mode==='register'      && <RegisterForm onSuccess={onSuccess} onLogin={()=>setMode('login')}/>}
-            {mode==='set-password'  && <SetPasswordForm userId={resetUserId} onSuccess={onSuccess} onBack={()=>setMode('login')}/>}
-          </div>
+        {/* Footer */}
+        <div style={{
+          display: 'flex', justifyContent: 'space-between', alignItems: 'center',
+          padding: isMobile ? '0 24px max(16px, env(safe-area-inset-bottom))' : '0 60px 24px',
+        }}>
+          <div style={{
+            fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
+            fontSize: 9, color: C.border, letterSpacing: '0.1em',
+          }}>v 1.9 · 2026</div>
+          <div style={{
+            fontFamily:"'Noto Serif JP', var(--font-noto), serif",
+            fontSize: 13, color: C.border, letterSpacing: '0.3em',
+          }}>合気術</div>
         </div>
       </div>
     </div>
@@ -392,50 +336,102 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
 
   return (
     <div>
-      <div style={{ marginBottom: 28 }}>
-        <div style={{
-          fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
-          fontSize: 28, fontWeight: 400, color: C.ink,
-          marginBottom: 8, letterSpacing: '0.04em',
-        }}>С возвращением</div>
-        <div style={{ fontSize:14, color:C.muted }}>Войдите в свой кабинет</div>
+      {/* Eyebrow */}
+      <div style={{
+        display:'flex', alignItems:'center', gap:8, marginBottom:14,
+      }}>
+        <span style={{
+          fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
+          fontSize:10, color:C.accent, letterSpacing:'0.06em',
+        }}>01</span>
+        <div style={{ width:20, height:1, background:C.border }} />
+        <span style={{
+          fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
+          fontSize:10, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase',
+        }}>Вход в доджо</span>
       </div>
 
+      {/* Heading */}
+      <div style={{
+        fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+        fontSize: 42, fontWeight: 400, color: C.ink,
+        marginBottom: 10, letterSpacing: '0.03em', lineHeight: 1.1,
+      }}>Добро пожаловать</div>
+
+      {/* Subtitle */}
+      <p style={{
+        fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
+        fontSize: 15, fontStyle:'italic',
+        color: C.muted, lineHeight: 1.75, marginBottom: 28,
+      }}>
+        Войдите, чтобы продолжить обучение, или зарегистрируйтесь, указав ваш текущий уровень кю.
+      </p>
+
       {serverErr && (
-        <div style={{ padding:'13px 16px', background:C.redBg, border:`1px solid ${C.redBorder}`, fontSize:14, color:C.red, marginBottom:20, lineHeight:1.5 }}>
+        <div style={{ padding:'12px 16px', background:C.redBg, border:`1px solid ${C.redBorder}`, fontSize:13, color:C.red, marginBottom:20, lineHeight:1.5 }}>
           {serverErr}
         </div>
       )}
 
-      <div style={{ display:'flex', flexDirection:'column', gap:18 }}>
-        <Field label="Email" error={errors.email}>
-          <Input value={email} onChange={setEmail} placeholder="your@email.com" type="email" error={!!errors.email}/>
-        </Field>
-        <Field label="Пароль" error={errors.password}>
-          <Input value={password} onChange={setPassword} placeholder="••••••••" type="password" error={!!errors.password}/>
-        </Field>
-
-        <div style={{ display:'flex', justifyContent:'flex-end' }}>
-          <button style={{ background:'none', border:'none', fontSize:12, color:C.accent, cursor:'pointer', padding:0 }}>Забыли пароль?</button>
+      <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
+        {/* Email field */}
+        <div style={{ display:'flex', flexDirection:'column', gap:5 }}>
+          <label style={{
+            fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
+            fontSize:10, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase',
+          }}>Email</label>
+          <Input value={email} onChange={setEmail} placeholder="ivan@dojo.ru" type="email" error={!!errors.email}/>
+          {errors.email && <div style={{ fontSize:12, color:C.red }}>{errors.email}</div>}
         </div>
 
+        {/* Password field */}
+        <div style={{ display:'flex', flexDirection:'column', gap:5 }}>
+          <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
+            <label style={{
+              fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
+              fontSize:10, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase',
+            }}>Пароль</label>
+            <button style={{ background:'none', border:'none', fontSize:11, color:C.accent, cursor:'pointer', padding:0, fontStyle:'italic' }}>забыли?</button>
+          </div>
+          <Input value={password} onChange={setPassword} placeholder="••••••••" type="password" error={!!errors.password}/>
+          {errors.password && <div style={{ fontSize:12, color:C.red }}>{errors.password}</div>}
+        </div>
+
+        {/* Primary CTA */}
         <button onClick={handleSubmit} disabled={loading}
           style={{
-            padding:'15px', background: loading ? C.muted : C.accent,
-            color:'#fff', border:'none', fontSize:15,
+            marginTop:8,
+            padding:'16px', background: loading ? C.muted : C.accent,
+            color:'#f1ece0', border:'none', fontSize:13,
             cursor: loading ? 'default' : 'pointer',
             fontFamily:"'Jost',sans-serif", fontWeight:600,
-            letterSpacing:'0.04em', transition:'background 0.15s',
-            minHeight:50, textTransform:'uppercase',
+            letterSpacing:'0.12em', transition:'background 0.15s',
+            minHeight:52, textTransform:'uppercase',
           }}>
-          {loading ? 'Вход…' : 'Войти'}
+          {loading ? 'Вход…' : 'Войти →'}
         </button>
-      </div>
 
-      <div style={{ marginTop:24, textAlign:'center', fontSize:13, color:C.muted }}>
-        Нет аккаунта?{' '}
-        <button onClick={onRegister} style={{ background:'none', border:'none', color:C.accent, cursor:'pointer', fontSize:13, fontFamily:"'Jost',sans-serif", fontWeight:500 }}>
-          Зарегистрироваться
+        {/* Divider */}
+        <div style={{ display:'flex', alignItems:'center', gap:12, margin:'4px 0' }}>
+          <div style={{ flex:1, height:1, background:C.border }} />
+          <span style={{
+            fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
+            fontSize:9, color:C.border, letterSpacing:'0.1em', textTransform:'uppercase',
+          }}>или</span>
+          <div style={{ flex:1, height:1, background:C.border }} />
+        </div>
+
+        {/* Secondary — Registration */}
+        <button onClick={onRegister}
+          style={{
+            padding:'14px', background:'transparent',
+            color:C.ink2, border:`1px solid ${C.border}`,
+            fontSize:12, cursor:'pointer',
+            fontFamily:"'Jost',sans-serif", fontWeight:500,
+            letterSpacing:'0.12em', textTransform:'uppercase',
+            transition:'border-color 0.15s',
+          }}>
+          Регистрация
         </button>
       </div>
     </div>
@@ -631,11 +627,16 @@ function RegisterForm({ onSuccess, onLogin }) {
       {step === 0 && (
         <div className="auth-anim">
           <div style={{ marginBottom:24 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
+              <span style={{ fontFamily:"var(--font-mono), 'JetBrains Mono', monospace", fontSize:10, color:C.accent, letterSpacing:'0.06em' }}>02</span>
+              <div style={{ width:20, height:1, background:C.border }} />
+              <span style={{ fontFamily:"var(--font-mono), 'JetBrains Mono', monospace", fontSize:10, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase' }}>Регистрация</span>
+            </div>
             <div style={{
               fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
-              fontSize:26, color:C.ink, marginBottom:6, letterSpacing:'0.04em', fontWeight:400,
+              fontSize:36, color:C.ink, marginBottom:6, letterSpacing:'0.03em', fontWeight:400, lineHeight:1.1,
             }}>Создайте аккаунт</div>
-            <div style={{ fontSize:14, color:C.muted }}>Основные данные для входа</div>
+            <p style={{ fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif", fontSize:15, fontStyle:'italic', color:C.muted, lineHeight:1.7 }}>Основные данные для входа в систему</p>
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
             <Field label="ФИО" error={errors.name}>
@@ -671,11 +672,16 @@ function RegisterForm({ onSuccess, onLogin }) {
       {step === 1 && (
         <div className="auth-anim">
           <div style={{ marginBottom:24 }}>
+            <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
+              <span style={{ fontFamily:"var(--font-mono), 'JetBrains Mono', monospace", fontSize:10, color:C.accent, letterSpacing:'0.06em' }}>02</span>
+              <div style={{ width:20, height:1, background:C.border }} />
+              <span style={{ fontFamily:"var(--font-mono), 'JetBrains Mono', monospace", fontSize:10, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase' }}>Регистрация</span>
+            </div>
             <div style={{
               fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
-              fontSize:26, color:C.ink, marginBottom:6, letterSpacing:'0.04em', fontWeight:400,
+              fontSize:36, color:C.ink, marginBottom:6, letterSpacing:'0.03em', fontWeight:400, lineHeight:1.1,
             }}>Расскажите о себе</div>
-            <div style={{ fontSize:14, color:C.muted }}>Эта информация поможет сэнсэю узнать вас лучше</div>
+            <p style={{ fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif", fontSize:15, fontStyle:'italic', color:C.muted, lineHeight:1.7 }}>Эта информация поможет сэнсэю узнать вас лучше</p>
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:18 }}>
 
