@@ -469,52 +469,345 @@ function TabKnowledge({ nav, isMobile }) {
 
 // ── Вкладка: База техник ──────────────────────────────────────────
 function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
+  const [search, setSearch] = useState('');
+  const ua = userAccess ?? [];
+
+  const SECTION_EXTRA = {
+    ikkajo:  { nameRomaji: 'Ikkajō',  nameJa: '一教', programLabel: 'Программа ученических степеней', program: '6 кю → 1 кю',   lessons: 89, sections: 7, duration: '12 мес.' },
+    nikkajo: { nameRomaji: 'Nikajō',  nameJa: '二教', programLabel: 'Программа дан, ступень II',       program: '1 дан → 2 дан', lessons: 64, sections: 6, duration: '8 мес.',  soon: true },
+    sankajo: { nameRomaji: 'Sankajō', nameJa: '三教', programLabel: 'Программа дан, ступень III',      program: '2 дан → 3 дан', lessons: 56, sections: 5, duration: '8 мес.',  soon: true },
+  };
+
+  function getAccessState(sec) {
+    const avail = hasLevel(user?.level || '6kyu', sec.requiredLevel);
+    const hasFullIkkajo = ua.some(a => a.type === 'section' && a.reference === 'ikkajo');
+    const hasAnyIkkajoSection = sec.id === 'ikkajo' &&
+      IKKAJO_SECTIONS.some(k => ua.some(a => a.type === 'section' && a.reference === k));
+    const bought = sec.id === 'ikkajo'
+      ? hasFullIkkajo || hasAnyIkkajoSection
+      : ua.some(a => a.type === 'section' && a.reference === sec.id);
+    if (bought) return 'open';
+    if (SECTION_EXTRA[sec.id]?.soon) return 'soon';
+    if (!avail) return 'locked';
+    return 'purchase';
+  }
+
+  function getVisuals(state) {
+    switch (state) {
+      case 'open': return {
+        surface: '#0f0d0a', grad: 'linear-gradient(155deg, #18130d 0%, #0f0c08 60%, #0a0805 100%)',
+        ink: '#ede5d3', ink2: '#c2b59c', muted: '#7a6c52', hairline: 'rgba(184,146,58,0.18)',
+        kanjiBg: 'linear-gradient(170deg, #1f1812 0%, #0d0a07 100%)',
+        kanjiColor: C.accent, kanjiRing: C.goldLight,
+        tagFg: C.goldLight, tagBorder: 'rgba(184,146,58,0.45)',
+        borderTop: `1px solid ${C.accent}`,
+        ctaBg: C.accent, ctaColor: C.onAccent, ctaBorder: C.accent,
+        rightBg: 'rgba(0,0,0,0.18)',
+      };
+      case 'purchase': return {
+        surface: C.surface, grad: `linear-gradient(155deg, ${C.surface2} 0%, ${C.surface} 60%, ${C.bg2} 100%)`,
+        ink: C.ink, ink2: C.ink2, muted: C.muted, hairline: C.border,
+        kanjiBg: C.bg2, kanjiColor: C.gold, kanjiRing: C.border,
+        tagFg: C.gold, tagBorder: C.goldBorder,
+        borderTop: `1px solid ${C.border}`,
+        ctaBg: 'transparent', ctaColor: C.ink, ctaBorder: C.ink2,
+        rightBg: 'transparent',
+      };
+      default: return {
+        surface: C.bg2, grad: C.bg2,
+        ink: C.ink2, ink2: C.muted, muted: C.muted, hairline: C.hairline2,
+        kanjiBg: C.bg2, kanjiColor: C.hairline2, kanjiRing: C.hairline2,
+        tagFg: C.muted, tagBorder: C.hairline2,
+        borderTop: `1px solid ${C.hairline2}`,
+        ctaBg: 'transparent', ctaColor: C.muted, ctaBorder: C.hairline2,
+        rightBg: 'transparent',
+      };
+    }
+  }
+
+  const allSecs = (DB_SECTIONS ?? []).map((sec, i) => ({
+    ...sec, ...(SECTION_EXTRA[sec.id] || {}),
+    num: String(i + 1).padStart(2, '0'),
+    accessState: getAccessState(sec),
+  }));
+
+  const openCount  = allSecs.filter(s => s.accessState === 'open').length;
+  const totalTechs = allSecs.reduce((sum, s) => sum + (s.techniques || 0), 0);
+
+  const filtered = search.trim()
+    ? allSecs.filter(s =>
+        s.label.toLowerCase().includes(search.toLowerCase()) ||
+        s.desc.toLowerCase().includes(search.toLowerCase()) ||
+        (s.nameRomaji || '').toLowerCase().includes(search.toLowerCase()))
+    : allSecs;
+
+  function handleCta(sec) {
+    if (sec.accessState === 'open'     && sec.id === 'ikkajo') nav.ikkajo();
+    if (sec.accessState === 'purchase') setModal(sec);
+  }
+
+  const ctaLabel = (sec) => {
+    if (sec.accessState === 'open')     return 'Открыть';
+    if (sec.accessState === 'soon')     return 'Скоро';
+    if (sec.accessState === 'locked')   return '🔒 Нет доступа';
+    return `Купить — ${sec.price}`;
+  };
+
+  // ── Desktop card render ──────────────────────────────────────────
+  const renderCard = (sec) => {
+    const v      = getVisuals(sec.accessState);
+    const isOpen = sec.accessState === 'open';
+    const isSoon = sec.accessState === 'soon';
+    const isLocked = sec.accessState === 'locked';
+    return (
+      <article key={sec.id} style={{
+        display: 'grid', gridTemplateColumns: '200px 1fr 260px',
+        background: v.surface, backgroundImage: v.grad,
+        border: `1px solid ${v.hairline}`, borderTop: v.borderTop,
+        boxShadow: isOpen ? '0 30px 80px -28px rgba(0,0,0,0.55)' : 'none',
+        minHeight: 200, overflow: 'hidden',
+      }}>
+        {/* kanji panel */}
+        <div style={{
+          position: 'relative', background: v.kanjiBg,
+          borderRight: `1px solid ${v.hairline}`,
+          display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden',
+        }}>
+          <svg viewBox="0 0 100 100" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.35 }}>
+            <circle cx="50" cy="50" r="46" fill="none" stroke={v.kanjiRing} strokeWidth="0.3" />
+            <circle cx="50" cy="50" r="38" fill="none" stroke={v.kanjiRing} strokeWidth="0.2" />
+          </svg>
+          <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 120, lineHeight: 0.85, color: v.kanjiColor, fontWeight: 300, position: 'relative', zIndex: 1 }}>{sec.kanji}</div>
+          <div style={{ position: 'absolute', top: 12, left: 14, fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.2em' }}>
+            {sec.num} / {String(allSecs.length).padStart(2, '0')}
+          </div>
+          {sec.nameJa && (
+            <div style={{ position: 'absolute', bottom: 10, left: 14, fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 12, color: v.muted, letterSpacing: '0.25em' }}>{sec.nameJa}</div>
+          )}
+          {!isOpen && (
+            <div style={{ position: 'absolute', top: 12, right: 14, width: 26, height: 26, border: `1px solid ${v.hairline}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 12, color: v.muted }}>
+              {isSoon ? '◷' : '⌬'}
+            </div>
+          )}
+        </div>
+
+        {/* middle content */}
+        <div style={{ padding: '26px 28px', display: 'flex', flexDirection: 'column', gap: 12 }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.2em', color: v.muted, textTransform: 'uppercase' }}>{sec.programLabel}</span>
+            <span style={{ width: 20, height: 1, background: v.hairline, flexShrink: 0 }} />
+            <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 10, letterSpacing: '0.18em', color: isOpen ? C.goldLight : v.ink2, fontWeight: 600 }}>{sec.program}</span>
+          </div>
+          <div style={{ display: 'flex', alignItems: 'baseline', gap: 14 }}>
+            <h2 style={{ margin: 0, fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 44, lineHeight: 0.95, letterSpacing: '0.04em', color: v.ink, fontWeight: 500, textTransform: 'uppercase' }}>{sec.label}</h2>
+            {sec.nameRomaji && <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 18, color: v.muted }}>{sec.nameRomaji}</span>}
+          </div>
+          <p style={{ margin: 0, fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 13, color: v.ink2, lineHeight: 1.6, maxWidth: 480 }}>{sec.desc}</p>
+          <div style={{ display: 'flex', borderTop: `1px solid ${v.hairline}`, paddingTop: 12, marginTop: 4 }}>
+            {[
+              { label: 'Техник',   val: sec.techniques },
+              { label: 'Видео',    val: sec.lessons },
+              { label: 'Разделов', val: sec.sections },
+              { label: 'Срок',     val: sec.duration },
+            ].map((s, i, arr) => (
+              <div key={s.label} style={{ flex: 1, paddingLeft: i === 0 ? 0 : 14, paddingRight: 14, borderLeft: i > 0 ? `1px solid ${v.hairline}` : 'none' }}>
+                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.16em', color: v.muted, textTransform: 'uppercase', marginBottom: 3 }}>{s.label}</div>
+                <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 17, fontWeight: 500, color: v.ink }}>{s.val}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+
+        {/* right CTA panel */}
+        <div style={{ padding: '24px 22px 20px', borderLeft: `1px solid ${v.hairline}`, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: v.rightBg }}>
+          <div>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '5px 10px', color: v.tagFg, border: `1px solid ${v.tagBorder}`, fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 600 }}>
+              <span style={{ width: 5, height: 5, borderRadius: '50%', background: v.tagFg, flexShrink: 0 }} />
+              {isOpen ? 'Открыт' : isSoon ? 'Скоро' : isLocked ? 'Нет доступа' : 'К покупке'}
+            </div>
+
+            {isOpen && (
+              <div style={{ marginTop: 22 }}>
+                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 6 }}>Прогресс</div>
+                <div style={{ width: '100%', height: 2, background: 'rgba(184,146,58,0.15)' }}>
+                  <div style={{ height: 2, width: '36%', background: C.accent }} />
+                </div>
+                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 11, color: v.muted, marginTop: 5 }}>изучение в процессе</div>
+              </div>
+            )}
+
+            {sec.accessState === 'purchase' && (
+              <div style={{ marginTop: 22 }}>
+                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 5 }}>Стоимость</div>
+                <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 28, color: v.ink, fontWeight: 500 }}>{sec.price}</div>
+                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 11, color: v.muted, marginTop: 3 }}>навсегда · без подписки</div>
+              </div>
+            )}
+
+            {isSoon && (
+              <div style={{ marginTop: 22 }}>
+                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 5 }}>Релиз</div>
+                <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 16, color: v.ink, fontWeight: 500, textTransform: 'uppercase' }}>осень 2026</div>
+                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 11, color: v.muted, marginTop: 3 }}>программа разрабатывается</div>
+              </div>
+            )}
+          </div>
+
+          <button onClick={() => handleCta(sec)} disabled={isSoon || isLocked} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 46, padding: '12px 16px', background: v.ctaBg, color: v.ctaColor, border: `1px solid ${v.ctaBorder}`, fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', cursor: (isSoon || isLocked) ? 'default' : 'pointer', opacity: (isSoon || isLocked) ? 0.65 : 1 }}>
+            {ctaLabel(sec)}
+          </button>
+        </div>
+      </article>
+    );
+  };
+
+  // ── Mobile card render ───────────────────────────────────────────
+  const renderMobileCard = (sec) => {
+    const v      = getVisuals(sec.accessState);
+    const isOpen = sec.accessState === 'open';
+    const isSoon = sec.accessState === 'soon';
+    const isLocked = sec.accessState === 'locked';
+    return (
+      <article key={sec.id} style={{
+        background: v.surface, backgroundImage: v.grad,
+        border: `1px solid ${C.border}`, borderTop: v.borderTop,
+        boxShadow: isOpen ? '0 20px 50px -20px rgba(0,0,0,0.5)' : 'none',
+        overflow: 'hidden',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'stretch', borderBottom: `1px solid ${v.hairline}` }}>
+          <div style={{ width: 90, position: 'relative', background: v.kanjiBg, borderRight: `1px solid ${v.hairline}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+            <svg viewBox="0 0 100 100" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.3 }}>
+              <circle cx="50" cy="50" r="46" fill="none" stroke={v.kanjiRing} strokeWidth="0.3" />
+            </svg>
+            <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 68, lineHeight: 0.85, color: v.kanjiColor, position: 'relative' }}>{sec.kanji}</div>
+          </div>
+          <div style={{ flex: 1, padding: '12px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4, minWidth: 0 }}>
+            <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.18em', color: v.muted }}>{sec.num} / {String(allSecs.length).padStart(2, '0')}</span>
+              {sec.nameJa && <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 10, color: v.muted }}>· {sec.nameJa}</span>}
+            </div>
+            <h3 style={{ margin: 0, fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 26, letterSpacing: '0.04em', color: v.ink, fontWeight: 500, lineHeight: 0.95, textTransform: 'uppercase' }}>{sec.label}</h3>
+            {sec.nameRomaji && (
+              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 12, color: v.muted }}>{sec.nameRomaji} · {sec.program}</div>
+            )}
+          </div>
+        </div>
+        <div style={{ padding: '14px 16px 16px' }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', color: v.tagFg, border: `1px solid ${v.tagBorder}`, fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 10 }}>
+            <span style={{ width: 4, height: 4, borderRadius: '50%', background: v.tagFg }} />
+            {isOpen ? 'Открыт' : isSoon ? 'Скоро' : isLocked ? 'Нет доступа' : 'К покупке'}
+          </div>
+          <p style={{ margin: '0 0 12px', fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 13, color: v.ink2, lineHeight: 1.55 }}>{sec.desc}</p>
+          <div style={{ display: 'flex', padding: '10px 0', borderTop: `1px solid ${v.hairline}`, borderBottom: `1px solid ${v.hairline}`, marginBottom: 14 }}>
+            {[
+              { label: 'Техник', val: sec.techniques },
+              { label: 'Видео',  val: sec.lessons },
+              { label: 'Мес.',   val: (sec.duration || '').replace(/\D/g, '') },
+            ].map((s, i) => (
+              <div key={s.label} style={{ flex: 1, paddingLeft: i === 0 ? 0 : 12, borderLeft: i > 0 ? `1px solid ${v.hairline}` : 'none' }}>
+                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 2 }}>{s.label}</div>
+                <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 16, color: v.ink, fontWeight: 500 }}>{s.val}</div>
+              </div>
+            ))}
+          </div>
+          {sec.accessState === 'purchase' && (
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
+              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Стоимость</span>
+              <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 22, color: v.ink, fontWeight: 500 }}>{sec.price}</span>
+            </div>
+          )}
+          {isSoon && (
+            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
+              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Релиз</span>
+              <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 13, color: v.ink, fontWeight: 500, textTransform: 'uppercase' }}>осень 2026</span>
+            </div>
+          )}
+          <button onClick={() => handleCta(sec)} disabled={isSoon || isLocked} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 48, padding: '13px 16px', background: v.ctaBg, color: v.ctaColor, border: `1px solid ${v.ctaBorder}`, fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', cursor: (isSoon || isLocked) ? 'default' : 'pointer', opacity: (isSoon || isLocked) ? 0.65 : 1 }}>
+            {ctaLabel(sec)}
+          </button>
+        </div>
+      </article>
+    );
+  };
+
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 20, paddingBottom: 16, borderBottom: `1px solid ${C.border}`, flexWrap: 'wrap' }}>
-        <h2 style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: isMobile ? 22 : 28, color: C.ink, letterSpacing: '0.05em', fontWeight: 400 }}>База техник</h2>
-        <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.1em' }}>РАЗОВАЯ ПОКУПКА</span>
+      {/* ── Top bar with breadcrumb + search ── */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        marginTop: isMobile ? -16 : -32, marginLeft: isMobile ? -16 : -36, marginRight: isMobile ? -16 : -36,
+        padding: isMobile ? '12px 16px' : '14px 36px',
+        borderBottom: `1px solid ${C.border}`, background: C.surface,
+        marginBottom: isMobile ? 20 : 36, gap: 12, flexWrap: 'wrap',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 12, color: C.muted, letterSpacing: '0.18em' }}>技 · 大東流</span>
+          <span style={{ color: C.hairline2, fontSize: 13 }}>/</span>
+          <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 11, letterSpacing: '0.18em', color: C.ink, fontWeight: 600 }}>БАЗА ТЕХНИК</span>
+        </div>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
+          <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.12em' }}>
+            {openCount} / {allSecs.length} РАЗДЕЛОВ ДОСТУПНО
+          </span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: C.bg, border: `1px solid ${C.border}`, padding: '7px 12px', width: isMobile ? '100%' : 256 }}>
+            <span style={{ color: C.muted, fontSize: 13, flexShrink: 0 }}>⌕</span>
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Поиск техники или раздела…" style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 13, color: C.ink }} />
+          </div>
+        </div>
       </div>
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        {(DB_SECTIONS ?? []).map(sec => {
-          const avail  = hasLevel(user?.level || '6kyu', sec.requiredLevel);
-          const ua = userAccess ?? [];
-          // SOURCE OF TRUTH: только user_access из БД. Никаких bypass.
-          //
-          // Для Иккаджо: "открыт" если есть полный доступ (reference=ikkajo)
-          // ИЛИ куплен хотя бы один из разделов (tachiai/idori/ushirodori/hanzahandachi).
-          // В этом случае пользователь может войти в IkkajoPage и открытые разделы.
-          //
-          // Для остальных программ (nikkajo, sankajo): проверяем reference напрямую.
-          const hasFullIkkajo      = ua.some(a => a.type === 'section' && a.reference === 'ikkajo');
-          const hasAnyIkkajoSection = sec.id === 'ikkajo' &&
-            IKKAJO_SECTIONS.some(k => ua.some(a => a.type === 'section' && a.reference === k));
-          const bought =
-            sec.id === 'ikkajo'
-              ? hasFullIkkajo || hasAnyIkkajoSection
-              : ua.some(a => a.type === 'section' && a.reference === sec.id);
-          return (
-            <div key={sec.id} style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'center', gap: isMobile ? 12 : 18, padding: isMobile ? '16px' : '20px 18px', background: C.surface, border: `1px solid ${C.border}`, borderTop: 'none', opacity: avail ? 1 : 0.4, flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
-              <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: isMobile ? 24 : 32, minWidth: 36, textAlign: 'center', color: bought ? C.gold : avail ? C.ink2 : C.muted, lineHeight: 1, flexShrink: 0 }}>{sec.kanji}</div>
-              <div style={{ flex: 1, minWidth: 0 }}>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, flexWrap: 'wrap' }}>
-                  <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: isMobile ? 16 : 18, fontWeight: 600, color: C.dark }}>{sec.label}</span>
-                  <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, background: C.surface2, border: `1px solid ${C.border}`, padding: '2px 7px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>{sec.sublabel}</span>
-                </div>
-                <div style={{ fontSize: 12, color: '#666', lineHeight: 1.5 }}>{sec.desc}</div>
-                <div style={{ fontSize: 10, color: '#bbb', marginTop: 4 }}>{sec.techniques} техник</div>
-              </div>
-              <div style={{ flexShrink: 0, width: isMobile ? '100%' : 'auto', marginTop: isMobile ? 8 : 0 }}>
-                {bought
-                  ? <button onClick={sec.id === 'ikkajo' ? nav.ikkajo : undefined} style={{ padding: '9px 16px', background: C.accent, color: C.onAccent, border: 'none', fontSize: 12, cursor: 'pointer', minHeight: 44, width: isMobile ? '100%' : 'auto', letterSpacing: '0.04em' }}>Открыть →</button>
-                  : avail
-                    ? <button onClick={() => setModal(sec)} style={{ padding: '9px 16px', background: 'transparent', color: C.gold, border: `1px solid ${C.goldBorder}`, fontSize: 12, cursor: 'pointer', minHeight: 44, width: isMobile ? '100%' : 'auto' }}>Купить — {sec.price}</button>
-                    : <span style={{ fontSize: 11, color: '#ccc' }}>🔒 Нет доступа</span>
-                }
+
+      {/* ── Desktop hero ── */}
+      {!isMobile && (
+        <div style={{ marginBottom: 32 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: 24, marginBottom: 16 }}>
+            <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 160, lineHeight: 0.85, color: C.accent, opacity: 0.1, flexShrink: 0, marginLeft: -8, marginBottom: -8 }}>技</div>
+            <div style={{ flex: 1, paddingBottom: 4 }}>
+              <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 12 }}>03 · БАЗА ТЕХНИК · ПРОГРАММЫ ШКОЛЫ</div>
+              <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 60, lineHeight: 0.9, letterSpacing: '0.04em', color: C.ink, fontWeight: 400, textTransform: 'uppercase' }}>База техник</h1>
+              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 16, color: C.muted, marginTop: 14, maxWidth: 540, lineHeight: 1.55 }}>
+                Полное собрание программ Дайто-рю — от ученических кю до старших данов. Каждый раздел открывается отдельно.
               </div>
             </div>
-          );
-        })}
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, paddingBottom: 8, flexShrink: 0 }}>
+              <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 10, color: C.muted, letterSpacing: '0.22em' }}>進度</span>
+              <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 42, color: C.accent, lineHeight: 1, fontWeight: 500 }}>
+                — <span style={{ fontSize: 21, color: C.ink2 }}>/ {totalTechs}</span>
+              </div>
+              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.18em', color: C.muted, textTransform: 'uppercase' }}>техник всего</span>
+            </div>
+          </div>
+          <svg viewBox="0 0 800 20" style={{ width: '100%', height: 20, opacity: 0.22, display: 'block', marginBottom: 32 }}>
+            <path d="M0,10 Q200,4 400,10 Q600,16 800,10" stroke={C.ink2} strokeWidth="1.2" fill="none" strokeLinecap="round" />
+          </svg>
+        </div>
+      )}
+
+      {/* ── Mobile hero ── */}
+      {isMobile && (
+        <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, marginBottom: 20 }}>
+          <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 80, lineHeight: 0.85, color: C.accent, opacity: 0.13, flexShrink: 0 }}>技</span>
+          <div style={{ paddingBottom: 4 }}>
+            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.22em', color: C.muted, textTransform: 'uppercase', marginBottom: 8 }}>03 · БАЗА ТЕХНИК</div>
+            <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 30, color: C.ink, fontWeight: 400, textTransform: 'uppercase', lineHeight: 0.95 }}>База<br />техник</h1>
+          </div>
+        </div>
+      )}
+
+      {/* ── Section cards ── */}
+      <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 16 : 20 }}>
+        {filtered.map(sec => isMobile ? renderMobileCard(sec) : renderCard(sec))}
+      </div>
+
+      {/* ── Future strip ── */}
+      <div style={{ marginTop: isMobile ? 20 : 28, padding: isMobile ? '18px 16px' : '22px 28px', border: `1px dashed ${C.hairline2}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, background: 'transparent', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
+          <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: isMobile ? 22 : 28, color: C.hairline2, lineHeight: 1 }}>四 五 六 …</span>
+          <div>
+            <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: isMobile ? 12 : 13, letterSpacing: '0.16em', color: C.ink2, textTransform: 'uppercase', fontWeight: 500 }}>Ёнкаджо · Гокаджо · Роккаджо</div>
+            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 12, color: C.muted, marginTop: 3 }}>Старшие даны — программа разрабатывается</div>
+          </div>
+        </div>
+        <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase', flexShrink: 0 }}>2026 — 2028</span>
       </div>
     </div>
   );
