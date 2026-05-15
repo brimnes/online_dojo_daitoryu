@@ -7,22 +7,31 @@ import TakedaMon from '@/components/TakedaMon';
 
 // ─── Цветовая палитра ──────────────────────────────────────────
 const C = {
-  bg:         '#f0ebe0',
-  white:      '#faf8f4',
-  border:     '#d2c7b0',
-  gold:       '#9a8860',
-  goldLight:  '#b8923a',
-  goldBorder: '#d2c7b0',
-  goldBg:     '#faf5e8',
+  bg:         '#e6e0d2',        // cool stone
+  surface:    '#f1ece0',        // ivory sheet
+  surface2:   '#f7f2e7',
+  white:      '#fff',
+  border:     '#bab09a',
   dark:       '#15120e',
-  muted:      '#7a6e5a',
-  light:      '#f0ebe0',
-  green:      '#2d7a4a',
-  greenBg:    '#f0faf4',
-  greenBorder:'#b8e0c8',
-  red:        '#a03030',
-  redBg:      '#fff8f7',
-  redBorder:  '#e8c0c0',
+  ink:        '#15120e',
+  ink2:       '#3a342b',
+  muted:      '#6f6452',
+  // Accent = CRIMSON
+  accent:     '#9e2f1f',
+  accentSoft: '#d4b8b0',
+  accentDark: '#b73828',        // on dark bg
+  // Gold — decorative only
+  gold:       '#8a6e2a',
+  goldLight:  '#b8923a',        // for dark backgrounds
+  goldBorder: '#c8a978',
+  goldBg:     '#f7f2e7',
+  // Utility
+  green:      '#4d6a4a',
+  greenBg:    '#eaf4ea',
+  greenBorder:'#9ec49e',
+  red:        '#8a2a20',
+  redBg:      '#fef4f2',
+  redBorder:  '#d4b0aa',
 };
 
 // ─── UI-элементы ───────────────────────────────────────────────
@@ -49,7 +58,7 @@ function Input({ value, onChange, placeholder, type='text', error }) {
       style={{
         padding:'13px 16px', fontSize:15,
         background:C.white,
-        border:`1px solid ${error?C.red:focused?C.gold:C.border}`,
+        border:`1px solid ${error?C.red:focused?C.accent:C.border}`,
         outline:'none', color:C.dark, width:'100%',
         fontFamily:"'Jost',sans-serif",
         transition:'border-color 0.15s',
@@ -69,7 +78,7 @@ function Textarea({ value, onChange, placeholder, rows=4 }) {
       style={{
         padding:'13px 16px', fontSize:15,
         background:C.white,
-        border:`1px solid ${focused?C.gold:C.border}`,
+        border:`1px solid ${focused?C.accent:C.border}`,
         outline:'none', color:C.dark, width:'100%',
         fontFamily:"'Jost',sans-serif", lineHeight:1.7,
         resize:'vertical', transition:'border-color 0.15s',
@@ -87,7 +96,7 @@ function Select({ value, onChange, options }) {
       style={{
         padding:'13px 16px', fontSize:15,
         background:C.white,
-        border:`1px solid ${focused?C.gold:C.border}`,
+        border:`1px solid ${focused?C.accent:C.border}`,
         outline:'none', color:value?C.dark:C.muted, width:'100%',
         fontFamily:"'Jost',sans-serif", cursor:'pointer',
         transition:'border-color 0.15s', appearance:'none',
@@ -175,37 +184,39 @@ export default function AuthPage({ onSuccess }) {
           <div style={{ position: 'relative', zIndex: 3, padding: '44px 44px 0', flex: 1, display: 'flex', flexDirection: 'column' }}>
             {/* Логотип */}
             <div style={{ display:'flex', alignItems:'center', gap:18, marginBottom: 52 }}>
-              <TakedaMon size={68} color="#c8a84a" />
+              <TakedaMon size={68} color="#b73828" />
               <div>
                 <div style={{
-                  fontFamily:"var(--font-arkhip), system-ui, sans-serif",
-                  fontSize: 13, letterSpacing:'0.16em',
-                  color:'#c8a84a', textTransform:'uppercase',
+                  fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+                  fontSize: 13, letterSpacing:'0.18em',
+                  color:'#b73828', textTransform:'uppercase',
                   lineHeight: 1.3,
-                }}>ONLINE DAITO-RYU DOJO</div>
+                }}>Online Daito-ryu Dojo</div>
                 <div style={{
-                  fontSize: 10, color:'rgba(200,168,74,0.55)',
-                  marginTop: 5, letterSpacing: 2,
+                  fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
+                  fontSize: 9, color:'rgba(183,56,40,0.45)',
+                  marginTop: 5, letterSpacing: '0.16em',
                   textTransform: 'uppercase',
-                }}>ДАЙТО-РЮ АЙКИДЗЮДЗЮЦУ</div>
+                }}>Дайто-рю Айкидзюдзюцу</div>
               </div>
             </div>
 
             {/* Заголовок */}
             <div>
               <div style={{
-                fontFamily:"var(--font-arkhip), system-ui, sans-serif",
-                fontSize: 34, color:'#e8d49a',
-                lineHeight: 1.25, marginBottom: 18,
-                letterSpacing: '0.01em',
+                fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+                fontSize: 36, color:'#ede5d3',
+                lineHeight: 1.2, marginBottom: 18,
+                letterSpacing: '0.03em', fontWeight: 400,
               }}>
                 Онлайн-школа<br/>
-                <span style={{ color:'#c8a84a' }}>Станислава<br/>Копина</span>
+                <span style={{ color:'#b73828' }}>Станислава<br/>Копина</span>
               </div>
-              <div style={{ width: 48, height: 2, background: 'rgba(200,168,74,0.5)', marginBottom: 22 }}/>
+              <div style={{ width: 48, height: 1, background: 'rgba(183,56,40,0.45)', marginBottom: 22 }}/>
               <p style={{
-                fontSize: 14, color:'rgba(240,232,208,0.5)',
-                lineHeight: 1.9, fontWeight: 300, maxWidth: 300,
+                fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
+                fontSize: 15, color:'rgba(237,229,211,0.45)',
+                lineHeight: 1.95, fontWeight: 300, maxWidth: 300,
               }}>
                 Онлайн-платформа для изучения традиционного Дайто-рю Айкидзюдзюцу. Видеоуроки, техники, экзамены.
               </p>
@@ -218,17 +229,18 @@ export default function AuthPage({ onSuccess }) {
             padding: '0 44px 40px',
             borderLeft: 'none',
           }}>
-            <div style={{ borderLeft:'2px solid rgba(200,168,74,0.4)', paddingLeft: 18 }}>
+            <div style={{ borderLeft:'2px solid rgba(183,56,40,0.35)', paddingLeft: 18 }}>
               <div style={{
-                fontFamily:"'Cormorant Garamond',serif",
+                fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
                 fontSize: 15, fontStyle:'italic',
-                color:'rgba(240,232,208,0.5)', lineHeight: 1.8,
+                color:'rgba(237,229,211,0.45)', lineHeight: 1.85,
               }}>
                 «Путь начинается с первого шага — не с совершенного шага»
               </div>
               <div style={{
-                fontSize: 10, color:'rgba(200,168,74,0.55)',
-                marginTop: 10, letterSpacing: 1.2, textTransform: 'uppercase',
+                fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
+                fontSize: 9, color:'rgba(183,56,40,0.45)',
+                marginTop: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
               }}>Сэнсэй Станислав Копин</div>
             </div>
           </div>
@@ -267,25 +279,29 @@ export default function AuthPage({ onSuccess }) {
             <div style={{ position: 'relative', zIndex: 1 }}>
               {/* Логотип */}
               <div style={{ display:'flex', alignItems:'center', gap:16, marginBottom: 28 }}>
-                <TakedaMon size={56} color="#c8a84a" />
+                <TakedaMon size={56} color="#b73828" />
                 <div>
                   <div style={{
-                    fontFamily:"var(--font-arkhip), system-ui, sans-serif",
-                    fontSize: 12, letterSpacing:'0.15em',
-                    color:'#c8a84a', textTransform:'uppercase',
+                    fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+                    fontSize: 13, letterSpacing:'0.16em',
+                    color:'#b73828', textTransform:'uppercase',
                     lineHeight: 1.4,
-                  }}>ONLINE DAITO-RYU<br/>DOJO</div>
+                  }}>Online Daito-ryu<br/>Dojo</div>
                 </div>
               </div>
 
               <div style={{
-                fontFamily:"var(--font-arkhip), system-ui, sans-serif",
-                fontSize: 22, color:'#e8d49a',
-                lineHeight: 1.3, marginBottom: 10,
+                fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+                fontSize: 22, color:'#ede5d3',
+                lineHeight: 1.3, marginBottom: 10, fontWeight: 400,
+                letterSpacing: '0.03em',
               }}>
                 Школа Станислава Копина
               </div>
-              <div style={{ fontSize: 11, color:'rgba(200,168,74,0.6)', letterSpacing: 1.5, textTransform: 'uppercase' }}>
+              <div style={{
+                fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
+                fontSize: 9, color:'rgba(183,56,40,0.5)', letterSpacing: '0.14em', textTransform: 'uppercase',
+              }}>
                 Дайто-рю Айкидзюдзюцу
               </div>
             </div>
@@ -296,7 +312,7 @@ export default function AuthPage({ onSuccess }) {
           {/* Переключатель Вход / Регистрация */}
           {mode !== 'set-password' && (
             <div style={{
-              display:'flex', background:C.white,
+              display:'flex', background:C.surface,
               border:`1px solid ${C.border}`,
               marginBottom: 32, padding: 3,
             }}>
@@ -304,13 +320,13 @@ export default function AuthPage({ onSuccess }) {
                 <button key={m.id} onClick={()=>setMode(m.id)}
                   style={{
                     flex:1, padding:'11px',
-                    background: mode===m.id ? C.dark : 'transparent',
-                    color: mode===m.id ? '#fff' : C.muted,
-                    border:'none', fontSize:14, cursor:'pointer',
+                    background: mode===m.id ? C.ink : 'transparent',
+                    color: mode===m.id ? '#ede5d3' : C.muted,
+                    border:'none', fontSize:13, cursor:'pointer',
                     transition:'all 0.15s',
                     fontFamily:"'Jost',sans-serif",
-                    fontWeight: mode===m.id ? 600 : 400,
-                    letterSpacing: mode===m.id ? '0.02em' : 0,
+                    fontWeight: mode===m.id ? 500 : 400,
+                    letterSpacing: mode===m.id ? '0.04em' : 0,
                   }}>
                   {m.label}
                 </button>
@@ -378,9 +394,9 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
     <div>
       <div style={{ marginBottom: 28 }}>
         <div style={{
-          fontFamily:"var(--font-arkhip), system-ui, sans-serif",
-          fontSize: 26, fontWeight: 400, color: C.dark,
-          marginBottom: 8, letterSpacing: '0.01em',
+          fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+          fontSize: 28, fontWeight: 400, color: C.ink,
+          marginBottom: 8, letterSpacing: '0.04em',
         }}>С возвращением</div>
         <div style={{ fontSize:14, color:C.muted }}>Войдите в свой кабинет</div>
       </div>
@@ -400,12 +416,12 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
         </Field>
 
         <div style={{ display:'flex', justifyContent:'flex-end' }}>
-          <button style={{ background:'none', border:'none', fontSize:12, color:C.gold, cursor:'pointer', padding:0 }}>Забыли пароль?</button>
+          <button style={{ background:'none', border:'none', fontSize:12, color:C.accent, cursor:'pointer', padding:0 }}>Забыли пароль?</button>
         </div>
 
         <button onClick={handleSubmit} disabled={loading}
           style={{
-            padding:'15px', background: loading ? '#444' : C.dark,
+            padding:'15px', background: loading ? C.muted : C.accent,
             color:'#fff', border:'none', fontSize:15,
             cursor: loading ? 'default' : 'pointer',
             fontFamily:"'Jost',sans-serif", fontWeight:600,
@@ -418,7 +434,7 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
 
       <div style={{ marginTop:24, textAlign:'center', fontSize:13, color:C.muted }}>
         Нет аккаунта?{' '}
-        <button onClick={onRegister} style={{ background:'none', border:'none', color:C.gold, cursor:'pointer', fontSize:13, fontFamily:"'Jost',sans-serif", fontWeight:600 }}>
+        <button onClick={onRegister} style={{ background:'none', border:'none', color:C.accent, cursor:'pointer', fontSize:13, fontFamily:"'Jost',sans-serif", fontWeight:500 }}>
           Зарегистрироваться
         </button>
       </div>
@@ -467,8 +483,8 @@ function SetPasswordForm({ userId, onSuccess, onBack }) {
     <div>
       <div style={{ marginBottom: 28 }}>
         <div style={{
-          fontFamily:"var(--font-arkhip), system-ui, sans-serif",
-          fontSize: 26, color: C.dark, marginBottom: 8,
+          fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+          fontSize: 28, color: C.ink, marginBottom: 8, letterSpacing: '0.04em', fontWeight: 400,
         }}>
           Придумайте пароль
         </div>
@@ -494,7 +510,7 @@ function SetPasswordForm({ userId, onSuccess, onBack }) {
 
         <button onClick={handleSubmit} disabled={loading}
           style={{
-            padding:'15px', background: loading ? '#444' : C.dark,
+            padding:'15px', background: loading ? C.muted : C.accent,
             color:'#fff', border:'none', fontSize:15,
             cursor: loading ? 'default' : 'pointer',
             fontFamily:"'Jost',sans-serif", fontWeight:600,
@@ -595,14 +611,14 @@ function RegisterForm({ onSuccess, onLogin }) {
             <div style={{ display:'flex', flexDirection:'column', alignItems:'center', gap:5 }}>
               <div style={{
                 width:34, height:34,
-                background: step > i ? C.green : step === i ? C.dark : C.bg,
-                border:`1px solid ${step > i ? C.green : step === i ? C.dark : C.border}`,
+                background: step > i ? C.green : step === i ? C.accent : C.surface2,
+                border:`1px solid ${step > i ? C.green : step === i ? C.accent : C.border}`,
                 display:'flex', alignItems:'center', justifyContent:'center',
-                fontFamily:"'Noto Serif JP',serif", fontSize:13,
-                color: step >= i ? '#fff' : C.muted,
+                fontFamily:"'Noto Serif JP', var(--font-noto), serif", fontSize:13,
+                color: step >= i ? '#f1ece0' : C.muted,
                 transition:'all 0.2s',
               }}>{step > i ? '✓' : s.kanji}</div>
-              <div style={{ fontSize:10, color: step===i ? C.dark : C.muted, letterSpacing:0.5, whiteSpace:'nowrap', fontWeight: step===i ? 600 : 400 }}>{s.label}</div>
+              <div style={{ fontFamily:"var(--font-mono), monospace", fontSize:9, color: step===i ? C.ink : C.muted, letterSpacing:'0.1em', whiteSpace:'nowrap', fontWeight: step===i ? 600 : 400, textTransform:'uppercase' }}>{s.label}</div>
             </div>
             {i < STEPS.length-1 && (
               <div style={{ flex:1, height:1, background: step > i ? C.green : C.border, margin:'0 8px', marginBottom:20, transition:'background 0.2s' }}/>
@@ -616,8 +632,8 @@ function RegisterForm({ onSuccess, onLogin }) {
         <div className="auth-anim">
           <div style={{ marginBottom:24 }}>
             <div style={{
-              fontFamily:"var(--font-arkhip), system-ui, sans-serif",
-              fontSize:24, color:C.dark, marginBottom:6,
+              fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+              fontSize:26, color:C.ink, marginBottom:6, letterSpacing:'0.04em', fontWeight:400,
             }}>Создайте аккаунт</div>
             <div style={{ fontSize:14, color:C.muted }}>Основные данные для входа</div>
           </div>
@@ -636,9 +652,9 @@ function RegisterForm({ onSuccess, onLogin }) {
             </Field>
             <button onClick={handleStep1}
               style={{
-                padding:'15px', background:C.dark, color:'#fff', border:'none',
-                fontSize:15, cursor:'pointer', fontFamily:"'Jost',sans-serif",
-                fontWeight:600, marginTop:4, letterSpacing:'0.04em',
+                padding:'15px', background:C.accent, color:'#f1ece0', border:'none',
+                fontSize:14, cursor:'pointer', fontFamily:"'Jost',sans-serif",
+                fontWeight:500, marginTop:4, letterSpacing:'0.06em',
                 textTransform:'uppercase',
               }}>
               Продолжить →
@@ -646,7 +662,7 @@ function RegisterForm({ onSuccess, onLogin }) {
           </div>
           <div style={{ marginTop:24, textAlign:'center', fontSize:13, color:C.muted }}>
             Уже есть аккаунт?{' '}
-            <button onClick={onLogin} style={{ background:'none', border:'none', color:C.gold, cursor:'pointer', fontSize:13, fontFamily:"'Jost',sans-serif", fontWeight:600 }}>Войти</button>
+            <button onClick={onLogin} style={{ background:'none', border:'none', color:C.accent, cursor:'pointer', fontSize:13, fontFamily:"'Jost',sans-serif", fontWeight:500 }}>Войти</button>
           </div>
         </div>
       )}
@@ -656,8 +672,8 @@ function RegisterForm({ onSuccess, onLogin }) {
         <div className="auth-anim">
           <div style={{ marginBottom:24 }}>
             <div style={{
-              fontFamily:"var(--font-arkhip), system-ui, sans-serif",
-              fontSize:24, color:C.dark, marginBottom:6,
+              fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+              fontSize:26, color:C.ink, marginBottom:6, letterSpacing:'0.04em', fontWeight:400,
             }}>Расскажите о себе</div>
             <div style={{ fontSize:14, color:C.muted }}>Эта информация поможет сэнсэю узнать вас лучше</div>
           </div>
@@ -666,7 +682,7 @@ function RegisterForm({ onSuccess, onLogin }) {
             <Field label="Ваш уровень в Дайто-рю" hint="По последней аттестации">
               <Select value={selfLevel} onChange={setSelfLevel} options={SELF_LEVELS}/>
               {selfLevel !== 'none' && (
-                <div style={{ fontSize:12, color:C.gold, marginTop:4 }}>
+                <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>
                   Выбрано: {selfLevelLabel}. Официальный уровень будет подтверждён преподавателем.
                 </div>
               )}
@@ -701,7 +717,7 @@ function RegisterForm({ onSuccess, onLogin }) {
               </button>
               <button onClick={handleStep2} disabled={loading}
                 style={{
-                  flex:1, padding:'15px', background: loading ? '#444' : C.dark,
+                  flex:1, padding:'15px', background: loading ? C.muted : C.accent,
                   color:'#fff', border:'none', fontSize:15,
                   cursor: loading ? 'default' : 'pointer',
                   fontFamily:"'Jost',sans-serif", fontWeight:600,
@@ -724,7 +740,7 @@ function RegisterForm({ onSuccess, onLogin }) {
             display:'flex', alignItems:'center', justifyContent:'center',
             margin:'0 auto 24px', fontSize:26,
           }}>✓</div>
-          <div style={{ fontFamily:"'Cormorant Garamond',serif", fontSize:30, fontWeight:600, color:C.dark, marginBottom:8 }}>
+          <div style={{ fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif", fontSize:30, fontWeight:400, color:C.ink, marginBottom:8, letterSpacing:'0.05em' }}>
             Добро пожаловать!
           </div>
           <div style={{ fontSize:15, color:C.muted, lineHeight:1.8, marginBottom:8 }}>{name}</div>
@@ -734,8 +750,8 @@ function RegisterForm({ onSuccess, onLogin }) {
           </p>
 
           {/* Сводка анкеты */}
-          <div style={{ background:C.goldBg, border:`1px solid ${C.goldBorder}`, padding:'16px 20px', textAlign:'left', marginBottom:28 }}>
-            <div style={{ fontSize:10, color:C.gold, letterSpacing:1.5, textTransform:'uppercase', marginBottom:12, fontWeight:600 }}>Ваши данные</div>
+          <div style={{ background:C.surface2, border:`1px solid ${C.border}`, padding:'16px 20px', textAlign:'left', marginBottom:28 }}>
+            <div style={{ fontFamily:"var(--font-mono), monospace", fontSize:9, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase', marginBottom:12 }}>Ваши данные</div>
             <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
               {[
                 { label:'ФИО',       value: name },
@@ -760,10 +776,10 @@ function RegisterForm({ onSuccess, onLogin }) {
           <button onClick={handleDone}
             style={{
               width:'100%', padding:'15px',
-              background:C.dark, color:'#fff', border:'none',
-              fontSize:15, cursor:'pointer',
-              fontFamily:"'Jost',sans-serif", fontWeight:600,
-              letterSpacing:'0.04em', textTransform:'uppercase',
+              background:C.accent, color:'#f1ece0', border:'none',
+              fontSize:14, cursor:'pointer',
+              fontFamily:"'Jost',sans-serif", fontWeight:500,
+              letterSpacing:'0.06em', textTransform:'uppercase',
             }}>
             Перейти в кабинет
           </button>

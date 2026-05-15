@@ -1,18 +1,11 @@
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
+import { C } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
 import { BELT, KYU_DATA, FLAT_INDEX } from '@/data/techniques';
 import { useTechniques, useUserAccessRows, hasIkkajoSectionAccess } from '@/lib/db';
 import { IKKAJO_SECTION_KEYS as IKKAJO_SECTIONS } from '@/lib/ikkajoSections';
-
-// Kanji for each section (sections have no kanji in data)
-const SECTION_KANJI = {
-  tachiai:       '立合',
-  idori:         '居取',
-  ushirodori:    '後取',
-  hanzahandachi: '半座半立',
-};
 
 export default function IkkajoPage({ nav }) {
   const isMobile = useIsMobile();
@@ -28,42 +21,42 @@ export default function IkkajoPage({ nav }) {
   }, [videos]);
 
   return (
-    <div className="fade" style={{ minHeight: '100vh', background: '#f0ebe0' }}>
+    <div className="fade" style={{ minHeight: '100vh', background: C.bg }}>
 
       {/* ── Мобильный sticky хедер ── */}
       {isMobile && (
         <header style={{
           display: 'flex', alignItems: 'center', gap: 10,
           padding: `max(12px, env(safe-area-inset-top)) 16px 12px`,
-          background: '#0a0807', borderBottom: '1px solid #1f1a16',
+          background: '#fff', borderBottom: `1px solid ${C.border}`,
           position: 'sticky', top: 0, zIndex: 50,
         }}>
-          <button onClick={nav.back} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, color: '#b8923a', padding: '0 4px', display: 'flex', alignItems: 'center', minWidth: 36, minHeight: 44 }}>‹</button>
-          <span style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase', color: '#ede5d3', flex: 1 }}>Иккаджо</span>
+          <button onClick={nav.back} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 22, color: C.gold, padding: '0 4px', display: 'flex', alignItems: 'center', minWidth: 36, minHeight: 44 }}>‹</button>
+          <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 15, fontWeight: 600, color: '#1a1a1a', flex: 1 }}>Иккаджо</span>
         </header>
       )}
 
-      <div style={{ padding: isMobile ? '16px 16px 40px' : '32px 40px', maxWidth: 1100, margin: '0 auto' }}>
+      <div style={{ padding: isMobile ? '16px 16px 40px' : '32px 36px' }}>
 
         {/* Десктопный breadcrumb */}
         {!isMobile && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 32, fontSize: 11, flexWrap: 'wrap' }}>
-            <button onClick={nav.back} style={{ background: 'none', border: 'none', fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 11, letterSpacing: '0.1em', color: '#9a8860', cursor: 'pointer', padding: '4px 0', minHeight: 44, display: 'flex', alignItems: 'center' }}>← База техник</button>
-            <span style={{ color: '#d2c7b0' }}>/</span>
-            <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 11, color: '#6f6452', letterSpacing: '0.06em' }}>Иккаджо</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24, fontSize: 13 }}>
+            <button onClick={nav.back} style={{ background: 'none', border: 'none', color: C.gold, cursor: 'pointer', padding: '4px 0', minHeight: 44 }}>← База техник</button>
+            <span style={{ color: '#ddd' }}>/</span>
+            <span style={{ color: C.dark }}>Иккаджо</span>
           </div>
         )}
 
         {/* Hero-секция */}
-        <div style={{ display: 'flex', alignItems: 'flex-start', gap: isMobile ? 14 : 32, marginBottom: isMobile ? 24 : 36, paddingBottom: isMobile ? 20 : 32, borderBottom: '1px solid #d2c7b0', flexWrap: 'wrap' }}>
-          <div style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: isMobile ? 64 : 100, color: '#d8cdb8', lineHeight: 1, flexShrink: 0, marginTop: -4, fontWeight: 300 }}>一</div>
-          <div style={{ flex: 1, minWidth: 0 }}>
-            <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 9, color: '#9a8860', letterSpacing: '0.28em', textTransform: 'uppercase', marginBottom: 10 }}>База техник · Раздел первый</div>
-            <h1 style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 28 : 38, letterSpacing: '0.03em', color: '#15120e', marginBottom: 10, lineHeight: 1.1 }}>Иккаджо</h1>
-            <p style={{ fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: isMobile ? 15 : 16, color: '#6f6452', lineHeight: 1.75, maxWidth: 520, marginBottom: isMobile ? 0 : 8 }}>Программа ученических степеней от 6 кю до 1 кю.</p>
+        <div style={{ display: 'flex', alignItems: 'flex-start', gap: isMobile ? 14 : 20, marginBottom: 24, paddingBottom: isMobile ? 16 : 20, borderBottom: `2px solid ${C.border}`, flexWrap: 'wrap' }}>
+          <div style={{ fontFamily: "'Noto Serif JP', serif", fontSize: isMobile ? 52 : 72, color: '#ece7de', lineHeight: 1, flexShrink: 0 }}>一</div>
+          <div style={{ flex: 1 }}>
+            <div style={{ fontSize: isMobile ? 11 : 9, color: '#b0a080', letterSpacing: 2, textTransform: 'uppercase', marginBottom: 6 }}>База техник · Раздел первый</div>
+            <h1 style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: isMobile ? 24 : 26, color: '#9e2f1f', marginBottom: 6 }}>Иккаджо</h1>
+            <p style={{ fontSize: isMobile ? 14 : 13, color: '#888', lineHeight: 1.65, maxWidth: 440 }}>Программа ученических степеней от 6 кю до 1 кю.</p>
           </div>
           {!isMobile && (
-            <div style={{ width: 280, flexShrink: 0 }}>
+            <div style={{ width: 260, flexShrink: 0 }}>
               <SearchBar
                 userAccess={userAccess}
                 accessLoading={accessLoading}
@@ -75,7 +68,7 @@ export default function IkkajoPage({ nav }) {
 
         {/* Мобильный поиск */}
         {isMobile && (
-          <div style={{ marginBottom: 20 }}>
+          <div style={{ marginBottom: 16 }}>
             <SearchBar
               userAccess={userAccess}
               accessLoading={accessLoading}
@@ -85,7 +78,7 @@ export default function IkkajoPage({ nav }) {
         )}
 
         {/* Вкладки Кю */}
-        <div style={{ display: 'flex', gap: 2, marginBottom: 24, background: '#d2c7b0', padding: 2, flexWrap: 'wrap' }}>
+        <div style={{ display: 'flex', gap: 2, marginBottom: 20, background: '#e8e0d0', padding: 2, flexWrap: 'wrap' }}>
           {KYU_DATA.map(k => {
             const active = activeKyu === k.id;
             const b = BELT[k.belt] || {};
@@ -94,17 +87,15 @@ export default function IkkajoPage({ nav }) {
                 style={{
                   flex: 1, minWidth: isMobile ? 60 : 70,
                   padding: isMobile ? '11px 4px' : '9px 6px',
-                  background: active ? '#13110e' : '#faf5e8', border: 'none',
-                  fontFamily: "var(--font-jost), 'Jost', sans-serif",
+                  background: active ? '#1a1a1a' : '#fff', border: 'none',
                   fontSize: isMobile ? 12 : 11,
-                  letterSpacing: '0.06em',
-                  color: active ? '#ede5d3' : '#9a8860',
+                  color: active ? '#fff' : '#888',
                   display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 5,
                   cursor: 'pointer', transition: 'all 0.15s',
                   minHeight: 44,
                 }}>
-                <span style={{ width: 7, height: 7, borderRadius: '50%', background: active ? 'rgba(255,255,255,0.6)' : b.color, border: `2px solid ${active ? 'rgba(255,255,255,0.3)' : b.border}`, flexShrink: 0 }} />
-                {!isMobile && <span style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 10 }}>{k.kanji}</span>}
+                <span style={{ width: 8, height: 8, borderRadius: '50%', background: active ? '#fff' : b.color, border: `2px solid ${active ? 'rgba(255,255,255,0.4)' : b.border}`, flexShrink: 0 }} />
+                {!isMobile && <span style={{ fontFamily: "'Noto Serif JP', serif", fontSize: 10 }}>{k.kanji}</span>}
                 {k.label}
               </button>
             );
@@ -113,33 +104,25 @@ export default function IkkajoPage({ nav }) {
 
         <div key={activeKyu} className="fade">
           {cur?.note && (
-            <div style={{ padding: '10px 14px', background: '#faf5e8', border: '1px solid #d2c7b0', fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: isMobile ? 13 : 11, color: '#9a8860', marginBottom: 16, letterSpacing: '0.04em' }}>↳ {cur.note}</div>
+            <div style={{ padding: '10px 14px', background: C.light, border: `1px solid ${C.goldBorder}`, fontSize: isMobile ? 13 : 12, color: C.gold, marginBottom: 16 }}>↳ {cur.note}</div>
           )}
           {cur?.sections.map(sec => {
             const sectionKey = sec.id?.toLowerCase();
             const isIkkajoSection = IKKAJO_SECTIONS.includes(sectionKey);
             const canAccess = !accessLoading && (!isIkkajoSection || hasIkkajoSectionAccess(userAccess, sectionKey));
-            const secKanji = SECTION_KANJI[sectionKey] || '';
+            console.log(`[IkkajoPage] sec=${sectionKey} isIkkajoSection=${isIkkajoSection} canAccess=${canAccess} loading=${accessLoading} ua=`, userAccess);
             return (
-              <div key={sec.id} style={{ marginBottom: isMobile ? 24 : 36 }}>
-
-                {/* Section header */}
-                <div style={{ paddingBottom: isMobile ? 10 : 12, borderBottom: '2px solid #d2c7b0', marginBottom: 2 }}>
-                  <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', flexWrap: 'wrap', gap: 8 }}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: isMobile ? 8 : 12 }}>
-                      {!canAccess && <span style={{ fontSize: 11, color: '#b0a080', flexShrink: 0 }}>🔒</span>}
-                      {secKanji && (
-                        <span style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: isMobile ? 22 : 28, color: canAccess ? '#b8923a' : '#c8b99a', lineHeight: 1, flexShrink: 0 }}>{secKanji}</span>
-                      )}
-                      <span style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 17 : 20, color: canAccess ? '#15120e' : '#b0a080', letterSpacing: '0.04em' }}>{sec.nameRu}</span>
-                      <span style={{ fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: isMobile ? 13 : 14, color: '#9a8860' }}>{sec.name}</span>
-                    </div>
-                    <span style={{ fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: isMobile ? 12 : 13, color: '#9a8860' }}>{sec.subtitle}</span>
+              <div key={sec.id} style={{ marginBottom: isMobile ? 20 : 28 }}>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: isMobile ? '10px 0 10px' : '10px 0 8px', borderBottom: `1px solid ${C.border}`, marginBottom: 2, flexWrap: 'wrap', gap: 8 }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+                    {!canAccess && <span style={{ fontSize: 14 }}>🔒</span>}
+                    <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: isMobile ? 17 : 16, color: canAccess ? '#9e2f1f' : C.muted, marginRight: 8 }}>{sec.nameRu}</span>
+                    <span style={{ fontSize: isMobile ? 12 : 11, color: '#bbb' }}>{sec.name}</span>
                   </div>
+                  <span style={{ fontSize: isMobile ? 12 : 11, color: C.muted }}>{sec.subtitle}</span>
                 </div>
-
                 {canAccess ? (
-                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: 1, background: '#d2c7b0' }}>
+                  <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(240px, 1fr))', gap: 1, background: '#e8e0d0' }}>
                     {sec.techniques.map((tech, i) => (
                       <TechCard
                         key={tech.id}
@@ -152,16 +135,10 @@ export default function IkkajoPage({ nav }) {
                     ))}
                   </div>
                 ) : (
-                  <div style={{ position: 'relative', padding: isMobile ? '28px 20px 24px' : '36px 40px', background: '#faf8f4', border: '1px dashed #d2c7b0', textAlign: 'center', overflow: 'hidden' }}>
-                    {/* kanji watermark */}
-                    {secKanji && (
-                      <div style={{ position: 'absolute', right: 16, bottom: -12, fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 80, color: '#b8923a', opacity: 0.07, pointerEvents: 'none', lineHeight: 1, userSelect: 'none' }}>{secKanji}</div>
-                    )}
-                    <div style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 13 : 12, letterSpacing: '0.12em', color: '#9a8860', marginBottom: 6, textTransform: 'uppercase' }}>Раздел недоступен</div>
-                    <div style={{ fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: isMobile ? 15 : 14, color: '#b0a080', marginBottom: 18 }}>«{sec.nameRu}» · 3 000 ₽</div>
-                    <button style={{ padding: isMobile ? '12px 28px' : '10px 28px', background: '#15120e', color: '#ede5d3', border: 'none', fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer', minHeight: 44 }}>
-                      Приобрести доступ
-                    </button>
+                  <div style={{ padding: isMobile ? '20px 16px' : '24px 16px', background: '#faf8f4', border: '1px solid #e8e0d0', textAlign: 'center' }}>
+                    <div style={{ fontSize: 22, marginBottom: 8 }}>🔒</div>
+                    <div style={{ fontSize: isMobile ? 14 : 13, color: C.muted, marginBottom: 4 }}>Раздел недоступен</div>
+                    <div style={{ fontSize: isMobile ? 12 : 11, color: '#bbb' }}>Приобретите доступ к разделу «{sec.nameRu}»</div>
                   </div>
                 )}
               </div>
@@ -182,21 +159,21 @@ function TechCard({ tech, index, videoCount, onClick, isMobile }) {
       style={{
         display: 'flex', alignItems: 'center', gap: 12,
         padding: isMobile ? '16px 14px' : '14px 15px',
-        background: hover ? '#f0ebe0' : '#faf8f4',
+        background: hover ? '#faf8f4' : '#fff',
         cursor: 'pointer', transition: 'background 0.1s',
         minHeight: isMobile ? 56 : 'auto',
       }}>
-      <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: isMobile ? 13 : 11, color: '#c8b99a', minWidth: 22, fontWeight: 600, flexShrink: 0, letterSpacing: '0.1em' }}>
+      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: isMobile ? 14 : 12, color: '#ddd', minWidth: 22, fontWeight: 600, flexShrink: 0 }}>
         {String(index + 1).padStart(2, '0')}
       </div>
       <div style={{ flex: 1 }}>
-        <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: isMobile ? 15 : 13, fontWeight: 500, color: '#15120e' }}>{tech.nameRu}</div>
-        <div style={{ fontFamily: "var(--font-cormorant), serif", fontStyle: 'italic', fontSize: isMobile ? 13 : 12, color: '#9a8860', marginTop: 2 }}>{tech.name}</div>
+        <div style={{ fontSize: isMobile ? 15 : 14, fontWeight: 500, color: C.dark }}>{tech.nameRu}</div>
+        <div style={{ fontSize: isMobile ? 12 : 11, color: C.muted, marginTop: 2 }}>{tech.name}</div>
         {videoCount > 0 && (
-          <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: isMobile ? 11 : 10, color: '#b8923a', marginTop: 3, letterSpacing: '0.06em' }}>{videoCount} видео</div>
+          <div style={{ fontSize: isMobile ? 12 : 10, color: '#9e2f1f', marginTop: 3 }}>{videoCount} видео</div>
         )}
       </div>
-      <span style={{ color: hover ? '#b73828' : '#d2c7b0', fontSize: 14, transition: 'color 0.15s' }}>→</span>
+      <span style={{ color: hover ? C.gold : '#ccc', fontSize: 16, transition: 'color 0.15s' }}>→</span>
     </div>
   );
 }
@@ -224,19 +201,19 @@ function SearchBar({ onSelect, userAccess = [], accessLoading = false }) {
 
   return (
     <div ref={ref} style={{ position: 'relative' }}>
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#faf8f4', border: '1px solid #d2c7b0', padding: '0 12px', height: 44 }}>
-        <span style={{ color: '#b0a080', fontSize: 14 }}>⌕</span>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: '#fff', border: `1px solid ${C.border}`, padding: '0 12px', height: 44 }}>
+        <span style={{ color: '#ccc', fontSize: 16 }}>⌕</span>
         <input value={q}
           onChange={e => { setQ(e.target.value); setOpen(true); }}
           onFocus={() => setOpen(true)}
           placeholder="Поиск техники…"
-          style={{ flex: 1, border: 'none', outline: 'none', fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 13, background: 'transparent', color: '#15120e' }} />
-        {q && <button onClick={() => { setQ(''); setOpen(false); }} style={{ background: 'none', border: 'none', color: '#b0a080', cursor: 'pointer', fontSize: 13 }}>✕</button>}
+          style={{ flex: 1, border: 'none', outline: 'none', fontSize: 14, background: 'transparent', color: C.dark, fontFamily: "var(--font-jost), 'Jost', sans-serif" }} />
+        {q && <button onClick={() => { setQ(''); setOpen(false); }} style={{ background: 'none', border: 'none', color: '#ccc', cursor: 'pointer', fontSize: 14 }}>✕</button>}
       </div>
       {open && q.length >= 2 && (
-        <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, background: '#faf8f4', border: '1px solid #d2c7b0', boxShadow: '0 8px 24px rgba(0,0,0,0.12)', zIndex: 200, maxHeight: 300, overflowY: 'auto' }}>
+        <div style={{ position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0, background: '#fff', border: `1px solid ${C.border}`, boxShadow: '0 4px 20px rgba(0,0,0,0.08)', zIndex: 200, maxHeight: 300, overflowY: 'auto' }}>
           {results.length === 0
-            ? <div style={{ padding: '12px 16px', fontFamily: "var(--font-jost), 'Jost', sans-serif", color: '#b0a080', fontSize: 13 }}>Ничего не найдено</div>
+            ? <div style={{ padding: '12px 16px', color: '#bbb', fontSize: 14 }}>Ничего не найдено</div>
             : results.map(({ kyu, section, tech }) => {
                 const b = BELT[kyu.belt] || {};
                 return (
@@ -247,13 +224,13 @@ function SearchBar({ onSelect, userAccess = [], accessLoading = false }) {
                       if (blocked) { alert(`Раздел «${section.nameRu}» недоступен`); return; }
                       onSelect({ kyu, section, tech }); setQ(''); setOpen(false);
                     }}
-                    style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', cursor: 'pointer', borderBottom: '1px solid #e8e0cc' }}
-                    onMouseEnter={e => e.currentTarget.style.background = '#f0ebe0'}
-                    onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                    <span style={{ width: 7, height: 7, borderRadius: '50%', background: b.color, border: `2px solid ${b.border}`, flexShrink: 0 }} />
+                    style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', cursor: 'pointer', borderBottom: '1px solid #f5f2ec' }}
+                    onMouseEnter={e => e.currentTarget.style.background = C.light}
+                    onMouseLeave={e => e.currentTarget.style.background = '#fff'}>
+                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: b.color, border: `2px solid ${b.border}`, flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 13, color: '#15120e', fontWeight: 500 }}>{tech.nameRu} <span style={{ color: '#b0a080', fontWeight: 400, fontSize: 11 }}>{tech.name}</span></div>
-                      <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 11, color: '#9a8860', letterSpacing: '0.04em' }}>{kyu.label} · {section.nameRu}</div>
+                      <div style={{ fontSize: 14, color: C.dark, fontWeight: 500 }}>{tech.nameRu} <span style={{ color: '#bbb', fontWeight: 400, fontSize: 12 }}>{tech.name}</span></div>
+                      <div style={{ fontSize: 12, color: C.muted }}>{kyu.label} · {section.nameRu}</div>
                     </div>
                   </div>
                 );

@@ -1,4 +1,4 @@
-export default function TakedaMon({ size = 40, color = '#c8a84a', style = {} }) {
+export default function TakedaMon({ size = 40, color = '#9e2f1f', style = {} }) {
   // W=полуширина, H=полувысота, g=зазор
   // Компоновка 1-2-1: верхний, левый, правый, нижний
   const W = 19.1, H = 11.8, g = 3.2;

@@ -7,8 +7,8 @@
 }
 
 html, body {
-  background: #f5f3ee;
-  color: #1a1a1a;
+  background: #e6e0d2;
+  color: #15120e;
   font-family: var(--font-jost), 'Jost', sans-serif;
   -webkit-font-smoothing: antialiased;
   font-size: 15px;
@@ -22,8 +22,8 @@ button, input, textarea, select {
 textarea { cursor: text; }
 
 ::-webkit-scrollbar       { width: 4px; }
-::-webkit-scrollbar-track { background: #f5f3ee; }
-::-webkit-scrollbar-thumb { background: #d0c8b8; border-radius: 2px; }
+::-webkit-scrollbar-track { background: #e6e0d2; }
+::-webkit-scrollbar-thumb { background: #bab09a; border-radius: 2px; }
 
 /* ─── Shared animations ──────────────────────────────────────── */
 @keyframes fadeUp {
@@ -58,32 +58,32 @@ iframe                { display: block; }
    ─────────────────────────────────────────────────────────────── */
 
 /* ── Font utilities ── */
-.font-display   { font-family: var(--font-arkhip), system-ui, sans-serif; }
+.font-display   { font-family: var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif; }
 .font-ui        { font-family: var(--font-jost), 'Jost', sans-serif; }
 .font-editorial { font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif; }
 
-/* ── Section / page titles — Arkhip + Takeda gold ── */
+/* ── Section / page titles — Cormorant SC + crimson ── */
 .section-title {
-  font-family: var(--font-arkhip), system-ui, sans-serif;
-  color: #c8a84a;
-  letter-spacing: 0.01em;
+  font-family: var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif;
+  color: #9e2f1f;
+  letter-spacing: 0.06em;
   line-height: 1.15;
 }
 
-/* ── Sub-section headings — Arkhip, темнее ── */
+/* ── Sub-section headings — Cormorant SC, темнее ── */
 .section-subtitle {
-  font-family: var(--font-arkhip), system-ui, sans-serif;
-  color: #1a1a1a;
-  letter-spacing: 0.01em;
+  font-family: var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif;
+  color: #15120e;
+  letter-spacing: 0.04em;
   line-height: 1.2;
 }
 
 /* ── Brand / logo text ── */
 .brand-text {
-  font-family: var(--font-arkhip), system-ui, sans-serif;
-  letter-spacing: 0.12em;
+  font-family: var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #c8a84a;
+  color: #9e2f1f;
 }
 
 /* ── Long-form editorial text ── */
@@ -91,7 +91,7 @@ iframe                { display: block; }
   font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
   font-size: 18px;
   line-height: 1.85;
-  color: #333;
+  color: #3a342b;
 }
 
 /* ── Sensei quote block ── */
@@ -100,7 +100,7 @@ iframe                { display: block; }
   font-style: italic;
   font-size: 16px;
   line-height: 1.85;
-  color: #444;
+  color: #6f6452;
 }
 
 /* ── UI label / nav text ── */
@@ -112,16 +112,23 @@ iframe                { display: block; }
 
 /* ── Overline / eyebrow label (tiny uppercase) ── */
 .overline {
-  font-family: var(--font-jost), 'Jost', sans-serif;
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
   font-size: 10px;
-  letter-spacing: 0.15em;
+  letter-spacing: 0.18em;
   text-transform: uppercase;
-  color: #b0a080;
+  color: #6f6452;
+}
+
+/* ── Mono counter/label ── */
+.mono-label {
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
 }
 
 /* ── h1/h2 defaults for pages that use semantic HTML ── */
 h1, h2 {
-  font-family: var(--font-arkhip), system-ui, sans-serif;
+  font-family: var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif;
   line-height: 1.15;
 }
 
@@ -131,8 +138,8 @@ h1, h2 {
   bottom: 0;
   left: 0;
   right: 0;
-  background: #fff;
-  border-top: 1px solid #e8e0d0;
+  background: #f1ece0;
+  border-top: 1px solid #bab09a;
   display: flex;
   align-items: stretch;
   padding-bottom: env(safe-area-inset-bottom);
@@ -149,7 +156,7 @@ h1, h2 {
   border: none;
   cursor: pointer;
   text-decoration: none;
-  color: #999;
+  color: #6f6452;
   font-family: var(--font-jost), 'Jost', sans-serif;
   min-height: 60px;
 }

@@ -1,18 +1,25 @@
 import './globals.css';
-import { Cormorant_Garamond, Jost, Noto_Serif_JP } from 'next/font/google';
-import localFont from 'next/font/local';
-
-const arkhip = localFont({
-  src: './fonts/Arkhip.woff2',
-  variable: '--font-arkhip',
-  display: 'swap',
-});
+import { Cormorant_Garamond, Cormorant_SC, Jost, Noto_Serif_JP, JetBrains_Mono } from 'next/font/google';
 
 const cormorant = Cormorant_Garamond({
   subsets:  ['latin', 'cyrillic'],
   weight:   ['300', '400', '600'],
   style:    ['normal', 'italic'],
   variable: '--font-cormorant',
+  display:  'swap',
+});
+
+const cormorantSC = Cormorant_SC({
+  subsets:  ['latin'],
+  weight:   ['300', '400', '600'],
+  variable: '--font-cormorant-sc',
+  display:  'swap',
+});
+
+const jetbrainsMono = JetBrains_Mono({
+  subsets:  ['latin', 'cyrillic'],
+  weight:   ['300', '400', '500'],
+  variable: '--font-mono',
   display:  'swap',
 });
 
@@ -51,12 +58,12 @@ export const viewport = {
   maximumScale:       1,
   userScalable:       false,
   viewportFit:        'cover',
-  themeColor:         '#f5f3ee',
+  themeColor:         '#e6e0d2',
 };
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="ru" className={`${arkhip.variable} ${cormorant.variable} ${jost.variable} ${notoSerifJP.variable}`}>
+    <html lang="ru" className={`${cormorant.variable} ${cormorantSC.variable} ${jetbrainsMono.variable} ${jost.variable} ${notoSerifJP.variable}`}>
       <head>
         <link rel="apple-touch-icon" href="/icons/icon-192.png" />
         <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
