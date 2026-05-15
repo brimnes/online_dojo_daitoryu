@@ -173,6 +173,8 @@ export default function App({ initialUser = null }) {
           monthId={route.monthId}
           watched={watched}
           toggleWatched={toggleWatched}
+          user={user}
+          onLogout={handleLogout}
         />
       )}
       {route.page === 'lesson' && (

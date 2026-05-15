@@ -5,8 +5,9 @@ import { C } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
 import { useMonths, useLessons, useUserAccessRows } from '@/lib/db';
 import { hasMonthAccess } from '@/lib/access';
+import Sidebar from '@/components/Sidebar';
 
-export default function MonthPage({ nav, monthId, watched, toggleWatched }) {
+export default function MonthPage({ nav, monthId, watched, toggleWatched, user = {}, onLogout }) {
   const isMobile = useIsMobile();
   const { months } = useMonths();
   const { lessons } = useLessons(monthId);
@@ -45,7 +46,15 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched }) {
   }
 
   return (
-    <div className="fade" style={{ minHeight: '100vh', background: C.bg }}>
+    <div className="fade" style={{ display: 'flex', minHeight: '100vh' }}>
+
+      {/* ── Sidebar (desktop only) ── */}
+      {!isMobile && (
+        <Sidebar activeTab="months" onTabClick={() => nav.dashboard()} user={user} onLogout={onLogout} />
+      )}
+
+      {/* ── Page content ── */}
+      <div style={{ flex: 1, background: C.bg, minHeight: '100vh' }}>
 
       {/* ── Mobile sticky header ── */}
       {isMobile && (
@@ -231,6 +240,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched }) {
           ))}
         </div>
       </div>
+      </div>{/* end flex:1 content */}
     </div>
   );
 }
