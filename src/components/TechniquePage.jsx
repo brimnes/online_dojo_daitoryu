@@ -2,13 +2,16 @@
 
 import { useState } from 'react';
 import { C } from '@/lib/utils';
+import { useIsMobile } from '@/lib/mobile';
 import { BELT, VIDEO_CATS } from '@/data/techniques';
 import KinescopePlayer from '@/components/KinescopePlayer';
 import { useTechniques, useUserAccessRows } from '@/lib/db';
 import { hasIkkajoSectionAccess } from '@/lib/access';
 import { IKKAJO_SECTION_KEYS as IKKAJO_SECTIONS } from '@/lib/ikkajoSections';
+import Sidebar from '@/components/Sidebar';
 
-export default function TechniquePage({ kyu, section, tech, onBack, viewerId }) {
+export default function TechniquePage({ kyu, section, tech, onBack, viewerId, user = {}, onLogout }) {
+  const isMobile = useIsMobile();
   const belt = BELT[kyu.belt] || { color: '#ccc', border: '#aaa', label: '' };
   const [cat, setCat] = useState('overview');
   const [vid, setVid] = useState(null);
@@ -47,7 +50,11 @@ export default function TechniquePage({ kyu, section, tech, onBack, viewerId }) 
   }
 
   return (
-    <div className="fade" style={{ padding: '32px 36px' }}>
+    <div className="fade" style={{ display: 'flex', minHeight: '100vh' }}>
+      {!isMobile && (
+        <Sidebar activeTab="database" onTabClick={onBack} user={user} onLogout={onLogout} />
+      )}
+      <div style={{ flex: 1, background: C.bg, minHeight: '100vh', padding: isMobile ? '16px 16px 40px' : '32px 36px' }}>
       <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 24, fontSize: 12 }}>
         <button onClick={onBack} style={{ background: 'none', border: 'none', color: C.gold, cursor: 'pointer', padding: 0 }}>← Иккаджо</button>
         <span style={{ color: '#ddd' }}>/</span><span style={{ color: C.muted }}>{kyu.label}</span>
@@ -164,6 +171,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, viewerId }) 
           </div>
         </div>
       )}
+      </div>{/* end flex:1 */}
     </div>
   );
 }

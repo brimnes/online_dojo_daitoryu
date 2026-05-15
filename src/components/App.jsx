@@ -156,7 +156,7 @@ export default function App({ initialUser = null }) {
         <Dashboard nav={nav} watched={watched} user={user} onLogout={handleLogout} />
       )}
       {route.page === 'ikkajo' && (
-        <IkkajoPage nav={nav} />
+        <IkkajoPage nav={nav} user={user} onLogout={handleLogout} />
       )}
       {route.page === 'technique' && (
         <TechniquePage
@@ -165,6 +165,8 @@ export default function App({ initialUser = null }) {
           tech={route.tech}
           onBack={nav.back}
           viewerId={user.id}
+          user={user}
+          onLogout={handleLogout}
         />
       )}
       {route.page === 'month' && (
