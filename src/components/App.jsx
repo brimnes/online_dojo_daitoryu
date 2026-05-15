@@ -189,6 +189,8 @@ export default function App({ initialUser = null }) {
           comments={comments}
           addComment={addComment}
           viewerId={user.id}
+          user={user}
+          onLogout={handleLogout}
         />
       )}
       {route.page === 'knowledge' && (
