@@ -437,31 +437,189 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
 }
 
 // ── Вкладка: База знаний ─────────────────────────────────────────
+const KNOWLEDGE_CATS = [
+  { id: null,        label: 'ВСЕ'      },
+  { id: 'история',   label: 'ИСТОРИЯ'  },
+  { id: 'принципы',  label: 'ПРИНЦИПЫ' },
+  { id: 'этикет',    label: 'ЭТИКЕТ'   },
+  { id: 'теория',    label: 'ТЕОРИЯ'   },
+  { id: 'словарь',   label: 'СЛОВАРЬ'  },
+  { id: 'школа',     label: 'ШКОЛА'    },
+];
+const KNOWLEDGE_TAG_KANJI = {
+  история: '史', принципы: '合', этикет: '礼',
+  теория:  '論', словарь:  '辞', школа:  '道',
+};
+
 function TabKnowledge({ nav, isMobile }) {
   const { items, loading } = useKnowledge();
-  if (loading) return <div style={{ color: C.muted, fontSize: 13 }}>Загрузка…</div>;
+  const [activeTag, setActiveTag] = useState(null);
+
+  const filtered = activeTag ? items.filter(it => it.tag === activeTag) : items;
+  const negH = isMobile ? -16 : -32;
+  const negW = isMobile ? -16 : -36;
+
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 20, paddingBottom: 16, borderBottom: `1px solid ${C.border}`, flexWrap: 'wrap' }}>
-        <h2 style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: isMobile ? 22 : 28, color: C.ink, letterSpacing: '0.05em', fontWeight: 400 }}>База знаний</h2>
-        <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.1em' }}>БЕСПЛАТНО</span>
+
+      {/* ── Top bar ── */}
+      <div style={{
+        marginTop: negH, marginLeft: negW, marginRight: negW,
+        padding: isMobile ? '14px 18px' : '20px 48px',
+        borderBottom: `1px solid ${C.border}`, background: C.surface,
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
+          <span style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 13, color: C.muted, letterSpacing: '0.15em' }}>智の蔵</span>
+          <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant SC', serif", fontSize: 12, letterSpacing: '0.18em', color: C.ink, fontWeight: 600 }}>БАЗА ЗНАНИЙ</span>
+        </div>
+        <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.15em' }}>БЕСПЛАТНО ДЛЯ ВСЕХ</span>
       </div>
-      {items.length === 0 && <div style={{ fontSize: 13, color: C.muted }}>Материалы скоро появятся</div>}
-      <div style={{ display: 'flex', flexDirection: 'column', gap: 1 }}>
-        {items.map(item => (
-          <div key={item.id}
-            onClick={() => nav.knowledgeItem(item.id)}
-            style={{ display: 'flex', alignItems: 'center', gap: 14, padding: isMobile ? '14px 12px' : '18px 16px', background: C.surface, border: `1px solid ${C.border}`, borderTop: 'none', cursor: 'pointer' }}>
-            {item.video_id && (
-              <div style={{ width: isMobile ? 48 : 60, height: isMobile ? 34 : 42, background: C.goldBg, border: `1px solid ${C.goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0, fontSize: 16 }}>▶</div>
-            )}
-            <div style={{ flex: 1, minWidth: 0 }}>
-              <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: isMobile ? 15 : 17, fontWeight: 600, color: C.dark, marginBottom: 2 }}>{item.title}</div>
-              {item.subtitle && <div style={{ fontSize: 11, color: C.muted }}>{item.subtitle}</div>}
+
+      {/* ── Hero ── */}
+      <div style={{ paddingTop: isMobile ? 20 : 48 }}>
+        {!isMobile ? (
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 48, marginBottom: 48 }}>
+            <div>
+              <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 14 }}>
+                <span style={{ color: C.accent }}>01</span> · Открытая библиотека
+              </div>
+              <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant SC', serif", fontSize: 64, color: C.ink, letterSpacing: '0.02em', lineHeight: 1, marginBottom: 16, fontWeight: 400 }}>
+                База знаний
+              </div>
+              <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 19, color: C.muted, lineHeight: 1.55, maxWidth: 560 }}>
+                История, философия и базовая терминология школы. Открыто для всех — даже без регистрации.
+              </div>
             </div>
-            <span style={{ color: C.muted, fontSize: 14, flexShrink: 0 }}>→</span>
+            <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: '22px 22px' }}>
+              <div style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 40, color: C.accent, opacity: 0.7, marginBottom: 8, lineHeight: 1 }}>道</div>
+              <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 18, color: C.ink2, lineHeight: 1.5 }}>
+                «Сначала путь — потом техника. Сначала смысл — потом форма.»
+              </div>
+              <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.2em', marginTop: 14, textTransform: 'uppercase' }}>
+                — Такэда Сокаку
+              </div>
+            </div>
           </div>
-        ))}
+        ) : (
+          <div style={{ marginBottom: 20 }}>
+            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 10 }}>
+              <span style={{ color: C.accent }}>01</span> · Открытая библиотека
+            </div>
+            <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant SC', serif", fontSize: 36, color: C.ink, lineHeight: 1.05, marginBottom: 10, fontWeight: 400 }}>
+              База<br />знаний
+            </div>
+            <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 15, color: C.muted, lineHeight: 1.55, marginBottom: 16 }}>
+              История, философия и термины. Открыто для всех.
+            </div>
+            <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: '16px', marginBottom: 20, position: 'relative' }}>
+              <div style={{ position: 'absolute', top: 8, right: 12, fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 36, color: C.accent, opacity: 0.5, lineHeight: 1 }}>道</div>
+              <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 15, color: C.ink2, lineHeight: 1.55, paddingRight: 40 }}>
+                «Сначала путь — потом техника.»
+              </div>
+              <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.18em', marginTop: 10, textTransform: 'uppercase' }}>
+                — Такэда Сокаку
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* Sumi stroke (desktop) */}
+        {!isMobile && (
+          <svg viewBox="0 0 800 20" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: 20, opacity: 0.25, marginBottom: 32, display: 'block' }}>
+            <path d="M0,10 Q200,4 400,10 Q600,16 800,10" stroke={C.ink2} strokeWidth="1.5" fill="none" strokeLinecap="round" />
+          </svg>
+        )}
+
+        {/* ── Filter bar ── */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 20, overflowX: 'auto', flexWrap: isMobile ? undefined : 'wrap' }}>
+          {KNOWLEDGE_CATS.map(cat => {
+            const isA = activeTag === cat.id;
+            return (
+              <button key={String(cat.id)} onClick={() => setActiveTag(cat.id)} style={{
+                padding: isMobile ? '8px 14px' : '8px 16px', flexShrink: 0,
+                background: isA ? C.ink : 'transparent',
+                color: isA ? C.onAccent : C.ink2,
+                border: `1px solid ${isA ? C.ink : C.border}`,
+                fontFamily: "var(--font-mono), monospace",
+                fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase',
+                cursor: 'pointer',
+              }}>
+                {cat.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* ── Items ── */}
+        {loading && (
+          <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 15, color: C.muted, padding: '24px 0' }}>Загрузка…</div>
+        )}
+        {!loading && filtered.length === 0 && (
+          <div style={{ padding: '40px 0', textAlign: 'center', color: C.muted, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 15 }}>
+            Материалов пока нет
+          </div>
+        )}
+        {!loading && filtered.length > 0 && (
+          <div style={{ background: C.surface, border: `1px solid ${C.border}` }}>
+            {filtered.map((item, i) => {
+              const kanji    = KNOWLEDGE_TAG_KANJI[item.tag] || '智';
+              const tagLabel = item.tag ? (item.tag.charAt(0).toUpperCase() + item.tag.slice(1)) : '';
+              return (
+                <div key={item.id}
+                  onClick={() => nav.knowledgeItem(item.id)}
+                  style={{ cursor: 'pointer', borderBottom: i < filtered.length - 1 ? `1px solid ${C.hairline2}` : 'none' }}
+                  onMouseEnter={e => e.currentTarget.style.background = C.bg2}
+                  onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
+                  {isMobile ? (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 14px', minHeight: 76 }}>
+                      <div style={{ width: 48, height: 48, background: C.bg2, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
+                        <span style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 22, color: C.accent, opacity: 0.85 }}>{kanji}</span>
+                      </div>
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        {tagLabel && (
+                          <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.accent, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 2 }}>
+                            {tagLabel}
+                          </div>
+                        )}
+                        <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 15, color: C.ink, fontWeight: 500, lineHeight: 1.3 }}>{item.title}</div>
+                        {item.subtitle && <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 12, color: C.muted, marginTop: 2 }}>{item.subtitle}</div>}
+                      </div>
+                      <span style={{ color: C.muted, fontSize: 16, flexShrink: 0 }}>→</span>
+                    </div>
+                  ) : (
+                    <div style={{ display: 'grid', gridTemplateColumns: '60px 88px 1fr 120px 24px', gap: 24, alignItems: 'center', padding: '22px 28px' }}>
+                      <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.1em' }}>
+                        {String(i + 1).padStart(2, '0')}
+                      </span>
+                      <div style={{ width: 64, height: 64, background: C.bg2, border: `1px solid ${C.border}`, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                        <span style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 28, color: C.accent, opacity: 0.85 }}>{kanji}</span>
+                        {item.video_id && (
+                          <span style={{ position: 'absolute', bottom: 2, right: 4, fontFamily: "var(--font-mono), monospace", fontSize: 8, color: C.muted }}>▷</span>
+                        )}
+                      </div>
+                      <div>
+                        <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant SC', serif", fontSize: 20, color: C.ink, letterSpacing: '0.02em', fontWeight: 500 }}>{item.title}</div>
+                        {item.subtitle && <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 14, color: C.muted, marginTop: 4 }}>{item.subtitle}</div>}
+                      </div>
+                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                        {tagLabel && (
+                          <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', padding: '2px 8px', border: `1px solid ${C.accent}` }}>
+                            {tagLabel}
+                          </span>
+                        )}
+                        {item.video_id && item.duration && (
+                          <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.08em' }}>{item.duration}</span>
+                        )}
+                      </div>
+                      <span style={{ color: C.muted, fontSize: 18 }}>→</span>
+                    </div>
+                  )}
+                </div>
+              );
+            })}
+          </div>
+        )}
       </div>
     </div>
   );

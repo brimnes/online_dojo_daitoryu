@@ -355,6 +355,9 @@ model KnowledgeItem {
   sortOrder     Int      @default(0) @map("sort_order")
   isPublished   Boolean  @default(false) @map("is_published")
 
+  // Тег — категория статьи: история | принципы | этикет | теория | словарь | школа
+  tag           String?  @default(null)
+
   // Kinescope поля (аналогично lessons / technique_videos)
   videoProvider String?  @map("video_provider")
   videoId       String?  @map("video_id")

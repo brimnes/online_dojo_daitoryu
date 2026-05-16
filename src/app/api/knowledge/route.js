@@ -10,6 +10,7 @@ function toSnake(k) {
   return {
     id: k.id, title: k.title, subtitle: k.subtitle, content: k.content,
     sort_order: k.sortOrder, is_published: k.isPublished,
+    tag: k.tag ?? null,
     video_provider: k.videoProvider, video_id: k.videoId, video_status: k.videoStatus,
     created_at: k.createdAt, updated_at: k.updatedAt,
   };
@@ -48,6 +49,7 @@ export async function POST(request) {
         content:       body.content       || '',
         sortOrder:     body.sort_order    ?? 0,
         isPublished:   body.is_published  ?? false,
+        tag:           body.tag           || null,
         videoProvider: body.video_provider || null,
         videoId:       body.video_id       || null,
         videoStatus:   body.video_status   || 'none',
