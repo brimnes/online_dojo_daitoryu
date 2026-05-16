@@ -817,7 +817,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
 // userAccess и accessLoading приходят из Dashboard (единственный useUserAccessRows).
 // Это исключает двойной fetch и гарантирует единый источник данных по всему Dashboard.
 function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) {
-  const [sub, setSub] = useState('info');
+  const [sub, setSub] = useState('exams');
   const { exams: userExams, loading: examsLoading }   = useUserExams();
   const { payments: userPays, loading: paysLoading }  = useUserPayments();
   const usr   = u || {};
@@ -833,54 +833,152 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
   });
 
   const SUB_TABS = [
-    { id:'info',     label:'Обо мне'    },
-    { id:'exams',    label:'Экзамены'   },
-    { id:'access',   label:'Мой доступ' },
-    { id:'unlock',   label:'Купить'     },
-    { id:'payments', label:'Оплаты'     },
+    { id: 'info',     label: 'Обо мне'    },
+    { id: 'exams',    label: 'Экзамены'   },
+    { id: 'access',   label: 'Мой доступ' },
+    { id: 'payments', label: 'Оплаты'     },
+    { id: 'unlock',   label: 'Купить'     },
   ];
+
+  // Level kanji
+  const LEVEL_KANJI_FULL = { '6kyu':'六級', '5kyu':'五級', '4kyu':'四級', '3kyu':'三級', '2kyu':'二級', '1kyu':'一級', '1dan':'初段', '2dan':'二段', '3dan':'三段' };
+  const LEVEL_KANJI_SHORT = { '6kyu':'六', '5kyu':'五', '4kyu':'四', '3kyu':'三', '2kyu':'二', '1kyu':'一', '1dan':'初', '2dan':'二', '3dan':'三' };
+  const curKanji = LEVEL_KANJI_SHORT[usr.level] || '';
+
+  // Progress track
+  const TRACK = ['6kyu','5kyu','4kyu','3kyu','2kyu','1kyu','1dan'];
+  const curIdx = TRACK.indexOf(usr.level);
+
+  // Level card (reused on desktop and mobile)
+  const renderLevelCard = (compact) => (
+    <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: compact ? '16px' : '22px', position: 'relative', overflow: 'hidden' }}>
+      <div style={{ position: 'absolute', top: compact ? 8 : 12, right: compact ? 10 : 14, fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: compact ? 48 : 56, color: C.goldSoft, opacity: 0.45, lineHeight: 1 }}>{curKanji}</div>
+      <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: compact ? 6 : 8 }}>Текущий уровень</div>
+      <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: compact ? 38 : 52, color: C.ink, letterSpacing: '0.04em', lineHeight: 1, marginBottom: 4 }}>
+        {curLv?.label?.toUpperCase() || '—'}
+      </div>
+      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 13, color: C.muted, marginBottom: compact ? 12 : 16 }}>
+        {curLv?.program === 'ikkajo' ? 'Иккаджо · Татиай' : curLv?.label || ''}
+      </div>
+      <div style={{ height: 1, background: C.border, marginBottom: compact ? 10 : 14 }} />
+      <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: compact ? 8 : 10 }}>Путь к Сёдан</div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginBottom: 6 }}>
+        {TRACK.map((id, i) => {
+          const filled = i <= curIdx;
+          const isCur  = i === curIdx;
+          return (
+            <div key={id} style={{ flex: 1, height: 4, background: filled ? C.accent : C.bg2, position: 'relative' }}>
+              {isCur && <div style={{ position: 'absolute', top: -3, right: -4, width: 10, height: 10, borderRadius: '50%', background: C.accent, zIndex: 1 }} />}
+            </div>
+          );
+        })}
+      </div>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.1em' }}>
+        <span>6 КЮ</span><span>СЁДАН</span>
+      </div>
+    </div>
+  );
 
   return (
     <div>
-      <div style={{ display: 'flex', alignItems: 'baseline', gap: 14, marginBottom: 20, paddingBottom: 16, borderBottom: `1px solid ${C.border}`, flexWrap: 'wrap' }}>
-        <h2 style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: isMobile ? 22 : 28, color: C.ink, letterSpacing: '0.05em', fontWeight: 400 }}>Личный кабинет</h2>
-      </div>
-
-      {/* Profile card */}
-      <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 12 : 16, padding: isMobile ? '16px' : '20px 22px', background: C.surface, border: `1px solid ${C.border}`, marginBottom: 20, flexWrap: 'wrap' }}>
-        <div style={{ width: 48, height: 48, borderRadius: '50%', border: `2px solid ${C.accent}40`, background: C.surface2, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "var(--font-cormorant-sc), serif", fontSize: 20, color: C.accent, flexShrink: 0 }}>{(usr.name||'?')[0]}</div>
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: isMobile ? 18 : 20, fontWeight: 600, color: C.dark }}>{usr.name}</div>
-          <div style={{ fontSize: 11, color: C.muted, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{usr.email}</div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginTop: 8, flexWrap: 'wrap' }}>
-            {curLv && <span style={{ fontFamily: "var(--font-mono), monospace", padding: '3px 10px', background: C.surface2, border: `1px solid ${C.border}`, color: C.muted, fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase' }}>{curLv.label}</span>}
-            {usr.joinedAt && <span style={{ fontSize: 10, color: C.muted }}>в школе с {usr.joinedAt}</span>}
-          </div>
+      {/* ── Top bar ── */}
+      <div style={{
+        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+        marginTop: isMobile ? -16 : -32, marginLeft: isMobile ? -16 : -36, marginRight: isMobile ? -16 : -36,
+        padding: isMobile ? '12px 16px' : '14px 36px',
+        borderBottom: `1px solid ${C.border}`, background: C.surface,
+        marginBottom: isMobile ? 20 : 36, gap: 12, flexWrap: 'wrap',
+      }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+          <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 12, color: C.muted, letterSpacing: '0.15em' }}>個人</span>
+          <span style={{ color: C.hairline2, fontSize: 13 }}>/</span>
+          <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 11, letterSpacing: '0.18em', color: C.ink, fontWeight: 600 }}>ЛИЧНЫЙ КАБИНЕТ</span>
         </div>
-        {!isMobile && (
-          <div style={{ textAlign: 'right' }}>
-            <div style={{ fontSize: 9, color: '#bbb', letterSpacing: 0.5, marginBottom: 6 }}>Прогресс</div>
-            <div style={{ display: 'flex', alignItems: 'center', gap: 3, justifyContent: 'flex-end' }}>
-              {(LEVELS ?? []).map(lv => (
-                <div key={lv.id} style={{ borderRadius: '50%', background: hasLevel(usr.level, lv.id) ? C.gold : '#e0e0e0', width: lv.id.includes('dan') ? 11 : 7, height: lv.id.includes('dan') ? 11 : 7 }} />
-              ))}
-            </div>
-            <div style={{ fontSize: 10, color: '#aaa', marginTop: 3 }}>{levelIndex(usr.level) + 1} / {(LEVELS ?? []).length}</div>
-          </div>
+        {usr.joinedAt && (
+          <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+            В ШКОЛЕ С {usr.joinedAt}
+          </span>
         )}
       </div>
 
-      {/* Sub-tabs */}
-      <div style={{ display: 'flex', background: C.surface, border: `1px solid ${C.border}`, borderBottom: 'none', overflowX: 'auto' }}>
+      {/* ── Desktop hero: 3-col grid ── */}
+      {!isMobile && (
+        <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr 260px', gap: 28, marginBottom: 36 }}>
+          {/* portrait placeholder */}
+          <div style={{ background: C.ink, minHeight: 240, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, position: 'relative', overflow: 'hidden' }}>
+            <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(45deg, #1a1510 0, #1a1510 2px, #0f0c08 2px, #0f0c08 10px)', opacity: 0.7 }} />
+            <div style={{ position: 'relative', zIndex: 1, width: 56, height: 56, borderRadius: '50%', border: `1px solid rgba(200,169,74,0.4)`, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 24, color: C.goldLight }}>
+              {(usr.name || '?')[0].toUpperCase()}
+            </div>
+            <div style={{ position: 'relative', zIndex: 1, fontFamily: "var(--font-mono), monospace", fontSize: 9, color: 'rgba(200,169,74,0.45)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Портрет студента</div>
+          </div>
+
+          {/* info */}
+          <div>
+            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
+              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', color: C.gold, fontSize: 12 }}>04</span>
+              Студент додзё
+            </div>
+            <h2 style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 44, color: C.ink, letterSpacing: '0.04em', fontWeight: 400, lineHeight: 0.92, textTransform: 'uppercase', marginBottom: 12 }}>
+              {(usr.name || 'Студент').toUpperCase()}
+            </h2>
+            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 15, color: C.muted, marginBottom: 18 }}>
+              {usr.email || ''}{usr.city ? ` · ${usr.city}` : ''}
+            </div>
+            <svg viewBox="0 0 260 18" style={{ width: 260, height: 18, opacity: 0.25, display: 'block', marginBottom: 18 }}>
+              <path d="M0,9 Q65,4 130,9 Q195,14 260,9" stroke={C.ink2} strokeWidth="1" fill="none" strokeLinecap="round" />
+            </svg>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, lineHeight: 1.75, color: C.ink2, maxWidth: 520, margin: 0, fontStyle: usr.experience ? 'normal' : 'italic' }}>
+              {usr.experience || 'Профиль студента. Расскажите о вашем опыте айкидо и целях.'}
+            </p>
+          </div>
+
+          {/* level card */}
+          {renderLevelCard(false)}
+        </div>
+      )}
+
+      {/* ── Mobile hero ── */}
+      {isMobile && (
+        <>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
+            <div style={{ position: 'relative', flexShrink: 0 }}>
+              <div style={{ width: 64, height: 64, borderRadius: '50%', background: C.ink, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 22, color: C.goldLight }}>
+                {(usr.name || '?')[0].toUpperCase()}
+              </div>
+              <span style={{ position: 'absolute', bottom: -4, right: -4, width: 22, height: 22, borderRadius: '50%', background: C.accent, color: '#fff', fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                {curKanji}
+              </span>
+            </div>
+            <div>
+              <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 22, color: C.ink, fontWeight: 400, textTransform: 'uppercase', lineHeight: 0.95 }}>
+                {(usr.name || 'Студент').toUpperCase()}
+              </div>
+              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 13, color: C.muted, marginTop: 4 }}>{usr.email}</div>
+            </div>
+          </div>
+          <div style={{ marginBottom: 20 }}>{renderLevelCard(true)}</div>
+        </>
+      )}
+
+      {/* ── Sub-tabs ── */}
+      <div style={{ display: 'flex', borderBottom: `1px solid ${C.border}`, overflowX: 'auto' }}>
         {SUB_TABS.map(t => (
           <button key={t.id} onClick={() => setSub(t.id)}
-            style={{ padding: isMobile ? '12px 14px' : '11px 18px', background: 'none', border: 'none', color: sub === t.id ? C.ink : C.muted, fontSize: 12, borderBottom: `2px solid ${sub === t.id ? C.accent : 'transparent'}`, cursor: 'pointer', fontWeight: sub === t.id ? 600 : 400, marginBottom: -1, whiteSpace: 'nowrap', minHeight: 44 }}>
-            {t.label}
-          </button>
+            style={{
+              padding: isMobile ? '11px 13px' : '13px 20px',
+              background: 'none', border: 'none',
+              borderBottom: `2px solid ${sub === t.id ? C.accent : 'transparent'}`,
+              color: sub === t.id ? C.ink : C.muted,
+              fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif",
+              fontSize: isMobile ? 11 : 12, letterSpacing: '0.16em', textTransform: 'uppercase',
+              cursor: 'pointer', fontWeight: sub === t.id ? 600 : 400,
+              marginBottom: -1, whiteSpace: 'nowrap', minHeight: 44,
+            }}>{t.label}</button>
         ))}
       </div>
 
-      {/* Info tab */}
+      {/* ── Info tab ── */}
       {sub === 'info' && (
         <div style={{ border: `1px solid ${C.border}`, borderTop: 'none', background: C.surface }}>
           {[
@@ -888,21 +986,20 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
             { label: 'Уровень (при регистрации)', value: selfLvLabel,     show: !!selfLvLabel && selfLvLabel !== curLv?.label },
             { label: 'Имя сэнсэя',               value: usr.senseiName || 'Станислав Копин', show: true },
           ].filter(r => r.show).map(row => (
-            <div key={row.label} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '200px 1fr', padding: '14px 16px', borderBottom: `1px solid ${C.border}`, fontSize: 13, alignItems: 'start', gap: isMobile ? 2 : 0 }}>
-              <span style={{ color: C.muted, fontSize: 11 }}>{row.label}</span>
-              <span style={{ color: C.dark }}>{row.value}</span>
+            <div key={row.label} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '200px 1fr', padding: '14px 18px', borderBottom: `1px solid ${C.border}`, alignItems: 'start', gap: isMobile ? 2 : 0 }}>
+              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{row.label}</span>
+              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, color: C.ink }}>{row.value}</span>
             </div>
           ))}
           {usr.experience && (
-            <div style={{ padding: '16px' }}>
-              <div style={{ fontSize: 9, color: C.muted, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10 }}>Об опыте</div>
-              <p style={{ fontSize: 13, color: '#555', lineHeight: 1.85, borderLeft: `2px solid ${C.goldBorder}`, paddingLeft: 14 }}>{usr.experience}</p>
+            <div style={{ padding: '18px' }}>
+              <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 12 }}>Об опыте</div>
+              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: C.ink2, lineHeight: 1.85, borderLeft: `2px solid ${C.goldBorder}`, paddingLeft: 14, margin: 0 }}>{usr.experience}</p>
             </div>
           )}
-          {/* Mobile: logout button */}
           {isMobile && (
             <div style={{ padding: '14px 16px', borderTop: `1px solid ${C.border}` }}>
-              <button onClick={onLogout} style={{ width: '100%', padding: '10px', background: 'none', border: `1px solid ${C.border}`, color: '#bbb', fontSize: 12, cursor: 'pointer', minHeight: 44 }}>
+              <button onClick={onLogout} style={{ width: '100%', padding: '10px', background: 'none', border: `1px solid ${C.border}`, color: C.muted, fontSize: 12, cursor: 'pointer', minHeight: 44, fontFamily: "var(--font-mono), monospace", letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                 Выйти из аккаунта
               </button>
             </div>
@@ -910,73 +1007,93 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
         </div>
       )}
 
-      {/* Exams tab */}
+      {/* ── Exams tab ── */}
       {sub === 'exams' && (
-        <div style={{ border: `1px solid ${C.border}`, borderTop: 'none' }}>
+        <div>
           {examsLoading && (
-            <div style={{ padding: '24px 16px', color: C.muted, fontSize: 13, background: C.white }}>Загрузка…</div>
+            <div style={{ padding: '24px 18px', color: C.muted, fontSize: 12, background: C.surface, border: `1px solid ${C.border}`, borderTop: 'none', fontFamily: "var(--font-mono), monospace" }}>Загрузка…</div>
           )}
           {!examsLoading && grouped.length === 0 && (
-            <div style={{ padding: '24px 16px', color: C.muted, fontSize: 13, background: C.white }}>Экзаменов пока нет</div>
+            <div style={{ padding: '24px 18px', color: C.muted, fontSize: 13, background: C.surface, border: `1px solid ${C.border}`, borderTop: 'none', fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic' }}>Экзаменов пока нет</div>
           )}
-          {!examsLoading && grouped.map((g, gi) => {
-            const lv     = LEVELS.find(l => l.id === g.level);
-            // passed если хотя бы одна попытка approved
-            const passed = g.attempts.some(a => a.status === 'approved');
-            const isDan  = g.level.includes('dan');
-            return (
-              <div key={g.level} style={{ borderTop: gi === 0 ? `1px solid ${C.border}` : '1px solid #ece8e0', background: isDan ? '#fdfcf8' : C.white }}>
-                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', padding: '13px 16px' }}>
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                    <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 17, fontWeight: 700, color: isDan ? C.dark : C.gold }}>{lv?.label}</span>
-                    <span style={{ fontSize: 12, fontWeight: 600, color: passed ? '#3a8a5a' : '#b04030' }}>{passed ? '✓ Сдан' : '✗ Не сдан'}</span>
-                  </div>
-                  <span style={{ fontSize: 10, color: '#bbb' }}>{g.attempts.length} попыток</span>
+          {!examsLoading && grouped.length > 0 && (
+            <>
+              {!isMobile && (
+                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase', padding: '16px 0 12px' }}>
+                  ИСТОРИЯ ЭКЗАМЕНОВ
                 </div>
-                {g.attempts.map((ex) => {
-                  const isApproved = ex.status === 'approved';
-                  const isPending  = ex.status === 'pending';
-                  const statusColor = isApproved ? '#3a8a5a' : isPending ? '#b08030' : '#b04030';
-                  const statusIcon  = isApproved ? '✓' : isPending ? '⏳' : '✗';
+              )}
+              <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderTop: isMobile ? `1px solid ${C.border}` : 'none' }}>
+                {grouped.map((g, gi) => {
+                  const lv     = LEVELS.find(l => l.id === g.level);
+                  const passed  = g.attempts.some(a => a.status === 'approved');
+                  const pending = !passed && g.attempts.some(a => a.status === 'pending');
+                  const statusLabel = passed ? 'СДАН' : pending ? 'ПРЕДСТОИТ' : 'НЕ СДАН';
+                  const statusColor = passed ? C.success : pending ? C.accent : C.danger;
+                  const bestAttempt = g.attempts.find(a => a.status === 'approved')
+                    || g.attempts.find(a => a.status === 'pending')
+                    || g.attempts[0];
+                  const kanjiShort = LEVEL_KANJI_SHORT[g.level] || '';
+                  const kanjiFull  = LEVEL_KANJI_FULL[g.level]  || '';
+
+                  if (isMobile) {
+                    return (
+                      <div key={g.level} style={{ padding: '13px 14px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: gi < grouped.length - 1 ? `1px solid ${C.border}` : 'none' }}>
+                        <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 22, color: C.accent, opacity: 0.7, minWidth: 26, textAlign: 'center' }}>{kanjiShort}</span>
+                        <div style={{ flex: 1 }}>
+                          <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 14, letterSpacing: '0.04em', color: C.ink, fontWeight: 500 }}>{lv?.label?.toUpperCase()}</div>
+                          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 12, color: C.muted, marginTop: 1 }}>
+                            {bestAttempt?.comment || ''}{bestAttempt?.date ? ` · ${bestAttempt.date}` : ''}
+                          </div>
+                        </div>
+                        <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase', color: statusColor, padding: '3px 8px', border: `1px solid ${statusColor}`, fontWeight: 600, flexShrink: 0 }}>{statusLabel}</span>
+                      </div>
+                    );
+                  }
+
                   return (
-                    <div key={ex.id} style={{ display: 'flex', gap: 10, padding: '8px 16px 8px 28px', borderTop: '1px solid #f5f2ec', background: isApproved ? 'transparent' : isPending ? '#fffdf5' : '#fff8f7', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
-                      <div style={{ fontSize: 11, color: C.muted, minWidth: 74 }}>{ex.date}</div>
-                      <div style={{ fontSize: 11, color: statusColor, fontWeight: 600, marginRight: 8 }}>{statusIcon}</div>
-                      <div style={{ fontSize: 11, color: '#888' }}>{ex.comment}</div>
+                    <div key={g.level} style={{ display: 'grid', gridTemplateColumns: '140px 110px 1fr 120px', padding: '17px 22px', alignItems: 'center', gap: 16, borderBottom: gi < grouped.length - 1 ? `1px solid ${C.hairline2}` : 'none' }}>
+                      <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+                        <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 20, color: C.accent, opacity: 0.7 }}>{kanjiFull}</span>
+                        <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 16, color: C.ink, letterSpacing: '0.04em', fontWeight: 500 }}>{lv?.label?.toUpperCase()}</span>
+                      </div>
+                      <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.06em' }}>{bestAttempt?.date || '—'}</span>
+                      <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 14, color: C.ink2 }}>{bestAttempt?.comment || '—'}</span>
+                      <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: statusColor, padding: '4px 10px', border: `1px solid ${statusColor}`, textAlign: 'center', fontWeight: 600 }}>{statusLabel}</span>
                     </div>
                   );
                 })}
               </div>
-            );
-          })}
+            </>
+          )}
         </div>
       )}
 
-      {/* Payments tab */}
+      {/* ── Payments tab ── */}
       {sub === 'payments' && (
         <div style={{ border: `1px solid ${C.border}`, borderTop: 'none' }}>
           {paysLoading && (
-            <div style={{ padding: '24px 16px', color: C.muted, fontSize: 13, background: C.white }}>Загрузка…</div>
+            <div style={{ padding: '24px 18px', color: C.muted, fontSize: 12, background: C.surface, fontFamily: "var(--font-mono), monospace" }}>Загрузка…</div>
           )}
           {!paysLoading && userPays.length === 0 && (
-            <div style={{ padding: '24px 16px', color: C.muted, fontSize: 13, background: C.white }}>Оплат пока нет</div>
+            <div style={{ padding: '24px 18px', color: C.muted, fontSize: 13, background: C.surface, fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic' }}>Оплат пока нет</div>
           )}
           {!paysLoading && userPays.map(p => (
-            <div key={p.id} style={{ display: 'grid', gridTemplateColumns: isMobile ? 'auto 1fr auto' : '90px 1fr 100px', padding: '13px 16px', fontSize: 12, background: C.white, borderBottom: '1px solid #f5f5f5', alignItems: 'center', gap: 8 }}>
-              <span style={{ color: C.muted, fontSize: isMobile ? 10 : 12, whiteSpace: 'nowrap' }}>{p.date}</span>
-              <span style={{ color: C.dark, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.desc}</span>
-              <span style={{ color: C.dark, fontWeight: 600, textAlign: 'right', whiteSpace: 'nowrap' }}>{p.amount}</span>
+            <div key={p.id} style={{ display: 'grid', gridTemplateColumns: isMobile ? 'auto 1fr auto' : '90px 1fr 100px', padding: '13px 18px', background: C.surface, borderBottom: `1px solid ${C.border}`, alignItems: 'center', gap: 8 }}>
+              <span style={{ color: C.muted, fontFamily: "var(--font-mono), monospace", fontSize: 10, whiteSpace: 'nowrap' }}>{p.date}</span>
+              <span style={{ color: C.ink, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.desc}</span>
+              <span style={{ color: C.ink, fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 15, textAlign: 'right', whiteSpace: 'nowrap' }}>{p.amount}</span>
             </div>
           ))}
         </div>
       )}
 
-      {/* MyAccess tab */}
+      {/* ── MyAccess tab ── */}
       {sub === 'access' && (
         <TabMyAccess userAccess={userAccess} loading={accessLoading} isMobile={isMobile} />
       )}
 
-      {/* UnlockAccess tab */}
+      {/* ── UnlockAccess tab ── */}
       {sub === 'unlock' && (
         <TabUnlockAccess userAccess={userAccess} isMobile={isMobile} />
       )}
