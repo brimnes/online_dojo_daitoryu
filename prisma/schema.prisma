@@ -356,7 +356,7 @@ model KnowledgeItem {
   isPublished   Boolean  @default(false) @map("is_published")
 
   // Тег — категория статьи: история | принципы | этикет | теория | словарь | школа
-  tag           String?  @default(null)
+  tag           String?
 
   // Kinescope поля (аналогично lessons / technique_videos)
   videoProvider String?  @map("video_provider")
