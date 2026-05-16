@@ -2194,66 +2194,78 @@ function SectionAccess({showToast,isMobile}){
     else showToast('Ошибка: ' + error);
   };
 
-  const pad = isMobile ? '0 16px 24px' : '24px 36px';
   const refLabel = {
     jan:'Январь',feb:'Февраль',mar:'Март',apr:'Апрель',
     may:'Май',jun:'Июнь',jul:'Июль',aug:'Август',
     sep:'Сентябрь',oct:'Октябрь',nov:'Ноябрь',dec:'Декабрь',
     ikkajo:'Иккаджо (весь)',
-    // Секции Ikkajo — из конфига
     ...IKKAJO_LABELS,
   };
 
   if(uLoading) return <Spinner/>;
   return(
-    <div>
-      <SectionHeader title="Доступы" subtitle="Ручная выдача и отзыв" isMobile={isMobile}/>
-      <div style={{padding:pad}}>
-        {/* Grant form */}
-        <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'18px 16px',marginBottom:12}}>
-          <div style={{fontSize:11,color:C.gold,letterSpacing:1.5,textTransform:'uppercase',marginBottom:12}}>Выдать доступ</div>
-          <div style={{display:'flex',flexDirection:'column',gap:10}}>
-            <div>
-              <Label>Пользователь</Label>
-              <Select value={selectedUserId} onChange={v=>{setSelectedUserId(v);}} options={[{value:'',label:'— выберите —'},...users.map(u=>({value:u.id,label:`${u.name} (${u.email})`}))]}/>
-            </div>
-            <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:8}}>
-              <div>
-                <Label>Тип</Label>
-                <Select value={type} onChange={v=>{setType(v);setReference(v==='month'?'jan':'ikkajo');}} options={[{value:'month',label:'Месяц'},{value:'section',label:'Раздел'}]}/>
-              </div>
-              <div>
-                <Label>Раздел / Месяц</Label>
-                <Select value={reference} onChange={setReference} options={refOptions}/>
-              </div>
-            </div>
-            <Btn onClick={doGrant} variant='success' small loading={granting}>Выдать доступ</Btn>
-          </div>
-        </div>
+    <div style={{background:C.bg,minHeight:'100%'}}>
+      <div style={{padding:isMobile?'20px 16px 40px':'32px 36px 60px'}}>
 
-        {/* Existing access for selected user */}
-        {selectedUserId && (
-          <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'18px 16px'}}>
-            <div style={{fontSize:11,color:C.gold,letterSpacing:1.5,textTransform:'uppercase',marginBottom:10}}>
-              Текущие доступы
+        <AdminSectionHead num="" title="Доступы" subtitle="Ручная выдача и отзыв доступов" kanji="鍵"/>
+        <SumiStroke style={{margin:'0 0 24px',opacity:0.3}}/>
+
+        <div style={{display:isMobile?'flex':'grid',flexDirection:'column',gridTemplateColumns:'1fr 1fr',gap:20,alignItems:'start'}}>
+
+          {/* Grant form */}
+          <div style={{background:C.surface,border:`1px solid ${C.hairline}`,padding:'22px 22px 20px'}}>
+            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16}}>
+              <span style={{fontFamily:F.kanji,fontSize:13,color:C.gold,opacity:0.8}}>授</span>
+              <span style={{fontFamily:F.display,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>ВЫДАТЬ ДОСТУП</span>
             </div>
-            {aLoading && <Spinner/>}
-            {!aLoading && accessRows.length===0 && <div style={{fontSize:12,color:C.muted}}>Нет выданных доступов</div>}
-            {accessRows.map(row=>(
-              <div key={row.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'8px 0',borderBottom:`1px solid ${C.border}`,fontSize:12,gap:8}}>
+            <div style={{display:'flex',flexDirection:'column',gap:12}}>
+              <div>
+                <Label>Пользователь</Label>
+                <Select value={selectedUserId} onChange={v=>{setSelectedUserId(v);}} options={[{value:'',label:'— выберите —'},...users.map(u=>({value:u.id,label:`${u.name} (${u.email})`}))]}/>
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
                 <div>
-                  <span style={{color:C.gold,marginRight:6}}>{row.type==='month'?'📅':'🔑'}</span>
-                  <span style={{color:C.dark}}>{refLabel[row.reference]||row.reference}</span>
-                  {row.amount>0 && <span style={{color:C.muted,fontSize:10,marginLeft:8}}>{row.amount?.toLocaleString()} ₽</span>}
+                  <Label>Тип</Label>
+                  <Select value={type} onChange={v=>{setType(v);setReference(v==='month'?'jan':'ikkajo');}} options={[{value:'month',label:'Месяц'},{value:'section',label:'Раздел'}]}/>
                 </div>
-                <button onClick={()=>doRevoke(row)}
-                  style={{fontSize:10,color:C.red,background:'none',border:`1px solid ${C.redBorder}`,padding:'3px 10px',cursor:'pointer'}}>
-                  Отозвать
-                </button>
+                <div>
+                  <Label>Раздел / Месяц</Label>
+                  <Select value={reference} onChange={setReference} options={refOptions}/>
+                </div>
+              </div>
+              <Btn2 kind="accent" onClick={doGrant} disabled={granting}>{granting?'…':'Выдать доступ'}</Btn2>
+            </div>
+          </div>
+
+          {/* Existing access for selected user */}
+          <div style={{background:C.surface,border:`1px solid ${C.hairline}`,padding:'22px 22px 20px',minHeight:120}}>
+            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16}}>
+              <span style={{fontFamily:F.kanji,fontSize:13,color:C.copper,opacity:0.8}}>現</span>
+              <span style={{fontFamily:F.display,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>ТЕКУЩИЕ ДОСТУПЫ</span>
+              {selectedUserId && <span style={{fontFamily:F.mono,fontSize:9,color:C.muted,letterSpacing:'0.1em'}}>{accessRows.length} записей</span>}
+            </div>
+            {!selectedUserId && (
+              <div style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:13,color:C.muted}}>Выберите пользователя слева</div>
+            )}
+            {selectedUserId && aLoading && <Spinner/>}
+            {selectedUserId && !aLoading && accessRows.length===0 && (
+              <div style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:13,color:C.muted}}>Нет выданных доступов</div>
+            )}
+            {selectedUserId && !aLoading && accessRows.map(row=>(
+              <div key={row.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 0',borderBottom:`1px solid ${C.hairline}`,gap:8}}>
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  <span style={{fontFamily:F.kanji,fontSize:13,color:row.type==='month'?C.gold:C.accent,opacity:0.8}}>{row.type==='month'?'月':'技'}</span>
+                  <div>
+                    <div style={{fontFamily:F.ui,fontSize:13,color:C.ink}}>{refLabel[row.reference]||row.reference}</div>
+                    {row.amount>0 && <div style={{fontFamily:F.mono,fontSize:10,color:C.muted}}>{row.amount?.toLocaleString()} ₽</div>}
+                  </div>
+                </div>
+                <Btn2 kind="quiet" size="sm" onClick={()=>doRevoke(row)}>Отозвать</Btn2>
               </div>
             ))}
           </div>
-        )}
+        </div>
+
       </div>
     </div>
   );
@@ -2281,48 +2293,57 @@ function SectionKnowledge({showToast,isMobile}){
     else showToast('Ошибка: '+error);
   };
 
-  const pad = isMobile ? '0 16px 24px' : '24px 36px';
+  const TAG_KANJI = {история:'史',принципы:'理',этикет:'礼',теория:'論',словарь:'語',школа:'校'};
+
   if(loading) return <Spinner/>;
 
   return(
-    <div>
-      <SectionHeader title="База знаний" subtitle={`${items.length} материалов`} isMobile={isMobile}/>
-      <div style={{padding:pad}}>
-        <div style={{marginBottom:12}}>
-          <Btn onClick={startNew} small>+ Новый материал</Btn>
-        </div>
+    <div style={{background:C.bg,minHeight:'100%'}}>
+      <div style={{padding:isMobile?'20px 16px 40px':'32px 36px 60px'}}>
+
+        <AdminSectionHead
+          num="" title="База знаний" kanji="智"
+          subtitle={`${items.length} материалов · статьи, видео, теория`}
+          actions={<Btn2 kind="accent" size="sm" onClick={startNew}>+ Новый материал</Btn2>}
+        />
+        <SumiStroke style={{margin:'0 0 24px',opacity:0.3}}/>
 
         {/* Edit form */}
         {editId && (
-          <div style={{background:C.white,border:`2px solid ${C.gold}`,padding:'18px 16px',marginBottom:12}}>
-            <div style={{fontSize:11,color:C.gold,letterSpacing:1.5,textTransform:'uppercase',marginBottom:12}}>
-              {editId==='new'?'Новый материал':'Редактирование'}
+          <div style={{background:C.surface,border:`1px solid ${C.accent}`,padding:'24px 22px',marginBottom:20}}>
+            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,paddingBottom:14,borderBottom:`1px solid ${C.hairline}`}}>
+              <span style={{fontFamily:F.kanji,fontSize:14,color:C.accent,opacity:0.85}}>智</span>
+              <span style={{fontFamily:F.display,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>
+                {editId==='new'?'НОВЫЙ МАТЕРИАЛ':'РЕДАКТИРОВАНИЕ'}
+              </span>
             </div>
-            <div style={{display:'flex',flexDirection:'column',gap:10,marginBottom:12}}>
+            <div style={{display:'flex',flexDirection:'column',gap:12,marginBottom:16}}>
               <div><Label>Заголовок</Label><Input value={draft.title||''} onChange={v=>setDraft(d=>({...d,title:v}))} placeholder="Название"/></div>
               <div><Label>Подзаголовок</Label><Input value={draft.subtitle||''} onChange={v=>setDraft(d=>({...d,subtitle:v}))} placeholder="Краткое описание"/></div>
               <div><Label>Контент (Markdown)</Label><Textarea value={draft.content||''} onChange={v=>setDraft(d=>({...d,content:v}))} rows={6} placeholder="Текст материала…"/></div>
-              <div>
-                <Label>Категория (тег)</Label>
-                <select value={draft.tag||''} onChange={e=>setDraft(d=>({...d,tag:e.target.value||null}))}
-                  style={{width:'100%',padding:'8px 10px',border:`1px solid ${C.border}`,background:C.white,fontSize:12,color:C.dark,appearance:'auto'}}>
-                  <option value="">— без категории —</option>
-                  <option value="история">История</option>
-                  <option value="принципы">Принципы</option>
-                  <option value="этикет">Этикет</option>
-                  <option value="теория">Теория</option>
-                  <option value="словарь">Словарь</option>
-                  <option value="школа">Школа</option>
-                </select>
-              </div>
-              <div style={{display:'flex',alignItems:'center',gap:10}}>
-                <input type="checkbox" id="kb_pub" checked={!!draft.is_published} onChange={e=>setDraft(d=>({...d,is_published:e.target.checked}))}/>
-                <label htmlFor="kb_pub" style={{fontSize:12,color:C.dark,cursor:'pointer'}}>Опубликовано</label>
+              <div style={{display:'grid',gridTemplateColumns:'1fr auto',gap:12,alignItems:'end'}}>
+                <div>
+                  <Label>Категория (тег)</Label>
+                  <select value={draft.tag||''} onChange={e=>setDraft(d=>({...d,tag:e.target.value||null}))}
+                    style={{width:'100%',padding:'8px 10px',border:`1px solid ${C.hairline}`,background:C.bg,fontSize:12,color:C.ink,appearance:'auto',fontFamily:F.ui}}>
+                    <option value="">— без категории —</option>
+                    <option value="история">История</option>
+                    <option value="принципы">Принципы</option>
+                    <option value="этикет">Этикет</option>
+                    <option value="теория">Теория</option>
+                    <option value="словарь">Словарь</option>
+                    <option value="школа">Школа</option>
+                  </select>
+                </div>
+                <div style={{display:'flex',alignItems:'center',gap:8,paddingBottom:4}}>
+                  <input type="checkbox" id="kb_pub" checked={!!draft.is_published} onChange={e=>setDraft(d=>({...d,is_published:e.target.checked}))}/>
+                  <label htmlFor="kb_pub" style={{fontFamily:F.mono,fontSize:10,color:C.ink,cursor:'pointer',letterSpacing:'0.06em',textTransform:'uppercase'}}>Опубликовано</label>
+                </div>
               </div>
             </div>
 
             {/* Kinescope video */}
-            <div style={{marginBottom:14}}>
+            <div style={{marginBottom:18}}>
               <Label>Видео (Kinescope)</Label>
               {editId && editId!=='new' ? (
                 <KinescopeUploader
@@ -2335,42 +2356,60 @@ function SectionKnowledge({showToast,isMobile}){
                   }}
                 />
               ) : (
-                <div style={{padding:'10px 12px',background:C.goldBg,border:`1px solid ${C.goldBorder}`,fontSize:11,color:C.muted}}>
+                <div style={{padding:'10px 14px',background:C.bg,border:`1px solid ${C.hairline}`,fontFamily:F.displaySerif,fontStyle:'italic',fontSize:12,color:C.muted}}>
                   Сначала сохраните материал, затем загрузите видео
                 </div>
               )}
             </div>
 
             <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
-              <Btn onClick={doSave} variant='success' small loading={saving}>Сохранить</Btn>
-              <Btn onClick={()=>setEditId(null)} variant='ghost' small>Отмена</Btn>
+              <Btn2 kind="accent" size="sm" onClick={doSave} disabled={saving}>{saving?'…':'Сохранить'}</Btn2>
+              <Btn2 kind="quiet"  size="sm" onClick={()=>setEditId(null)}>Отмена</Btn2>
               {editId!=='new' && (
-                <Btn onClick={()=>doDelete(editId)} variant='danger' small>Удалить</Btn>
+                <Btn2 kind="quiet" size="sm" onClick={()=>doDelete(editId)} style={{marginLeft:'auto',color:C.danger,borderColor:C.danger}}>Удалить</Btn2>
               )}
             </div>
           </div>
         )}
 
-        {/* Items list */}
-        {items.map(item=>(
-          <div key={item.id}
-            style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',background:editId===item.id?C.goldBg:C.white,border:`1px solid ${C.border}`,borderTop:'none',cursor:'pointer'}}
-            onClick={()=>startEdit(item)}>
-            <div style={{flex:1,minWidth:0}}>
-              <div style={{fontSize:13,color:C.dark,fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.title||'Без названия'}</div>
-              {item.subtitle&&<div style={{fontSize:11,color:C.muted}}>{item.subtitle}</div>}
-              <div style={{display:'flex',gap:8,marginTop:4}}>
-                {item.is_published
-                  ? <span style={{fontSize:9,color:C.green,background:C.greenBg,border:`1px solid ${C.greenBorder}`,padding:'1px 6px'}}>опубликовано</span>
-                  : <span style={{fontSize:9,color:C.muted,background:'#f5f5f5',border:'1px solid #ddd',padding:'1px 6px'}}>черновик</span>
-                }
-                {item.video_id&&<span style={{fontSize:9,color:C.gold,background:C.goldBg,border:`1px solid ${C.goldBorder}`,padding:'1px 6px'}}>▶ видео</span>}
-                {item.tag&&<span style={{fontSize:9,color:C.accent,background:'#fdf5f3',border:`1px solid ${C.accent}`,padding:'1px 6px',letterSpacing:'0.1em',textTransform:'uppercase'}}>{item.tag}</span>}
-              </div>
-            </div>
-            <span style={{fontSize:12,color:C.muted,flexShrink:0}}>→</span>
+        {/* Items table */}
+        <div style={{background:C.surface,border:`1px solid ${C.hairline}`}}>
+          {/* header */}
+          <div style={{display:'grid',gridTemplateColumns:'1fr 120px 80px 36px',borderBottom:`1px solid ${C.hairline}`,background:C.bg2}}>
+            {['Материал','Категория','Статус',''].map((h,i)=>(
+              <div key={i} style={{padding:'11px 16px',fontFamily:F.mono,fontSize:9,letterSpacing:'0.18em',color:C.muted,textTransform:'uppercase',fontWeight:600}}>{h}</div>
+            ))}
           </div>
-        ))}
+          {items.length===0 && (
+            <div style={{padding:'48px 22px',textAlign:'center'}}>
+              <div style={{fontFamily:F.kanji,fontSize:40,color:C.muted,opacity:0.3,marginBottom:8}}>智</div>
+              <div style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:14,color:C.muted}}>Нет материалов — добавьте первый</div>
+            </div>
+          )}
+          {items.map((item,ri)=>(
+            <div key={item.id} onClick={()=>startEdit(item)}
+              style={{display:'grid',gridTemplateColumns:'1fr 120px 80px 36px',borderBottom:ri<items.length-1?`1px solid ${C.hairline}`:'none',cursor:'pointer',background:editId===item.id?C.bg2:'transparent'}}>
+              <div style={{padding:'14px 16px',minWidth:0}}>
+                <div style={{fontFamily:F.ui,fontSize:13,color:C.ink,fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.title||'Без названия'}</div>
+                {item.subtitle&&<div style={{fontFamily:F.ui,fontSize:11,color:C.muted,marginTop:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.subtitle}</div>}
+                {item.video_id&&<div style={{fontFamily:F.mono,fontSize:9,color:C.gold,marginTop:4,letterSpacing:'0.08em'}}>▶ видео</div>}
+              </div>
+              <div style={{padding:'14px 16px',display:'flex',alignItems:'center'}}>
+                {item.tag ? (
+                  <span style={{display:'inline-flex',alignItems:'center',gap:5,fontFamily:F.mono,fontSize:9,color:C.copper,letterSpacing:'0.1em',textTransform:'uppercase'}}>
+                    <span style={{fontFamily:F.kanji,fontSize:11}}>{TAG_KANJI[item.tag]||'文'}</span>
+                    {item.tag}
+                  </span>
+                ) : <span style={{fontFamily:F.mono,fontSize:9,color:C.muted}}>—</span>}
+              </div>
+              <div style={{padding:'14px 16px',display:'flex',alignItems:'center'}}>
+                <Pill2 kind={item.is_published?'success':'muted'} dot>{item.is_published?'живой':'черн.'}</Pill2>
+              </div>
+              <div style={{padding:'14px 12px',display:'flex',alignItems:'center',justifyContent:'center',color:C.muted,fontSize:12}}>→</div>
+            </div>
+          ))}
+        </div>
+
       </div>
     </div>
   );
