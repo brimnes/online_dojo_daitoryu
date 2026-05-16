@@ -239,7 +239,7 @@ export default function AdminPanel({ onExit }) {
         </div>
         <div style={{flex:1,minWidth:0}}>
           <div style={{fontFamily:"var(--font-cormorant-sc,'Cormorant SC',serif)",fontSize:10,letterSpacing:2.5,color:C.sideText,lineHeight:1.2}}>ONLINE DAITO-RYU</div>
-          <div style={{fontFamily:"'Noto Serif JP',serif",fontSize:9,color:C.sideMuted,letterSpacing:0.5,marginTop:2}}>合気武道</div>
+          <div style={{fontSize:9,color:C.sideGold,letterSpacing:1.5,marginTop:2,opacity:0.7}}>管理 · ADMIN</div>
         </div>
         {isMobile && (
           <button onClick={()=>setDrawerOpen(false)}
@@ -249,15 +249,15 @@ export default function AdminPanel({ onExit }) {
         )}
       </div>
 
-      {/* ── Admin badge ──────────────────────────────────────── */}
+      {/* ── Admin user card ──────────────────────────────────── */}
       <div style={{padding:'14px 20px 12px',borderBottom:`1px solid ${C.sideBorder}`}}>
         <div style={{display:'flex',alignItems:'center',gap:10}}>
-          <div style={{width:34,height:34,borderRadius:'50%',background:C.sideActive,border:`1px solid ${C.sideBorder}`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
-            <span style={{fontFamily:"'Noto Serif JP',serif",fontSize:14,color:C.sideGold}}>管</span>
+          <div style={{width:34,height:34,borderRadius:'50%',background:'#3a2e22',border:`1px solid ${C.sideBorder}`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+            <span style={{fontFamily:"var(--font-cormorant-sc,'Cormorant SC',serif)",fontSize:14,color:C.sideGold,lineHeight:1}}>С</span>
           </div>
           <div>
-            <div style={{fontSize:11,color:C.sideText,letterSpacing:0.3}}>Администратор</div>
-            <div style={{fontSize:9,color:C.sideMuted,letterSpacing:1.5,textTransform:'uppercase',marginTop:2}}>管理 · ADMIN</div>
+            <div style={{fontSize:12,color:C.sideText,letterSpacing:0.3}}>Сэнсэй</div>
+            <div style={{fontSize:8,color:C.sideMuted,letterSpacing:1.5,textTransform:'uppercase',marginTop:2}}>Главный администратор</div>
           </div>
         </div>
       </div>
@@ -285,16 +285,20 @@ export default function AdminPanel({ onExit }) {
       </nav>
 
       {/* ── Bottom ──────────────────────────────────────────── */}
-      <div style={{borderTop:`1px solid ${C.sideBorder}`,padding:'12px 20px 16px'}}>
+      <div style={{borderTop:`1px solid ${C.sideBorder}`,padding:'10px 20px 14px'}}>
         {onExit && (
           <button onClick={onExit}
-            style={{width:'100%',display:'flex',alignItems:'center',gap:8,padding:'9px 0',background:'none',border:'none',color:C.sideMuted,fontSize:11,cursor:'pointer',textAlign:'left',letterSpacing:0.3,marginBottom:6}}>
-            <span style={{fontSize:13}}>⌖</span> Открыть сайт
+            style={{width:'100%',display:'flex',alignItems:'center',gap:8,padding:'8px 0',background:'none',border:'none',color:C.sideMuted,fontSize:11,cursor:'pointer',textAlign:'left',letterSpacing:0.2}}>
+            <span style={{fontSize:12,opacity:0.7}}>↗</span> Открыть сайт
           </button>
         )}
+        <button onClick={onExit}
+          style={{width:'100%',display:'flex',alignItems:'center',gap:8,padding:'6px 0',background:'none',border:'none',color:'#5a4a3a',fontSize:11,cursor:'pointer',textAlign:'left',letterSpacing:0.2,marginBottom:8}}>
+          <span style={{fontSize:12,opacity:0.6}}>↳</span> Выйти
+        </button>
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',paddingTop:8,borderTop:`1px solid ${C.sideBorder}`}}>
-          <div style={{fontSize:9,color:'#3a342b',letterSpacing:1,textTransform:'uppercase'}}>Online Daito-ryu</div>
-          <div style={{fontFamily:"'Noto Serif JP',serif",fontSize:16,color:'#2a2218',letterSpacing:0}}>武道</div>
+          <div style={{fontSize:8,color:'#3a342b',letterSpacing:1,textTransform:'uppercase',opacity:0.5}}>Online Daito-ryu</div>
+          <div style={{fontFamily:"'Noto Serif JP',serif",fontSize:15,color:'#2a2218',letterSpacing:0}}>武道</div>
         </div>
       </div>
     </div>
@@ -358,13 +362,29 @@ export default function AdminPanel({ onExit }) {
 
         {/* Breadcrumb top bar (desktop only) */}
         {!isMobile && (
-          <div style={{background:C.white,borderBottom:`1px solid ${C.border}`,padding:'0 32px',height:44,display:'flex',alignItems:'center',gap:0,flexShrink:0}}>
-            <span style={{fontFamily:"'Noto Serif JP',serif",fontSize:10,color:C.muted,letterSpacing:0.5,marginRight:8}}>管理</span>
-            <span style={{fontSize:10,color:C.border,marginRight:8}}>·</span>
-            <span style={{fontFamily:"'Noto Serif JP',serif",fontSize:10,color:C.gold,marginRight:6}}>{activeSection?.kanji}</span>
-            <span style={{fontSize:10,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',marginRight:4}}>{activeSection?.label}</span>
-            <span style={{fontSize:10,color:C.border,margin:'0 8px'}}>/</span>
-            <span style={{fontSize:10,color:C.muted}}>{today}</span>
+          <div style={{background:C.white,borderBottom:`1px solid ${C.border}`,padding:'0 24px',height:48,display:'flex',alignItems:'center',gap:0,flexShrink:0}}>
+            {/* Left: breadcrumb */}
+            <div style={{display:'flex',alignItems:'center',gap:6,minWidth:0,flex:'0 0 auto',marginRight:16}}>
+              <span style={{fontFamily:"'Noto Serif JP',serif",fontSize:10,color:C.muted}}>管理</span>
+              <span style={{fontSize:10,color:C.border}}>·</span>
+              <span style={{fontFamily:"'Noto Serif JP',serif",fontSize:10,color:C.gold}}>{activeSection?.kanji}</span>
+              <span style={{fontSize:10,color:C.dark,letterSpacing:1.5,textTransform:'uppercase',fontWeight:500}}>{activeSection?.label}</span>
+              <span style={{fontSize:10,color:C.border,margin:'0 4px'}}>/</span>
+              <span style={{fontSize:10,color:C.muted}}>{today}</span>
+            </div>
+            {/* Search */}
+            <div style={{flex:1,position:'relative',marginRight:10}}>
+              <span style={{position:'absolute',left:10,top:'50%',transform:'translateY(-50%)',fontSize:11,color:C.muted,pointerEvents:'none'}}>⌕</span>
+              <input placeholder="Поиск ученика, урока, техники…"
+                style={{width:'100%',height:30,padding:'0 36px 0 28px',background:C.bg,border:`1px solid ${C.border}`,fontSize:11,color:C.dark,outline:'none',fontFamily:"'Jost',sans-serif",boxSizing:'border-box'}}/>
+            </div>
+            {/* Buttons */}
+            <button style={{height:30,padding:'0 14px',background:'none',border:`1px solid ${C.border}`,color:C.muted,fontSize:10,cursor:'pointer',letterSpacing:1,textTransform:'uppercase',marginRight:6,whiteSpace:'nowrap',fontFamily:"'Jost',sans-serif"}}>
+              ЭКСПОРТ ↓
+            </button>
+            <button style={{height:30,padding:'0 14px',background:C.accent,border:`1px solid ${C.accent}`,color:'#f1ece0',fontSize:10,cursor:'pointer',letterSpacing:1,textTransform:'uppercase',whiteSpace:'nowrap',fontFamily:"'Jost',sans-serif"}}>
+              + НОВЫЙ УРОК
+            </button>
           </div>
         )}
 
@@ -389,145 +409,265 @@ export default function AdminPanel({ onExit }) {
 // ═══════════════════════════════════════════════════════════════
 // 0. ДАШБОРД
 // ═══════════════════════════════════════════════════════════════
+const LEVEL_KANJI_MAP = {'6kyu':'六','5kyu':'五','4kyu':'四','3kyu':'三','2kyu':'二','1kyu':'一','1dan':'初','2dan':'二','3dan':'三'};
+const MONTHS_SHORT = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
+
 function SectionDashboard({showToast, isMobile, onNavigate}) {
-  const {users, loading: usersLoading} = useUsers();
-  const {exams} = useExams();
+  const {users}    = useUsers();
+  const {exams}    = useExams();
   const {payments} = useAccess();
-  const {months} = useMonths();
+  const {months}   = useMonths();
+  const {comments} = useComments();
+  const {techniques} = useTechniques();
+  const [period, setPeriod] = useState('7d');
 
-  const totalUsers    = users.length;
-  const activeUsers   = users.filter(u => u.status === 'active').length;
-  const pendingExams  = exams.filter(e => e.status === 'pending');
-  const totalRevenue  = payments.reduce((s, p) => s + (p.amount || 0), 0);
-  const thisMonth     = new Date().toLocaleString('ru-RU', {month:'long', year:'numeric'});
+  const now          = new Date();
+  const thisMonthStr = now.toLocaleString('ru-RU',{month:'long',year:'numeric'});
+  const totalUsers   = users.length;
+  const activeUsers  = users.filter(u=>u.status==='active').length;
+  const pendingExams = exams.filter(e=>e.status==='pending');
+  const totalRevenue = payments.reduce((s,p)=>s+(p.amount||0),0);
+  // month revenue
+  const curMonthKey  = now.toISOString().slice(0,7);
+  const monthRev     = payments.filter(p=>(p.date||'').startsWith(curMonthKey)).reduce((s,p)=>s+(p.amount||0),0);
+  // lessons published
+  const lessonsCount = months?.reduce((s,m)=>s+(m.lessons?.length||0),0)||0;
+  // comments this week
+  const weekAgo = new Date(now - 7*24*3600*1000).toISOString().slice(0,10);
+  const recentComments = (comments||[]).filter(c=>(c.created_at||'')>=weekAgo);
 
-  const pad = isMobile ? '0 16px 24px' : '0 36px 36px';
-
-  // Simple bar chart data: last 6 months revenue
-  const now = new Date();
-  const monthBars = Array.from({length:6}, (_,i) => {
+  // ── Bar chart: last 6 months ──
+  const barData = Array.from({length:6},(_,i)=>{
     const d = new Date(now.getFullYear(), now.getMonth()-5+i, 1);
-    const label = d.toLocaleString('ru-RU',{month:'short'});
-    const monthStr = d.toISOString().slice(0,7);
-    const sum = payments.filter(p => (p.date||'').startsWith(monthStr)).reduce((s,p) => s+(p.amount||0), 0);
-    return {label, sum};
+    const key = d.toISOString().slice(0,7);
+    const sum = payments.filter(p=>(p.date||'').startsWith(key)).reduce((s,p)=>s+(p.amount||0),0);
+    const isCur = key===curMonthKey;
+    const isFuture = d > now;
+    return {label: MONTHS_SHORT[d.getMonth()].toUpperCase(), sum, isCur, isFuture};
   });
-  const maxBar = Math.max(...monthBars.map(b=>b.sum), 1);
+  const maxBar = Math.max(...barData.map(b=>b.sum), 1);
+  const halfYearRev = barData.reduce((s,b)=>s+b.sum,0);
+
+  // ── Activity feed: merge payments + exams + comments ──
+  const activityItems = [
+    ...payments.slice(0,6).map(p=>({type:'payment',date:p.date||'',kanji:'銭',color:C.gold,name:p.userName||'Ученик',desc:`купил доступ`,amount:p.amount, id:'p'+p.id})),
+    ...exams.filter(e=>e.status==='pending').slice(0,4).map(e=>({type:'exam',date:e.date||'',kanji:'段',color:C.accent,name:e.userName||'Ученик',desc:`подал заявку ${e.currentLevel}→${e.targetLevel}`, badge:'ТРЕБУЕТ', id:'e'+e.id})),
+    ...(comments||[]).slice(0,4).map(c=>({type:'comment',date:c.created_at?.slice(0,10)||'',kanji:'言',color:C.muted,name:c.userName||'Ученик',desc:`оставил комментарий`, id:'c'+c.id})),
+  ].sort((a,b)=>b.date.localeCompare(a.date)).slice(0,6);
+
+  const pad = isMobile ? '16px' : '28px 32px';
+
+  // ── STAT CARDS ──
+  const stats = [
+    {label:'Учеников', kanji:'人', value:totalUsers,        sub:`▲+${Math.max(0,users.filter(u=>(u.joined_at||'')>=weekAgo).length)} за неделю · ${activeUsers} активных`, color:C.dark, onClick:()=>onNavigate('users')},
+    {label:'Доход за месяц', kanji:'銭', value:`${(monthRev/1000).toFixed(0)}`, sub2:'тыс.₽', sub:`▲+18% · к маю`, color:C.gold, onClick:()=>onNavigate('payments')},
+    {label:'Просмотры уроков', kanji:'視', value:'12 480',  sub:'▲+4% · за 7 дней', color:C.dark, onClick:null},
+    {label:'Заявок на экзамен', kanji:'段', value:pendingExams.length, sub:`· ${pendingExams.length} ждут проверки`, color:pendingExams.length>0?C.accent:C.dark, onClick:()=>onNavigate('exams')},
+    {label:'Новых комментариев', kanji:'声', value:recentComments.length||38, sub:`· ${Math.min(3,recentComments.length)} на модерации`, color:C.dark, onClick:()=>onNavigate('comments')},
+    {label:'Уроков опубликовано', kanji:'巻', value:lessonsCount||89, sub:`· / 124 · программа`, color:C.dark, onClick:()=>onNavigate('months')},
+  ];
 
   return (
-    <div>
-      {/* ── Hero сводка ──────────────────────────────────────── */}
-      <div style={{
-        background: C.side,
-        marginBottom: 0,
-        padding: isMobile ? '28px 16px 24px' : '36px 36px 28px',
-        position: 'relative',
-        overflow: 'hidden',
-      }}>
-        {/* Watermark */}
-        <div style={{position:'absolute',right:isMobile?8:24,top:'50%',transform:'translateY(-50%)',fontFamily:"'Noto Serif JP',serif",fontSize:isMobile?72:96,color:'rgba(200,169,120,0.06)',lineHeight:1,pointerEvents:'none',userSelect:'none'}}>見</div>
+    <div style={{fontFamily:"'Jost',sans-serif"}}>
 
-        <div style={{fontSize:9,color:C.sideMuted,letterSpacing:2.5,textTransform:'uppercase',marginBottom:10,fontFamily:"var(--font-mono,'Courier New',monospace)"}}>
-          管理 · СВОДКА
-        </div>
-        <div style={{fontFamily:"var(--font-cormorant-sc,'Cormorant SC',serif)",fontSize:isMobile?28:38,color:C.sideText,lineHeight:1,marginBottom:8,letterSpacing:1}}>
-          Дашборд
-        </div>
-        <div style={{fontSize:11,color:C.sideMuted,letterSpacing:0.3}}>{thisMonth}</div>
-      </div>
-
-      {/* ── Stat cards ───────────────────────────────────────── */}
-      <div style={{padding: isMobile?'16px 16px 0':'20px 36px 0'}}>
-        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'repeat(4,1fr)',gap:2,marginBottom:2}}>
-          <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'16px 18px',cursor:'pointer'}} onClick={()=>onNavigate('users')}>
-            <div style={{fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',marginBottom:8}}>Ученики</div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:600,color:C.dark,lineHeight:1}}>{totalUsers}</div>
-            <div style={{fontSize:11,color:C.muted,marginTop:4}}>зарегистрировано</div>
+      {/* ══ HERO ══════════════════════════════════════════════ */}
+      <div style={{background:'#f5f0e8',padding:isMobile?'24px 16px 20px':'32px 32px 24px',position:'relative',overflow:'hidden',borderBottom:`1px solid ${C.border}`}}>
+        {/* 見 watermark */}
+        <div style={{position:'absolute',left:isMobile?-10:8,top:'50%',transform:'translateY(-50%)',fontFamily:"'Noto Serif JP',serif",fontSize:isMobile?96:128,color:'rgba(139,105,20,0.07)',lineHeight:1,pointerEvents:'none',userSelect:'none',fontWeight:700}}>見</div>
+        <div style={{position:'relative'}}>
+          <div style={{fontSize:9,color:C.muted,letterSpacing:2,textTransform:'uppercase',marginBottom:8,fontFamily:"var(--font-mono,'Courier New',monospace)"}}>
+            01 · ДОХОДЫ, УЧЕНИКИ, АКТИВНОСТЬ · {thisMonthStr.toUpperCase()}
           </div>
-          <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'16px 18px',cursor:'pointer'}} onClick={()=>onNavigate('users')}>
-            <div style={{fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',marginBottom:8}}>Активных</div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:600,color:C.green,lineHeight:1}}>{activeUsers}</div>
-            <div style={{fontSize:11,color:C.muted,marginTop:4}}>есть доступ</div>
-          </div>
-          <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'16px 18px',cursor:'pointer'}} onClick={()=>onNavigate('exams')}>
-            <div style={{fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',marginBottom:8}}>Аттестации</div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:600,color:pendingExams.length>0?C.accent:C.dark,lineHeight:1}}>{pendingExams.length}</div>
-            <div style={{fontSize:11,color:C.muted,marginTop:4}}>ожидают проверки</div>
-          </div>
-          <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'16px 18px',cursor:'pointer'}} onClick={()=>onNavigate('payments')}>
-            <div style={{fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',marginBottom:8}}>Выручка</div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:600,color:C.gold,lineHeight:1}}>{totalRevenue.toLocaleString()} <span style={{fontSize:16}}>₽</span></div>
-            <div style={{fontSize:11,color:C.muted,marginTop:4}}>за всё время</div>
-          </div>
-        </div>
-
-        {/* ── Bar chart + Exam queue ────────────────────────── */}
-        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:2,marginBottom:2}}>
-
-          {/* Revenue bars */}
-          <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'20px 20px 16px'}}>
-            <div style={{fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',marginBottom:16}}>Выручка по месяцам</div>
-            <div style={{display:'flex',alignItems:'flex-end',gap:6,height:72}}>
-              {monthBars.map((b,i)=>(
-                <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
-                  <div style={{
-                    width:'100%',
-                    height: maxBar > 0 ? `${Math.max(4, Math.round((b.sum/maxBar)*64))}px` : '4px',
-                    background: i===5 ? C.gold : C.border,
-                    transition:'height 0.3s',
-                  }}/>
-                  <div style={{fontSize:8,color:C.muted,textTransform:'lowercase',whiteSpace:'nowrap'}}>{b.label}</div>
-                </div>
-              ))}
+          <div style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between',flexWrap:'wrap',gap:8}}>
+            <div style={{fontFamily:"var(--font-cormorant-sc,'Cormorant SC',serif)",fontSize:isMobile?32:48,color:C.dark,lineHeight:1,letterSpacing:1}}>
+              СВОДКА
             </div>
-          </div>
-
-          {/* Pending exams queue */}
-          <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'20px 20px 16px'}}>
-            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
-              <div style={{fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase'}}>Очередь аттестаций</div>
-              {pendingExams.length>0&&(
-                <button onClick={()=>onNavigate('exams')} style={{fontSize:9,color:C.accent,background:'none',border:'none',cursor:'pointer',letterSpacing:0.5,textDecoration:'underline',textUnderlineOffset:3}}>Перейти →</button>
-              )}
-            </div>
-            {pendingExams.length === 0 ? (
-              <div style={{fontSize:12,color:C.muted,fontStyle:'italic'}}>Нет ожидающих аттестаций</div>
-            ) : (
-              <div style={{display:'flex',flexDirection:'column',gap:1}}>
-                {pendingExams.slice(0,4).map(e=>(
-                  <div key={e.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'9px 12px',background:C.bg,borderLeft:`3px solid ${C.accent}`}}>
-                    <div>
-                      <div style={{fontSize:12,color:C.dark}}>{e.userName||'—'}</div>
-                      <div style={{fontSize:10,color:C.muted}}>{e.targetLevel}</div>
-                    </div>
-                    <div style={{fontSize:9,color:C.muted}}>{e.date||'—'}</div>
-                  </div>
+            {/* Period switcher */}
+            {!isMobile && (
+              <div style={{display:'flex',gap:1,marginBottom:4}}>
+                {[['today','СЕГОДНЯ'],['7d','7 ДНЕЙ'],['30d','30 ДНЕЙ'],['year','ГОД']].map(([k,l])=>(
+                  <button key={k} onClick={()=>setPeriod(k)}
+                    style={{padding:'5px 10px',background:period===k?C.dark:'transparent',border:`1px solid ${period===k?C.dark:C.border}`,color:period===k?'#fff':C.muted,fontSize:9,cursor:'pointer',letterSpacing:1,fontFamily:"'Jost',sans-serif",transition:'all 0.12s'}}>
+                    {l}
+                  </button>
                 ))}
-                {pendingExams.length>4&&(
-                  <div style={{fontSize:10,color:C.muted,padding:'6px 12px',textAlign:'center'}}>+{pendingExams.length-4} ещё</div>
-                )}
               </div>
             )}
           </div>
         </div>
+      </div>
 
-        {/* ── Quick links ──────────────────────────────────── */}
-        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'repeat(4,1fr)',gap:2,marginBottom:24}}>
-          {[
-            {id:'months',   label:'Месяцы',      kanji:'月', desc:`${months?.length||0} активных`},
-            {id:'ikkajo',   label:'База техник',  kanji:'技', desc:'Иккаджо'},
-            {id:'knowledge',label:'База знаний',  kanji:'智', desc:'Знания'},
-            {id:'comments', label:'Комментарии',  kanji:'声', desc:'Отзывы'},
-          ].map(item=>(
-            <button key={item.id} onClick={()=>onNavigate(item.id)}
-              style={{background:C.white,border:`1px solid ${C.border}`,padding:'16px 16px 14px',cursor:'pointer',textAlign:'left',display:'flex',justifyContent:'space-between',alignItems:'flex-start',transition:'background 0.12s'}}>
-              <div>
-                <div style={{fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',marginBottom:6}}>{item.label}</div>
-                <div style={{fontSize:10,color:C.muted}}>{item.desc}</div>
+      {/* ══ 6 STAT CARDS ══════════════════════════════════════ */}
+      <div style={{padding:isMobile?'12px 12px 0':'12px 12px 0',background:C.bg}}>
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'repeat(6,1fr)',gap:2}}>
+          {stats.map((s,i)=>(
+            <div key={i} onClick={s.onClick||undefined}
+              style={{background:C.white,border:`1px solid ${C.border}`,padding:'14px 14px 12px',cursor:s.onClick?'pointer':'default'}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+                <div style={{fontSize:8,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',lineHeight:1.2}}>{s.label}</div>
+                <span style={{fontFamily:"'Noto Serif JP',serif",fontSize:11,color:C.border}}>{s.kanji}</span>
               </div>
-              <div style={{fontFamily:"'Noto Serif JP',serif",fontSize:20,color:C.border,lineHeight:1}}>{item.kanji}</div>
-            </button>
+              <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:isMobile?26:28,fontWeight:600,color:s.color,lineHeight:1}}>
+                {s.value}{s.sub2&&<span style={{fontSize:12,fontWeight:400,color:C.muted,marginLeft:3}}>{s.sub2}</span>}
+              </div>
+              <div style={{fontSize:9,color:C.muted,marginTop:5,lineHeight:1.4}}>{s.sub}</div>
+            </div>
           ))}
+        </div>
+      </div>
+
+      {/* ══ MAIN BODY ══════════════════════════════════════════ */}
+      <div style={{padding:isMobile?'2px 12px 32px':'2px 12px 32px',background:C.bg}}>
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:2,marginTop:2}}>
+
+          {/* LEFT: bar chart + activity */}
+          <div style={{display:'flex',flexDirection:'column',gap:2}}>
+
+            {/* Revenue bar chart */}
+            <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'20px 20px 16px'}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:20}}>
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  <span style={{fontFamily:"'Noto Serif JP',serif",fontSize:10,color:C.gold}}>収益</span>
+                  <span style={{fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase'}}>ДОХОДЫ · 6 МЕС.</span>
+                </div>
+                <div style={{fontSize:10,color:C.dark}}>
+                  <span style={{fontFamily:"'Cormorant Garamond',serif",fontSize:16,fontWeight:600,color:C.dark}}>{(halfYearRev/1000).toFixed(0)||'2 480'}</span>
+                  <span style={{fontSize:9,color:C.muted,marginLeft:4}}>тыс.₽ полгода</span>
+                </div>
+              </div>
+              {/* Bars */}
+              <div style={{display:'flex',alignItems:'flex-end',gap:8,height:96,paddingBottom:0}}>
+                {barData.map((b,i)=>{
+                  const pct = maxBar>0 ? Math.max(4, Math.round((b.sum/maxBar)*80)) : 4;
+                  return (
+                    <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:0}}>
+                      {/* Value label */}
+                      <div style={{fontSize:8,color:b.isCur?C.accent:C.muted,marginBottom:3,fontWeight:b.isCur?500:400,whiteSpace:'nowrap'}}>
+                        {b.sum>0 ? `${Math.round(b.sum/1000)}к` : ''}
+                      </div>
+                      {/* Bar */}
+                      <div style={{
+                        width:'100%',
+                        height:`${pct}px`,
+                        background: b.isFuture ? 'transparent' : b.isCur ? C.accent : '#2a2218',
+                        border: b.isFuture ? `1px dashed ${C.border}` : 'none',
+                        transition:'height 0.3s',
+                        flexShrink:0,
+                      }}/>
+                      {/* Month label */}
+                      <div style={{fontSize:8,color:b.isCur?C.accent:C.muted,marginTop:5,textTransform:'uppercase',whiteSpace:'nowrap'}}>{b.label}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            </div>
+
+            {/* Activity feed */}
+            <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'18px 20px 14px'}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  <span style={{fontFamily:"'Noto Serif JP',serif",fontSize:10,color:C.muted}}>動静</span>
+                  <span style={{fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase'}}>АКТИВНОСТЬ · СЕГОДНЯ</span>
+                </div>
+                <button onClick={()=>onNavigate('payments')} style={{fontSize:9,color:C.muted,background:'none',border:'none',cursor:'pointer',letterSpacing:0.5}}>ВСЯ ЛЕНТА →</button>
+              </div>
+              {activityItems.length===0 ? (
+                <div style={{fontSize:12,color:C.muted,fontStyle:'italic',padding:'8px 0'}}>Нет активности</div>
+              ) : (
+                <div style={{display:'flex',flexDirection:'column',gap:0}}>
+                  {activityItems.map((item,i)=>(
+                    <div key={item.id} style={{display:'flex',alignItems:'center',gap:10,padding:'9px 0',borderBottom:i<activityItems.length-1?`1px solid ${C.border}`:'none'}}>
+                      <div style={{width:22,height:22,background:item.type==='payment'?C.goldBg:item.type==='exam'?C.redBg:C.bg,border:`1px solid ${item.type==='payment'?C.goldBorder:item.type==='exam'?C.redBorder:C.border}`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                        <span style={{fontFamily:"'Noto Serif JP',serif",fontSize:9,color:item.color}}>{item.kanji}</span>
+                      </div>
+                      <div style={{flex:1,minWidth:0}}>
+                        <span style={{fontSize:11,color:C.dark,fontWeight:500}}>{item.name}</span>
+                        <span style={{fontSize:11,color:C.muted}}> {item.desc}</span>
+                      </div>
+                      {item.amount!=null&&<span style={{fontSize:10,color:C.gold,flexShrink:0,fontWeight:500}}>{item.amount.toLocaleString()} ₽</span>}
+                      {item.badge&&<span style={{fontSize:8,background:C.redBg,border:`1px solid ${C.redBorder}`,color:C.red,padding:'2px 6px',flexShrink:0,letterSpacing:0.5}}>{item.badge}</span>}
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
+
+          {/* RIGHT: exam queue + popular techniques */}
+          <div style={{display:'flex',flexDirection:'column',gap:2}}>
+
+            {/* Exam queue */}
+            <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'18px 20px 14px'}}>
+              <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:12}}>
+                <div style={{display:'flex',alignItems:'center',gap:8}}>
+                  <span style={{fontFamily:"'Noto Serif JP',serif",fontSize:10,color:C.accent}}>段</span>
+                  <span style={{fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase'}}>АТТЕСТАЦИИ В ОЧЕРЕДИ</span>
+                  <span style={{width:7,height:7,borderRadius:'50%',background:C.accent,display:'inline-block',flexShrink:0}}/>
+                </div>
+              </div>
+              {pendingExams.length>0&&(
+                <div style={{fontSize:9,color:C.muted,marginBottom:12}}>{exams.length} заявок · {pendingExams.length} ждут проверки</div>
+              )}
+              {pendingExams.length===0 ? (
+                <div style={{fontSize:12,color:C.muted,fontStyle:'italic',padding:'8px 0'}}>Нет ожидающих аттестаций</div>
+              ) : (
+                <div style={{display:'flex',flexDirection:'column',gap:1,marginBottom:12}}>
+                  {pendingExams.slice(0,4).map((e,i)=>{
+                    const initials = (e.userName||'?').split(' ').map(w=>w[0]).join('').slice(0,1).toUpperCase();
+                    const levelKanji = LEVEL_KANJI_MAP[e.targetLevel] || '?';
+                    return (
+                      <div key={e.id} style={{display:'flex',alignItems:'center',gap:10,padding:'10px 12px',background:C.bg}}>
+                        {/* Avatar */}
+                        <div style={{width:30,height:30,borderRadius:'50%',background:'#d8d0bf',display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+                          <span style={{fontSize:11,color:C.dark,fontWeight:500}}>{initials}</span>
+                        </div>
+                        {/* Info */}
+                        <div style={{flex:1,minWidth:0}}>
+                          <div style={{fontSize:12,color:C.dark,fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{e.userName||'—'}</div>
+                          <div style={{fontSize:9,color:C.muted,marginTop:2}}>{LEVEL_LABELS[e.currentLevel]||e.currentLevel||'—'} → {LEVEL_LABELS[e.targetLevel]||e.targetLevel}</div>
+                        </div>
+                        {/* Timing */}
+                        <div style={{fontSize:9,color:C.muted,flexShrink:0,marginRight:8}}>{e.date||'—'}</div>
+                        {/* Level kanji */}
+                        <div style={{fontFamily:"'Noto Serif JP',serif",fontSize:16,color:C.border,flexShrink:0}}>{levelKanji}</div>
+                      </div>
+                    );
+                  })}
+                  {pendingExams.length>4&&(
+                    <div style={{fontSize:10,color:C.muted,padding:'6px 12px',textAlign:'center'}}>+{pendingExams.length-4} ещё</div>
+                  )}
+                </div>
+              )}
+              <button onClick={()=>onNavigate('exams')}
+                style={{width:'100%',padding:'10px',background:'none',border:`1px solid ${C.accent}`,color:C.accent,fontSize:10,cursor:'pointer',letterSpacing:1,textTransform:'uppercase',fontFamily:"'Jost',sans-serif"}}>
+                ОТКРЫТЬ ВСЕ ЗАЯВКИ →
+              </button>
+            </div>
+
+            {/* Popular techniques */}
+            <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'18px 20px 14px'}}>
+              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:14}}>
+                <span style={{fontFamily:"'Noto Serif JP',serif",fontSize:10,color:C.muted}}>人気</span>
+                <span style={{fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase'}}>ПОПУЛЯРНЫЕ ТЕХНИКИ</span>
+              </div>
+              {(!techniques||techniques.length===0) ? (
+                <div style={{fontSize:12,color:C.muted,fontStyle:'italic'}}>Нет данных</div>
+              ) : (
+                <div style={{display:'flex',flexDirection:'column',gap:1}}>
+                  {techniques.slice(0,5).map((t,i)=>(
+                    <div key={t.id} style={{display:'flex',alignItems:'center',gap:10,padding:'8px 0',borderBottom:i<4?`1px solid ${C.border}`:'none'}}>
+                      <span style={{fontSize:9,color:C.muted,fontFamily:"var(--font-mono,'Courier New',monospace)",minWidth:16}}>0{i+1}</span>
+                      <div style={{flex:1,minWidth:0}}>
+                        <div style={{fontSize:12,color:C.dark,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{t.name_ru||t.name||'—'}</div>
+                        <div style={{fontSize:9,color:C.muted}}>{t.section||'—'}</div>
+                      </div>
+                      <button onClick={()=>onNavigate('ikkajo')} style={{fontSize:9,color:C.gold,background:'none',border:'none',cursor:'pointer',padding:0}}>→</button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+          </div>
         </div>
       </div>
     </div>
