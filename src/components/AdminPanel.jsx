@@ -33,6 +33,15 @@ const C = {
   redBg:       '#fff8f7',
   redBorder:   '#e8c0c0',
   blue:        '#2a5a9a',
+  // dark sidebar
+  side:        '#0f0d0a',
+  sideBorder:  '#2a2520',
+  sideText:    '#f1ece0',
+  sideMuted:   '#6f6452',
+  sideHover:   '#1e1a15',
+  sideActive:  '#2a2218',
+  sideGold:    '#c8a978',
+  accent:      '#9e2f1f',
 };
 
 // ── Mobile breakpoint hook ──────────────────────────────────────
@@ -180,18 +189,20 @@ function VideoInput({ videoUrl, onChange, onSave, saving }) {
 // ═══════════════════════════════════════════════════════════════
 
 const SECTIONS = [
-  {id:'users',     icon:'◉', label:'Пользователи'},
-  {id:'access',    icon:'🔑', label:'Доступы'},
-  {id:'knowledge', icon:'📖', label:'База знаний'},
-  {id:'exams',     icon:'✦', label:'Экзамены'},
-  {id:'payments',  icon:'◈', label:'Оплаты'},
-  {id:'months',    icon:'◧', label:'Месяцы'},
-  {id:'ikkajo',    icon:'一', label:'Иккаджо'},
-  {id:'comments',  icon:'◎', label:'Комментарии'},
+  {id:'dashboard', num:'01', label:'Дашборд',         kanji:'見'},
+  {id:'users',     num:'02', label:'Ученики',          kanji:'人'},
+  {id:'months',    num:'03', label:'Месяцы и уроки',   kanji:'月'},
+  {id:'ikkajo',    num:'04', label:'База техник',      kanji:'技'},
+  {id:'payments',  num:'05', label:'Платежи',          kanji:'銭'},
+  {id:'exams',     num:'06', label:'Аттестации',       kanji:'段'},
+  {id:'comments',  num:'07', label:'Комментарии',      kanji:'声'},
+  // extra (not in nav, but kept functional)
+  {id:'knowledge', num:'',   label:'База знаний',      kanji:'智', hidden:true},
+  {id:'access',    num:'',   label:'Доступы',          kanji:'鍵', hidden:true},
 ];
 
 export default function AdminPanel({ onExit }) {
-  const [section,       setSection]       = useState('users');
+  const [section,       setSection]       = useState('dashboard');
   const [toast,         setToast]         = useState(false);
   const [drawerOpen,    setDrawerOpen]    = useState(false);
   const isMobile = useIsMobile();
@@ -213,51 +224,91 @@ export default function AdminPanel({ onExit }) {
   };
 
   const SidebarContent = () => (
-    <>
-      <div style={{padding:'16px 18px',borderBottom:`1px solid ${C.border}`}}>
-        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:10}}>
-          <div style={{fontFamily:"'Noto Serif JP',serif",fontSize:24,color:C.gold,lineHeight:1}}>合</div>
-          <div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:12,fontWeight:600,letterSpacing:3,color:C.dark}}>ADMIN</div>
-            <div style={{fontSize:9,color:C.muted,letterSpacing:1}}>ONLINE DOJO</div>
-          </div>
-          {isMobile && (
-            <button onClick={()=>setDrawerOpen(false)}
-              style={{marginLeft:'auto',background:'none',border:'none',fontSize:20,color:C.muted,cursor:'pointer',lineHeight:1,padding:'4px'}}>
-              ✕
-            </button>
-          )}
+    <div style={{display:'flex',flexDirection:'column',height:'100%',background:C.side}}>
+
+      {/* ── Logo ────────────────────────────────────────────── */}
+      <div style={{padding:'20px 20px 16px',borderBottom:`1px solid ${C.sideBorder}`,display:'flex',alignItems:'center',gap:10}}>
+        {/* Diamond logo */}
+        <div style={{width:32,height:32,flexShrink:0,display:'flex',alignItems:'center',justifyContent:'center'}}>
+          <svg viewBox="0 0 32 32" width="32" height="32" fill="none">
+            <polygon points="16,2 30,16 16,30 2,16" stroke={C.sideGold} strokeWidth="1.2" fill="none"/>
+            <polygon points="16,7 25,16 16,25 7,16" fill={C.sideGold} opacity="0.15"/>
+            <line x1="16" y1="2" x2="16" y2="30" stroke={C.sideGold} strokeWidth="0.6" opacity="0.4"/>
+            <line x1="2" y1="16" x2="30" y2="16" stroke={C.sideGold} strokeWidth="0.6" opacity="0.4"/>
+          </svg>
         </div>
-        <DBBadge/>
+        <div style={{flex:1,minWidth:0}}>
+          <div style={{fontFamily:"var(--font-cormorant-sc,'Cormorant SC',serif)",fontSize:10,letterSpacing:2.5,color:C.sideText,lineHeight:1.2}}>ONLINE DAITO-RYU</div>
+          <div style={{fontFamily:"'Noto Serif JP',serif",fontSize:9,color:C.sideMuted,letterSpacing:0.5,marginTop:2}}>合気武道</div>
+        </div>
+        {isMobile && (
+          <button onClick={()=>setDrawerOpen(false)}
+            style={{background:'none',border:'none',color:C.sideMuted,cursor:'pointer',fontSize:18,lineHeight:1,padding:'4px',flexShrink:0}}>
+            ✕
+          </button>
+        )}
       </div>
 
+      {/* ── Admin badge ──────────────────────────────────────── */}
+      <div style={{padding:'14px 20px 12px',borderBottom:`1px solid ${C.sideBorder}`}}>
+        <div style={{display:'flex',alignItems:'center',gap:10}}>
+          <div style={{width:34,height:34,borderRadius:'50%',background:C.sideActive,border:`1px solid ${C.sideBorder}`,display:'flex',alignItems:'center',justifyContent:'center',flexShrink:0}}>
+            <span style={{fontFamily:"'Noto Serif JP',serif",fontSize:14,color:C.sideGold}}>管</span>
+          </div>
+          <div>
+            <div style={{fontSize:11,color:C.sideText,letterSpacing:0.3}}>Администратор</div>
+            <div style={{fontSize:9,color:C.sideMuted,letterSpacing:1.5,textTransform:'uppercase',marginTop:2}}>管理 · ADMIN</div>
+          </div>
+        </div>
+      </div>
+
+      {/* ── Nav ─────────────────────────────────────────────── */}
       <nav style={{flex:1,padding:'8px 0',overflowY:'auto'}}>
-        {SECTIONS.map(s=>(
-          <button key={s.id} onClick={()=>handleSectionSelect(s.id)}
-            style={{width:'100%',display:'flex',alignItems:'center',gap:10,padding:'13px 18px',background:section===s.id?C.goldBg:'none',border:'none',borderLeft:`2px solid ${section===s.id?C.gold:'transparent'}`,color:section===s.id?C.dark:C.muted,fontSize:13,textAlign:'left',cursor:'pointer',transition:'all 0.12s',position:'relative',minHeight:44}}>
-            <span style={{fontSize:section===s.id?11:10,color:section===s.id?C.gold:'#ccc',fontFamily:s.id==='ikkajo'?"'Noto Serif JP',serif":'inherit'}}>{s.icon}</span>
-            {s.label}
-            {s.id==='exams'&&pendingCount>0&&<span style={{marginLeft:'auto',background:C.red,color:'#fff',fontSize:9,padding:'1px 6px',borderRadius:10}}>{pendingCount}</span>}
-          </button>
-        ))}
+        {SECTIONS.filter(s=>!s.hidden).map(s=>{
+          const isActive = section === s.id;
+          return (
+            <button key={s.id} onClick={()=>handleSectionSelect(s.id)}
+              style={{width:'100%',display:'flex',alignItems:'center',gap:0,padding:'12px 20px',background:isActive?C.sideActive:'transparent',border:'none',borderLeft:`2px solid ${isActive?C.sideGold:'transparent'}`,cursor:'pointer',transition:'all 0.12s',position:'relative',minHeight:44,textAlign:'left'}}>
+              {/* Number */}
+              <span style={{fontFamily:"var(--font-mono,'Courier New',monospace)",fontSize:9,color:isActive?C.sideGold:C.sideMuted,letterSpacing:0.5,minWidth:24,flexShrink:0}}>{s.num}</span>
+              {/* Label */}
+              <span style={{fontSize:12,color:isActive?C.sideText:'#a09880',flex:1,letterSpacing:0.2}}>{s.label}</span>
+              {/* Badge */}
+              {s.id==='exams'&&pendingCount>0&&(
+                <span style={{background:C.accent,color:'#fff',fontSize:8,padding:'1px 5px',borderRadius:10,marginRight:6}}>{pendingCount}</span>
+              )}
+              {/* Kanji */}
+              <span style={{fontFamily:"'Noto Serif JP',serif",fontSize:13,color:isActive?C.sideGold:C.sideBorder,letterSpacing:0,flexShrink:0}}>{s.kanji}</span>
+            </button>
+          );
+        })}
       </nav>
 
-      {onExit && (
-        <div style={{borderTop:`1px solid ${C.border}`,padding:'12px 16px'}}>
-          <button onClick={onExit} style={{width:'100%',padding:'10px 12px',background:'none',border:`1px solid ${C.border}`,color:C.muted,fontSize:12,cursor:'pointer',textAlign:'left',minHeight:40}}>
-            ← Вернуться на сайт
+      {/* ── Bottom ──────────────────────────────────────────── */}
+      <div style={{borderTop:`1px solid ${C.sideBorder}`,padding:'12px 20px 16px'}}>
+        {onExit && (
+          <button onClick={onExit}
+            style={{width:'100%',display:'flex',alignItems:'center',gap:8,padding:'9px 0',background:'none',border:'none',color:C.sideMuted,fontSize:11,cursor:'pointer',textAlign:'left',letterSpacing:0.3,marginBottom:6}}>
+            <span style={{fontSize:13}}>⌖</span> Открыть сайт
           </button>
+        )}
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',paddingTop:8,borderTop:`1px solid ${C.sideBorder}`}}>
+          <div style={{fontSize:9,color:'#3a342b',letterSpacing:1,textTransform:'uppercase'}}>Online Daito-ryu</div>
+          <div style={{fontFamily:"'Noto Serif JP',serif",fontSize:16,color:'#2a2218',letterSpacing:0}}>武道</div>
         </div>
-      )}
-    </>
+      </div>
+    </div>
   );
+
+  const activeSection = SECTIONS.find(s=>s.id===section);
+  const today = new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
 
   return (
     <div style={{display:'flex',minHeight:'100vh',background:C.bg,fontFamily:"'Jost',sans-serif",color:C.dark,position:'relative'}}>
 
       {/* ── Desktop sidebar ─────────────────────────────────── */}
       {!isMobile && (
-        <aside style={{width:220,background:C.white,borderRight:`1px solid ${C.border}`,display:'flex',flexDirection:'column',flexShrink:0,position:'sticky',top:0,height:'100vh'}}>
+        <aside style={{width:228,background:C.side,borderRight:`1px solid ${C.sideBorder}`,display:'flex',flexDirection:'column',flexShrink:0,position:'sticky',top:0,height:'100vh'}}>
           <SidebarContent/>
         </aside>
       )}
@@ -266,32 +317,32 @@ export default function AdminPanel({ onExit }) {
       {isMobile && (
         <>
           {/* Top bar */}
-          <div style={{position:'fixed',top:0,left:0,right:0,zIndex:200,background:C.white,borderBottom:`1px solid ${C.border}`,display:'flex',alignItems:'center',padding:'0 16px',height:52}}>
+          <div style={{position:'fixed',top:0,left:0,right:0,zIndex:200,background:C.side,borderBottom:`1px solid ${C.sideBorder}`,display:'flex',alignItems:'center',padding:'0 16px',height:52}}>
             <button onClick={()=>setDrawerOpen(true)}
-              style={{background:'none',border:'none',fontSize:22,cursor:'pointer',color:C.dark,padding:'8px',marginRight:8,lineHeight:1,minWidth:40,minHeight:40}}>
+              style={{background:'none',border:'none',fontSize:22,cursor:'pointer',color:C.sideMuted,padding:'8px',marginRight:8,lineHeight:1,minWidth:40,minHeight:40}}>
               ☰
             </button>
-            <div style={{fontFamily:"'Noto Serif JP',serif",fontSize:18,color:C.gold,marginRight:8}}>合</div>
-            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:13,fontWeight:600,letterSpacing:2,color:C.dark}}>
-              {SECTIONS.find(s=>s.id===section)?.label || 'ADMIN'}
+            <div style={{fontFamily:"'Noto Serif JP',serif",fontSize:16,color:C.sideGold,marginRight:8}}>管</div>
+            <div style={{fontFamily:"var(--font-cormorant-sc,'Cormorant SC',serif)",fontSize:11,letterSpacing:2,color:C.sideText}}>
+              {activeSection?.label || 'ADMIN'}
             </div>
             {pendingCount>0 && (
-              <span style={{marginLeft:8,background:C.red,color:'#fff',fontSize:9,padding:'1px 6px',borderRadius:10}}>{pendingCount}</span>
+              <span style={{marginLeft:8,background:C.accent,color:'#fff',fontSize:9,padding:'1px 6px',borderRadius:10}}>{pendingCount}</span>
             )}
           </div>
 
           {/* Overlay */}
           {drawerOpen && (
             <div onClick={()=>setDrawerOpen(false)}
-              style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.45)',zIndex:299}}/>
+              style={{position:'fixed',inset:0,background:'rgba(0,0,0,0.55)',zIndex:299}}/>
           )}
 
           {/* Drawer */}
           <aside style={{
             position:'fixed',top:0,left:0,bottom:0,
-            width:280,
-            background:C.white,
-            borderRight:`1px solid ${C.border}`,
+            width:260,
+            background:C.side,
+            borderRight:`1px solid ${C.sideBorder}`,
             display:'flex',flexDirection:'column',
             zIndex:300,
             transform:drawerOpen?'translateX(0)':'translateX(-100%)',
@@ -303,13 +354,22 @@ export default function AdminPanel({ onExit }) {
       )}
 
       {/* ── Main content ────────────────────────────────────── */}
-      <main style={{
-        flex:1,
-        overflow:'auto',
-        minWidth:0,
-        paddingTop: isMobile ? 52 : 0,
-      }}>
-        <div key={section}>
+      <main style={{flex:1,overflow:'auto',minWidth:0,paddingTop:isMobile?52:0,display:'flex',flexDirection:'column'}}>
+
+        {/* Breadcrumb top bar (desktop only) */}
+        {!isMobile && (
+          <div style={{background:C.white,borderBottom:`1px solid ${C.border}`,padding:'0 32px',height:44,display:'flex',alignItems:'center',gap:0,flexShrink:0}}>
+            <span style={{fontFamily:"'Noto Serif JP',serif",fontSize:10,color:C.muted,letterSpacing:0.5,marginRight:8}}>管理</span>
+            <span style={{fontSize:10,color:C.border,marginRight:8}}>·</span>
+            <span style={{fontFamily:"'Noto Serif JP',serif",fontSize:10,color:C.gold,marginRight:6}}>{activeSection?.kanji}</span>
+            <span style={{fontSize:10,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',marginRight:4}}>{activeSection?.label}</span>
+            <span style={{fontSize:10,color:C.border,margin:'0 8px'}}>/</span>
+            <span style={{fontSize:10,color:C.muted}}>{today}</span>
+          </div>
+        )}
+
+        <div key={section} style={{flex:1}}>
+          {section==='dashboard' && <SectionDashboard showToast={showToast} isMobile={isMobile} onNavigate={setSection}/>}
           {section==='users'     && <SectionUsers     showToast={showToast} isMobile={isMobile}/>}
           {section==='access'    && <SectionAccess    showToast={showToast} isMobile={isMobile}/>}
           {section==='knowledge' && <SectionKnowledge showToast={showToast} isMobile={isMobile}/>}
@@ -322,6 +382,154 @@ export default function AdminPanel({ onExit }) {
       </main>
 
       <Toast show={!!toast} text={typeof toast==='string'?toast:'Сохранено'}/>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// 0. ДАШБОРД
+// ═══════════════════════════════════════════════════════════════
+function SectionDashboard({showToast, isMobile, onNavigate}) {
+  const {users, loading: usersLoading} = useUsers();
+  const {exams} = useExams();
+  const {payments} = useAccess();
+  const {months} = useMonths();
+
+  const totalUsers    = users.length;
+  const activeUsers   = users.filter(u => u.status === 'active').length;
+  const pendingExams  = exams.filter(e => e.status === 'pending');
+  const totalRevenue  = payments.reduce((s, p) => s + (p.amount || 0), 0);
+  const thisMonth     = new Date().toLocaleString('ru-RU', {month:'long', year:'numeric'});
+
+  const pad = isMobile ? '0 16px 24px' : '0 36px 36px';
+
+  // Simple bar chart data: last 6 months revenue
+  const now = new Date();
+  const monthBars = Array.from({length:6}, (_,i) => {
+    const d = new Date(now.getFullYear(), now.getMonth()-5+i, 1);
+    const label = d.toLocaleString('ru-RU',{month:'short'});
+    const monthStr = d.toISOString().slice(0,7);
+    const sum = payments.filter(p => (p.date||'').startsWith(monthStr)).reduce((s,p) => s+(p.amount||0), 0);
+    return {label, sum};
+  });
+  const maxBar = Math.max(...monthBars.map(b=>b.sum), 1);
+
+  return (
+    <div>
+      {/* ── Hero сводка ──────────────────────────────────────── */}
+      <div style={{
+        background: C.side,
+        marginBottom: 0,
+        padding: isMobile ? '28px 16px 24px' : '36px 36px 28px',
+        position: 'relative',
+        overflow: 'hidden',
+      }}>
+        {/* Watermark */}
+        <div style={{position:'absolute',right:isMobile?8:24,top:'50%',transform:'translateY(-50%)',fontFamily:"'Noto Serif JP',serif",fontSize:isMobile?72:96,color:'rgba(200,169,120,0.06)',lineHeight:1,pointerEvents:'none',userSelect:'none'}}>見</div>
+
+        <div style={{fontSize:9,color:C.sideMuted,letterSpacing:2.5,textTransform:'uppercase',marginBottom:10,fontFamily:"var(--font-mono,'Courier New',monospace)"}}>
+          管理 · СВОДКА
+        </div>
+        <div style={{fontFamily:"var(--font-cormorant-sc,'Cormorant SC',serif)",fontSize:isMobile?28:38,color:C.sideText,lineHeight:1,marginBottom:8,letterSpacing:1}}>
+          Дашборд
+        </div>
+        <div style={{fontSize:11,color:C.sideMuted,letterSpacing:0.3}}>{thisMonth}</div>
+      </div>
+
+      {/* ── Stat cards ───────────────────────────────────────── */}
+      <div style={{padding: isMobile?'16px 16px 0':'20px 36px 0'}}>
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'repeat(4,1fr)',gap:2,marginBottom:2}}>
+          <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'16px 18px',cursor:'pointer'}} onClick={()=>onNavigate('users')}>
+            <div style={{fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',marginBottom:8}}>Ученики</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:600,color:C.dark,lineHeight:1}}>{totalUsers}</div>
+            <div style={{fontSize:11,color:C.muted,marginTop:4}}>зарегистрировано</div>
+          </div>
+          <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'16px 18px',cursor:'pointer'}} onClick={()=>onNavigate('users')}>
+            <div style={{fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',marginBottom:8}}>Активных</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:600,color:C.green,lineHeight:1}}>{activeUsers}</div>
+            <div style={{fontSize:11,color:C.muted,marginTop:4}}>есть доступ</div>
+          </div>
+          <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'16px 18px',cursor:'pointer'}} onClick={()=>onNavigate('exams')}>
+            <div style={{fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',marginBottom:8}}>Аттестации</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:600,color:pendingExams.length>0?C.accent:C.dark,lineHeight:1}}>{pendingExams.length}</div>
+            <div style={{fontSize:11,color:C.muted,marginTop:4}}>ожидают проверки</div>
+          </div>
+          <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'16px 18px',cursor:'pointer'}} onClick={()=>onNavigate('payments')}>
+            <div style={{fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',marginBottom:8}}>Выручка</div>
+            <div style={{fontFamily:"'Cormorant Garamond',serif",fontSize:30,fontWeight:600,color:C.gold,lineHeight:1}}>{totalRevenue.toLocaleString()} <span style={{fontSize:16}}>₽</span></div>
+            <div style={{fontSize:11,color:C.muted,marginTop:4}}>за всё время</div>
+          </div>
+        </div>
+
+        {/* ── Bar chart + Exam queue ────────────────────────── */}
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:2,marginBottom:2}}>
+
+          {/* Revenue bars */}
+          <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'20px 20px 16px'}}>
+            <div style={{fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',marginBottom:16}}>Выручка по месяцам</div>
+            <div style={{display:'flex',alignItems:'flex-end',gap:6,height:72}}>
+              {monthBars.map((b,i)=>(
+                <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:4}}>
+                  <div style={{
+                    width:'100%',
+                    height: maxBar > 0 ? `${Math.max(4, Math.round((b.sum/maxBar)*64))}px` : '4px',
+                    background: i===5 ? C.gold : C.border,
+                    transition:'height 0.3s',
+                  }}/>
+                  <div style={{fontSize:8,color:C.muted,textTransform:'lowercase',whiteSpace:'nowrap'}}>{b.label}</div>
+                </div>
+              ))}
+            </div>
+          </div>
+
+          {/* Pending exams queue */}
+          <div style={{background:C.white,border:`1px solid ${C.border}`,padding:'20px 20px 16px'}}>
+            <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:14}}>
+              <div style={{fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase'}}>Очередь аттестаций</div>
+              {pendingExams.length>0&&(
+                <button onClick={()=>onNavigate('exams')} style={{fontSize:9,color:C.accent,background:'none',border:'none',cursor:'pointer',letterSpacing:0.5,textDecoration:'underline',textUnderlineOffset:3}}>Перейти →</button>
+              )}
+            </div>
+            {pendingExams.length === 0 ? (
+              <div style={{fontSize:12,color:C.muted,fontStyle:'italic'}}>Нет ожидающих аттестаций</div>
+            ) : (
+              <div style={{display:'flex',flexDirection:'column',gap:1}}>
+                {pendingExams.slice(0,4).map(e=>(
+                  <div key={e.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'9px 12px',background:C.bg,borderLeft:`3px solid ${C.accent}`}}>
+                    <div>
+                      <div style={{fontSize:12,color:C.dark}}>{e.userName||'—'}</div>
+                      <div style={{fontSize:10,color:C.muted}}>{e.targetLevel}</div>
+                    </div>
+                    <div style={{fontSize:9,color:C.muted}}>{e.date||'—'}</div>
+                  </div>
+                ))}
+                {pendingExams.length>4&&(
+                  <div style={{fontSize:10,color:C.muted,padding:'6px 12px',textAlign:'center'}}>+{pendingExams.length-4} ещё</div>
+                )}
+              </div>
+            )}
+          </div>
+        </div>
+
+        {/* ── Quick links ──────────────────────────────────── */}
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'repeat(4,1fr)',gap:2,marginBottom:24}}>
+          {[
+            {id:'months',   label:'Месяцы',      kanji:'月', desc:`${months?.length||0} активных`},
+            {id:'ikkajo',   label:'База техник',  kanji:'技', desc:'Иккаджо'},
+            {id:'knowledge',label:'База знаний',  kanji:'智', desc:'Знания'},
+            {id:'comments', label:'Комментарии',  kanji:'声', desc:'Отзывы'},
+          ].map(item=>(
+            <button key={item.id} onClick={()=>onNavigate(item.id)}
+              style={{background:C.white,border:`1px solid ${C.border}`,padding:'16px 16px 14px',cursor:'pointer',textAlign:'left',display:'flex',justifyContent:'space-between',alignItems:'flex-start',transition:'background 0.12s'}}>
+              <div>
+                <div style={{fontSize:9,color:C.muted,letterSpacing:1.5,textTransform:'uppercase',marginBottom:6}}>{item.label}</div>
+                <div style={{fontSize:10,color:C.muted}}>{item.desc}</div>
+              </div>
+              <div style={{fontFamily:"'Noto Serif JP',serif",fontSize:20,color:C.border,lineHeight:1}}>{item.kanji}</div>
+            </button>
+          ))}
+        </div>
+      </div>
     </div>
   );
 }
