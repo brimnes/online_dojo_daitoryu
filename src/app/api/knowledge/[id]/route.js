@@ -11,6 +11,7 @@ function toSnake(k) {
   return {
     id: k.id, title: k.title, subtitle: k.subtitle, content: k.content,
     sort_order: k.sortOrder, is_published: k.isPublished,
+    tag: k.tag ?? null,
     video_provider: k.videoProvider, video_id: k.videoId, video_status: k.videoStatus,
     created_at: k.createdAt, updated_at: k.updatedAt,
   };
@@ -43,6 +44,7 @@ export async function PUT(request, { params }) {
     if (body.content       !== undefined) data.content       = body.content;
     if (body.sort_order    !== undefined) data.sortOrder     = body.sort_order;
     if (body.is_published  !== undefined) data.isPublished   = body.is_published;
+    if (body.tag           !== undefined) data.tag           = body.tag || null;
     if (body.video_provider !== undefined) data.videoProvider = body.video_provider;
     if (body.video_id      !== undefined) data.videoId       = body.video_id;
     if (body.video_status  !== undefined) data.videoStatus   = body.video_status;

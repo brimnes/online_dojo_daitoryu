@@ -5,20 +5,26 @@ import { C } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
 import { useMonths, useLessons } from '@/lib/db';
 import KinescopePlayer from '@/components/KinescopePlayer';
+import Sidebar from '@/components/Sidebar';
+import { MobileBottomNav } from '@/components/BottomNav';
 
-
-export default function LessonPage({ nav, monthId, lessonId, watched, toggleWatched, comments, addComment, viewerId }) {
+export default function LessonPage({
+  nav, monthId, lessonId,
+  watched, toggleWatched,
+  comments, addComment,
+  viewerId,
+  user = {}, onLogout,
+}) {
   const isMobile = useIsMobile();
   const { months } = useMonths();
   const { lessons, reload } = useLessons(monthId);
 
-  // Перезагружаем при каждом открытии — чтобы видеть правки из AdminPanel
-  useEffect(() => { reload?.(); }, [monthId]);
+  useEffect(() => { reload?.(); }, [monthId]); // eslint-disable-line
 
-  const month        = months.find(m => m.id === monthId);
-  const lessonIndex  = lessons.findIndex(l => l.id === lessonId);
-  const lesson       = lessons[lessonIndex];
-  const isWatched    = !!watched[lessonId];
+  const month       = months.find(m => m.id === monthId);
+  const lessonIndex = lessons.findIndex(l => l.id === lessonId);
+  const lesson      = lessons[lessonIndex];
+  const isWatched   = !!watched[lessonId];
   const lessonComments = comments[lessonId] || [];
 
   const [commentText, setCommentText] = useState('');
@@ -28,246 +34,398 @@ export default function LessonPage({ nav, monthId, lessonId, watched, toggleWatc
 
   if (!lesson) return null;
 
-  // ── Мобильный хедер (общий шаблон) ──────────────────────────────
-  const MobileHeader = ({ title, onBack }) => (
-    <header style={{
-      display: 'flex', alignItems: 'center', gap: 10,
-      padding: `max(12px, env(safe-area-inset-top)) 16px 12px`,
-      background: '#fff',
-      borderBottom: `1px solid ${C.border}`,
-      position: 'sticky', top: 0, zIndex: 50,
-    }}>
-      <button
-        onClick={onBack}
-        style={{
-          background: 'none', border: 'none', cursor: 'pointer',
-          fontSize: 22, color: C.gold, padding: '0 4px',
-          display: 'flex', alignItems: 'center',
-          minWidth: 36, minHeight: 44,
-        }}
-      >‹</button>
-      <span style={{
-        fontFamily: "var(--font-jost), 'Jost', sans-serif",
-        fontSize: 15, fontWeight: 600, color: '#1a1a1a', flex: 1,
-        overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
-      }}>{title}</span>
-    </header>
-  );
+  // Breadcrumb helpers
+  const monthLabel  = month?.label?.toUpperCase() || '';
+  const lessonNum   = String(lesson.num).padStart(2, '0');
+  const totalLessons = lessons.length;
+  // Kanji for "第5課"
+  const KANJI_NUMS = ['一','二','三','四','五','六','七','八','九','十'];
+  const numKanji = lesson.num <= 10 ? KANJI_NUMS[lesson.num - 1] : lesson.num;
 
   return (
-    <div className="fade" style={{ minHeight: '100vh', background: C.bg }}>
+    <div className="fade" style={{ display: 'flex', minHeight: '100vh' }}>
 
-      {/* ── Мобильный хедер ── */}
-      {isMobile && (
-        <MobileHeader
-          title={`Урок ${lesson.num}. ${lesson.title}`}
-          onBack={nav.back}
-        />
+      {/* ── Dark sidebar (desktop only) ── */}
+      {!isMobile && (
+        <Sidebar activeTab="months" onTabClick={() => nav.dashboard()} user={user} onLogout={onLogout} />
       )}
 
-      <div style={{ padding: isMobile ? '0 0 40px' : '32px 40px', maxWidth: 1000, margin: '0 auto' }}>
+      {/* ── Page content ── */}
+      <div style={{ flex: 1, background: C.bg, minHeight: '100vh' }}>
 
-        {/* Десктопный breadcrumb */}
+        {/* ── Mobile sticky header ── */}
+        {isMobile && (
+          <header style={{
+            display: 'flex', alignItems: 'center', gap: 10,
+            padding: `max(12px, env(safe-area-inset-top)) 16px 12px`,
+            background: C.surface, borderBottom: `1px solid ${C.border}`,
+            position: 'sticky', top: 0, zIndex: 50,
+          }}>
+            <button onClick={nav.back} style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontSize: 24, color: C.accent, padding: '0 4px',
+              display: 'flex', alignItems: 'center', minWidth: 36, minHeight: 44,
+            }}>‹</button>
+            <span style={{
+              fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+              fontSize: 11, letterSpacing: '0.12em', color: C.ink, flex: 1,
+              textTransform: 'uppercase',
+            }}>УРОК {lessonNum} / {totalLessons}</span>
+            <button style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 18, color: C.muted, minWidth: 36, minHeight: 44, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>⋯</button>
+          </header>
+        )}
+
+        {/* ── Desktop breadcrumb ── */}
         {!isMobile && (
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 28, fontSize: 13, flexWrap: 'wrap' }}>
-            <button onClick={nav.dashboard} style={{ background: 'none', border: 'none', color: C.gold, cursor: 'pointer', padding: '4px 0', minHeight: 44 }}>← Месяцы</button>
-            <span style={{ color: '#ddd' }}>/</span>
-            <button onClick={nav.back} style={{ background: 'none', border: 'none', color: C.gold, cursor: 'pointer', padding: '4px 0', minHeight: 44 }}>{month?.label}</button>
-            <span style={{ color: '#ddd' }}>/</span>
-            <span style={{ color: C.dark }}>Урок {lesson.num}. {lesson.title}</span>
+          <div style={{
+            display: 'flex', alignItems: 'center', gap: 14,
+            padding: '20px 48px', borderBottom: `1px solid ${C.border}`, background: C.surface,
+          }}>
+            <button onClick={nav.back} style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontFamily: "var(--font-jost), 'Jost', sans-serif",
+              fontSize: 11, letterSpacing: '0.1em', color: C.accent,
+              textTransform: 'uppercase', padding: 0,
+            }}>← {monthLabel} 2026</button>
+            <span style={{ color: C.border }}>/</span>
+            <span style={{
+              fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+              fontSize: 10, color: C.muted, letterSpacing: '0.12em',
+            }}>УРОК {lessonNum} / {totalLessons}</span>
+            <span style={{
+              marginLeft: 'auto',
+              fontFamily: "'Noto Serif JP', var(--font-noto), serif",
+              fontSize: 12, color: C.muted, letterSpacing: '0.18em',
+            }}>{month?.kanji} · 第{numKanji}課</span>
           </div>
         )}
 
-        {/* Заголовок урока */}
-        <div style={{ marginBottom: isMobile ? 0 : 24, padding: isMobile ? '16px 16px 0' : 0 }}>
-          {/* Метаданные */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 10, flexWrap: 'wrap' }}>
-            <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: isMobile ? 14 : 13, color: '#ccc', fontWeight: 600 }}>
-              Урок {String(lesson.num).padStart(2, '0')}
-            </span>
-            <span style={{ color: '#ddd', fontSize: 11 }}>·</span>
-            <span style={{ fontSize: isMobile ? 13 : 11, color: C.muted }}>{lesson.duration}</span>
-            <span style={{ color: '#ddd', fontSize: 11 }}>·</span>
-            <span style={{ fontSize: isMobile ? 13 : 11, color: C.muted }}>{month?.label} 2026</span>
-          </div>
-
-          {/* Название + кнопка «Просмотрено» */}
-          <div style={{ display: 'flex', alignItems: isMobile ? 'flex-start' : 'flex-start', justifyContent: 'space-between', gap: 12, flexWrap: isMobile ? 'wrap' : 'nowrap', marginBottom: isMobile ? 14 : 0 }}>
-            <div>
-              <h1 style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 20 : 26, color: '#c8a84a', marginBottom: 6 }}>
-                {lesson.title}
-              </h1>
-              <div style={{ fontSize: isMobile ? 14 : 13, color: C.gold, letterSpacing: 0.3 }}>{lesson.subtitle}</div>
-            </div>
-            <button
-              onClick={() => toggleWatched(lessonId)}
-              style={{
-                display: 'flex', alignItems: 'center', gap: 8,
-                padding: '11px 18px',
-                background: isWatched ? '#3a8a5a' : 'transparent',
-                border: `1px solid ${isWatched ? '#3a8a5a' : C.border}`,
-                color: isWatched ? '#fff' : C.muted,
-                fontSize: isMobile ? 14 : 12,
-                cursor: 'pointer', transition: 'all 0.2s',
-                flexShrink: 0, whiteSpace: 'nowrap',
-                minHeight: 44,
-                width: isMobile ? '100%' : 'auto',
-              }}>
-              {isWatched ? '✓ Просмотрено' : 'Отметить просмотренным'}
-            </button>
-          </div>
-        </div>
-
-        {/* Видеоплеер */}
-        <div style={{ position: 'relative' }}>
-          <KinescopePlayer
-            videoId={lesson.video_id}
-            videoStatus={lesson.video_status}
-            viewerId={viewerId}
-            posterUrl={lesson.video_poster_url}
-            title={lesson.title}
-            duration={lesson.duration}
-          />
-          {isWatched && (
-            <div style={{ position: 'absolute', top: 12, right: 12, background: 'rgba(58,138,90,0.85)', padding: '3px 10px', fontSize: 10, color: '#fff', letterSpacing: 0.5 }}>
-              ПРОСМОТРЕНО
-            </div>
-          )}
-        </div>
-
-        {/* Контент: описание + сайдбар */}
+        {/* ── Two-column grid ── */}
         <div style={{
           display: 'grid',
-          gridTemplateColumns: isMobile ? '1fr' : '1fr 280px',
-          gap: isMobile ? 0 : 24,
-          marginBottom: isMobile ? 0 : 24,
-          marginTop: isMobile ? 0 : 24,
+          gridTemplateColumns: isMobile ? '1fr' : '1fr 360px',
+          gap: 0,
+          minHeight: isMobile ? 'auto' : 'calc(100vh - 65px)',
         }}>
-          {/* Описание */}
-          <div style={{ background: '#fff', border: isMobile ? 'none' : `1px solid ${C.border}`, borderTop: `1px solid ${C.border}`, padding: isMobile ? '20px 16px' : '28px 30px' }}>
-            <div style={{ fontSize: isMobile ? 11 : 9, color: C.muted, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 16 }}>О УРОКЕ</div>
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: isMobile ? 17 : 17, color: '#444', lineHeight: 1.9 }}>{lesson.text}</p>
-          </div>
 
-          {/* Сайдбар */}
-          <div style={{ display: 'flex', flexDirection: isMobile ? 'row' : 'column', gap: isMobile ? 0 : 12 }}>
-            {/* Урок в программе */}
+          {/* ── LEFT: player + content ── */}
+          <div className={isMobile ? 'page-has-bottom-nav' : ''} style={{ padding: isMobile ? '0 0 24px' : '36px 48px' }}>
+
+            {/* Hero: Eyebrow + Title + Subtitle */}
+            <div style={{ padding: isMobile ? '20px 18px 0' : 0, marginBottom: isMobile ? 16 : 24 }}>
+              {/* Eyebrow */}
+              <div style={{
+                display: 'flex', alignItems: 'center', gap: 8,
+                fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+                fontSize: 9, letterSpacing: '0.24em', color: C.muted,
+                textTransform: 'uppercase', marginBottom: isMobile ? 8 : 12,
+              }}>
+                <span style={{ color: C.accent, fontWeight: 600 }}>{lessonNum}</span>
+                <span>·</span>
+                <span>УРОК · {monthLabel} 2026</span>
+              </div>
+
+              {/* Title */}
+              <div style={{
+                fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+                fontSize: isMobile ? 22 : 36, letterSpacing: '0.04em',
+                color: C.ink, fontWeight: 500, lineHeight: 1.05,
+                marginBottom: isMobile ? 6 : 8,
+              }}>{lesson.title?.toUpperCase()}</div>
+
+              {/* Subtitle */}
+              {lesson.subtitle && (
+                <div style={{
+                  fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                  fontStyle: 'italic', fontSize: isMobile ? 14 : 16,
+                  color: C.muted,
+                }}>{lesson.subtitle}</div>
+              )}
+            </div>
+
+            {/* ── Video player ── */}
+            <KinescopePlayer
+              videoId={lesson.video_id}
+              videoStatus={lesson.video_status}
+              viewerId={viewerId}
+              posterUrl={lesson.video_poster_url}
+              title={lesson.title}
+              duration={lesson.duration}
+            />
+
+            {/* ── Meta strip below player ── */}
             <div style={{
-              background: '#fff', border: `1px solid ${C.border}`,
-              borderTop: isMobile ? 'none' : `1px solid ${C.border}`,
-              borderLeft: isMobile ? 'none' : `1px solid ${C.border}`,
-              padding: isMobile ? '16px' : '20px',
-              flex: isMobile ? 1 : 'none',
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              padding: isMobile ? '12px 18px' : '14px 0',
+              borderBottom: `1px solid ${C.border}`,
+              flexWrap: 'wrap', gap: 10,
+              background: isMobile ? C.surface : 'transparent',
             }}>
-              <div style={{ fontSize: 9, color: C.muted, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 10 }}>ПРОГРАММА</div>
-              <div style={{ fontSize: isMobile ? 14 : 13, color: C.dark, marginBottom: 3 }}>{month?.label} 2026</div>
-              <div style={{ fontSize: isMobile ? 13 : 12, color: C.muted, marginBottom: 10 }}>{lesson.num} из {lessons.length}</div>
-              <div style={{ height: 2, background: '#e8e0d0', borderRadius: 2 }}>
-                <div style={{ height: '100%', width: `${lessons.length ? (lesson.num / lessons.length) * 100 : 0}%`, background: C.gold }} />
-              </div>
-            </div>
-
-            {/* Сэнсэй */}
-            {!isMobile && (
-              <div style={{ background: '#fff', border: `1px solid ${C.border}`, padding: '20px' }}>
-                <div style={{ fontSize: 9, color: C.muted, letterSpacing: 1.5, textTransform: 'uppercase', marginBottom: 14 }}>СЭНСЭЙ</div>
-                <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-                  <div style={{ width: 36, height: 36, borderRadius: '50%', background: C.light, border: `1px solid ${C.goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Cormorant Garamond', serif", fontSize: 16, color: C.gold, flexShrink: 0 }}>К</div>
-                  <div>
-                    <div style={{ fontSize: 13, fontWeight: 500, color: C.dark }}>Сэнсэй Копин</div>
-                    <div style={{ fontSize: 11, color: C.muted }}>Дайто-рю Айкидзюдзюцу</div>
+              <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 12 : 24 }}>
+                {lesson.duration && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
+                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.accent, flexShrink: 0 }} />
+                    <span style={{
+                      fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+                      fontSize: 10, color: C.muted, letterSpacing: '0.12em', textTransform: 'uppercase',
+                    }}>{lesson.duration} · 1080P</span>
                   </div>
-                </div>
+                )}
               </div>
-            )}
-          </div>
-        </div>
-
-        {/* Навигация по урокам (Пред/След) */}
-        <div style={{
-          display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 2,
-          marginBottom: isMobile ? 0 : 28,
-          marginTop: isMobile ? 0 : 0,
-        }}>
-          {prevLesson ? (
-            <div
-              onClick={() => nav.lesson(monthId, prevLesson.id)}
-              style={{ background: '#fff', border: `1px solid ${C.border}`, borderTop: 'none', padding: isMobile ? '14px 16px' : '16px 20px', cursor: 'pointer' }}
-              onMouseEnter={e => !isMobile && (e.currentTarget.style.background = C.light)}
-              onMouseLeave={e => !isMobile && (e.currentTarget.style.background = '#fff')}>
-              <div style={{ fontSize: isMobile ? 11 : 10, color: C.muted, marginBottom: 4, letterSpacing: 0.5 }}>← ПРЕДЫДУЩИЙ</div>
-              <div style={{ fontSize: isMobile ? 14 : 14, color: C.dark, fontWeight: 500 }}>{prevLesson.title}</div>
-            </div>
-          ) : <div />}
-          {nextLesson ? (
-            <div
-              onClick={() => nav.lesson(monthId, nextLesson.id)}
-              style={{ background: '#fff', border: `1px solid ${C.border}`, borderTop: 'none', borderLeft: 'none', padding: isMobile ? '14px 16px' : '16px 20px', cursor: 'pointer', textAlign: 'right' }}
-              onMouseEnter={e => !isMobile && (e.currentTarget.style.background = C.light)}
-              onMouseLeave={e => !isMobile && (e.currentTarget.style.background = '#fff')}>
-              <div style={{ fontSize: isMobile ? 11 : 10, color: C.muted, marginBottom: 4, letterSpacing: 0.5 }}>СЛЕДУЮЩИЙ →</div>
-              <div style={{ fontSize: isMobile ? 14 : 14, color: C.dark, fontWeight: 500 }}>{nextLesson.title}</div>
-            </div>
-          ) : <div />}
-        </div>
-
-        {/* Комментарии */}
-        <div style={{ background: '#fff', border: `1px solid ${C.border}`, borderTop: 'none', padding: isMobile ? '20px 16px' : '28px 30px' }}>
-          <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 20, paddingBottom: 14, borderBottom: `1px solid ${C.border}`, flexWrap: 'wrap' }}>
-            <div style={{ fontFamily: "var(--font-arkhip), system-ui, sans-serif", fontSize: isMobile ? 17 : 18, color: '#c8a84a' }}>Обсуждение</div>
-            <span style={{ fontSize: isMobile ? 12 : 11, color: C.muted }}>{lessonComments.length} комментариев</span>
-          </div>
-
-          {/* Форма ввода */}
-          <div style={{ display: 'flex', gap: 12, marginBottom: 20 }}>
-            <div style={{ width: 34, height: 34, borderRadius: '50%', background: C.light, border: `1px solid ${C.goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: C.gold, flexShrink: 0 }}>У</div>
-            <div style={{ flex: 1 }}>
-              <textarea
-                value={commentText}
-                onChange={e => setCommentText(e.target.value)}
-                placeholder="Задайте вопрос или оставьте заметку к уроку…"
-                rows={3}
-                style={{ width: '100%', border: `1px solid ${C.border}`, padding: '12px 14px', fontSize: isMobile ? 15 : 13, color: C.dark, background: '#fafaf8', resize: 'vertical', outline: 'none', lineHeight: 1.6, fontFamily: "var(--font-jost), 'Jost', sans-serif" }}
-              />
-              <div style={{ display: 'flex', justifyContent: 'flex-end', marginTop: 8 }}>
+              <div style={{ display: 'flex', gap: 8 }}>
+                {/* Конспект / download */}
+                <button style={{
+                  background: 'none', border: `1px solid ${C.border}`,
+                  padding: '9px 16px',
+                  fontFamily: "var(--font-jost), 'Jost', sans-serif",
+                  fontSize: 11, letterSpacing: '0.1em', color: C.muted,
+                  cursor: 'pointer', textTransform: 'uppercase',
+                }}>↓ Конспект</button>
+                {/* Watched button */}
                 <button
-                  onClick={() => { addComment(lessonId, commentText); setCommentText(''); }}
-                  disabled={!commentText.trim()}
-                  style={{ padding: '9px 22px', background: commentText.trim() ? C.dark : '#e0e0e0', color: commentText.trim() ? '#fff' : '#bbb', border: 'none', fontSize: isMobile ? 14 : 12, cursor: commentText.trim() ? 'pointer' : 'default', transition: 'all 0.15s', minHeight: 40 }}>
-                  Отправить
+                  onClick={() => toggleWatched(lessonId)}
+                  style={{
+                    display: 'flex', alignItems: 'center', gap: 8,
+                    padding: '9px 18px',
+                    background: isWatched ? C.ink : C.ink,
+                    border: `1px solid ${isWatched ? C.ink : C.ink}`,
+                    color: '#fff',
+                    fontFamily: "var(--font-jost), 'Jost', sans-serif",
+                    fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase',
+                    cursor: 'pointer', transition: 'all 0.2s',
+                    opacity: isWatched ? 0.7 : 1,
+                    width: isMobile ? '100%' : 'auto',
+                  }}>
+                  {isWatched ? '✓ ПРОСМОТРЕНО' : '✓ ОТМЕТИТЬ ПРОСМОТРЕННЫМ'}
                 </button>
               </div>
             </div>
+
+            {/* ── Content area ── */}
+            <div style={{ paddingTop: isMobile ? 0 : 28 }}>
+
+              {/* Description */}
+              {lesson.text && (
+                <div style={{ padding: isMobile ? '20px 18px' : 0, marginBottom: isMobile ? 0 : 32 }}>
+                  <div style={{
+                    fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+                    fontSize: 9, letterSpacing: '0.22em', color: C.muted,
+                    textTransform: 'uppercase', marginBottom: 14,
+                  }}>ОПИСАНИЕ</div>
+                  <p style={{
+                    fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                    fontSize: isMobile ? 17 : 19, lineHeight: 1.75,
+                    color: C.ink2, margin: 0,
+                    borderLeft: `2px solid ${C.accent}`, paddingLeft: 22,
+                  }}>{lesson.text}</p>
+                </div>
+              )}
+
+              {/* ── Comments ── */}
+              <div style={{ padding: isMobile ? '20px 18px' : 0, marginTop: isMobile ? 0 : 40 }}>
+                <div style={{
+                  display: 'flex', alignItems: 'baseline', justifyContent: 'space-between',
+                  marginBottom: 16, flexWrap: 'wrap', gap: 8,
+                }}>
+                  <div style={{
+                    fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+                    fontSize: 9, letterSpacing: '0.22em', color: C.muted, textTransform: 'uppercase',
+                  }}>
+                    ОБСУЖДЕНИЕ · {lessonComments.length}
+                  </div>
+                  {!isMobile && (
+                    <span style={{
+                      fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                      fontStyle: 'italic', fontSize: 12, color: C.muted,
+                    }}>Сэнсэй отвечает в течение 24 часов</span>
+                  )}
+                </div>
+
+                {/* Comments list */}
+                {lessonComments.length > 0 && (
+                  <div style={{ background: C.surface, border: `1px solid ${C.border}`, marginBottom: 14 }}>
+                    {lessonComments.map((c, i) => (
+                      <div key={c.id} style={{
+                        display: 'flex', gap: 14, padding: isMobile ? '16px 16px' : '18px 20px',
+                        borderBottom: i < lessonComments.length - 1 ? `1px solid ${C.hairline2}` : 'none',
+                        background: c.role === 'sensei' ? C.bg2 : 'transparent',
+                      }}>
+                        <div style={{
+                          width: isMobile ? 32 : 36, height: isMobile ? 32 : 36,
+                          borderRadius: '50%', flexShrink: 0,
+                          background: c.role === 'sensei' ? C.accent : C.bg2,
+                          color: c.role === 'sensei' ? '#fff' : C.ink2,
+                          border: c.role === 'sensei' ? 'none' : `1px solid ${C.border}`,
+                          display: 'flex', alignItems: 'center', justifyContent: 'center',
+                          fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                          fontStyle: 'italic', fontSize: isMobile ? 14 : 16,
+                        }}>{c.avatar}</div>
+                        <div style={{ flex: 1, minWidth: 0 }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: isMobile ? 4 : 6, flexWrap: 'wrap' }}>
+                            <span style={{
+                              fontFamily: "var(--font-jost), 'Jost', sans-serif",
+                              fontSize: isMobile ? 12 : 13, color: C.ink, fontWeight: 500,
+                            }}>{c.author}</span>
+                            {c.role === 'sensei' && (
+                              <span style={{
+                                fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+                                fontSize: 9, color: C.accent, letterSpacing: '0.18em',
+                                textTransform: 'uppercase', padding: '1px 7px',
+                                border: `1px solid ${C.accent}`,
+                              }}>СЭНСЭЙ</span>
+                            )}
+                            <span style={{
+                              marginLeft: 'auto',
+                              fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+                              fontSize: isMobile ? 9 : 10, color: C.muted,
+                            }}>{c.date}</span>
+                          </div>
+                          <div style={{
+                            fontFamily: "var(--font-jost), 'Jost', sans-serif",
+                            fontSize: isMobile ? 13 : 14, color: C.ink2, lineHeight: 1.55,
+                          }}>{c.text}</div>
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                )}
+
+                {lessonComments.length === 0 && (
+                  <div style={{
+                    padding: '20px', background: C.surface, border: `1px solid ${C.border}`,
+                    marginBottom: 14,
+                    fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                    fontStyle: 'italic', fontSize: 14, color: C.muted, textAlign: 'center',
+                  }}>Комментариев пока нет. Будьте первым!</div>
+                )}
+
+                {/* Comment input */}
+                <div style={{ display: 'flex', gap: 10 }}>
+                  <div style={{
+                    flex: 1, background: C.surface, border: `1px solid ${C.border}`,
+                    padding: '12px 14px', position: 'relative',
+                  }}>
+                    <textarea
+                      value={commentText}
+                      onChange={e => setCommentText(e.target.value)}
+                      placeholder="Задать вопрос сэнсэю или другим студентам…"
+                      rows={isMobile ? 2 : 1}
+                      style={{
+                        width: '100%', border: 'none', outline: 'none',
+                        background: 'transparent', resize: 'none',
+                        fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                        fontStyle: 'italic', fontSize: 14, color: C.ink, lineHeight: 1.5,
+                      }}
+                    />
+                  </div>
+                  <button
+                    onClick={() => { if (commentText.trim()) { addComment(lessonId, commentText); setCommentText(''); } }}
+                    disabled={!commentText.trim()}
+                    style={{
+                      padding: '12px 20px', background: commentText.trim() ? C.ink : C.border,
+                      color: commentText.trim() ? '#fff' : C.muted,
+                      border: 'none',
+                      fontFamily: "var(--font-jost), 'Jost', sans-serif",
+                      fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase',
+                      cursor: commentText.trim() ? 'pointer' : 'default',
+                      transition: 'all 0.15s', flexShrink: 0,
+                      alignSelf: 'stretch',
+                    }}>Отправить</button>
+                </div>
+              </div>
+
+              {/* Mobile prev/next navigation */}
+              {isMobile && (prevLesson || nextLesson) && (
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 1, margin: '0 18px', background: C.border }}>
+                  {prevLesson ? (
+                    <div onClick={() => nav.lesson(monthId, prevLesson.id)}
+                      style={{ background: C.surface, padding: '14px 14px', cursor: 'pointer' }}>
+                      <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 9, color: C.muted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>← ПРЕДЫДУЩИЙ</div>
+                      <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 13, color: C.ink, fontWeight: 500, lineHeight: 1.3 }}>{prevLesson.title}</div>
+                    </div>
+                  ) : <div style={{ background: C.surface }} />}
+                  {nextLesson ? (
+                    <div onClick={() => nav.lesson(monthId, nextLesson.id)}
+                      style={{ background: C.surface, padding: '14px 14px', cursor: 'pointer', textAlign: 'right' }}>
+                      <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 9, color: C.muted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>СЛЕДУЮЩИЙ →</div>
+                      <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 13, color: C.ink, fontWeight: 500, lineHeight: 1.3 }}>{nextLesson.title}</div>
+                    </div>
+                  ) : <div style={{ background: C.surface }} />}
+                </div>
+              )}
+            </div>
           </div>
 
-          {/* Список комментариев */}
-          {lessonComments.length === 0 ? (
-            <div style={{ textAlign: 'center', padding: '20px 0', color: '#bbb', fontSize: isMobile ? 14 : 13 }}>
-              Комментариев пока нет. Будьте первым!
-            </div>
-          ) : (
-            <div>
-              {lessonComments.map((c, i) => (
-                <div key={c.id} style={{ display: 'flex', gap: 14, padding: '16px 0', borderTop: i > 0 ? '1px solid #f5f2ec' : 'none' }}>
-                  <div style={{ width: 34, height: 34, borderRadius: '50%', background: c.role === 'sensei' ? C.light : '#f0f0ee', border: `1px solid ${c.role === 'sensei' ? C.goldBorder : '#e0e0e0'}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: c.role === 'sensei' ? C.gold : '#888', flexShrink: 0 }}>
-                    {c.avatar}
-                  </div>
-                  <div style={{ flex: 1 }}>
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 6, flexWrap: 'wrap' }}>
-                      <span style={{ fontSize: isMobile ? 14 : 13, fontWeight: 600, color: C.dark }}>{c.author}</span>
-                      {c.role === 'sensei' && (
-                        <span style={{ fontSize: 9, color: C.gold, background: C.light, border: `1px solid ${C.goldBorder}`, padding: '1px 7px', letterSpacing: 1, textTransform: 'uppercase' }}>Сэнсэй</span>
-                      )}
-                      <span style={{ fontSize: isMobile ? 12 : 11, color: '#ccc' }}>{c.date}</span>
+          {/* ── RIGHT: lessons list (desktop only) ── */}
+          {!isMobile && (
+            <aside style={{
+              borderLeft: `1px solid ${C.border}`,
+              padding: '36px 28px',
+              background: C.surface,
+              position: 'sticky', top: 0,
+              height: 'calc(100vh - 65px)',
+              overflowY: 'auto',
+            }}>
+              <div style={{
+                fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+                fontSize: 9, letterSpacing: '0.22em', color: C.muted,
+                textTransform: 'uppercase', marginBottom: 16,
+              }}>УРОКИ · {monthLabel}</div>
+
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 0 }}>
+                {lessons.map((l, i) => {
+                  const isCur  = l.id === lessonId;
+                  const isDone = !!watched[l.id] && !isCur;
+                  return (
+                    <div
+                      key={l.id}
+                      onClick={() => nav.lesson(monthId, l.id)}
+                      style={{
+                        display: 'flex', gap: 12, padding: '12px 0',
+                        borderBottom: i < lessons.length - 1 ? `1px solid ${C.hairline2}` : 'none',
+                        cursor: 'pointer',
+                        marginLeft: isCur ? -16 : 0, paddingLeft: isCur ? 16 : 0,
+                        borderLeft: `2px solid ${isCur ? C.accent : 'transparent'}`,
+                        background: isCur ? `linear-gradient(90deg, ${C.bg2}, transparent)` : 'transparent',
+                        transition: 'background 0.1s',
+                      }}
+                      onMouseEnter={e => !isCur && (e.currentTarget.style.background = C.bg2)}
+                      onMouseLeave={e => !isCur && (e.currentTarget.style.background = 'transparent')}
+                    >
+                      {/* Number / checkmark */}
+                      <span style={{
+                        fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+                        fontSize: 11, minWidth: 22, flexShrink: 0,
+                        color: isDone ? '#4a8a5a' : isCur ? C.accent : C.muted,
+                        letterSpacing: '0.04em',
+                      }}>
+                        {isDone ? '✓' : String(l.num || i + 1).padStart(2, '0')}
+                      </span>
+                      {/* Title + duration */}
+                      <div style={{ flex: 1, minWidth: 0 }}>
+                        <div style={{
+                          fontFamily: "var(--font-jost), 'Jost', sans-serif",
+                          fontSize: 13, color: isCur ? C.ink : C.ink2,
+                          fontWeight: isCur ? 600 : 400, lineHeight: 1.35,
+                          overflow: 'hidden', textOverflow: 'ellipsis',
+                          whiteSpace: 'nowrap',
+                        }}>{l.title}</div>
+                        {l.duration && (
+                          <div style={{
+                            fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+                            fontSize: 10, color: C.muted, letterSpacing: '0.06em', marginTop: 2,
+                          }}>{l.duration}</div>
+                        )}
+                      </div>
                     </div>
-                    <div style={{ fontSize: isMobile ? 15 : 13, color: '#444', lineHeight: 1.75 }}>{c.text}</div>
-                  </div>
-                </div>
-              ))}
-            </div>
+                  );
+                })}
+              </div>
+            </aside>
           )}
         </div>
       </div>
+      {isMobile && <MobileBottomNav nav={nav} active="months" isAdmin={user?.role === 'admin'} />}
     </div>
   );
 }
