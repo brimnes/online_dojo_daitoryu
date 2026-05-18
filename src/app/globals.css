@@ -1,0 +1,214 @@
+/* Шрифты подключаются через next/font в layout.js */
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+html, body {
+  background: #e6e0d2;
+  color: #15120e;
+  font-family: var(--font-jost), 'Jost', sans-serif;
+  -webkit-font-smoothing: antialiased;
+  font-size: 15px;
+}
+
+button, input, textarea, select {
+  font-family: var(--font-jost), 'Jost', sans-serif;
+  cursor: pointer;
+}
+
+textarea { cursor: text; }
+
+::-webkit-scrollbar       { width: 4px; }
+::-webkit-scrollbar-track { background: #e6e0d2; }
+::-webkit-scrollbar-thumb { background: #bab09a; border-radius: 2px; }
+
+/* ─── Shared animations ──────────────────────────────────────── */
+@keyframes fadeUp {
+  from { opacity: 0; transform: translateY(6px); }
+  to   { opacity: 1; transform: translateY(0);   }
+}
+.fade      { animation: fadeUp 0.2s ease; }
+.anim      { animation: fadeUp 0.18s ease; }
+.auth-anim { animation: fadeUp 0.22s ease; }
+
+/* Form defaults */
+input::placeholder,
+textarea::placeholder { color: #ccc; }
+select option         { color: #1a1a1a; }
+iframe                { display: block; }
+
+/* ═══════════════════════════════════════════════════════════════
+   TYPOGRAPHIC SYSTEM — Online Dojo / Daito-ryu
+   ═══════════════════════════════════════════════════════════════
+
+   Arkhip       → DISPLAY ONLY: логотип, hero-заголовки, крупные
+                  section titles (h2 страниц). Редко. Акцентно.
+                  НЕ использовать: формы, кнопки, навигация, карточки.
+
+   Jost         → UI DEFAULT: всё остальное — кнопки, nav, формы,
+                  карточки, вкладки, кабинет, мелкий текст, sub-labels.
+
+   Cormorant    → EDITORIAL: цитаты сэнсэя, длинные описания техник,
+                  тексты статей базы знаний, rich-text блоки.
+
+   Noto Serif JP → иероглифы / кандзи (декоративные акценты)
+   ─────────────────────────────────────────────────────────────── */
+
+/* ── Font utilities ── */
+.font-display   { font-family: var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif; }
+.font-ui        { font-family: var(--font-jost), 'Jost', sans-serif; }
+.font-editorial { font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif; }
+
+/* ── Section / page titles — Cormorant SC + crimson ── */
+.section-title {
+  font-family: var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif;
+  color: #9e2f1f;
+  letter-spacing: 0.06em;
+  line-height: 1.15;
+}
+
+/* ── Sub-section headings — Cormorant SC, темнее ── */
+.section-subtitle {
+  font-family: var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif;
+  color: #15120e;
+  letter-spacing: 0.04em;
+  line-height: 1.2;
+}
+
+/* ── Brand / logo text ── */
+.brand-text {
+  font-family: var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  color: #9e2f1f;
+}
+
+/* ── Long-form editorial text ── */
+.article-text {
+  font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
+  font-size: 18px;
+  line-height: 1.85;
+  color: #3a342b;
+}
+
+/* ── Sensei quote block ── */
+.sensei-quote {
+  font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
+  font-style: italic;
+  font-size: 16px;
+  line-height: 1.85;
+  color: #6f6452;
+}
+
+/* ── UI label / nav text ── */
+.ui-label {
+  font-family: var(--font-jost), 'Jost', sans-serif;
+  font-size: 12px;
+  letter-spacing: 0.05em;
+}
+
+/* ── Overline / eyebrow label (tiny uppercase) ── */
+.overline {
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: #6f6452;
+}
+
+/* ── Mono counter/label ── */
+.mono-label {
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+}
+
+/* ── h1/h2 defaults for pages that use semantic HTML ── */
+h1, h2 {
+  font-family: var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif;
+  line-height: 1.15;
+}
+
+/* ── Mobile nav bottom area — dark espresso palette ── */
+.mobile-bottom-nav {
+  position: fixed;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: #0a0807;
+  border-top: 1px solid #1f1a16;
+  display: flex;
+  align-items: stretch;
+  padding-bottom: env(safe-area-inset-bottom, 0px);
+  z-index: 200;
+  box-shadow: 0 -1px 0 rgba(184,146,58,0.07), 0 -8px 24px rgba(0,0,0,0.45);
+}
+.mobile-bottom-nav-item {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  padding: 9px 4px 11px;
+  background: none;
+  border: none;
+  cursor: pointer;
+  text-decoration: none;
+  color: #5a4f3c;
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  min-height: 58px;
+  position: relative;
+}
+.mobile-bottom-nav-item.active {
+  background: #13110e;
+  color: #c2b59c;
+}
+/* padding for content above fixed bottom nav */
+.has-bottom-nav {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+/* alias for sub-pages */
+.page-has-bottom-nav {
+  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+}
+
+/* ═══════════════════════════════════════════════════════════════
+   MOBILE TYPOGRAPHY OVERRIDES — комфортное чтение без приближения
+   ═══════════════════════════════════════════════════════════════ */
+@media (max-width: 640px) {
+  html, body {
+    font-size: 16px;         /* базовый размер чуть крупнее на мобайле */
+  }
+
+  /* bottom nav label */
+  .mobile-bottom-nav-item .nav-label,
+  .nav-label {
+    font-size: 11px !important;
+  }
+
+  /* Мелкие overline-метки — минимум 11px */
+  .overline {
+    font-size: 11px;
+    letter-spacing: 0.12em;
+  }
+
+  /* UI-label — 13px */
+  .ui-label {
+    font-size: 13px;
+  }
+
+  /* Редакционный текст — комфортный размер */
+  .article-text {
+    font-size: 18px;
+    line-height: 1.9;
+  }
+
+  .sensei-quote {
+    font-size: 17px;
+    line-height: 1.9;
+  }
+}
