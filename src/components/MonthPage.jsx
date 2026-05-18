@@ -6,6 +6,7 @@ import { useIsMobile } from '@/lib/mobile';
 import { useMonths, useLessons, useUserAccessRows } from '@/lib/db';
 import { hasMonthAccess } from '@/lib/access';
 import Sidebar from '@/components/Sidebar';
+import { MobileBottomNav } from '@/components/BottomNav';
 
 export default function MonthPage({ nav, monthId, watched, toggleWatched, user = {}, onLogout }) {
   const isMobile = useIsMobile();
@@ -103,7 +104,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
         </div>
       )}
 
-      <div style={{ padding: isMobile ? '20px 18px 40px' : '48px 48px 60px' }}>
+      <div className={isMobile ? 'page-has-bottom-nav' : ''} style={{ padding: isMobile ? '20px 18px 24px' : '48px 48px 60px' }}>
 
         {/* ── Hero ── */}
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: isMobile ? 14 : 32, marginBottom: isMobile ? 12 : 24 }}>
@@ -241,6 +242,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
         </div>
       </div>
       </div>{/* end flex:1 content */}
+      {isMobile && <MobileBottomNav nav={nav} active="months" isAdmin={user?.role === 'admin'} />}
     </div>
   );
 }

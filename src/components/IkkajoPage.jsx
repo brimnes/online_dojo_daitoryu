@@ -7,6 +7,7 @@ import { BELT, KYU_DATA, FLAT_INDEX } from '@/data/techniques';
 import { useTechniques, useUserAccessRows, hasIkkajoSectionAccess } from '@/lib/db';
 import { IKKAJO_SECTION_KEYS as IKKAJO_SECTIONS } from '@/lib/ikkajoSections';
 import Sidebar from '@/components/Sidebar';
+import { MobileBottomNav } from '@/components/BottomNav';
 
 // Kanji glyphs for section IDs (not stored in data)
 const SECTION_KANJI = {
@@ -88,7 +89,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout }) {
           </div>
         )}
 
-        <div style={{ padding: isMobile ? '20px 18px 60px' : '48px 48px 60px' }}>
+        <div className={isMobile ? 'page-has-bottom-nav' : ''} style={{ padding: isMobile ? '20px 18px 24px' : '48px 48px 60px' }}>
 
           {/* ── Hero ── */}
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: isMobile ? 14 : 32, marginBottom: isMobile ? 16 : 28 }}>
@@ -297,6 +298,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout }) {
           </div>
         </div>
       </div>
+      {isMobile && <MobileBottomNav nav={nav} active="database" isAdmin={user?.role === 'admin'} />}
     </div>
   );
 }

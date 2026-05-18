@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { C } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
 import KinescopePlayer from '@/components/KinescopePlayer';
+import { MobileBottomNav } from '@/components/BottomNav';
 
 export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
   const isMobile = useIsMobile();
@@ -59,7 +60,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
         </header>
       )}
 
-      <div style={{ padding: isMobile ? '16px 16px 40px' : '32px 40px', maxWidth: 800, margin: '0 auto' }}>
+      <div className={isMobile ? 'page-has-bottom-nav' : ''} style={{ padding: isMobile ? '16px 16px 24px' : '32px 40px', maxWidth: 800, margin: '0 auto' }}>
 
         {/* Десктопный breadcrumb */}
         {!isMobile && (
@@ -116,6 +117,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
           </div>
         )}
       </div>
+      {isMobile && <MobileBottomNav nav={nav} active="knowledge" />}
     </div>
   );
 }

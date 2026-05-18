@@ -6,6 +6,7 @@ import { useIsMobile } from '@/lib/mobile';
 import { useMonths, useLessons } from '@/lib/db';
 import KinescopePlayer from '@/components/KinescopePlayer';
 import Sidebar from '@/components/Sidebar';
+import { MobileBottomNav } from '@/components/BottomNav';
 
 export default function LessonPage({
   nav, monthId, lessonId,
@@ -108,7 +109,7 @@ export default function LessonPage({
         }}>
 
           {/* ── LEFT: player + content ── */}
-          <div style={{ padding: isMobile ? '0 0 60px' : '36px 48px' }}>
+          <div className={isMobile ? 'page-has-bottom-nav' : ''} style={{ padding: isMobile ? '0 0 24px' : '36px 48px' }}>
 
             {/* Hero: Eyebrow + Title + Subtitle */}
             <div style={{ padding: isMobile ? '20px 18px 0' : 0, marginBottom: isMobile ? 16 : 24 }}>
@@ -424,6 +425,7 @@ export default function LessonPage({
           )}
         </div>
       </div>
+      {isMobile && <MobileBottomNav nav={nav} active="months" isAdmin={user?.role === 'admin'} />}
     </div>
   );
 }

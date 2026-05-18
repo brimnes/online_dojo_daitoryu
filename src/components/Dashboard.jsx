@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { C, hasLevel, levelIndex } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
 import { LEVELS, SELF_LEVELS } from '@/data/users';
@@ -8,6 +8,7 @@ import { DB_SECTIONS } from '@/data/techniques';
 import { useMonths, useLessons, useUserAccessRows, hasMonthAccess, useKnowledge, useUserExams, useUserPayments } from '@/lib/db';
 import TakedaMon from '@/components/TakedaMon';
 import Sidebar from '@/components/Sidebar';
+import { MobileBottomNav } from '@/components/BottomNav';
 import { hasIkkajoFullAccess, hasIkkajoSectionAccess, IKKAJO_SECTIONS, IKKAJO_SECTION_LABELS, getAccessibleIkkajoSections } from '@/lib/access';
 import { useProducts } from '@/lib/useProducts';
 
@@ -18,17 +19,16 @@ const TABS = [
   { id: 'profile',   label: 'Личный кабинет', num: '04', kanji: '人' },
 ];
 
-// ── Bottom nav items ──────────────────────────────────────────────
-const BOTTOM_TABS = [
-  { id: 'knowledge', label: 'Знания', icon: '📖' },
-  { id: 'months',    label: 'Месяцы', icon: '📅' },
-  { id: 'database',  label: 'База',   icon: '⛩' },
-  { id: 'profile',   label: 'Профиль',icon: '👤' },
-];
+// BOTTOM_TABS removed — replaced by MobileBottomNav component
 
-export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
-  const [tab, setTab]     = useState('months');
+export default function Dashboard({ nav, watched, user: userProp, onLogout, initialTab }) {
+  const [tab, setTab]     = useState(initialTab || 'months');
   const [modal, setModal] = useState(null);
+
+  // Sync tab when navigating back to dashboard with specific tab
+  useEffect(() => {
+    if (initialTab) setTab(initialTab);
+  }, [initialTab]);
   const isMobile          = useIsMobile();
   const u     = userProp || {};
   const curLv = LEVELS.find(l => l.id === u.level);
@@ -101,28 +101,11 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout }) {
 
       {/* ── Bottom navigation (mobile only) ── */}
       {isMobile && (
-        <nav className="mobile-bottom-nav">
-          {BOTTOM_TABS.map(({ id, label, icon }) => (
-            <button
-              key={id}
-              className="mobile-bottom-nav-item"
-              onClick={() => setTab(id)}
-              style={{ color: tab === id ? C.accent : C.muted }}
-            >
-              <span style={{ fontSize: 20 }}>{icon}</span>
-              <span className="nav-label" style={{ fontSize: 11, fontWeight: tab === id ? 600 : 400 }}>{label}</span>
-              {tab === id && (
-                <span style={{ position: 'absolute', top: 0, left: '50%', transform: 'translateX(-50%)', width: 24, height: 2, background: C.accent, borderRadius: 1 }} />
-              )}
-            </button>
-          ))}
-          {isAdmin && (
-            <a href="/admin" className="mobile-bottom-nav-item" style={{ color: C.muted, textDecoration: 'none' }}>
-              <span style={{ fontSize: 20 }}>⚙️</span>
-              <span className="nav-label" style={{ fontSize: 11 }}>Admin</span>
-            </a>
-          )}
-        </nav>
+        <MobileBottomNav
+          nav={{ dashboard: (id) => setTab(id) }}
+          active={tab}
+          isAdmin={isAdmin}
+        />
       )}
 
       {/* ── Modal покупки ── */}
@@ -1120,18 +1103,19 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
       )}
 
       {/* ── Sub-tabs ── */}
-      <div style={{ display: 'flex', borderBottom: `1px solid ${C.border}`, overflowX: 'auto' }}>
+      <div style={{ display: 'flex', borderBottom: `1px solid ${C.border}`, overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
         {SUB_TABS.map(t => (
           <button key={t.id} onClick={() => setSub(t.id)}
             style={{
-              padding: isMobile ? '11px 13px' : '13px 20px',
+              padding: isMobile ? '12px 14px' : '13px 20px',
               background: 'none', border: 'none',
               borderBottom: `2px solid ${sub === t.id ? C.accent : 'transparent'}`,
               color: sub === t.id ? C.ink : C.muted,
               fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif",
-              fontSize: isMobile ? 11 : 12, letterSpacing: '0.16em', textTransform: 'uppercase',
+              fontSize: isMobile ? 12 : 12, letterSpacing: '0.14em', textTransform: 'uppercase',
               cursor: 'pointer', fontWeight: sub === t.id ? 600 : 400,
-              marginBottom: -1, whiteSpace: 'nowrap', minHeight: 44,
+              marginBottom: -1, whiteSpace: 'nowrap', minHeight: 48,
+              WebkitTapHighlightColor: 'transparent',
             }}>{t.label}</button>
         ))}
       </div>

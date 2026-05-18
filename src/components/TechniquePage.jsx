@@ -9,6 +9,7 @@ import { useTechniques, useUserAccessRows } from '@/lib/db';
 import { hasIkkajoSectionAccess } from '@/lib/access';
 import { IKKAJO_SECTION_KEYS as IKKAJO_SECTIONS } from '@/lib/ikkajoSections';
 import Sidebar from '@/components/Sidebar';
+import { MobileBottomNav } from '@/components/BottomNav';
 
 const SECTION_KANJI = {
   tachiai: '立合', idori: '居取', ushirodori: '後取',
@@ -21,7 +22,7 @@ const KYU_KANJI = {
   '1dan': '初段', '2dan': '二段', '3dan': '三段',
 };
 
-export default function TechniquePage({ kyu, section, tech, onBack, viewerId, user = {}, onLogout }) {
+export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerId, user = {}, onLogout }) {
   const isMobile = useIsMobile();
   const belt = BELT[kyu.belt] || { color: '#ccc', border: '#aaa', label: '' };
   const [cat, setCat] = useState('overview');
@@ -154,7 +155,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, viewerId, us
   // ── MOBILE ───────────────────────────────────────────────────────
   if (isMobile) {
     return (
-      <div className="fade" style={{ background: C.bg, minHeight: '100vh' }}>
+      <div className="fade" style={{ background: C.bg, minHeight: '100vh', position: 'relative' }}>
         {/* Mobile top bar */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -300,7 +301,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, viewerId, us
 
         {/* Sensei quote */}
         {content.senseiQuote && (
-          <div style={{ margin: '12px 16px 40px', background: C.surface, border: `1px solid ${C.border}`, padding: '18px 16px' }}>
+          <div className="page-has-bottom-nav" style={{ margin: '12px 16px 0', background: C.surface, border: `1px solid ${C.border}`, padding: '18px 16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: C.light, border: `1px solid ${C.goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Cormorant Garamond', serif", fontSize: 14, color: C.gold, flexShrink: 0 }}>К</div>
               <div>
@@ -314,6 +315,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, viewerId, us
           </div>
         )}
       </div>
+      <MobileBottomNav nav={nav || { dashboard: onBack }} active="database" isAdmin={user?.role === 'admin'} />
     );
   }
 
