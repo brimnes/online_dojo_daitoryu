@@ -58,6 +58,8 @@ export default function KinescopeUploader({
   const [progress, setProgress] = useState(0);
   const [errorMsg, setErrorMsg] = useState('');
   const [dragOver, setDragOver] = useState(false);
+  const [syncing, setSyncing]   = useState(false);
+  const [syncResult, setSyncResult] = useState(null); // { status, error }
   const fileRef  = useRef(null);
   const tusRef   = useRef(null);  // tus.Upload instance (for abort/resume)
 
@@ -163,6 +165,28 @@ export default function KinescopeUploader({
     setPhase('idle'); setErrorMsg(''); setProgress(0);
   }, []);
 
+  // ── sync status directly from Kinescope API ───────────────────────────────
+  const handleSync = useCallback(async () => {
+    if (!currentVideoId) return;
+    setSyncing(true);
+    setSyncResult(null);
+    try {
+      const res = await fetch('/api/kinescope/sync-status', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ videoId: currentVideoId }),
+      });
+      const json = await res.json();
+      if (!res.ok) throw new Error(json.error || `Ошибка ${res.status}`);
+      setSyncResult({ status: json.status });
+      onComplete?.({ videoId: currentVideoId, status: json.status });
+    } catch (e) {
+      setSyncResult({ error: e.message });
+    } finally {
+      setSyncing(false);
+    }
+  }, [currentVideoId, onComplete]);
+
   // ── guard: record must exist in DB before upload is allowed ─────────────
   const hasValidId = !!(lessonId || techniqueVideoId);
   if (!hasValidId) {
@@ -190,15 +214,43 @@ export default function KinescopeUploader({
       none:       { label: 'Не загружено',    color: C.muted, bg: '#f5f5f5' },
     }[currentStatus || 'none'] ?? { label: currentStatus, color: C.muted, bg: '#f5f5f5' };
 
+    const showSync = currentStatus === 'processing' || currentStatus === 'uploading';
+
     return (
-      <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: 8 }}>
-        <span style={{ fontSize: 11, color: cfg.color, background: cfg.bg,
-          border: `1px solid ${cfg.color}33`, padding: '2px 8px' }}>
-          {cfg.label}
-        </span>
-        <span style={{ fontSize: 10, color: C.muted, fontFamily: 'monospace' }}>
-          {currentVideoId.slice(0, 8)}…
-        </span>
+      <div style={{ marginBottom: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+          <span style={{ fontSize: 11, color: cfg.color, background: cfg.bg,
+            border: `1px solid ${cfg.color}33`, padding: '2px 8px' }}>
+            {cfg.label}
+          </span>
+          <span style={{ fontSize: 10, color: C.muted, fontFamily: 'monospace' }}>
+            {currentVideoId.slice(0, 8)}…
+          </span>
+          {showSync && (
+            <button
+              onClick={handleSync}
+              disabled={syncing}
+              style={{
+                fontSize: 11, color: syncing ? C.muted : C.gold,
+                background: 'none', border: `1px solid ${C.goldBorder}`,
+                padding: '2px 10px', cursor: syncing ? 'default' : 'pointer',
+                opacity: syncing ? 0.6 : 1,
+              }}
+            >
+              {syncing ? 'Проверяем…' : '↻ Проверить статус'}
+            </button>
+          )}
+        </div>
+        {syncResult && (
+          <div style={{ marginTop: 4, fontSize: 11,
+            color: syncResult.error ? C.red : (syncResult.status === 'ready' ? C.green : C.gold) }}>
+            {syncResult.error
+              ? `Ошибка: ${syncResult.error}`
+              : syncResult.status === 'ready'
+                ? '✓ Готово — обновите страницу чтобы увидеть видео'
+                : `Статус на Kinescope: ${syncResult.status}`}
+          </div>
+        )}
       </div>
     );
   };
