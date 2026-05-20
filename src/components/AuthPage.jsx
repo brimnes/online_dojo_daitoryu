@@ -5,6 +5,10 @@ import { useIsMobile } from '@/lib/mobile';
 import { SELF_LEVELS } from '@/data/users';
 import TakedaMon from '@/components/TakedaMon';
 
+// ─── Временный запрет регистрации ─────────────────────────────
+// Поставь false чтобы снова открыть регистрацию
+const REGISTRATION_CLOSED = true;
+
 // ─── Цветовая палитра ──────────────────────────────────────────
 const C = {
   bg:         '#e6e0d2',        // cool stone
@@ -412,27 +416,50 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
         </button>
 
         {/* Divider */}
-        <div style={{ display:'flex', alignItems:'center', gap:12, margin:'4px 0' }}>
-          <div style={{ flex:1, height:1, background:C.border }} />
-          <span style={{
-            fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
-            fontSize:9, color:C.border, letterSpacing:'0.1em', textTransform:'uppercase',
-          }}>или</span>
-          <div style={{ flex:1, height:1, background:C.border }} />
-        </div>
-
-        {/* Secondary — Registration */}
-        <button onClick={onRegister}
-          style={{
-            padding:'14px', background:'transparent',
-            color:C.ink2, border:`1px solid ${C.border}`,
-            fontSize:12, cursor:'pointer',
-            fontFamily:"'Jost',sans-serif", fontWeight:500,
-            letterSpacing:'0.12em', textTransform:'uppercase',
-            transition:'border-color 0.15s',
+        {REGISTRATION_CLOSED ? (
+          <div style={{
+            padding: '14px 16px',
+            background: '#faf6ee',
+            border: `1px solid ${C.border}`,
+            textAlign: 'center',
           }}>
-          Регистрация
-        </button>
+            <div style={{
+              fontFamily: "'Noto Serif JP', var(--font-noto), serif",
+              fontSize: 18, color: C.accent, marginBottom: 6,
+            }}>門</div>
+            <div style={{
+              fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+              fontSize: 10, color: C.muted, letterSpacing: '0.14em',
+              textTransform: 'uppercase', marginBottom: 6,
+            }}>Регистрация закрыта</div>
+            <div style={{
+              fontFamily: "'Cormorant Garamond', serif",
+              fontStyle: 'italic', fontSize: 13, color: C.muted, lineHeight: 1.6,
+            }}>Набор новых учеников временно приостановлен. Следите за анонсами.</div>
+          </div>
+        ) : (
+          <>
+            <div style={{ display:'flex', alignItems:'center', gap:12, margin:'4px 0' }}>
+              <div style={{ flex:1, height:1, background:C.border }} />
+              <span style={{
+                fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
+                fontSize:9, color:C.border, letterSpacing:'0.1em', textTransform:'uppercase',
+              }}>или</span>
+              <div style={{ flex:1, height:1, background:C.border }} />
+            </div>
+            <button onClick={onRegister}
+              style={{
+                padding:'14px', background:'transparent',
+                color:C.ink2, border:`1px solid ${C.border}`,
+                fontSize:12, cursor:'pointer',
+                fontFamily:"'Jost',sans-serif", fontWeight:500,
+                letterSpacing:'0.12em', textTransform:'uppercase',
+                transition:'border-color 0.15s',
+              }}>
+              Регистрация
+            </button>
+          </>
+        )}
       </div>
     </div>
   );

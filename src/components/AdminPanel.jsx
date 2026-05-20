@@ -369,11 +369,11 @@ const SECTIONS = [
   {id:'users',     num:'02', label:'Ученики',         kanji:'人'},
   {id:'months',    num:'03', label:'Месяцы и уроки',  kanji:'月'},
   {id:'ikkajo',    num:'04', label:'База техник',     kanji:'技'},
-  {id:'payments',  num:'05', label:'Платежи',         kanji:'銭'},
-  {id:'exams',     num:'06', label:'Аттестации',      kanji:'段'},
-  {id:'comments',  num:'07', label:'Комментарии',     kanji:'声'},
+  {id:'knowledge', num:'05', label:'База знаний',     kanji:'智'},
+  {id:'payments',  num:'06', label:'Платежи',         kanji:'銭'},
+  {id:'exams',     num:'07', label:'Аттестации',      kanji:'段'},
+  {id:'comments',  num:'08', label:'Комментарии',     kanji:'声'},
   // hidden (functional, not in nav)
-  {id:'knowledge', num:'',   label:'База знаний',     kanji:'智', hidden:true},
   {id:'access',    num:'',   label:'Доступы',         kanji:'鍵', hidden:true},
 ];
 
