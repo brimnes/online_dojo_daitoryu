@@ -15,14 +15,16 @@ import { requireAdmin } from '@/lib/auth-server.js';
 const API_SECRET = process.env.KINESCOPE_API_SECRET;
 
 // Kinescope status → наш статус
+// Kinescope statuses: pending | uploading | pre-processing | processing | aborted | done | error
 function mapStatus(kStatus) {
   if (!kStatus) return null;
   const s = kStatus.toLowerCase();
-  if (s === 'ready' || s === 'processed') return 'ready';
-  if (s === 'error' || s === 'failed')    return 'error';
-  if (s === 'processing' || s === 'pending' || s === 'queued') return 'processing';
-  if (s === 'uploading') return 'uploading';
-  return s; // передаём как есть если неизвестный
+  if (s === 'done')                                      return 'ready';       // ✓ готово
+  if (s === 'error' || s === 'aborted')                  return 'error';       // ✗ ошибка
+  if (s === 'processing' || s === 'pre-processing'
+    || s === 'pending')                                  return 'processing';  // ⏳ обрабатывается
+  if (s === 'uploading')                                 return 'uploading';   // ⬆ загружается
+  return s;
 }
 
 export async function POST(request) {
