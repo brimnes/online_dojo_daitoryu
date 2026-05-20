@@ -2,6 +2,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma.js';
 import { requireAdmin } from '@/lib/auth-server.js';
+import { randomUUID } from 'crypto';
 
 export async function POST(request, { params }) {
   const { error } = await requireAdmin(request);
@@ -18,7 +19,8 @@ export async function POST(request, { params }) {
     if (videos?.length) {
       await prisma.techniqueVideo.createMany({
         data: videos.map((v, i) => ({
-          id:            v.id || `${techId}-${category}-${Date.now()}-${i}`,
+          // Replace temporary client-side IDs (nv-...) with real UUIDs
+          id:            (!v.id || v.id.startsWith('nv-')) ? randomUUID() : v.id,
           techniqueId:   techId,
           category,
           title:         v.title,
