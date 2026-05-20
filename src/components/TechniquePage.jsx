@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { C } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
 import { BELT, VIDEO_CATS } from '@/data/techniques';
@@ -44,6 +44,14 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
   const byC    = content.videos || {};
   const curV   = byC[cat] || [];
   const curCat = VIDEO_CATS.find(c => c.id === cat);
+
+  // Auto-select first available video when category changes or content loads
+  useEffect(() => {
+    if (vid === null && curV.length > 0) {
+      const firstReady = curV.find(v => v.video_status === 'ready') ?? curV[0];
+      setVid(firstReady);
+    }
+  }, [curV]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Computed helpers
   const sectionKanji = SECTION_KANJI[sectionKey] || '';
