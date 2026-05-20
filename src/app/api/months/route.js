@@ -30,7 +30,9 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const withLessons = searchParams.get('with_lessons') === '1';
 
+  // Месяцы 1–5 (янв–май) скрыты из UI; отображаем только с июня (sortOrder >= 6)
   const months = await prisma.month.findMany({
+    where: { sortOrder: { gte: 6 } },
     orderBy: { sortOrder: 'asc' },
     ...(withLessons ? { include: { lessons: { orderBy: { num: 'asc' } } } } : {}),
   });

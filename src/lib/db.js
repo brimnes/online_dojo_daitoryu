@@ -15,12 +15,8 @@ import { useState, useEffect, useCallback } from 'react';
 // MOCK DATA — используется как fallback при ошибке загрузки
 // ─────────────────────────────────────────────────────────────
 
+// Месяцы jan–may скрыты из UI (sort_order 1–5). Список начинается с июня.
 const MOCK_MONTHS = [
-  {id:'jan',label:'Январь',   kanji:'一', is_open:false, sort_order:1,  description:'Основы дистанции и базовые захваты.'},
-  {id:'feb',label:'Февраль',  kanji:'二', is_open:false, sort_order:2,  description:'Укэми — техника падений.'},
-  {id:'mar',label:'Март',     kanji:'三', is_open:false, sort_order:3,  description:'Кихон — базовая техника.'},
-  {id:'apr',label:'Апрель',   kanji:'四', is_open:false, sort_order:4,  description:'Ирими — вход. Управление балансом укэ.'},
-  {id:'may',label:'Май',      kanji:'五', is_open:false, sort_order:5,  description:'Тэнкан — разворот.'},
   {id:'jun',label:'Июнь',     kanji:'六', is_open:false, sort_order:6,  description:'Атэми — вспомогательные удары.'},
   {id:'jul',label:'Июль',     kanji:'七', is_open:false, sort_order:7,  description:'Работа с дзё.'},
   {id:'aug',label:'Август',   kanji:'八', is_open:false, sort_order:8,  description:'Работа с вооружённым партнёром.'},

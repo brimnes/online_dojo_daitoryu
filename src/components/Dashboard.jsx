@@ -159,7 +159,7 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
             </span>
           </div>
           <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-            <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.muted, letterSpacing: '0.12em' }}>{openedCount} / 12 МЕСЯЦЕВ ОТКРЫТО</span>
+            <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.muted, letterSpacing: '0.12em' }}>{openedCount} / {(months ?? []).length} МЕСЯЦЕВ ОТКРЫТО</span>
           </div>
         </div>
       )}
@@ -171,7 +171,7 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: isMobile ? 10 : 14 }}>
             <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.accent, letterSpacing: '0.06em' }}>02</span>
             <span style={{ width: 1, height: 12, background: C.border, display: 'inline-block' }} />
-            <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase' }}>Учебный год · 12 месяцев</span>
+            <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase' }}>Учебный год · июнь–декабрь</span>
           </div>
           {/* Main title */}
           <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: isMobile ? 36 : 56, letterSpacing: '0.04em', color: C.ink, lineHeight: 0.95, fontWeight: 400 }}>

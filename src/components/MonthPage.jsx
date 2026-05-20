@@ -10,7 +10,7 @@ import { MobileBottomNav } from '@/components/BottomNav';
 
 export default function MonthPage({ nav, monthId, watched, toggleWatched, user = {}, onLogout }) {
   const isMobile = useIsMobile();
-  const { months } = useMonths();
+  const { months, loading: monthsLoading } = useMonths();
   const { lessons } = useLessons(monthId);
   const { rows: userAccess, loading: accessLoading } = useUserAccessRows();
 
@@ -30,6 +30,21 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
 
   // Subtitle for breadcrumb: first sentence of description
   const monthSub = (month?.description || '').split('.')[0]?.trim() || '';
+
+  // ── Hidden month gate (янв–май скрыты из UI) ─────────────────────
+  // Если месяц не вернулся из API (не в списке) и загрузка завершена — показать 404-экран
+  if (!monthsLoading && !month) {
+    return (
+      <div style={{ padding: '60px 32px', textAlign: 'center', background: C.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
+        <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 20, color: C.accent }}>Месяц недоступен</div>
+        <div style={{ fontSize: 13, color: C.muted, maxWidth: 320 }}>Этот раздел временно недоступен.</div>
+        <button onClick={nav.dashboard}
+          style={{ marginTop: 8, padding: '10px 24px', background: C.ink, color: '#fff', border: 'none', fontSize: 13, cursor: 'pointer' }}>
+          ← Вернуться на главную
+        </button>
+      </div>
+    );
+  }
 
   // ── Access gate ──────────────────────────────────────────────────
   if (!accessLoading && !canView) {
