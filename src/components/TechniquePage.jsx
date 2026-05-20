@@ -314,8 +314,8 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
             </div>
           </div>
         )}
+        <MobileBottomNav nav={nav || { dashboard: onBack }} active="database" isAdmin={user?.role === 'admin'} />
       </div>
-      <MobileBottomNav nav={nav || { dashboard: onBack }} active="database" isAdmin={user?.role === 'admin'} />
     );
   }
 
