@@ -12,7 +12,18 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma.js';
 import { hashPassword, createToken, setAuthCookie } from '@/lib/auth-server.js';
 
+// ─── Временный запрет регистрации ────────────────────────────────
+// Поставь false чтобы снова открыть регистрацию
+const REGISTRATION_CLOSED = true;
+
 export async function POST(request) {
+  if (REGISTRATION_CLOSED) {
+    return NextResponse.json(
+      { error: 'Регистрация временно закрыта' },
+      { status: 403 }
+    );
+  }
+
   try {
     const body = await request.json();
     const { email, password, name, selfLevel, senseiName, experience } = body;
