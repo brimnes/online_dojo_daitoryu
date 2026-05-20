@@ -1927,7 +1927,7 @@ function SectionIkkajo({showToast,isMobile}){
             <div>
               {VIDEO_CAT_IDS.map(catId=>{
                 const catVids = draft.videos?.[catId]||[];
-                const addV    = ()=>setDraft(d=>({...d,videos:{...d.videos,[catId]:[...catVids,{id:`nv-${Date.now()}`,title:'Новое видео',duration:'00:00',video_id:null,video_status:'none'}]}}));
+                const addV    = ()=>setDraft(d=>({...d,videos:{...d.videos,[catId]:[...catVids,{id:`nv-${Date.now()}`,title:'Новое видео',video_id:null,video_status:'none'}]}}));
                 const updV    = (vid,field,val)=>setDraft(d=>({...d,videos:{...d.videos,[catId]:catVids.map(v=>v.id===vid.id?{...v,[field]:val}:v)}}));
                 const delV    = (vid)=>setDraft(d=>({...d,videos:{...d.videos,[catId]:catVids.filter(v=>v.id!==vid.id)}}));
                 return(
@@ -1948,7 +1948,6 @@ function SectionIkkajo({showToast,isMobile}){
                       <div key={vid.id} style={{background:C.bg,border:`1px solid ${C.border}`,padding:'14px',marginBottom:6}}>
                         <div style={{display:'flex',gap:8,marginBottom:10,alignItems:'flex-end',flexWrap:'wrap'}}>
                           <div style={{flex:2,minWidth:120}}><Label>Название</Label><Input value={vid.title} onChange={v=>updV(vid,'title',v)} placeholder="Название видео"/></div>
-                          <div style={{flex:1,minWidth:70}}><Label>Длина</Label><Input value={vid.duration} onChange={v=>updV(vid,'duration',v)} placeholder="0:00"/></div>
                           <Btn onClick={()=>delV(vid)} variant='danger' small>✕</Btn>
                         </div>
                         <KinescopeUploader

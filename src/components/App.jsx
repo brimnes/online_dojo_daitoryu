@@ -110,8 +110,8 @@ export default function App({ initialUser = null }) {
 
   // ─── Публичный nav объект ────────────────────────────────────────
   const nav = {
-    // Корень: очищаем стек
-    dashboard:     ()                   => { navStackRef.current = []; setRoute({ page: 'dashboard' }); },
+    // Корень: очищаем стек; tab — опциональный начальный таб ('months'|'knowledge'|'database'|'profile')
+    dashboard:     (tab)                => { navStackRef.current = []; setRoute({ page: 'dashboard', tab: tab || 'months' }); },
     // Вперёд: пушим текущий маршрут в стек
     ikkajo:        ()                   => navigate({ page: 'ikkajo' }),
     technique:     (kyu, section, tech) => navigate({ page: 'technique', kyu, section, tech }),
@@ -153,10 +153,10 @@ export default function App({ initialUser = null }) {
   return (
     <>
       {route.page === 'dashboard' && (
-        <Dashboard nav={nav} watched={watched} user={user} onLogout={handleLogout} />
+        <Dashboard nav={nav} watched={watched} user={user} onLogout={handleLogout} initialTab={route.tab} />
       )}
       {route.page === 'ikkajo' && (
-        <IkkajoPage nav={nav} />
+        <IkkajoPage nav={nav} user={user} onLogout={handleLogout} />
       )}
       {route.page === 'technique' && (
         <TechniquePage
@@ -164,7 +164,10 @@ export default function App({ initialUser = null }) {
           section={route.section}
           tech={route.tech}
           onBack={nav.back}
+          nav={nav}
           viewerId={user.id}
+          user={user}
+          onLogout={handleLogout}
         />
       )}
       {route.page === 'month' && (
@@ -173,6 +176,8 @@ export default function App({ initialUser = null }) {
           monthId={route.monthId}
           watched={watched}
           toggleWatched={toggleWatched}
+          user={user}
+          onLogout={handleLogout}
         />
       )}
       {route.page === 'lesson' && (
@@ -185,6 +190,8 @@ export default function App({ initialUser = null }) {
           comments={comments}
           addComment={addComment}
           viewerId={user.id}
+          user={user}
+          onLogout={handleLogout}
         />
       )}
       {route.page === 'knowledge' && (

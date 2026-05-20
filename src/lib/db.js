@@ -660,6 +660,7 @@ export function useKnowledge({ adminMode = false } = {}) {
         content:        item.content  || '',
         sort_order:     item.sort_order ?? 0,
         is_published:   item.is_published ?? false,
+        tag:            item.tag            || null,
         video_provider: item.video_provider || null,
         video_id:       item.video_id       || null,
         video_status:   item.video_status   || 'none',
