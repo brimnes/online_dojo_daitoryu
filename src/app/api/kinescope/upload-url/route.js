@@ -2,8 +2,9 @@
  * POST /api/kinescope/upload-url
  *
  * Accepts: application/json
- *   lessonId          — string (one of these two required)
+ *   lessonId          — string (one of these three required)
  *   techniqueVideoId  — string
+ *   knowledgeItemId   — string
  *   title             — string  (русский — ok, конвертируем в ASCII для Kinescope)
  *   filename          — string  (оригинальное имя файла)
  *   filesize          — number  (bytes)
@@ -42,7 +43,9 @@ export async function POST(request) {
 
     // 2. Parse body
     const body = await request.json();
-    const { lessonId, techniqueVideoId, title, filename, filesize, parentId } = body;
+    const { lessonId, techniqueVideoId, knowledgeItemId, title, filename, filesize, parentId } = body;
+
+    console.log('[upload-url] payload:', { lessonId, techniqueVideoId, knowledgeItemId, filename, filesize });
 
     if (!filename || !filesize) {
       return NextResponse.json(
@@ -50,9 +53,9 @@ export async function POST(request) {
         { status: 400 }
       );
     }
-    if (!lessonId && !techniqueVideoId) {
+    if (!lessonId && !techniqueVideoId && !knowledgeItemId) {
       return NextResponse.json(
-        { error: 'lessonId or techniqueVideoId is required' },
+        { error: 'lessonId, techniqueVideoId, or knowledgeItemId is required' },
         { status: 400 }
       );
     }
@@ -75,16 +78,34 @@ export async function POST(request) {
     };
 
     if (lessonId) {
-      await prisma.lesson.update({
+      const result = await prisma.lesson.updateMany({
         where: { id: lessonId },
         data:  videoUpdate,
       });
+      if (result.count === 0) {
+        console.error('[upload-url] lesson not found:', lessonId);
+        return NextResponse.json({ error: `Lesson ${lessonId} not found` }, { status: 404 });
+      }
     }
     if (techniqueVideoId) {
-      await prisma.techniqueVideo.update({
+      const result = await prisma.techniqueVideo.updateMany({
         where: { id: techniqueVideoId },
         data:  videoUpdate,
       });
+      if (result.count === 0) {
+        console.error('[upload-url] techniqueVideo not found:', techniqueVideoId);
+        return NextResponse.json({ error: `TechniqueVideo ${techniqueVideoId} not found` }, { status: 404 });
+      }
+    }
+    if (knowledgeItemId) {
+      const result = await prisma.knowledgeItem.updateMany({
+        where: { id: knowledgeItemId },
+        data:  videoUpdate,
+      });
+      if (result.count === 0) {
+        console.error('[upload-url] knowledgeItem not found:', knowledgeItemId);
+        return NextResponse.json({ error: `KnowledgeItem ${knowledgeItemId} not found` }, { status: 404 });
+      }
     }
 
     // 5. Return TUS endpoint to client

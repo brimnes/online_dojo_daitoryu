@@ -41,8 +41,9 @@ function toAsciiFn(str) {
 
 /**
  * Props:
- *   lessonId          — string (mutually exclusive with techniqueVideoId)
+ *   lessonId          — string (mutually exclusive with the others)
  *   techniqueVideoId  — string
+ *   knowledgeItemId   — string
  *   currentVideoId    — existing Kinescope video_id
  *   currentStatus     — existing video_status
  *   onComplete        — callback({ videoId, status })
@@ -50,6 +51,7 @@ function toAsciiFn(str) {
 export default function KinescopeUploader({
   lessonId,
   techniqueVideoId,
+  knowledgeItemId,
   currentVideoId,
   currentStatus,
   onComplete,
@@ -85,6 +87,7 @@ export default function KinescopeUploader({
         body: JSON.stringify({
           lessonId,
           techniqueVideoId,
+          knowledgeItemId,
           title:    file.name.replace(/\.[^/.]+$/, ''), // strip extension
           filename: file.name,
           filesize: file.size,
@@ -149,7 +152,7 @@ export default function KinescopeUploader({
         setErrorMsg(err.message || 'Ошибка загрузки');
       }
     }
-  }, [lessonId, techniqueVideoId, onComplete]);
+  }, [lessonId, techniqueVideoId, knowledgeItemId, onComplete]);
 
   const handleFile   = useCallback((f) => { if (f) startUpload(f); }, [startUpload]);
   const handleDrop   = useCallback((e) => {
@@ -188,7 +191,7 @@ export default function KinescopeUploader({
   }, [currentVideoId, onComplete]);
 
   // ── guard: record must exist in DB before upload is allowed ─────────────
-  const hasValidId = !!(lessonId || techniqueVideoId);
+  const hasValidId = !!(lessonId || techniqueVideoId || knowledgeItemId);
   if (!hasValidId) {
     return (
       <div style={{

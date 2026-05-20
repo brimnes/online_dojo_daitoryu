@@ -2346,7 +2346,7 @@ function SectionKnowledge({showToast,isMobile}){
               <Label>Видео (Kinescope)</Label>
               {editId && editId!=='new' ? (
                 <KinescopeUploader
-                  lessonId={draft.id}
+                  knowledgeItemId={draft.id}
                   currentVideoId={draft.video_id}
                   currentStatus={draft.video_status}
                   onComplete={({videoId,status})=>{
