@@ -7,8 +7,8 @@
 }
 
 html, body {
-  background: #e6e0d2;
-  color: #15120e;
+  background: #f5f3ee;
+  color: #1a1a1a;
   font-family: var(--font-jost), 'Jost', sans-serif;
   -webkit-font-smoothing: antialiased;
   font-size: 15px;
@@ -22,8 +22,8 @@ button, input, textarea, select {
 textarea { cursor: text; }
 
 ::-webkit-scrollbar       { width: 4px; }
-::-webkit-scrollbar-track { background: #e6e0d2; }
-::-webkit-scrollbar-thumb { background: #bab09a; border-radius: 2px; }
+::-webkit-scrollbar-track { background: #f5f3ee; }
+::-webkit-scrollbar-thumb { background: #d0c8b8; border-radius: 2px; }
 
 /* ─── Shared animations ──────────────────────────────────────── */
 @keyframes fadeUp {
@@ -58,32 +58,32 @@ iframe                { display: block; }
    ─────────────────────────────────────────────────────────────── */
 
 /* ── Font utilities ── */
-.font-display   { font-family: var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif; }
+.font-display   { font-family: var(--font-arkhip), system-ui, sans-serif; }
 .font-ui        { font-family: var(--font-jost), 'Jost', sans-serif; }
 .font-editorial { font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif; }
 
-/* ── Section / page titles — Cormorant SC + crimson ── */
+/* ── Section / page titles — Arkhip + Takeda gold ── */
 .section-title {
-  font-family: var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif;
-  color: #9e2f1f;
-  letter-spacing: 0.06em;
+  font-family: var(--font-arkhip), system-ui, sans-serif;
+  color: #c8a84a;
+  letter-spacing: 0.01em;
   line-height: 1.15;
 }
 
-/* ── Sub-section headings — Cormorant SC, темнее ── */
+/* ── Sub-section headings — Arkhip, темнее ── */
 .section-subtitle {
-  font-family: var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif;
-  color: #15120e;
-  letter-spacing: 0.04em;
+  font-family: var(--font-arkhip), system-ui, sans-serif;
+  color: #1a1a1a;
+  letter-spacing: 0.01em;
   line-height: 1.2;
 }
 
 /* ── Brand / logo text ── */
 .brand-text {
-  font-family: var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif;
-  letter-spacing: 0.15em;
+  font-family: var(--font-arkhip), system-ui, sans-serif;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: #9e2f1f;
+  color: #c8a84a;
 }
 
 /* ── Long-form editorial text ── */
@@ -91,7 +91,7 @@ iframe                { display: block; }
   font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif;
   font-size: 18px;
   line-height: 1.85;
-  color: #3a342b;
+  color: #333;
 }
 
 /* ── Sensei quote block ── */
@@ -100,7 +100,7 @@ iframe                { display: block; }
   font-style: italic;
   font-size: 16px;
   line-height: 1.85;
-  color: #6f6452;
+  color: #444;
 }
 
 /* ── UI label / nav text ── */
@@ -112,39 +112,31 @@ iframe                { display: block; }
 
 /* ── Overline / eyebrow label (tiny uppercase) ── */
 .overline {
-  font-family: var(--font-mono), 'JetBrains Mono', monospace;
+  font-family: var(--font-jost), 'Jost', sans-serif;
   font-size: 10px;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.15em;
   text-transform: uppercase;
-  color: #6f6452;
-}
-
-/* ── Mono counter/label ── */
-.mono-label {
-  font-family: var(--font-mono), 'JetBrains Mono', monospace;
-  font-size: 11px;
-  letter-spacing: 0.08em;
+  color: #b0a080;
 }
 
 /* ── h1/h2 defaults for pages that use semantic HTML ── */
 h1, h2 {
-  font-family: var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif;
+  font-family: var(--font-arkhip), system-ui, sans-serif;
   line-height: 1.15;
 }
 
-/* ── Mobile nav bottom area — dark espresso palette ── */
+/* ── Mobile nav bottom area ── */
 .mobile-bottom-nav {
   position: fixed;
   bottom: 0;
   left: 0;
   right: 0;
-  background: #0a0807;
-  border-top: 1px solid #1f1a16;
+  background: #fff;
+  border-top: 1px solid #e8e0d0;
   display: flex;
   align-items: stretch;
-  padding-bottom: env(safe-area-inset-bottom, 0px);
-  z-index: 200;
-  box-shadow: 0 -1px 0 rgba(184,146,58,0.07), 0 -8px 24px rgba(0,0,0,0.45);
+  padding-bottom: env(safe-area-inset-bottom);
+  z-index: 100;
 }
 .mobile-bottom-nav-item {
   flex: 1;
@@ -152,28 +144,17 @@ h1, h2 {
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 4px;
-  padding: 9px 4px 11px;
+  padding: 10px 4px;
   background: none;
   border: none;
   cursor: pointer;
   text-decoration: none;
-  color: #5a4f3c;
-  font-family: var(--font-mono), 'JetBrains Mono', monospace;
-  min-height: 58px;
-  position: relative;
+  color: #999;
+  font-family: var(--font-jost), 'Jost', sans-serif;
+  min-height: 60px;
 }
-.mobile-bottom-nav-item.active {
-  background: #13110e;
-  color: #c2b59c;
-}
-/* padding for content above fixed bottom nav */
 .has-bottom-nav {
-  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
-}
-/* alias for sub-pages */
-.page-has-bottom-nav {
-  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(60px + env(safe-area-inset-bottom));
 }
 
 /* ═══════════════════════════════════════════════════════════════
