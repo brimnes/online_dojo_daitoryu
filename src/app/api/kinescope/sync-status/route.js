@@ -60,23 +60,26 @@ export async function POST(request) {
     return NextResponse.json({ error: 'Cannot determine status from Kinescope response', raw: json }, { status: 502 });
   }
 
-  // Обновляем обе таблицы
-  const lessonData = { videoStatus: status };
-  const techData   = { videoStatus: status };
+  // Обновляем все три таблицы
+  const lessonData    = { videoStatus: status };
+  const techData      = { videoStatus: status };
+  const knowledgeData = { videoStatus: status };
   if (status === 'ready') {
     if (duration) { lessonData.videoDuration = duration; techData.duration = duration; }
     if (poster)   { lessonData.videoPosterUrl = poster; }
   }
 
-  const [lessonRes, techRes] = await Promise.allSettled([
+  const [lessonRes, techRes, knowledgeRes] = await Promise.allSettled([
     prisma.lesson.updateMany({ where: { videoId }, data: lessonData }),
     prisma.techniqueVideo.updateMany({ where: { videoId }, data: techData }),
+    prisma.knowledgeItem.updateMany({ where: { videoId }, data: knowledgeData }),
   ]);
 
-  const lessonCount = lessonRes.status === 'fulfilled' ? lessonRes.value.count : 0;
-  const techCount   = techRes.status  === 'fulfilled' ? techRes.value.count  : 0;
+  const lessonCount    = lessonRes.status    === 'fulfilled' ? lessonRes.value.count    : 0;
+  const techCount      = techRes.status      === 'fulfilled' ? techRes.value.count      : 0;
+  const knowledgeCount = knowledgeRes.status === 'fulfilled' ? knowledgeRes.value.count : 0;
 
-  console.log(`[sync-status] videoId=${videoId} status=${status} lessons=${lessonCount} techs=${techCount}`);
+  console.log(`[sync-status] videoId=${videoId} status=${status} lessons=${lessonCount} techs=${techCount} knowledge=${knowledgeCount}`);
 
-  return NextResponse.json({ ok: true, status, lessonCount, techCount });
+  return NextResponse.json({ ok: true, status, lessonCount, techCount, knowledgeCount });
 }

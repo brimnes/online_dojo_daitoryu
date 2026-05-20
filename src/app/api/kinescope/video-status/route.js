@@ -38,9 +38,10 @@ async function syncFromKinescope(videoId) {
     const status = mapStatus(data.status);
     if (!status || status === 'processing' || status === 'uploading') return status;
 
-    // Статус изменился — обновляем БД
-    const lessonData = { videoStatus: status };
-    const techData   = { videoStatus: status };
+    // Статус изменился — обновляем все три таблицы
+    const lessonData    = { videoStatus: status };
+    const techData      = { videoStatus: status };
+    const knowledgeData = { videoStatus: status };
     if (status === 'ready') {
       if (data.duration)   { lessonData.videoDuration = String(data.duration); techData.duration = String(data.duration); }
       if (data.poster_url) { lessonData.videoPosterUrl = data.poster_url; }
@@ -48,6 +49,7 @@ async function syncFromKinescope(videoId) {
     await Promise.allSettled([
       prisma.lesson.updateMany({ where: { videoId }, data: lessonData }),
       prisma.techniqueVideo.updateMany({ where: { videoId }, data: techData }),
+      prisma.knowledgeItem.updateMany({ where: { videoId }, data: knowledgeData }),
     ]);
     return status;
   } catch {
@@ -66,8 +68,8 @@ export async function GET(request) {
     return NextResponse.json({ error: 'videoId is required' }, { status: 400 });
   }
 
-  // Ищем в обеих таблицах параллельно
-  const [lesson, techVideo] = await Promise.all([
+  // Ищем во всех трёх таблицах параллельно
+  const [lesson, techVideo, knowledgeItem] = await Promise.all([
     prisma.lesson.findFirst({
       where:  { videoId },
       select: { videoStatus: true },
@@ -76,9 +78,13 @@ export async function GET(request) {
       where:  { videoId },
       select: { videoStatus: true },
     }),
+    prisma.knowledgeItem.findFirst({
+      where:  { videoId },
+      select: { videoStatus: true },
+    }),
   ]);
 
-  let status = lesson?.videoStatus ?? techVideo?.videoStatus ?? null;
+  let status = lesson?.videoStatus ?? techVideo?.videoStatus ?? knowledgeItem?.videoStatus ?? null;
 
   // Если статус всё ещё processing — проверяем Kinescope напрямую
   if (status === 'processing' || status === 'uploading') {

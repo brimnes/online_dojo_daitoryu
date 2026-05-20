@@ -59,10 +59,14 @@ export async function POST(request) {
       if (duration) techData.duration = String(duration);
     }
 
-    // Обновляем обе таблицы параллельно
-    const [lessonResult, techResult] = await Promise.allSettled([
+    // knowledge_items: только videoStatus
+    const knowledgeData = { videoStatus };
+
+    // Обновляем все три таблицы параллельно
+    const [lessonResult, techResult, knowledgeResult] = await Promise.allSettled([
       prisma.lesson.updateMany({ where: { videoId }, data: lessonData }),
       prisma.techniqueVideo.updateMany({ where: { videoId }, data: techData }),
+      prisma.knowledgeItem.updateMany({ where: { videoId }, data: knowledgeData }),
     ]);
 
     console.log('[kinescope-webhook] lessons:',
@@ -70,6 +74,9 @@ export async function POST(request) {
     );
     console.log('[kinescope-webhook] technique_videos:',
       techResult.status === 'fulfilled' ? techResult.value.count : techResult.reason
+    );
+    console.log('[kinescope-webhook] knowledge_items:',
+      knowledgeResult.status === 'fulfilled' ? knowledgeResult.value.count : knowledgeResult.reason
     );
 
     return NextResponse.json({ ok: true });
