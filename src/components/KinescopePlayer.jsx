@@ -1,5 +1,7 @@
 'use client';
 
+import { useState, useEffect } from 'react';
+
 /**
  * KinescopePlayer
  *
@@ -10,23 +12,56 @@
  *   posterUrl   — optional thumbnail URL
  *   title       — for placeholder display
  *   duration    — for placeholder display
+ *
+ * Polling: если videoStatus === 'processing' или 'uploading', компонент
+ * автоматически проверяет статус в БД каждые 8 секунд и переключается
+ * на плеер как только видео становится 'ready'.
  */
 export default function KinescopePlayer({ videoId, videoStatus, viewerId, posterUrl, title, duration }) {
+  const [liveStatus, setLiveStatus] = useState(videoStatus);
+
+  // Sync if parent updates the prop
+  useEffect(() => { setLiveStatus(videoStatus); }, [videoStatus]);
+
+  // Auto-poll when processing/uploading
+  useEffect(() => {
+    if (!videoId) return;
+    if (liveStatus !== 'processing' && liveStatus !== 'uploading') return;
+
+    const INTERVAL = 8000; // 8s
+    let active = true;
+
+    const check = async () => {
+      try {
+        const res = await fetch(`/api/kinescope/video-status?videoId=${encodeURIComponent(videoId)}`);
+        if (!res.ok) return;
+        const { status } = await res.json();
+        if (active && status && status !== liveStatus) {
+          setLiveStatus(status);
+        }
+      } catch {
+        // network error — ignore, retry next tick
+      }
+    };
+
+    const timer = setInterval(check, INTERVAL);
+    return () => { active = false; clearInterval(timer); };
+  }, [videoId, liveStatus]);
 
   // Not ready states
-  if (!videoId || !videoStatus || videoStatus === 'none') {
+  if (!videoId || !liveStatus || liveStatus === 'none') {
     return <VideoPlaceholder title={title} duration={duration} label="Видео не загружено" />;
   }
 
-  if (videoStatus === 'uploading') {
+  if (liveStatus === 'uploading') {
     return <VideoPlaceholder title={title} duration={duration} label="Загрузка…" spinner />;
   }
 
-  if (videoStatus === 'processing') {
-    return <VideoPlaceholder title={title} duration={duration} label="Видео обрабатывается" spinner />;
+  if (liveStatus === 'processing') {
+    return <VideoPlaceholder title={title} duration={duration} label="Видео обрабатывается…" spinner polling />;
   }
 
-  if (videoStatus === 'error') {
+  if (liveStatus === 'error') {
     return <VideoPlaceholder title={title} duration={duration} label="Ошибка обработки видео" error />;
   }
 
@@ -61,7 +96,7 @@ export default function KinescopePlayer({ videoId, videoStatus, viewerId, poster
   );
 }
 
-function VideoPlaceholder({ title, duration, label, spinner, error }) {
+function VideoPlaceholder({ title, duration, label, spinner, error, polling }) {
   return (
     <div style={{
       width: '100%',
@@ -98,6 +133,11 @@ function VideoPlaceholder({ title, duration, label, spinner, error }) {
           <span style={{ color: '#b04030', fontSize: 20 }}>✕</span>
         )}
         <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, textAlign: 'center' }}>{label}</div>
+        {polling && (
+          <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11, textAlign: 'center' }}>
+            Проверяем каждые 8 сек. · обычно 2–5 мин.
+          </div>
+        )}
         {title && (
           <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, textAlign: 'center' }}>{title}</div>
         )}
