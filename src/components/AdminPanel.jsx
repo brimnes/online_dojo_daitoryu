@@ -370,8 +370,7 @@ const SECTIONS = [
   {id:'ikkajo',    num:'04', label:'База техник',     kanji:'技'},
   {id:'knowledge', num:'05', label:'База знаний',     kanji:'智'},
   {id:'payments',  num:'06', label:'Платежи',         kanji:'銭'},
-  {id:'exams',     num:'07', label:'Аттестации',      kanji:'段'},
-  {id:'comments',  num:'08', label:'Комментарии',     kanji:'声'},
+  {id:'comments',  num:'07', label:'Комментарии',     kanji:'声'},
   // hidden (functional, not in nav)
   {id:'access',    num:'',   label:'Доступы',         kanji:'鍵', hidden:true},
 ];
@@ -386,9 +385,6 @@ export default function AdminPanel({ onExit }) {
     setToast(text || 'Сохранено');
     setTimeout(() => setToast(false), 2400);
   }, []);
-
-  const { exams } = useExams();
-  const pendingCount = exams.filter(e => e.status === 'pending').length;
 
   // Close drawer when switching to desktop
   useEffect(() => { if (!isMobile) setDrawerOpen(false); }, [isMobile]);
@@ -440,9 +436,6 @@ export default function AdminPanel({ onExit }) {
               style={{width:'100%',display:'flex',alignItems:'center',gap:14,padding:'11px 26px',borderLeft:`2px solid ${isA?C.accent:'transparent'}`,background:isA?C.sideActive:'transparent',border:'none',borderLeft:`2px solid ${isA?C.accent:'transparent'}`,cursor:'pointer',textAlign:'left',minHeight:44}}>
               <span style={{fontFamily:F.mono,fontSize:10,color:isA?C.accent:C.sideMuted,letterSpacing:'0.06em',minWidth:20,flexShrink:0}}>{s.num}</span>
               <span style={{fontFamily:F.mono,fontSize:13,color:isA?C.sideText:C.sideText2,fontWeight:isA?600:400,flex:1,letterSpacing:'0.02em'}}>{s.label}</span>
-              {s.id==='exams'&&pendingCount>0&&(
-                <span style={{background:C.accent,color:C.onAccent,fontSize:8,padding:'1px 5px',borderRadius:10,letterSpacing:'0.04em'}}>{pendingCount}</span>
-              )}
               <span style={{marginLeft:'auto',fontFamily:F.kanji,fontSize:12,color:isA?C.sideGold:C.sideMuted,opacity:0.8,flexShrink:0}}>{s.kanji}</span>
             </button>
           );
@@ -488,9 +481,6 @@ export default function AdminPanel({ onExit }) {
             <div style={{fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",fontSize:11,letterSpacing:2,color:C.sideText}}>
               {activeSection?.label || 'ADMIN'}
             </div>
-            {pendingCount>0 && (
-              <span style={{marginLeft:8,background:C.accent,color:'#fff',fontSize:9,padding:'1px 6px',borderRadius:10}}>{pendingCount}</span>
-            )}
           </div>
 
           {/* Overlay */}
@@ -547,7 +537,6 @@ export default function AdminPanel({ onExit }) {
           {section==='users'     && <SectionUsers     showToast={showToast} isMobile={isMobile}/>}
           {section==='access'    && <SectionAccess    showToast={showToast} isMobile={isMobile}/>}
           {section==='knowledge' && <SectionKnowledge showToast={showToast} isMobile={isMobile}/>}
-          {section==='exams'     && <SectionExams     showToast={showToast} isMobile={isMobile}/>}
           {section==='payments'  && <SectionPayments                        isMobile={isMobile}/>}
           {section==='months'    && <SectionMonths    showToast={showToast} isMobile={isMobile}/>}
           {section==='ikkajo'    && <SectionIkkajo    showToast={showToast} isMobile={isMobile}/>}
@@ -643,7 +632,7 @@ function SectionDashboard({showToast, isMobile, onNavigate}) {
         <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'repeat(6,1fr)',gap:14,marginBottom:36}}>
           {DASH_METRICS_PROTO.map((m,i)=>(
             <div key={i} style={{background:C.surface,border:`1px solid ${C.hairline}`,padding:'18px 20px',position:'relative',display:'flex',flexDirection:'column',gap:4,minHeight:isMobile?100:120,cursor:'pointer'}}
-              onClick={()=>onNavigate(['users','payments','months','exams','comments','months'][i])}>
+              onClick={()=>onNavigate(['users','payments','months','users','comments','months'][i])}>
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}}>
                 <span style={{fontFamily:F.mono,fontSize:9,letterSpacing:'0.22em',color:C.muted,textTransform:'uppercase'}}>{m.label}</span>
                 <span style={{fontFamily:F.kanji,fontSize:14,color:C.copper,opacity:0.55}}>{m.kanji}</span>
@@ -761,7 +750,7 @@ function SectionDashboard({showToast, isMobile, onNavigate}) {
                 ))}
               </div>
               <div style={{padding:'12px 22px',borderTop:`1px solid ${C.hairline}`}}>
-                <Btn2 kind="ghost" full onClick={()=>onNavigate('exams')}>Открыть все заявки →</Btn2>
+                <Btn2 kind="ghost" full onClick={()=>onNavigate('users')}>Открыть учеников →</Btn2>
               </div>
             </div>
 
@@ -822,9 +811,8 @@ function StatGrid({children,cols=4,isMobile}){
 function SectionUsers({showToast,isMobile}){
   const {users,loading,updateLevel} = useUsers();
   const {payments} = useAccess();
+  const { exams } = useExams();
   const [selected,  setSelected]  = useState(null);
-  const [editLevel, setEditLevel] = useState('');
-  const [saving,    setSaving]    = useState(false);
   const [filter,    setFilter]    = useState('all');
   const [search,    setSearch]    = useState('');
 
@@ -866,17 +854,8 @@ function SectionUsers({showToast,isMobile}){
   });
 
   const selUser  = mapped.find(u=>u.id===selected);
-  const userPays = payments.filter(p=>p.userId===selected);
 
-  const saveLevel = async () => {
-    setSaving(true);
-    const {ok,error} = await updateLevel(selected, editLevel);
-    setSaving(false);
-    if (ok) showToast('Уровень обновлён');
-    else showToast('Ошибка: ' + error);
-  };
-
-  const openUser = (u) => { setSelected(u.id); setEditLevel(u.raw.level||''); };
+  const openUser = (u) => { setSelected(u.id); };
 
   if (loading) return <Spinner/>;
 
@@ -998,40 +977,15 @@ function SectionUsers({showToast,isMobile}){
 
         {/* ── selected user detail panel ───────────────────────── */}
         {selUser && (
-          <div style={{background:C.surface,border:`1px solid ${C.hairline}`,borderLeft:`3px solid ${C.accent}`,padding:'20px 24px',marginBottom:16}}>
-            <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:14}}>
-              <div>
-                <div style={{fontFamily:F.serif,fontSize:18,color:C.ink,fontWeight:600}}>{selUser.name}</div>
-                <div style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.04em',marginTop:3}}>{selUser.email}</div>
-              </div>
-              <button onClick={()=>setSelected(null)} style={{background:'none',border:'none',fontSize:18,color:C.muted,cursor:'pointer',lineHeight:1,padding:'2px 4px'}}>✕</button>
-            </div>
-            <div style={{display:'flex',gap:12,alignItems:'flex-end',marginBottom: selUser.raw?.experience||userPays.length?16:0}}>
-              <div style={{flex:1}}>
-                <div style={{fontFamily:F.mono,fontSize:9,color:C.muted,letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:6}}>ИЗМЕНИТЬ УРОВЕНЬ</div>
-                <Select value={editLevel} onChange={setEditLevel} options={LEVELS_LIST.map(l=>({value:l,label:LEVEL_LABELS[l]}))}/>
-              </div>
-              <Btn2 onClick={saveLevel} kind="accent" size="sm" disabled={saving}>{saving?'…':'Сохранить'}</Btn2>
-            </div>
-            {selUser.raw?.experience && (
-              <div style={{padding:'10px 14px',background:C.bg2,border:`1px solid ${C.hairline}`,marginBottom:12}}>
-                <div style={{fontFamily:F.mono,fontSize:9,color:C.muted,letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:6}}>ОБ ОПЫТЕ</div>
-                <p style={{fontFamily:F.serif,fontSize:13,color:C.ink2,lineHeight:1.7,margin:0}}>{selUser.raw.experience}</p>
-              </div>
-            )}
-            {userPays.length>0 && (
-              <div>
-                <div style={{fontFamily:F.mono,fontSize:9,color:C.muted,letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:8}}>ИСТОРИЯ ОПЛАТ</div>
-                {userPays.map(p=>(
-                  <div key={p.id} style={{display:'flex',justifyContent:'space-between',padding:'8px 0',borderBottom:`1px solid ${C.hairline}`,fontFamily:F.mono,fontSize:11}}>
-                    <span style={{color:C.muted}}>{p.date}</span>
-                    <span style={{color:C.ink,flex:1,margin:'0 12px'}}>{p.desc}</span>
-                    <span style={{color:C.gold,fontWeight:600}}>{p.amount?.toLocaleString()} ₽</span>
-                  </div>
-                ))}
-              </div>
-            )}
-          </div>
+          <StudentCard
+            user={selUser}
+            allPayments={payments}
+            allExams={exams}
+            onClose={() => setSelected(null)}
+            showToast={showToast}
+            updateLevel={updateLevel}
+            isMobile={isMobile}
+          />
         )}
 
         {/* ── table / card list ──────────────────────────────────── */}
@@ -1067,6 +1021,267 @@ function SectionUsers({showToast,isMobile}){
             <FilterChip2 label="Вперёд →"/>
           </div>
         </div>
+
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// STUDENT CARD — 6 tabs
+// ═══════════════════════════════════════════════════════════════
+function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLevel, isMobile }) {
+  const [tab, setTab] = useState('basic');
+  const [editLevel, setEditLevel] = useState(user.raw?.level || '');
+  const [saving, setSaving] = useState(false);
+  const { rows: accessRows, loading: accessLoading, reload: reloadAccess } = useAdminUserAccess(user.id);
+  const [grantType, setGrantType] = useState('month');
+  const [grantRef, setGrantRef] = useState('');
+  const [granting, setGranting] = useState(false);
+  const [revoking, setRevoking] = useState(null); // id being revoked
+
+  const userPays = allPayments.filter(p => p.userId === user.id);
+  const userExams = allExams.filter(e => e.user_id === user.id);
+
+  const saveLevel = async () => {
+    setSaving(true);
+    const { ok, error } = await updateLevel(user.id, editLevel);
+    setSaving(false);
+    if (ok) showToast('Уровень обновлён');
+    else showToast('Ошибка: ' + error);
+    // NOTE: no access granting — business rule
+  };
+
+  const handleGrant = async () => {
+    if (!grantRef) return;
+    setGranting(true);
+    const { ok, error } = await grantAccess({ userId: user.id, type: grantType, reference: grantRef });
+    setGranting(false);
+    if (ok) { showToast('Доступ выдан'); reloadAccess(); setGrantRef(''); }
+    else showToast('Ошибка: ' + error);
+  };
+
+  const handleRevoke = async (row) => {
+    setRevoking(row.id);
+    const { ok, error } = await revokeAccess({ userId: user.id, type: row.type, reference: row.reference });
+    setRevoking(null);
+    if (ok) { showToast('Доступ отозван'); reloadAccess(); }
+    else showToast('Ошибка: ' + error);
+  };
+
+  const TABS = [
+    { id: 'basic',    label: 'Основное' },
+    { id: 'level',    label: 'Уровень' },
+    { id: 'history',  label: 'История' },
+    { id: 'access',   label: 'Доступы' },
+    { id: 'payments', label: 'Платежи' },
+    { id: 'stats',    label: 'Статистика' },
+  ];
+
+  return (
+    <div style={{background:C.surface, border:`1px solid ${C.hairline}`, borderLeft:`3px solid ${C.accent}`, marginBottom:16}}>
+      {/* ── header ── */}
+      <div style={{padding:'16px 20px', borderBottom:`1px solid ${C.hairline}`, display:'flex', alignItems:'center', gap:14}}>
+        <AvatarCircle letter={user.letter} size={42}/>
+        <div style={{flex:1, minWidth:0}}>
+          <div style={{fontFamily:F.serif, fontSize:20, color:C.ink, fontWeight:600, letterSpacing:'0.04em', lineHeight:1}}>{user.name}</div>
+          <div style={{fontFamily:F.mono, fontSize:10, color:C.muted, letterSpacing:'0.04em', marginTop:4}}>{user.email}</div>
+        </div>
+        <div style={{display:'flex', alignItems:'center', gap:10, flexShrink:0}}>
+          <div style={{display:'flex', alignItems:'center', gap:6}}>
+            <span style={{fontFamily:F.kanji, fontSize:18, color:C.accent, opacity:0.8}}>{user.kyuKanji}</span>
+            <span style={{fontFamily:F.serif, fontSize:12, letterSpacing:'0.14em', color:C.ink, textTransform:'uppercase'}}>{user.kyu}</span>
+          </div>
+          <button onClick={onClose} style={{background:'none', border:'none', fontSize:18, color:C.muted, cursor:'pointer', lineHeight:1, padding:'4px', flexShrink:0}}>✕</button>
+        </div>
+      </div>
+
+      {/* ── tabs ── */}
+      <div style={{display:'flex', borderBottom:`1px solid ${C.hairline}`, overflowX:'auto'}}>
+        {TABS.map(t => (
+          <button key={t.id} onClick={() => setTab(t.id)}
+            style={{padding:'10px 16px', background:'none', border:'none', borderBottom:`2px solid ${tab===t.id?C.accent:'transparent'}`, fontFamily:F.mono, fontSize:10, letterSpacing:'0.12em', textTransform:'uppercase', color:tab===t.id?C.accent:C.muted, cursor:'pointer', whiteSpace:'nowrap', flexShrink:0, transition:'color 0.12s'}}>
+            {t.label}
+          </button>
+        ))}
+      </div>
+
+      {/* ── tab content ── */}
+      <div style={{padding:'20px 20px'}}>
+
+        {/* BASIC */}
+        {tab === 'basic' && (
+          <div style={{display:'flex', flexDirection:'column', gap:14}}>
+            {[
+              {label:'Email',        value: user.email},
+              {label:'Регистрация',  value: user.joined},
+              {label:'Статус',       value: user.status},
+            ].map(({label, value}) => (
+              <div key={label}>
+                <div style={{fontFamily:F.mono, fontSize:9, color:C.muted, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:4}}>{label}</div>
+                <div style={{fontFamily:F.mono, fontSize:13, color:C.ink}}>{value || '—'}</div>
+              </div>
+            ))}
+            {user.raw?.experience && (
+              <div>
+                <div style={{fontFamily:F.mono, fontSize:9, color:C.muted, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:6}}>Об опыте</div>
+                <div style={{background:C.bg2, border:`1px solid ${C.hairline}`, padding:'12px 14px', fontFamily:F.serif, fontStyle:'italic', fontSize:13, color:C.ink2, lineHeight:1.7}}>{user.raw.experience}</div>
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* LEVEL */}
+        {tab === 'level' && (
+          <div style={{display:'flex', flexDirection:'column', gap:16}}>
+            <div style={{background:C.bg2, border:`1px solid ${C.hairline}`, padding:'14px 16px', display:'flex', alignItems:'center', gap:12}}>
+              <span style={{fontFamily:F.kanji, fontSize:32, color:C.accent, opacity:0.7}}>{user.kyuKanji}</span>
+              <div>
+                <div style={{fontFamily:F.mono, fontSize:9, color:C.muted, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:3}}>Текущий уровень</div>
+                <div style={{fontFamily:F.serif, fontSize:18, color:C.ink, letterSpacing:'0.08em'}}>{user.kyu}</div>
+              </div>
+            </div>
+            <div>
+              <div style={{fontFamily:F.mono, fontSize:9, color:C.muted, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:8}}>Изменить уровень</div>
+              <div style={{display:'flex', gap:10, alignItems:'flex-end'}}>
+                <div style={{flex:1}}>
+                  <Select value={editLevel} onChange={setEditLevel} options={LEVELS_LIST.map(l => ({value:l, label:LEVEL_LABELS[l]}))}/>
+                </div>
+                <Btn2 onClick={saveLevel} kind="accent" size="sm" disabled={saving}>{saving ? '…' : 'Сохранить'}</Btn2>
+              </div>
+            </div>
+            <div style={{background:C.redBg, border:`1px solid ${C.redBorder}`, padding:'10px 14px', fontFamily:F.mono, fontSize:10, color:C.red, letterSpacing:'0.04em', lineHeight:1.6}}>
+              ⚠ Изменение уровня не открывает доступы автоматически.<br/>
+              Доступы управляются отдельно во вкладке «Доступы».
+            </div>
+          </div>
+        )}
+
+        {/* HISTORY */}
+        {tab === 'history' && (
+          <div>
+            <div style={{fontFamily:F.mono, fontSize:9, color:C.muted, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:14}}>История аттестаций</div>
+            {userExams.length === 0 ? (
+              <div style={{textAlign:'center', padding:'32px 16px', color:C.muted, fontFamily:F.serif, fontStyle:'italic', fontSize:14}}>
+                Аттестаций не найдено
+              </div>
+            ) : (
+              <div style={{display:'flex', flexDirection:'column', gap:8}}>
+                {userExams.map((e, i) => {
+                  const fromLabel = LEVEL_LABELS[e.current_level] || e.current_level || '—';
+                  const toLabel   = LEVEL_LABELS[e.target_level]  || e.target_level  || '—';
+                  const fromK     = LEVEL_KANJI_MAP[e.current_level] || '無';
+                  const toK       = LEVEL_KANJI_MAP[e.target_level]  || '?';
+                  const stMap     = {approved:{kind:'success',label:'подтверждён'}, rejected:{kind:'danger',label:'отклонён'}, pending:{kind:'gold',label:'ожидает'}};
+                  const st        = stMap[e.status] || stMap.pending;
+                  return (
+                    <div key={e.id||i} style={{background:C.bg2, border:`1px solid ${C.hairline}`, padding:'12px 14px'}}>
+                      <div style={{display:'flex', alignItems:'center', gap:10, marginBottom:8}}>
+                        <div style={{display:'flex', alignItems:'center', gap:6, flex:1}}>
+                          <span style={{fontFamily:F.kanji, fontSize:14, color:C.muted, opacity:0.7}}>{fromK}</span>
+                          <span style={{fontFamily:F.mono, fontSize:11, color:C.muted}}>{fromLabel}</span>
+                          <span style={{color:C.accent, fontSize:11}}>→</span>
+                          <span style={{fontFamily:F.kanji, fontSize:14, color:C.accent}}>{toK}</span>
+                          <span style={{fontFamily:F.mono, fontSize:11, color:C.ink, fontWeight:600}}>{toLabel}</span>
+                        </div>
+                        <Pill2 kind={st.kind} dot>{st.label}</Pill2>
+                      </div>
+                      {e.teacher_note && (
+                        <div style={{fontFamily:F.serif, fontStyle:'italic', fontSize:12, color:C.muted, lineHeight:1.6}}>{e.teacher_note}</div>
+                      )}
+                      <div style={{fontFamily:F.mono, fontSize:9, color:C.muted, marginTop:6, letterSpacing:'0.06em'}}>{e.date || '—'}</div>
+                    </div>
+                  );
+                })}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* ACCESS */}
+        {tab === 'access' && (
+          <div style={{display:'flex', flexDirection:'column', gap:16}}>
+            {/* existing access rows */}
+            <div>
+              <div style={{fontFamily:F.mono, fontSize:9, color:C.muted, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:10}}>Текущие доступы</div>
+              {accessLoading ? (
+                <div style={{fontFamily:F.mono, fontSize:11, color:C.muted}}>Загрузка…</div>
+              ) : accessRows.length === 0 ? (
+                <div style={{textAlign:'center', padding:'20px 16px', color:C.muted, fontFamily:F.serif, fontStyle:'italic', fontSize:13}}>Доступов нет</div>
+              ) : (
+                <div style={{display:'flex', flexDirection:'column', gap:6}}>
+                  {accessRows.map((row, i) => (
+                    <div key={row.id||i} style={{display:'flex', alignItems:'center', gap:10, background:C.bg2, border:`1px solid ${C.hairline}`, padding:'10px 14px'}}>
+                      <div style={{flex:1, minWidth:0}}>
+                        <div style={{fontFamily:F.mono, fontSize:12, color:C.ink, fontWeight:500}}>{row.reference}</div>
+                        <div style={{fontFamily:F.mono, fontSize:9, color:C.muted, letterSpacing:'0.06em', textTransform:'uppercase', marginTop:2}}>{row.type} · {row.paid_at || '—'}</div>
+                      </div>
+                      <button onClick={() => handleRevoke(row)} disabled={revoking===row.id}
+                        style={{background:'none', border:`1px solid ${C.hairline}`, padding:'4px 10px', cursor:revoking===row.id?'default':'pointer', fontFamily:F.mono, fontSize:9, color:revoking===row.id?C.muted:C.danger, letterSpacing:'0.08em', textTransform:'uppercase', opacity:revoking===row.id?0.5:1}}>
+                        {revoking===row.id ? '…' : 'Отозвать'}
+                      </button>
+                    </div>
+                  ))}
+                </div>
+              )}
+            </div>
+            {/* grant form */}
+            <div style={{borderTop:`1px solid ${C.hairline}`, paddingTop:16}}>
+              <div style={{fontFamily:F.mono, fontSize:9, color:C.muted, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:10}}>Выдать доступ</div>
+              <div style={{display:'flex', flexDirection:'column', gap:8}}>
+                <div>
+                  <div style={{fontFamily:F.mono, fontSize:9, color:C.muted, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:5}}>Тип</div>
+                  <Select value={grantType} onChange={setGrantType} options={[
+                    {value:'month',   label:'Месяц'},
+                    {value:'section', label:'Раздел Иккаджо'},
+                  ]}/>
+                </div>
+                <div>
+                  <div style={{fontFamily:F.mono, fontSize:9, color:C.muted, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:5}}>
+                    {grantType === 'month' ? 'Месяц (например: june)' : 'Раздел'}
+                  </div>
+                  {grantType === 'section' ? (
+                    <Select value={grantRef} onChange={setGrantRef} options={[{value:'',label:'— выберите —'}, ...IKKAJO_SECTION_OPTIONS]}/>
+                  ) : (
+                    <Input value={grantRef} onChange={setGrantRef} placeholder="june, july, august…"/>
+                  )}
+                </div>
+                <Btn2 kind="accent" size="sm" disabled={!grantRef || granting} onClick={handleGrant}>
+                  {granting ? '…' : 'Выдать доступ'}
+                </Btn2>
+              </div>
+            </div>
+          </div>
+        )}
+
+        {/* PAYMENTS */}
+        {tab === 'payments' && (
+          <div>
+            <div style={{fontFamily:F.mono, fontSize:9, color:C.muted, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:14}}>История оплат</div>
+            {userPays.length === 0 ? (
+              <div style={{textAlign:'center', padding:'32px 16px', color:C.muted, fontFamily:F.serif, fontStyle:'italic', fontSize:14}}>Платежей нет</div>
+            ) : (
+              <div style={{display:'flex', flexDirection:'column', gap:0}}>
+                {userPays.map((p, i) => (
+                  <div key={p.id||i} style={{display:'flex', justifyContent:'space-between', alignItems:'center', padding:'10px 0', borderBottom:`1px solid ${C.hairline}`, gap:12}}>
+                    <span style={{fontFamily:F.mono, fontSize:10, color:C.muted, flexShrink:0}}>{p.date || '—'}</span>
+                    <span style={{fontFamily:F.serif, fontStyle:'italic', fontSize:13, color:C.ink2, flex:1, minWidth:0}}>{p.desc || '—'}</span>
+                    <span style={{fontFamily:F.mono, fontSize:12, color:C.gold, fontWeight:600, flexShrink:0}}>{p.amount > 0 ? p.amount.toLocaleString('ru-RU') + ' ₽' : 'free'}</span>
+                  </div>
+                ))}
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* STATS */}
+        {tab === 'stats' && (
+          <div style={{textAlign:'center', padding:'40px 16px'}}>
+            <div style={{fontFamily:F.kanji, fontSize:48, color:C.accent, opacity:0.15, marginBottom:12}}>統</div>
+            <div style={{fontFamily:F.serif, fontStyle:'italic', fontSize:15, color:C.muted, marginBottom:6}}>Статистика обучения</div>
+            <div style={{fontFamily:F.mono, fontSize:11, color:C.muted, letterSpacing:'0.08em'}}>Будет доступна в следующем обновлении</div>
+          </div>
+        )}
 
       </div>
     </div>
