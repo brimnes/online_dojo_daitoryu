@@ -1203,10 +1203,10 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
           {paysLoading && (
             <div style={{ padding: '24px 18px', color: C.muted, fontSize: 12, background: C.surface, fontFamily: "var(--font-mono), monospace" }}>Загрузка…</div>
           )}
-          {!paysLoading && userPays.length === 0 && (
+          {!paysLoading && userPays.filter(p => !HIDDEN_MONTH_IDS.includes(p.reference)).length === 0 && (
             <div style={{ padding: '24px 18px', color: C.muted, fontSize: 13, background: C.surface, fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic' }}>Оплат пока нет</div>
           )}
-          {!paysLoading && userPays.map(p => (
+          {!paysLoading && userPays.filter(p => !HIDDEN_MONTH_IDS.includes(p.reference)).map(p => (
             <div key={p.id} style={{ display: 'grid', gridTemplateColumns: isMobile ? 'auto 1fr auto' : '90px 1fr 100px', padding: '13px 18px', background: C.surface, borderBottom: `1px solid ${C.border}`, alignItems: 'center', gap: 8 }}>
               <span style={{ color: C.muted, fontFamily: "var(--font-mono), monospace", fontSize: 10, whiteSpace: 'nowrap' }}>{p.date}</span>
               <span style={{ color: C.ink, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.desc}</span>
@@ -1236,6 +1236,8 @@ const MONTH_LABELS = {
   sep:'Сентябрь', oct:'Октябрь', nov:'Ноябрь', dec:'Декабрь',
 };
 const ALL_MONTHS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+// Месяцы скрытые из публичного списка (sortOrder < 6 — январь–май)
+const HIDDEN_MONTH_IDS = ['jan', 'feb', 'mar', 'apr', 'may'];
 
 function TabMyAccess({ userAccess, loading, isMobile }) {
   if (loading) return (
@@ -1269,7 +1271,7 @@ function TabMyAccess({ userAccess, loading, isMobile }) {
       <div style={{ padding: '12px 16px', background: C.surface2, borderBottom: `1px solid ${C.border}` }}>
         <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Месяцы обучения</div>
       </div>
-      {ALL_MONTHS.map(m => {
+      {ALL_MONTHS.filter(m => !HIDDEN_MONTH_IDS.includes(m)).map(m => {
         const has = hasMonthAccess(ua, m);
         return (
           <div key={m} style={{ ...rowStyle, opacity: has ? 1 : 0.45 }}>
@@ -1357,7 +1359,7 @@ function TabUnlockAccess({ userAccess, isMobile }) {
     <div style={{ border: `1px solid ${C.border}`, borderTop: 'none', padding: '24px 16px', background: C.surface, color: C.muted, fontSize: 13 }}>Загрузка…</div>
   );
 
-  const monthProducts   = products.filter(p => p.type === 'month');
+  const monthProducts   = products.filter(p => p.type === 'month' && !HIDDEN_MONTH_IDS.includes(p.reference));
   const sectionProducts = products.filter(p => p.type === 'section' && p.reference !== 'ikkajo');
   const ikkajoFull      = products.find(p => p.reference === 'ikkajo');
 

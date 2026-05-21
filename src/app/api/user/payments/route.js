@@ -25,20 +25,22 @@ export async function GET(request) {
       where:   { userId: user.id, status: 'succeeded' },
       orderBy: { paidAt: 'desc' },
       select: {
-        id:           true,
-        productTitle: true,
-        amount:       true,
-        paidAt:       true,
+        id:               true,
+        productTitle:     true,
+        productReference: true,
+        amount:           true,
+        paidAt:           true,
       },
     });
 
     return NextResponse.json(payments.map(p => ({
-      id:     p.id,
-      desc:   p.productTitle || '—',
-      amount: p.amount
+      id:        p.id,
+      desc:      p.productTitle || '—',
+      reference: p.productReference || null,
+      amount:    p.amount
         ? `${Number(p.amount).toLocaleString('ru-RU')} ₽`
         : '—',
-      date:   p.paidAt
+      date:      p.paidAt
         ? new Date(p.paidAt).toLocaleDateString('ru-RU')
         : '',
     })));
