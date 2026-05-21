@@ -149,37 +149,28 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
 
   return (
     <div>
-      {/* ── Top strip: каnji + title + count ── */}
+      {/* ── Top strip — минимальный mono ── */}
       {!isMobile && (
-        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40, paddingBottom: 20, borderBottom: `1px solid ${C.border}`, flexWrap: 'wrap', gap: 12 }}>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 13, color: C.muted, letterSpacing: '0.15em' }}>月 二〇二六</span>
-            <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 12, letterSpacing: '0.18em', color: C.ink, fontWeight: 600 }}>
-              МЕСЯЦЫ 2026
-            </span>
-          </div>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 18 }}>
-            <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.muted, letterSpacing: '0.12em' }}>{openedCount} / {(months ?? []).length} МЕСЯЦЕВ ОТКРЫТО</span>
-          </div>
+        <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40, paddingBottom: 16, borderBottom: `1px solid ${C.border}`, flexWrap: 'wrap', gap: 12 }}>
+          <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+            02 · Учебный год · июнь–декабрь
+          </span>
+          <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+            {openedCount} / {(months ?? []).length} открыто
+          </span>
         </div>
       )}
 
       {/* ── Hero section ── */}
-      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: isMobile ? 16 : 12, flexWrap: 'wrap', gap: 16 }}>
+      <div style={{ display: 'flex', alignItems: 'flex-end', justifyContent: 'space-between', marginBottom: isMobile ? 20 : 16, flexWrap: 'wrap', gap: 16 }}>
         <div>
-          {/* Eyebrow */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: isMobile ? 10 : 14 }}>
-            <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.accent, letterSpacing: '0.06em' }}>02</span>
-            <span style={{ width: 1, height: 12, background: C.border, display: 'inline-block' }} />
-            <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase' }}>Учебный год · июнь–декабрь</span>
-          </div>
-          {/* Main title */}
-          <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: isMobile ? 36 : 56, letterSpacing: '0.04em', color: C.ink, lineHeight: 0.95, fontWeight: 400 }}>
-            Месяцы<br />Дайто-рю
-          </div>
+          {/* Main title — один heading, без eyebrow дубля */}
+          <h1 style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: isMobile ? 48 : 72, letterSpacing: '0.01em', color: C.ink, lineHeight: 0.95, fontWeight: 300, margin: 0 }}>
+            Месяцы Дайто-рю
+          </h1>
           {/* Subtitle */}
           {!isMobile && (
-            <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 16, color: C.muted, marginTop: 12, maxWidth: 480, lineHeight: 1.55 }}>
+            <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 300, fontSize: 18, color: C.muted, marginTop: 20, maxWidth: 520, lineHeight: 1.55 }}>
               Программа от Введения через Иккаджо к экзамену 3 кю. 1 990 ₽ за месяц.
             </div>
           )}
@@ -187,11 +178,11 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
         {/* Lesson counter */}
         {watchedCount > 0 && (
           <div style={{ textAlign: 'right', flexShrink: 0 }}>
-            <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 11, letterSpacing: '0.2em', color: C.muted, marginBottom: 6 }}>進捗</div>
-            <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: isMobile ? 36 : 56, letterSpacing: '0.02em', color: C.accent, lineHeight: 1 }}>
+            <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, letterSpacing: '0.2em', color: C.muted, marginBottom: 8, textTransform: 'uppercase' }}>Прогресс</div>
+            <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: isMobile ? 48 : 64, letterSpacing: '0.01em', color: C.accent, lineHeight: 0.9, fontWeight: 300 }}>
               {watchedCount}
             </div>
-            <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 9, letterSpacing: '0.2em', color: C.muted, marginTop: 4, textTransform: 'uppercase' }}>уроков просмотрено</div>
+            <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 9, letterSpacing: '0.2em', color: C.muted, marginTop: 8, textTransform: 'uppercase' }}>уроков просмотрено</div>
           </div>
         )}
       </div>
@@ -445,33 +436,31 @@ function TabKnowledge({ nav, isMobile }) {
   return (
     <div>
 
-      {/* ── Top bar ── */}
+      {/* ── Top bar — минимальный: только section index + open-access tag ── */}
       <div style={{
         marginTop: negH, marginLeft: negW, marginRight: negW,
-        padding: isMobile ? '14px 18px' : '20px 48px',
-        borderBottom: `1px solid ${C.border}`, background: C.surface,
+        padding: isMobile ? '12px 18px' : '16px 48px',
+        borderBottom: `1px solid ${C.border}`, background: 'transparent',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14 }}>
-          <span style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 13, color: C.muted, letterSpacing: '0.15em' }}>智の蔵</span>
-          <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant SC', serif", fontSize: 12, letterSpacing: '0.18em', color: C.ink, fontWeight: 600 }}>БАЗА ЗНАНИЙ</span>
-        </div>
-        <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.15em' }}>БЕСПЛАТНО ДЛЯ ВСЕХ</span>
+        <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+          01 · Архив
+        </span>
+        <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+          Открыто для всех
+        </span>
       </div>
 
       {/* ── Hero ── */}
       <div style={{ paddingTop: isMobile ? 20 : 48 }}>
         {!isMobile ? (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 48, marginBottom: 48 }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 48, marginBottom: 56 }}>
             <div>
-              <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 14 }}>
-                <span style={{ color: C.accent }}>01</span> · Открытая библиотека
-              </div>
-              <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant SC', serif", fontSize: 64, color: C.ink, letterSpacing: '0.02em', lineHeight: 1, marginBottom: 16, fontWeight: 400 }}>
+              <h1 style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 72, color: C.ink, letterSpacing: '0.01em', lineHeight: 0.95, margin: '0 0 20px', fontWeight: 300 }}>
                 База знаний
-              </div>
-              <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 19, color: C.muted, lineHeight: 1.55, maxWidth: 560 }}>
-                История, философия и базовая терминология школы. Открыто для всех — даже без регистрации.
+              </h1>
+              <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 18, fontWeight: 300, color: C.muted, lineHeight: 1.55, maxWidth: 520 }}>
+                История, философия и базовая терминология школы. Открытый архив для всех учеников.
               </div>
             </div>
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: '22px 22px' }}>
@@ -485,15 +474,12 @@ function TabKnowledge({ nav, isMobile }) {
             </div>
           </div>
         ) : (
-          <div style={{ marginBottom: 20 }}>
-            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 10 }}>
-              <span style={{ color: C.accent }}>01</span> · Открытая библиотека
-            </div>
-            <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant SC', serif", fontSize: 36, color: C.ink, lineHeight: 1.05, marginBottom: 10, fontWeight: 400 }}>
-              База<br />знаний
-            </div>
-            <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 15, color: C.muted, lineHeight: 1.55, marginBottom: 16 }}>
-              История, философия и термины. Открыто для всех.
+          <div style={{ marginBottom: 24, paddingTop: 8 }}>
+            <h1 style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 48, color: C.ink, lineHeight: 0.98, margin: '0 0 14px', fontWeight: 300, letterSpacing: '0.01em' }}>
+              База знаний
+            </h1>
+            <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 16, fontWeight: 300, color: C.muted, lineHeight: 1.5, marginBottom: 20 }}>
+              История, философия и термины. Открытый архив.
             </div>
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: '16px', marginBottom: 20, position: 'relative' }}>
               <div style={{ position: 'absolute', top: 8, right: 12, fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 36, color: C.accent, opacity: 0.5, lineHeight: 1 }}>道</div>
@@ -565,8 +551,8 @@ function TabKnowledge({ nav, isMobile }) {
                             {tagLabel}
                           </div>
                         )}
-                        <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 15, color: C.ink, fontWeight: 500, lineHeight: 1.3 }}>{item.title}</div>
-                        {item.subtitle && <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 12, color: C.muted, marginTop: 2 }}>{item.subtitle}</div>}
+                        <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 18, color: C.ink, fontWeight: 400, lineHeight: 1.25, letterSpacing: '0.005em' }}>{item.title}</div>
+                        {item.subtitle && <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 300, fontSize: 13, color: C.muted, marginTop: 3, lineHeight: 1.4 }}>{item.subtitle}</div>}
                       </div>
                       <span style={{ color: C.muted, fontSize: 16, flexShrink: 0 }}>→</span>
                     </div>

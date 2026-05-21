@@ -40,3 +40,15 @@ export const C = {
   shadow:     '0 1px 0 rgba(0,0,0,0.04), 0 8px 24px -8px rgba(20,16,10,0.25)',
   shadowDeep: '0 30px 80px -20px rgba(20,16,10,0.45)',
 };
+
+// Font tokens — единая typography system
+// serif    → hero titles, section titles, technique names (Cormorant Garamond)
+// serifSC  → одно-два hero слова, выделение (Cormorant SC)
+// mono     → labels, UI, metadata, breadcrumbs, UPPERCASE (JetBrains Mono)
+// sans     → body text (Jost)
+export const F = {
+  serif:   "var(--font-cormorant), 'Cormorant Garamond', serif",
+  serifSC: "var(--font-cormorant-sc), 'Cormorant SC', serif",
+  mono:    "var(--font-mono), 'JetBrains Mono', monospace",
+  sans:    "var(--font-jost), 'Jost', sans-serif",
+};
