@@ -81,7 +81,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
         {!isMobile && <Sidebar activeTab="database" onTabClick={onBack} user={user} onLogout={onLogout} />}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '60px 32px', background: C.bg, textAlign: 'center' }}>
           <div style={{ fontSize: 32 }}>🔒</div>
-          <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 20, color: C.accent }}>Нет доступа к разделу</div>
+          <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 20, color: C.accent }}>Нет доступа к разделу</div>
           <div style={{ fontSize: 13, color: C.muted, maxWidth: 320 }}>Приобретите доступ к разделу «{section?.nameRu}» чтобы просматривать техники.</div>
           <button onClick={onBack} style={{ marginTop: 8, padding: '10px 24px', background: C.ink, color: C.onAccent, border: 'none', fontSize: 13, cursor: 'pointer' }}>
             ← Назад к Иккаджо
@@ -172,7 +172,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
         }}>
           <button onClick={onBack} style={{
             background: 'none', border: 'none', color: C.accent, cursor: 'pointer',
-            fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif",
+            fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
             fontSize: 13, letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: 4,
           }}>
             ‹ ИППОНДОРИ
@@ -192,7 +192,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
 
           {/* mini breadcrumb */}
           <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 12, fontSize: 9, flexWrap: 'wrap' }}>
-            <span style={{ color: C.accent, fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", letterSpacing: '0.1em', fontSize: 10 }}>ИККАДЖО</span>
+            <span style={{ color: C.accent, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", letterSpacing: '0.1em', fontSize: 10 }}>ИККАДЖО</span>
             <span style={{ color: C.hairline2 }}>/</span>
             <span style={{ color: C.muted, fontFamily: "var(--font-mono), monospace", letterSpacing: '0.08em' }}>{kyu.label.toUpperCase()}</span>
             <span style={{ color: C.hairline2 }}>/</span>
@@ -210,7 +210,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
 
           {/* title */}
           <h1 style={{
-            fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif",
+            fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
             fontSize: 52, color: C.accent, lineHeight: 0.88, letterSpacing: '0.03em',
             marginBottom: 10, textTransform: 'uppercase', fontWeight: 400,
             position: 'relative', zIndex: 1,
@@ -268,8 +268,8 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
             <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 13, color: C.muted }}>{sectionKanji}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
-            <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 36, color: C.ink, fontWeight: 400, lineHeight: 1 }}>{techNum}</span>
-            <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 18, color: C.muted }}>/ {totalTechs}</span>
+            <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 36, color: C.ink, fontWeight: 400, lineHeight: 1 }}>{techNum}</span>
+            <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 18, color: C.muted }}>/ {totalTechs}</span>
             <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.accent, marginLeft: 6 }}>{progressPct}%</span>
           </div>
           <div style={{ width: '100%', height: 2, background: C.bg2 }}>
@@ -343,7 +343,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}>
             <button onClick={onBack} style={{
               background: 'none', border: 'none', color: C.accent, cursor: 'pointer', padding: 0,
-              fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif",
+              fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
               fontSize: 11, letterSpacing: '0.12em',
             }}>← ИККАДЖО</button>
             <span style={{ color: C.hairline2 }}>/</span>
@@ -351,7 +351,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
             <span style={{ color: C.hairline2 }}>/</span>
             <span style={{ color: C.muted, fontFamily: "var(--font-mono), monospace", fontSize: 10, letterSpacing: '0.1em' }}>{section.nameRu.toUpperCase()}</span>
             <span style={{ color: C.hairline2 }}>/</span>
-            <span style={{ color: C.ink, fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 11, letterSpacing: '0.1em' }}>{tech.nameRu.toUpperCase()}</span>
+            <span style={{ color: C.ink, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.1em' }}>{tech.nameRu.toUpperCase()}</span>
           </div>
           <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 12, color: C.muted, letterSpacing: '0.22em' }}>
             一教 · {sectionKanji}
@@ -388,7 +388,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
 
             {/* Big title */}
             <h1 style={{
-              fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif",
+              fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
               fontSize: 76, color: C.accent, lineHeight: 0.88, letterSpacing: '0.03em',
               marginBottom: 14, textTransform: 'uppercase', fontWeight: 400,
             }}>{tech.nameRu}</h1>
@@ -491,8 +491,8 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
                   <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 15, color: C.muted }}>{sectionKanji}</span>
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
-                  <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 48, color: C.ink, fontWeight: 400, lineHeight: 1 }}>{techNum}</span>
-                  <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 22, color: C.muted }}>/ {totalTechs}</span>
+                  <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 48, color: C.ink, fontWeight: 400, lineHeight: 1 }}>{techNum}</span>
+                  <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 22, color: C.muted }}>/ {totalTechs}</span>
                   <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.accent, marginLeft: 8, letterSpacing: '0.1em' }}>{progressPct}%</span>
                 </div>
                 <div style={{ width: '100%', height: 2, background: C.bg2, marginBottom: 14 }}>

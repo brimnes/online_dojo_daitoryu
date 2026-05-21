@@ -65,7 +65,7 @@ export default function Sidebar({ activeTab, onTabClick, user = {}, onLogout }) 
       <div style={{ padding: '32px 28px 24px', display: 'flex', alignItems: 'center', gap: 12, position: 'relative', flexShrink: 0 }}>
         <TakedaMon size={28} color='#b8923a' />
         <div>
-          <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 10, letterSpacing: '0.22em', color: '#ede5d3', fontWeight: 600 }}>
+          <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 10, letterSpacing: '0.22em', color: '#ede5d3', fontWeight: 600 }}>
             ONLINE DAITO-RYU
           </div>
           <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 10, color: '#b8923a', letterSpacing: '0.18em', marginTop: 3, opacity: 0.75 }}>
@@ -89,7 +89,7 @@ export default function Sidebar({ activeTab, onTabClick, user = {}, onLogout }) 
             {(user.name || '?')[0]}
           </div>
           <div style={{ minWidth: 0 }}>
-            <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 13, fontWeight: 500, color: '#ede5d3', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</div>
+            <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, fontWeight: 500, color: '#ede5d3', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</div>
             <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: '#7a6c52', letterSpacing: '0.06em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.email}</div>
           </div>
         </div>
@@ -99,7 +99,7 @@ export default function Sidebar({ activeTab, onTabClick, user = {}, onLogout }) 
               <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 9, letterSpacing: '0.18em', color: '#7a6c52', textTransform: 'uppercase' }}>текущий уровень</span>
               <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 12, color: '#b8923a' }}>{LEVEL_KANJI[user.level] || ''}</span>
             </div>
-            <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 16, letterSpacing: '0.05em', color: '#ede5d3', fontWeight: 500 }}>
+            <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 16, letterSpacing: '0.05em', color: '#ede5d3', fontWeight: 500 }}>
               {LEVEL_SHORT[user.level] || curLv.label}
             </div>
             {curLv.program && (
@@ -128,7 +128,7 @@ export default function Sidebar({ activeTab, onTabClick, user = {}, onLogout }) 
                 cursor: 'pointer',
               }}>
               <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: isA ? C.accent : '#7a6c52', letterSpacing: '0.06em' }}>{num}</span>
-              <span style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 13, color: isA ? '#ede5d3' : '#c2b59c', fontWeight: isA ? 600 : 400, letterSpacing: '0.02em' }}>{label}</span>
+              <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, color: isA ? '#ede5d3' : '#c2b59c', fontWeight: isA ? 600 : 400, letterSpacing: '0.02em' }}>{label}</span>
               <span style={{ marginLeft: 'auto', fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 12, color: isA ? '#b8923a' : '#7a6c52', opacity: 0.8 }}>{kanji}</span>
             </button>
           );
@@ -138,11 +138,11 @@ export default function Sidebar({ activeTab, onTabClick, user = {}, onLogout }) 
       <div style={{ height: 1, background: '#1f1a16', position: 'relative', flexShrink: 0 }} />
       <div style={{ padding: '14px 28px', display: 'flex', flexDirection: 'column', gap: 8, position: 'relative', flexShrink: 0 }}>
         {isAdmin && (
-          <a href="/admin" style={{ display: 'block', fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 11, color: '#7a6c52', letterSpacing: '0.06em', cursor: 'pointer', textDecoration: 'none' }}>
+          <a href="/admin" style={{ display: 'block', fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: '#7a6c52', letterSpacing: '0.06em', cursor: 'pointer', textDecoration: 'none' }}>
             ⚙ Панель управления
           </a>
         )}
-        <button onClick={onLogout} style={{ background: 'none', border: 'none', fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 11, color: '#7a6c52', letterSpacing: '0.06em', cursor: 'pointer', textAlign: 'left', padding: 0 }}>
+        <button onClick={onLogout} style={{ background: 'none', border: 'none', fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: '#7a6c52', letterSpacing: '0.06em', cursor: 'pointer', textAlign: 'left', padding: 0 }}>
           ↳ Выйти
         </button>
       </div>

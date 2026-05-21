@@ -83,7 +83,7 @@ export default function LessonPage({
           }}>
             <button onClick={nav.back} style={{
               background: 'none', border: 'none', cursor: 'pointer',
-              fontFamily: "var(--font-jost), 'Jost', sans-serif",
+              fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
               fontSize: 11, letterSpacing: '0.1em', color: C.accent,
               textTransform: 'uppercase', padding: 0,
             }}>← {monthLabel} 2026</button>
@@ -127,7 +127,7 @@ export default function LessonPage({
 
               {/* Title */}
               <div style={{
-                fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+                fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
                 fontSize: isMobile ? 22 : 36, letterSpacing: '0.04em',
                 color: C.ink, fontWeight: 500, lineHeight: 1.05,
                 marginBottom: isMobile ? 6 : 8,
@@ -177,7 +177,7 @@ export default function LessonPage({
                 <button style={{
                   background: 'none', border: `1px solid ${C.border}`,
                   padding: '9px 16px',
-                  fontFamily: "var(--font-jost), 'Jost', sans-serif",
+                  fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
                   fontSize: 11, letterSpacing: '0.1em', color: C.muted,
                   cursor: 'pointer', textTransform: 'uppercase',
                 }}>↓ Конспект</button>
@@ -190,7 +190,7 @@ export default function LessonPage({
                     background: isWatched ? C.ink : C.ink,
                     border: `1px solid ${isWatched ? C.ink : C.ink}`,
                     color: '#fff',
-                    fontFamily: "var(--font-jost), 'Jost', sans-serif",
+                    fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
                     fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase',
                     cursor: 'pointer', transition: 'all 0.2s',
                     opacity: isWatched ? 0.7 : 1,
@@ -263,7 +263,7 @@ export default function LessonPage({
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: isMobile ? 4 : 6, flexWrap: 'wrap' }}>
                             <span style={{
-                              fontFamily: "var(--font-jost), 'Jost', sans-serif",
+                              fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
                               fontSize: isMobile ? 12 : 13, color: C.ink, fontWeight: 500,
                             }}>{c.author}</span>
                             {c.role === 'sensei' && (
@@ -281,7 +281,7 @@ export default function LessonPage({
                             }}>{c.date}</span>
                           </div>
                           <div style={{
-                            fontFamily: "var(--font-jost), 'Jost', sans-serif",
+                            fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
                             fontSize: isMobile ? 13 : 14, color: C.ink2, lineHeight: 1.55,
                           }}>{c.text}</div>
                         </div>
@@ -325,7 +325,7 @@ export default function LessonPage({
                       padding: '12px 20px', background: commentText.trim() ? C.ink : C.border,
                       color: commentText.trim() ? '#fff' : C.muted,
                       border: 'none',
-                      fontFamily: "var(--font-jost), 'Jost', sans-serif",
+                      fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
                       fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase',
                       cursor: commentText.trim() ? 'pointer' : 'default',
                       transition: 'all 0.15s', flexShrink: 0,
@@ -341,14 +341,14 @@ export default function LessonPage({
                     <div onClick={() => nav.lesson(monthId, prevLesson.id)}
                       style={{ background: C.surface, padding: '14px 14px', cursor: 'pointer' }}>
                       <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 9, color: C.muted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>← ПРЕДЫДУЩИЙ</div>
-                      <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 13, color: C.ink, fontWeight: 500, lineHeight: 1.3 }}>{prevLesson.title}</div>
+                      <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, color: C.ink, fontWeight: 500, lineHeight: 1.3 }}>{prevLesson.title}</div>
                     </div>
                   ) : <div style={{ background: C.surface }} />}
                   {nextLesson ? (
                     <div onClick={() => nav.lesson(monthId, nextLesson.id)}
                       style={{ background: C.surface, padding: '14px 14px', cursor: 'pointer', textAlign: 'right' }}>
                       <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 9, color: C.muted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>СЛЕДУЮЩИЙ →</div>
-                      <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 13, color: C.ink, fontWeight: 500, lineHeight: 1.3 }}>{nextLesson.title}</div>
+                      <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, color: C.ink, fontWeight: 500, lineHeight: 1.3 }}>{nextLesson.title}</div>
                     </div>
                   ) : <div style={{ background: C.surface }} />}
                 </div>
@@ -404,7 +404,7 @@ export default function LessonPage({
                       {/* Title + duration */}
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{
-                          fontFamily: "var(--font-jost), 'Jost', sans-serif",
+                          fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
                           fontSize: 13, color: isCur ? C.ink : C.ink2,
                           fontWeight: isCur ? 600 : 400, lineHeight: 1.35,
                           overflow: 'hidden', textOverflow: 'ellipsis',

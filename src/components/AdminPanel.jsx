@@ -62,13 +62,12 @@ const C = {
   sideGold:    '#b8923a',
 };
 
-// ── Font tokens — exact match to DOJO_FONTS ────────────────────
+// ── Font tokens — единая typography system ─────────────────────
 const F = {
-  display:      '"Cormorant SC","Cormorant Garamond","Times New Roman",serif',
-  displaySerif: '"Cormorant Garamond","Times New Roman",serif',
-  ui:           '"Jost","Inter",-apple-system,BlinkMacSystemFont,sans-serif',
-  kanji:        '"Noto Serif JP","Yu Mincho",serif',
-  mono:         '"JetBrains Mono",ui-monospace,"Courier New",monospace',
+  serif: "var(--font-cormorant), 'Cormorant Garamond', serif",
+  mono:  "var(--font-mono), 'JetBrains Mono', monospace",
+  kanji: "var(--font-noto), 'Noto Serif JP', serif",
+  sys:   "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 };
 
 // ── Mobile breakpoint hook ──────────────────────────────────────
@@ -111,19 +110,19 @@ function extractVideoEmbed(url) {
 function Input({ value, onChange, placeholder, type='text' }) {
   return (
     <input type={type} value={value||''} onChange={e=>onChange(e.target.value)} placeholder={placeholder}
-      style={{background:C.white,border:`1px solid ${C.border}`,color:C.dark,padding:'8px 12px',fontSize:12,outline:'none',width:'100%',fontFamily:"'Jost',sans-serif",boxSizing:'border-box'}}/>
+      style={{background:C.white,border:`1px solid ${C.border}`,color:C.dark,padding:'8px 12px',fontSize:12,outline:'none',width:'100%',fontFamily:F.sys,boxSizing:'border-box'}}/>
   );
 }
 function Textarea({ value, onChange, placeholder, rows=3 }) {
   return (
     <textarea value={value||''} onChange={e=>onChange(e.target.value)} placeholder={placeholder} rows={rows}
-      style={{background:C.white,border:`1px solid ${C.border}`,color:C.dark,padding:'8px 12px',fontSize:12,outline:'none',width:'100%',resize:'vertical',lineHeight:1.65,fontFamily:"'Jost',sans-serif",boxSizing:'border-box'}}/>
+      style={{background:C.white,border:`1px solid ${C.border}`,color:C.dark,padding:'8px 12px',fontSize:12,outline:'none',width:'100%',resize:'vertical',lineHeight:1.65,fontFamily:F.sys,boxSizing:'border-box'}}/>
   );
 }
 function Select({ value, onChange, options }) {
   return (
     <select value={value||''} onChange={e=>onChange(e.target.value)}
-      style={{background:C.white,border:`1px solid ${C.border}`,color:C.dark,padding:'8px 12px',fontSize:12,outline:'none',cursor:'pointer',fontFamily:"'Jost',sans-serif",width:'100%',boxSizing:'border-box'}}>
+      style={{background:C.white,border:`1px solid ${C.border}`,color:C.dark,padding:'8px 12px',fontSize:12,outline:'none',cursor:'pointer',fontFamily:F.sys,width:'100%',boxSizing:'border-box'}}>
       {options.map(o=><option key={o.value} value={o.value}>{o.label}</option>)}
     </select>
   );
@@ -132,7 +131,7 @@ function Btn({ children, onClick, variant='primary', small, disabled, loading })
   const s = {primary:{bg:C.dark,color:'#fff',brd:C.dark},success:{bg:C.green,color:'#fff',brd:C.green},danger:{bg:C.red,color:'#fff',brd:C.red},ghost:{bg:'transparent',color:C.muted,brd:C.border},gold:{bg:C.goldBg,color:C.gold,brd:C.goldBorder}}[variant]||{bg:C.dark,color:'#fff',brd:C.dark};
   return (
     <button onClick={onClick} disabled={disabled||loading}
-      style={{padding:small?'7px 14px':'10px 20px',background:(disabled||loading)?'#eee':s.bg,color:(disabled||loading)?C.muted:s.color,border:`1px solid ${(disabled||loading)?C.border:s.brd}`,fontSize:small?12:13,cursor:(disabled||loading)?'default':'pointer',fontFamily:"'Jost',sans-serif",whiteSpace:'nowrap',transition:'opacity 0.12s',opacity:(disabled||loading)?0.7:1,minHeight:36}}>
+      style={{padding:small?'7px 14px':'10px 20px',background:(disabled||loading)?'#eee':s.bg,color:(disabled||loading)?C.muted:s.color,border:`1px solid ${(disabled||loading)?C.border:s.brd}`,fontSize:small?12:13,cursor:(disabled||loading)?'default':'pointer',fontFamily:F.sys,whiteSpace:'nowrap',transition:'opacity 0.12s',opacity:(disabled||loading)?0.7:1,minHeight:36}}>
       {loading ? '…' : children}
     </button>
   );
@@ -186,7 +185,7 @@ function TakedaMon({ size=32, color }) {
 // ── Avatar — letter circle with gold ring ───────────────────────
 function AvatarCircle({ letter, size=34, color, bg }) {
   return (
-    <div style={{width:size,height:size,borderRadius:'50%',background:bg||C.bg2,border:`1px solid ${color||C.goldSoft}`,display:'inline-flex',alignItems:'center',justifyContent:'center',fontFamily:F.displaySerif,fontStyle:'italic',fontSize:size*0.42,color:color||C.goldSoft,flexShrink:0}}>
+    <div style={{width:size,height:size,borderRadius:'50%',background:bg||C.bg2,border:`1px solid ${color||C.goldSoft}`,display:'inline-flex',alignItems:'center',justifyContent:'center',fontFamily:F.serif,fontStyle:'italic',fontSize:size*0.42,color:color||C.goldSoft,flexShrink:0}}>
       {letter}
     </div>
   );
@@ -238,7 +237,7 @@ function SumiStroke({ style }) {
 // ── FilterChip2 ─────────────────────────────────────────────────
 function FilterChip2({ label, value, active, dot, onClick }) {
   return (
-    <div onClick={onClick} style={{display:'inline-flex',alignItems:'center',gap:8,padding:'8px 14px',minHeight:36,background:active?C.ink:C.surface,color:active?C.onAccent:C.ink2,border:`1px solid ${active?C.ink:C.hairline}`,fontFamily:F.ui,fontSize:12,fontWeight:500,letterSpacing:'0.04em',cursor:'pointer',flexShrink:0,whiteSpace:'nowrap'}}>
+    <div onClick={onClick} style={{display:'inline-flex',alignItems:'center',gap:8,padding:'8px 14px',minHeight:36,background:active?C.ink:C.surface,color:active?C.onAccent:C.ink2,border:`1px solid ${active?C.ink:C.hairline}`,fontFamily:F.mono,fontSize:12,fontWeight:500,letterSpacing:'0.04em',cursor:'pointer',flexShrink:0,whiteSpace:'nowrap'}}>
       {dot && <span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:dot,flexShrink:0}}/>}
       <span>{label}</span>
       {value !== undefined && (
@@ -267,7 +266,7 @@ function HairlineTable2({ columns, rows, dense=false, onRowClick }) {
       {rows.map((row,ri)=>(
         <div key={ri} onClick={()=>onRowClick&&onRowClick(row,ri)} style={{display:'grid',gridTemplateColumns:gridCols,borderBottom:ri<rows.length-1?`1px solid ${C.hairline}`:'none',cursor:onRowClick?'pointer':'default'}}>
           {columns.map((col,ci)=>(
-            <div key={ci} style={{padding:`${py+2}px 16px`,fontFamily:F.ui,fontSize:13,color:C.ink,lineHeight:1.45,textAlign:col.align||'left',display:'flex',alignItems:'center',justifyContent:col.align==='right'?'flex-end':col.align==='center'?'center':'flex-start',minWidth:0}}>
+            <div key={ci} style={{padding:`${py+2}px 16px`,fontFamily:F.mono,fontSize:13,color:C.ink,lineHeight:1.45,textAlign:col.align||'left',display:'flex',alignItems:'center',justifyContent:col.align==='right'?'flex-end':col.align==='center'?'center':'flex-start',minWidth:0}}>
               {col.render ? col.render(row,ri) : row[col.key]}
             </div>
           ))}
@@ -287,10 +286,10 @@ function AdminSectionHead({ num, title, subtitle, kanji, actions }) {
           {(num||subtitle) && (
             <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:6}}>
               {num && <span style={{fontFamily:F.mono,fontSize:9,color:C.accent,letterSpacing:'0.22em'}}>{num}</span>}
-              {subtitle && <span style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:12,color:C.muted}}>{subtitle}</span>}
+              {subtitle && <span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:12,color:C.muted}}>{subtitle}</span>}
             </div>
           )}
-          <div style={{fontFamily:F.display,fontSize:32,color:C.ink,letterSpacing:'0.04em',lineHeight:1,fontWeight:500}}>{title}</div>
+          <div style={{fontFamily:F.serif,fontSize:32,color:C.ink,letterSpacing:'0.04em',lineHeight:1,fontWeight:500}}>{title}</div>
         </div>
       </div>
       {actions && <div style={{display:'flex',gap:10,alignItems:'center',flexShrink:0}}>{actions}</div>}
@@ -311,7 +310,7 @@ function Btn2({ children, onClick, kind='primary', size='md', full, disabled }) 
   const py=size==='sm'?7:10, px=size==='sm'?14:20, fs=size==='sm'?10:12;
   return (
     <button onClick={onClick} disabled={disabled}
-      style={{padding:`${py}px ${px}px`,background:disabled?C.bg:k.bg,color:disabled?C.muted:k.color,border:`1px solid ${disabled?C.hairline:k.border}`,fontSize:fs,cursor:disabled?'default':'pointer',fontFamily:F.ui,letterSpacing:'0.08em',textTransform:'uppercase',whiteSpace:'nowrap',lineHeight:1,width:full?'100%':undefined,fontWeight:500,transition:'opacity 0.12s',opacity:disabled?0.5:1}}>
+      style={{padding:`${py}px ${px}px`,background:disabled?C.bg:k.bg,color:disabled?C.muted:k.color,border:`1px solid ${disabled?C.hairline:k.border}`,fontSize:fs,cursor:disabled?'default':'pointer',fontFamily:F.mono,letterSpacing:'0.08em',textTransform:'uppercase',whiteSpace:'nowrap',lineHeight:1,width:full?'100%':undefined,fontWeight:500,transition:'opacity 0.12s',opacity:disabled?0.5:1}}>
       {children}
     </button>
   );
@@ -408,7 +407,7 @@ export default function AdminPanel({ onExit }) {
       <div style={{padding:'26px 26px 18px',display:'flex',alignItems:'center',gap:12,position:'relative'}}>
         <TakedaMon size={26} color={C.sideGold}/>
         <div style={{minWidth:0}}>
-          <div style={{fontFamily:F.display,fontSize:10,letterSpacing:'0.22em',color:C.sideText,fontWeight:600}}>ONLINE DAITO-RYU</div>
+          <div style={{fontFamily:F.serif,fontSize:10,letterSpacing:'0.22em',color:C.sideText,fontWeight:600}}>ONLINE DAITO-RYU</div>
           <div style={{display:'flex',alignItems:'center',gap:8,marginTop:4}}>
             <span style={{fontFamily:F.kanji,fontSize:10,color:C.sideGold,letterSpacing:'0.18em',opacity:0.75}}>管理</span>
             <span style={{fontFamily:F.mono,fontSize:9,color:C.accent,letterSpacing:'0.18em',textTransform:'uppercase'}}>· admin</span>
@@ -423,9 +422,9 @@ export default function AdminPanel({ onExit }) {
       {/* Admin card */}
       <div style={{padding:'18px 26px',position:'relative'}}>
         <div style={{display:'flex',alignItems:'center',gap:12}}>
-          <div style={{width:38,height:38,borderRadius:'50%',background:C.side2,border:`1px solid ${C.sideGold}`,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:F.displaySerif,fontStyle:'italic',fontSize:17,color:C.sideGold,flexShrink:0}}>С</div>
+          <div style={{width:38,height:38,borderRadius:'50%',background:C.side2,border:`1px solid ${C.sideGold}`,display:'flex',alignItems:'center',justifyContent:'center',fontFamily:F.serif,fontStyle:'italic',fontSize:17,color:C.sideGold,flexShrink:0}}>С</div>
           <div style={{minWidth:0}}>
-            <div style={{fontFamily:F.ui,fontSize:13,fontWeight:500,color:C.sideText}}>Сэнсэй</div>
+            <div style={{fontFamily:F.mono,fontSize:13,fontWeight:500,color:C.sideText}}>Сэнсэй</div>
             <div style={{fontFamily:F.mono,fontSize:9,color:C.sideMuted,letterSpacing:'0.08em',textTransform:'uppercase'}}>главный администратор</div>
           </div>
         </div>
@@ -440,7 +439,7 @@ export default function AdminPanel({ onExit }) {
             <button key={s.id} onClick={()=>handleSectionSelect(s.id)}
               style={{width:'100%',display:'flex',alignItems:'center',gap:14,padding:'11px 26px',borderLeft:`2px solid ${isA?C.accent:'transparent'}`,background:isA?C.sideActive:'transparent',border:'none',borderLeft:`2px solid ${isA?C.accent:'transparent'}`,cursor:'pointer',textAlign:'left',minHeight:44}}>
               <span style={{fontFamily:F.mono,fontSize:10,color:isA?C.accent:C.sideMuted,letterSpacing:'0.06em',minWidth:20,flexShrink:0}}>{s.num}</span>
-              <span style={{fontFamily:F.ui,fontSize:13,color:isA?C.sideText:C.sideText2,fontWeight:isA?600:400,flex:1,letterSpacing:'0.02em'}}>{s.label}</span>
+              <span style={{fontFamily:F.mono,fontSize:13,color:isA?C.sideText:C.sideText2,fontWeight:isA?600:400,flex:1,letterSpacing:'0.02em'}}>{s.label}</span>
               {s.id==='exams'&&pendingCount>0&&(
                 <span style={{background:C.accent,color:C.onAccent,fontSize:8,padding:'1px 5px',borderRadius:10,letterSpacing:'0.04em'}}>{pendingCount}</span>
               )}
@@ -454,9 +453,9 @@ export default function AdminPanel({ onExit }) {
       {/* Bottom links */}
       <div style={{padding:'14px 26px',display:'flex',flexDirection:'column',gap:8,position:'relative'}}>
         {onExit && (
-          <span onClick={onExit} style={{fontFamily:F.ui,fontSize:11,color:C.sideMuted,letterSpacing:'0.06em',cursor:'pointer'}}>↗ Открыть сайт</span>
+          <span onClick={onExit} style={{fontFamily:F.mono,fontSize:11,color:C.sideMuted,letterSpacing:'0.06em',cursor:'pointer'}}>↗ Открыть сайт</span>
         )}
-        <span onClick={onExit} style={{fontFamily:F.ui,fontSize:11,color:C.sideMuted,letterSpacing:'0.06em',cursor:'pointer'}}>↳ Выйти</span>
+        <span onClick={onExit} style={{fontFamily:F.mono,fontSize:11,color:C.sideMuted,letterSpacing:'0.06em',cursor:'pointer'}}>↳ Выйти</span>
       </div>
       {/* Watermark */}
       <div style={{position:'absolute',bottom:12,right:14,fontFamily:F.kanji,fontSize:11,color:C.sideGold,letterSpacing:'0.2em',opacity:0.35,pointerEvents:'none'}}>武道</div>
@@ -467,7 +466,7 @@ export default function AdminPanel({ onExit }) {
   const today = new Date().toLocaleDateString('ru-RU',{day:'numeric',month:'long',year:'numeric'});
 
   return (
-    <div style={{display:'flex',minHeight:'100vh',background:C.bg,fontFamily:"'Jost',sans-serif",color:C.dark,position:'relative'}}>
+    <div style={{display:'flex',minHeight:'100vh',background:C.bg,fontFamily:F.sys,color:C.dark,position:'relative'}}>
 
       {/* ── Desktop sidebar ─────────────────────────────────── */}
       {!isMobile && (
@@ -486,7 +485,7 @@ export default function AdminPanel({ onExit }) {
               ☰
             </button>
             <div style={{fontFamily:"'Noto Serif JP',serif",fontSize:16,color:C.sideGold,marginRight:8}}>管</div>
-            <div style={{fontFamily:"var(--font-cormorant-sc,'Cormorant SC',serif)",fontSize:11,letterSpacing:2,color:C.sideText}}>
+            <div style={{fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",fontSize:11,letterSpacing:2,color:C.sideText}}>
               {activeSection?.label || 'ADMIN'}
             </div>
             {pendingCount>0 && (
@@ -525,14 +524,14 @@ export default function AdminPanel({ onExit }) {
             {/* Breadcrumb */}
             <div style={{display:'flex',alignItems:'center',gap:14,flexShrink:0}}>
               {activeSection?.kanji && <span style={{fontFamily:F.kanji,fontSize:14,color:C.accent,letterSpacing:'0.14em',opacity:0.85}}>管理 · {activeSection.kanji}</span>}
-              <span style={{fontFamily:F.display,fontSize:12,letterSpacing:'0.2em',color:C.ink,fontWeight:600,textTransform:'uppercase'}}>{activeSection?.label}</span>
+              <span style={{fontFamily:F.serif,fontSize:12,letterSpacing:'0.2em',color:C.ink,fontWeight:600,textTransform:'uppercase'}}>{activeSection?.label}</span>
               <span style={{color:C.hairline}}>/</span>
-              <span style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:13,color:C.muted}}>{today}</span>
+              <span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:13,color:C.muted}}>{today}</span>
             </div>
             {/* Search */}
             <div style={{display:'flex',alignItems:'center',gap:10,background:C.bg,border:`1px solid ${C.hairline}`,padding:'8px 14px',flex:1,maxWidth:380}}>
               <span style={{color:C.muted,fontSize:14}}>⌕</span>
-              <span style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:13,color:C.muted,flex:1}}>Поиск ученика, урока, техники…</span>
+              <span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:13,color:C.muted,flex:1}}>Поиск ученика, урока, техники…</span>
               <span style={{fontFamily:F.mono,fontSize:9,color:C.muted,letterSpacing:'0.1em',border:`1px solid ${C.hairline2}`,padding:'1px 5px'}}>⌘K</span>
             </div>
             {/* Actions */}
@@ -623,7 +622,7 @@ function SectionDashboard({showToast, isMobile, onNavigate}) {
   const thisMonthStr = new Date().toLocaleString('ru-RU',{month:'long',year:'numeric'});
 
   return (
-    <div style={{background:C.bg,minHeight:'100%',fontFamily:F.ui}}>
+    <div style={{background:C.bg,minHeight:'100%',fontFamily:F.mono}}>
       <div style={{padding:'32px 36px 60px'}}>
 
         {/* ── Section head ──────────────────────────────────── */}
@@ -650,8 +649,8 @@ function SectionDashboard({showToast, isMobile, onNavigate}) {
                 <span style={{fontFamily:F.kanji,fontSize:14,color:C.copper,opacity:0.55}}>{m.kanji}</span>
               </div>
               <div style={{display:'flex',alignItems:'baseline',gap:6}}>
-                <span style={{fontFamily:F.display,fontSize:isMobile?28:38,color:C.ink,fontWeight:500,lineHeight:1,letterSpacing:'0.02em'}}>{m.value}</span>
-                {m.unit && <span style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:14,color:C.muted}}>{m.unit}</span>}
+                <span style={{fontFamily:F.serif,fontSize:isMobile?28:38,color:C.ink,fontWeight:500,lineHeight:1,letterSpacing:'0.02em'}}>{m.value}</span>
+                {m.unit && <span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:14,color:C.muted}}>{m.unit}</span>}
               </div>
               <div style={{display:'flex',alignItems:'center',gap:8,marginTop:'auto'}}>
                 {m.delta && (
@@ -676,11 +675,11 @@ function SectionDashboard({showToast, isMobile, onNavigate}) {
               <div style={{padding:'16px 22px',borderBottom:`1px solid ${C.hairline}`,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
                 <div style={{display:'flex',alignItems:'center',gap:12}}>
                   <span style={{fontFamily:F.kanji,fontSize:13,color:C.gold,letterSpacing:'0.14em',opacity:0.8}}>収益</span>
-                  <span style={{fontFamily:F.display,fontSize:12,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>ДОХОДЫ · 6 МЕС.</span>
+                  <span style={{fontFamily:F.serif,fontSize:12,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>ДОХОДЫ · 6 МЕС.</span>
                 </div>
                 <div style={{display:'flex',alignItems:'baseline',gap:6}}>
-                  <span style={{fontFamily:F.display,fontSize:24,color:C.ink,letterSpacing:'0.04em'}}>2 480</span>
-                  <span style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:12,color:C.muted}}>тыс. ₽ · полгода</span>
+                  <span style={{fontFamily:F.serif,fontSize:24,color:C.ink,letterSpacing:'0.04em'}}>2 480</span>
+                  <span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:12,color:C.muted}}>тыс. ₽ · полгода</span>
                 </div>
               </div>
               <div style={{padding:'24px 22px 18px',display:'flex',alignItems:'flex-end',gap:18,height:220}}>
@@ -701,7 +700,7 @@ function SectionDashboard({showToast, isMobile, onNavigate}) {
               <div style={{padding:'16px 22px',borderBottom:`1px solid ${C.hairline}`,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
                 <div style={{display:'flex',alignItems:'center',gap:12}}>
                   <span style={{fontFamily:F.kanji,fontSize:13,color:C.gold,letterSpacing:'0.14em',opacity:0.8}}>動静</span>
-                  <span style={{fontFamily:F.display,fontSize:12,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>АКТИВНОСТЬ · СЕГОДНЯ</span>
+                  <span style={{fontFamily:F.serif,fontSize:12,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>АКТИВНОСТЬ · СЕГОДНЯ</span>
                 </div>
                 <span onClick={()=>onNavigate('payments')} style={{fontFamily:F.mono,fontSize:10,color:C.accent,letterSpacing:'0.12em',cursor:'pointer'}}>ВСЯ ЛЕНТА →</span>
               </div>
@@ -710,10 +709,10 @@ function SectionDashboard({showToast, isMobile, onNavigate}) {
                   <div key={i} style={{display:'grid',gridTemplateColumns:'64px 26px 1fr auto',gap:14,alignItems:'center',padding:'14px 22px',borderBottom:i<RECENT_ACTIVITY_PROTO.length-1?`1px solid ${C.hairline}`:'none'}}>
                     <span style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.08em'}}>{a.time}</span>
                     <span style={{fontFamily:F.kanji,fontSize:18,color:C.accent,opacity:0.7,lineHeight:1}}>{a.kanji}</span>
-                    <div style={{minWidth:0,fontFamily:F.ui,fontSize:13,color:C.ink,lineHeight:1.45}}>
+                    <div style={{minWidth:0,fontFamily:F.mono,fontSize:13,color:C.ink,lineHeight:1.45}}>
                       <span style={{fontWeight:600}}>{a.actor}</span>{' '}
                       <span style={{color:C.muted}}>{a.verb}</span>{' '}
-                      <span style={{fontFamily:F.displaySerif,fontStyle:'italic',color:C.ink2}}>{a.target}</span>
+                      <span style={{fontFamily:F.serif,fontStyle:'italic',color:C.ink2}}>{a.target}</span>
                     </div>
                     <div>
                       {a.cost
@@ -738,9 +737,9 @@ function SectionDashboard({showToast, isMobile, onNavigate}) {
               <div style={{padding:'16px 22px',borderBottom:`1px solid ${C.hairline}`}}>
                 <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:4}}>
                   <span style={{fontFamily:F.kanji,fontSize:13,color:C.accent,letterSpacing:'0.14em'}}>段</span>
-                  <span style={{fontFamily:F.display,fontSize:12,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>АТТЕСТАЦИИ В ОЧЕРЕДИ</span>
+                  <span style={{fontFamily:F.serif,fontSize:12,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>АТТЕСТАЦИИ В ОЧЕРЕДИ</span>
                 </div>
-                <span style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:12,color:C.muted}}>
+                <span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:12,color:C.muted}}>
                   {exams.length||14} заявок · {pendingList.length} ждут проверки
                 </span>
               </div>
@@ -749,7 +748,7 @@ function SectionDashboard({showToast, isMobile, onNavigate}) {
                   <div key={i} style={{display:'flex',alignItems:'center',gap:14,padding:'14px 22px',borderBottom:i<pendingList.length-1?`1px solid ${C.hairline}`:'none'}}>
                     <AvatarCircle letter={e.name.charAt(0)} size={36}/>
                     <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontFamily:F.ui,fontSize:13,color:C.ink,fontWeight:500}}>{e.name}</div>
+                      <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:500}}>{e.name}</div>
                       <div style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.06em',marginTop:2}}>
                         {e.from} → {e.to} · {e.city}
                       </div>
@@ -770,15 +769,15 @@ function SectionDashboard({showToast, isMobile, onNavigate}) {
             <div style={{background:C.surface,border:`1px solid ${C.hairline}`}}>
               <div style={{padding:'16px 22px',borderBottom:`1px solid ${C.hairline}`,display:'flex',alignItems:'center',gap:12}}>
                 <span style={{fontFamily:F.kanji,fontSize:13,color:C.gold,letterSpacing:'0.14em',opacity:0.85}}>人気</span>
-                <span style={{fontFamily:F.display,fontSize:12,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>ПОПУЛЯРНЫЕ ТЕХНИКИ</span>
+                <span style={{fontFamily:F.serif,fontSize:12,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>ПОПУЛЯРНЫЕ ТЕХНИКИ</span>
               </div>
               <div>
                 {POPULAR_TECHNIQUES_PROTO.map((p,i)=>(
                   <div key={i} style={{display:'grid',gridTemplateColumns:'24px 1fr 80px 60px',gap:14,alignItems:'center',padding:'12px 22px',borderBottom:i<POPULAR_TECHNIQUES_PROTO.length-1?`1px solid ${C.hairline}`:'none'}}>
                     <span style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.06em'}}>{p.rank}</span>
                     <div style={{minWidth:0}}>
-                      <div style={{fontFamily:F.ui,fontSize:13,color:C.ink,fontWeight:500}}>{p.name}</div>
-                      <div style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:11,color:C.muted}}>{p.jp}</div>
+                      <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:500}}>{p.name}</div>
+                      <div style={{fontFamily:F.serif,fontStyle:'italic',fontSize:11,color:C.muted}}>{p.jp}</div>
                     </div>
                     <Sparkline2 data={p.trend} width={70} height={20}/>
                     <span style={{fontFamily:F.mono,fontSize:11,color:C.ink2,letterSpacing:'0.04em',textAlign:'right'}}>{p.views.toLocaleString('ru-RU')}</span>
@@ -897,7 +896,7 @@ function SectionUsers({showToast,isMobile}){
         <div style={{display:'flex',alignItems:'center',gap:12,minWidth:0}}>
           <AvatarCircle letter={u.letter} size={34}/>
           <div style={{minWidth:0}}>
-            <div style={{fontFamily:F.ui,fontSize:13,color:C.ink,fontWeight:500}}>{u.name}</div>
+            <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:500}}>{u.name}</div>
             <div style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.04em',marginTop:2}}>{u.email}</div>
           </div>
         </div>
@@ -908,14 +907,14 @@ function SectionUsers({showToast,isMobile}){
       render:(u)=>(
         <div style={{display:'inline-flex',alignItems:'center',gap:8}}>
           <span style={{fontFamily:F.kanji,fontSize:14,color:C.accent,opacity:0.8,letterSpacing:'0.06em'}}>{u.kyuKanji}</span>
-          <span style={{fontFamily:F.display,fontSize:11,letterSpacing:'0.14em',color:C.ink,fontWeight:500,textTransform:'uppercase'}}>{u.kyu}</span>
+          <span style={{fontFamily:F.serif,fontSize:11,letterSpacing:'0.14em',color:C.ink,fontWeight:500,textTransform:'uppercase'}}>{u.kyu}</span>
         </div>
       ),
     },
     {
       label:'Доступ', width:'1.3fr',
       render:(u)=>(
-        <span style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:13,color:C.ink2}}>{u.access}</span>
+        <span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:13,color:C.ink2}}>{u.access}</span>
       ),
     },
     {
@@ -973,7 +972,7 @@ function SectionUsers({showToast,isMobile}){
                 <span style={{fontFamily:F.mono,fontSize:9,letterSpacing:'0.22em',color:C.muted,textTransform:'uppercase'}}>{m.label}</span>
                 <span style={{fontFamily:F.kanji,fontSize:14,color:C.copper,opacity:0.55}}>{m.kanji}</span>
               </div>
-              <div style={{fontFamily:F.display,fontSize:isMobile?26:34,color:C.ink,fontWeight:500,lineHeight:1,letterSpacing:'0.02em'}}>{m.value}</div>
+              <div style={{fontFamily:F.serif,fontSize:isMobile?26:34,color:C.ink,fontWeight:500,lineHeight:1,letterSpacing:'0.02em'}}>{m.value}</div>
               <div style={{marginTop:'auto',display:'flex',alignItems:'center',gap:6}}>
                 {m.delta && <span style={{fontFamily:F.mono,fontSize:10,color:m.deltaDir==='up'?C.success:m.deltaDir==='down'?C.danger:C.muted}}>
                   {m.deltaDir==='up'?'▲':m.deltaDir==='down'?'▼':'·'} {m.delta}
@@ -1002,7 +1001,7 @@ function SectionUsers({showToast,isMobile}){
           <div style={{background:C.surface,border:`1px solid ${C.hairline}`,borderLeft:`3px solid ${C.accent}`,padding:'20px 24px',marginBottom:16}}>
             <div style={{display:'flex',alignItems:'flex-start',justifyContent:'space-between',marginBottom:14}}>
               <div>
-                <div style={{fontFamily:F.displaySerif,fontSize:18,color:C.ink,fontWeight:600}}>{selUser.name}</div>
+                <div style={{fontFamily:F.serif,fontSize:18,color:C.ink,fontWeight:600}}>{selUser.name}</div>
                 <div style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.04em',marginTop:3}}>{selUser.email}</div>
               </div>
               <button onClick={()=>setSelected(null)} style={{background:'none',border:'none',fontSize:18,color:C.muted,cursor:'pointer',lineHeight:1,padding:'2px 4px'}}>✕</button>
@@ -1017,7 +1016,7 @@ function SectionUsers({showToast,isMobile}){
             {selUser.raw?.experience && (
               <div style={{padding:'10px 14px',background:C.bg2,border:`1px solid ${C.hairline}`,marginBottom:12}}>
                 <div style={{fontFamily:F.mono,fontSize:9,color:C.muted,letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:6}}>ОБ ОПЫТЕ</div>
-                <p style={{fontFamily:F.displaySerif,fontSize:13,color:C.ink2,lineHeight:1.7,margin:0}}>{selUser.raw.experience}</p>
+                <p style={{fontFamily:F.serif,fontSize:13,color:C.ink2,lineHeight:1.7,margin:0}}>{selUser.raw.experience}</p>
               </div>
             )}
             {userPays.length>0 && (
@@ -1043,7 +1042,7 @@ function SectionUsers({showToast,isMobile}){
                 style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',borderBottom:i===arr.length-1?'none':`1px solid ${C.hairline}`,cursor:'pointer',background:selected===u.id?C.surface2:'transparent',minHeight:64}}>
                 <AvatarCircle letter={u.letter} size={36}/>
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontFamily:F.ui,fontSize:13,color:C.ink,fontWeight:500}}>{u.name}</div>
+                  <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:500}}>{u.name}</div>
                   <div style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.04em',marginTop:2}}>{u.kyu} · {u.access}</div>
                 </div>
                 <div style={{textAlign:'right'}}>
@@ -1166,8 +1165,8 @@ function SectionExams({showToast,isMobile}){
                 <span style={{fontFamily:F.kanji,fontSize:14,color:C.copper,opacity:0.55}}>{m.kanji}</span>
               </div>
               <div style={{display:'flex',alignItems:'baseline',gap:6}}>
-                <span style={{fontFamily:F.display,fontSize:isMobile?26:34,color:C.ink,fontWeight:500,lineHeight:1,letterSpacing:'0.02em'}}>{m.value}</span>
-                {m.unit&&<span style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:12,color:C.muted}}>{m.unit}</span>}
+                <span style={{fontFamily:F.serif,fontSize:isMobile?26:34,color:C.ink,fontWeight:500,lineHeight:1,letterSpacing:'0.02em'}}>{m.value}</span>
+                {m.unit&&<span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:12,color:C.muted}}>{m.unit}</span>}
               </div>
               <div style={{marginTop:'auto',display:'flex',alignItems:'center',gap:6}}>
                 {m.delta&&<span style={{fontFamily:F.mono,fontSize:10,color:m.deltaDir==='up'?C.success:m.deltaDir==='down'?C.danger:C.muted}}>
@@ -1211,7 +1210,7 @@ function SectionExams({showToast,isMobile}){
               </button>
               {showManual&&(
                 <div style={{background:C.surface,border:`1px solid ${C.hairline}`,padding:'18px 20px'}}>
-                  <div style={{fontFamily:F.display,fontSize:14,letterSpacing:'0.18em',color:C.ink,marginBottom:14}}>РУЧНАЯ ПРОСТАНОВКА</div>
+                  <div style={{fontFamily:F.serif,fontSize:14,letterSpacing:'0.18em',color:C.ink,marginBottom:14}}>РУЧНАЯ ПРОСТАНОВКА</div>
                   <div style={{display:'flex',flexDirection:'column',gap:10}}>
                     <div>
                       <div style={{fontFamily:F.mono,fontSize:9,color:C.muted,letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:5}}>УЧЕНИК</div>
@@ -1261,7 +1260,7 @@ function ExamQueueCard({e, isSelected, onSelect}){
       <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:8}}>
         <AvatarCircle letter={e.letter} size={36}/>
         <div style={{flex:1,minWidth:0}}>
-          <div style={{fontFamily:F.ui,fontSize:13,color:C.ink,fontWeight:500}}>{e.name}</div>
+          <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:500}}>{e.name}</div>
           <div style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.04em'}}>{e.id} · {e.city}</div>
         </div>
         <Pill2 kind={sm.kind} dot>{sm.label}</Pill2>
@@ -1298,23 +1297,23 @@ function ExamDetailPanel({exam, onApprove, onReject}){
           <div style={{display:'flex',alignItems:'flex-end',gap:16,marginBottom:6}}>
             <AvatarCircle letter={exam.letter} size={48}/>
             <div>
-              <div style={{fontFamily:F.display,fontSize:26,color:C.ink,letterSpacing:'0.04em',fontWeight:500,lineHeight:1}}>{exam.name}</div>
-              <div style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:13,color:C.muted,marginTop:5}}>{exam.city} · в додзё {exam.dur}</div>
+              <div style={{fontFamily:F.serif,fontSize:26,color:C.ink,letterSpacing:'0.04em',fontWeight:500,lineHeight:1}}>{exam.name}</div>
+              <div style={{fontFamily:F.serif,fontStyle:'italic',fontSize:13,color:C.muted,marginTop:5}}>{exam.city} · в додзё {exam.dur}</div>
             </div>
           </div>
           <div style={{display:'flex',alignItems:'center',gap:16,marginTop:14}}>
             <div style={{display:'flex',alignItems:'center',gap:8}}>
               <span style={{fontFamily:F.kanji,fontSize:28,color:C.muted,opacity:0.5}}>{exam.fromK}</span>
-              <span style={{fontFamily:F.display,fontSize:14,letterSpacing:'0.12em',color:C.muted}}>{exam.from}</span>
+              <span style={{fontFamily:F.serif,fontSize:14,letterSpacing:'0.12em',color:C.muted}}>{exam.from}</span>
             </div>
-            <span style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:24,color:C.accent}}>→</span>
+            <span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:24,color:C.accent}}>→</span>
             <div style={{display:'flex',alignItems:'center',gap:8}}>
               <span style={{fontFamily:F.kanji,fontSize:36,color:C.accent}}>{exam.toK}</span>
-              <span style={{fontFamily:F.display,fontSize:18,letterSpacing:'0.12em',color:C.ink,fontWeight:600}}>{exam.to}</span>
+              <span style={{fontFamily:F.serif,fontSize:18,letterSpacing:'0.12em',color:C.ink,fontWeight:600}}>{exam.to}</span>
             </div>
             <div style={{marginLeft:'auto',textAlign:'right'}}>
               <div style={{fontFamily:F.mono,fontSize:9,color:C.muted,letterSpacing:'0.18em',textTransform:'uppercase'}}>дата экзамена</div>
-              <div style={{fontFamily:F.display,fontSize:18,color:C.ink,letterSpacing:'0.06em'}}>{exam.date}</div>
+              <div style={{fontFamily:F.serif,fontSize:18,color:C.ink,letterSpacing:'0.06em'}}>{exam.date}</div>
             </div>
           </div>
         </div>
@@ -1333,7 +1332,7 @@ function ExamDetailPanel({exam, onApprove, onReject}){
               <span style={{fontFamily:F.kanji,fontSize:20,color:C.success,opacity:0.8}}>{r.kanji}</span>
               <div style={{flex:1}}>
                 <div style={{fontFamily:F.mono,fontSize:9,color:C.muted,letterSpacing:'0.14em',textTransform:'uppercase',marginBottom:2}}>{r.label}</div>
-                <div style={{fontFamily:F.ui,fontSize:12,color:C.ink,fontWeight:500}}>{r.value}</div>
+                <div style={{fontFamily:F.mono,fontSize:12,color:C.ink,fontWeight:500}}>{r.value}</div>
               </div>
               <span style={{fontFamily:F.mono,fontSize:12,color:C.success}}>✓</span>
             </div>
@@ -1345,7 +1344,7 @@ function ExamDetailPanel({exam, onApprove, onReject}){
         <div style={{fontFamily:F.mono,fontSize:9,color:C.muted,letterSpacing:'0.18em',textTransform:'uppercase',marginBottom:12}}>06.2 · Комментарий сэнсэя</div>
         {isEditable
           ? <Textarea value={note} onChange={setNote} placeholder="Замечания к технике…" rows={4}/>
-          : <div style={{background:C.bg,border:`1px solid ${C.hairline}`,padding:'14px 16px',minHeight:80,fontFamily:F.displaySerif,fontStyle:'italic',fontSize:14,color:C.muted,lineHeight:1.6}}>
+          : <div style={{background:C.bg,border:`1px solid ${C.hairline}`,padding:'14px 16px',minHeight:80,fontFamily:F.serif,fontStyle:'italic',fontSize:14,color:C.muted,lineHeight:1.6}}>
               {exam.raw?.teacher_note||'Без комментария'}
             </div>
         }
@@ -1427,15 +1426,15 @@ function SectionPayments({isMobile}){
       <div style={{display:'flex',alignItems:'center',gap:10,minWidth:0}}>
         <AvatarCircle letter={p.letter} size={28}/>
         <div style={{minWidth:0}}>
-          <div style={{fontFamily:F.ui,fontSize:12,color:C.ink,fontWeight:500}}>{p.name}</div>
+          <div style={{fontFamily:F.mono,fontSize:12,color:C.ink,fontWeight:500}}>{p.name}</div>
           <div style={{fontFamily:F.mono,fontSize:10,color:C.muted}}>{p.email}</div>
         </div>
       </div>
     )},
     {label:'Покупка',width:'1.4fr',render:(p)=>(
       <div style={{minWidth:0}}>
-        <div style={{fontFamily:F.ui,fontSize:13,color:C.ink,fontWeight:500}}>{p.item}</div>
-        <div style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:11,color:C.muted}}>{p.itemSub}</div>
+        <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:500}}>{p.item}</div>
+        <div style={{fontFamily:F.serif,fontStyle:'italic',fontSize:11,color:C.muted}}>{p.itemSub}</div>
       </div>
     )},
     {label:'Способ', width:'0.7fr',render:(p)=>(<span style={{fontFamily:F.mono,fontSize:11,color:C.ink2,letterSpacing:'0.04em'}}>{p.method}</span>)},
@@ -1481,8 +1480,8 @@ function SectionPayments({isMobile}){
                   <span style={{fontFamily:F.kanji,fontSize:14,color:C.copper,opacity:0.55}}>{m.kanji}</span>
                 </div>
                 <div style={{display:'flex',alignItems:'baseline',gap:6}}>
-                  <span style={{fontFamily:F.display,fontSize:32,color:C.ink,fontWeight:500,lineHeight:1,letterSpacing:'0.02em'}}>{m.value}</span>
-                  {m.unit&&<span style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:12,color:C.muted}}>{m.unit}</span>}
+                  <span style={{fontFamily:F.serif,fontSize:32,color:C.ink,fontWeight:500,lineHeight:1,letterSpacing:'0.02em'}}>{m.value}</span>
+                  {m.unit&&<span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:12,color:C.muted}}>{m.unit}</span>}
                 </div>
                 <div style={{marginTop:'auto',display:'flex',alignItems:'center',gap:6}}>
                   {m.delta&&<span style={{fontFamily:F.mono,fontSize:10,color:m.deltaDir==='up'?C.success:m.deltaDir==='down'?C.danger:C.muted}}>
@@ -1498,14 +1497,14 @@ function SectionPayments({isMobile}){
           <div style={{background:C.surface,border:`1px solid ${C.hairline}`}}>
             <div style={{padding:'14px 18px',borderBottom:`1px solid ${C.hairline}`,display:'flex',alignItems:'center',gap:10}}>
               <span style={{fontFamily:F.kanji,fontSize:13,color:C.gold,opacity:0.85}}>内訳</span>
-              <span style={{fontFamily:F.display,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>СТРУКТУРА ДОХОДА</span>
+              <span style={{fontFamily:F.serif,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>СТРУКТУРА ДОХОДА</span>
             </div>
             <div style={{padding:'4px 18px'}}>
               {breakdown.map((r,i)=>(
                 <div key={i} style={{display:'grid',gridTemplateColumns:'24px 1fr 60px 70px',gap:12,alignItems:'center',padding:'10px 0',borderBottom:i===breakdown.length-1?'none':`1px solid ${C.hairline}`}}>
                   <span style={{fontFamily:F.kanji,fontSize:16,color:C.accent,opacity:0.7}}>{r.kanji}</span>
                   <div>
-                    <div style={{fontFamily:F.ui,fontSize:12,color:C.ink2,fontWeight:500}}>{r.label}</div>
+                    <div style={{fontFamily:F.mono,fontSize:12,color:C.ink2,fontWeight:500}}>{r.label}</div>
                     <div style={{height:2,background:C.hairline,marginTop:6,position:'relative'}}>
                       <div style={{position:'absolute',inset:0,width:`${Math.min(r.pct*2,100)}%`,background:C.accent}}/>
                     </div>
@@ -1537,8 +1536,8 @@ function SectionPayments({isMobile}){
               <div key={p.id||i} style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',borderBottom:i===arr.length-1?'none':`1px solid ${C.hairline}`,minHeight:62}}>
                 <AvatarCircle letter={p.letter||'?'} size={32}/>
                 <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontFamily:F.ui,fontSize:12,color:C.ink,fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.name||p.userName}</div>
-                  <div style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:11,color:C.muted,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.item||p.desc}</div>
+                  <div style={{fontFamily:F.mono,fontSize:12,color:C.ink,fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.name||p.userName}</div>
+                  <div style={{fontFamily:F.serif,fontStyle:'italic',fontSize:11,color:C.muted,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.item||p.desc}</div>
                 </div>
                 <div style={{textAlign:'right'}}>
                   <div style={{fontFamily:F.mono,fontSize:12,color:C.ink,fontWeight:600}}>{(p.amount||0)>0?(p.amount).toLocaleString('ru-RU')+' ₽':'free'}</div>
@@ -1652,8 +1651,8 @@ function SectionMonths({showToast,isMobile}){
     )},
     {label:'Урок', width:'1.4fr',render:(l)=>(
       <div style={{minWidth:0}}>
-        <div style={{fontFamily:F.ui,fontSize:13,color:C.ink,fontWeight:500}}>{l.title}</div>
-        <div style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:12,color:C.muted,marginTop:2}}>{l.subtitle||'—'}</div>
+        <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:500}}>{l.title}</div>
+        <div style={{fontFamily:F.serif,fontStyle:'italic',fontSize:12,color:C.muted,marginTop:2}}>{l.subtitle||'—'}</div>
       </div>
     )},
     {label:'Kinescope',width:'0.7fr',render:(l)=>(
@@ -1711,7 +1710,7 @@ function SectionMonths({showToast,isMobile}){
                   onClick={()=>{setActiveMonth(m.id);setShowLessons(true);setEditId(null);}}>
                   <span style={{fontFamily:F.kanji,fontSize:18,color:m.is_open?C.accent:C.muted,opacity:m.is_open?0.85:0.4}}>{m.kanji}</span>
                   <div style={{flex:1,minWidth:0}}>
-                    <div style={{fontFamily:F.ui,fontSize:13,color:m.is_open?C.ink:C.muted,fontWeight:500}}>{m.label}</div>
+                    <div style={{fontFamily:F.mono,fontSize:13,color:m.is_open?C.ink:C.muted,fontWeight:500}}>{m.label}</div>
                     <div style={{fontFamily:F.mono,fontSize:9,color:C.muted,marginTop:2,letterSpacing:'0.08em'}}>→ уроки</div>
                   </div>
                   <button onClick={e=>{e.stopPropagation();toggleOpen(m.id);}}
@@ -1726,7 +1725,7 @@ function SectionMonths({showToast,isMobile}){
             <div>
               <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
                 <button onClick={()=>{setShowLessons(false);setEditId(null);}} style={{background:'none',border:'none',fontSize:20,color:C.muted,cursor:'pointer',padding:'2px 6px'}}>←</button>
-                <span style={{fontFamily:F.display,fontSize:16,letterSpacing:'0.08em',color:C.ink,flex:1}}>{activeM?.label} — {lessons.length} уроков</span>
+                <span style={{fontFamily:F.serif,fontSize:16,letterSpacing:'0.08em',color:C.ink,flex:1}}>{activeM?.label} — {lessons.length} уроков</span>
               </div>
               {lLoading&&<Spinner/>}
               <div style={{background:C.surface,border:`1px solid ${C.hairline}`}}>
@@ -1735,7 +1734,7 @@ function SectionMonths({showToast,isMobile}){
                     <div style={{display:'flex',alignItems:'flex-start',gap:10,marginBottom:8}}>
                       <span style={{fontFamily:F.mono,fontSize:11,color:C.muted,minWidth:20}}>{String(l.num).padStart(2,'0')}</span>
                       <div style={{flex:1,minWidth:0}}>
-                        <div style={{fontFamily:F.ui,fontSize:13,color:C.ink,fontWeight:500}}>{l.title}</div>
+                        <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:500}}>{l.title}</div>
                         <div style={{fontFamily:F.mono,fontSize:10,color:C.muted,marginTop:2}}>{l.subtitle} · {l.duration}</div>
                         {l.video_id&&<div style={{fontFamily:F.mono,fontSize:9,color:l.video_status==='ready'?C.success:C.goldSoft,marginTop:2,letterSpacing:'0.06em'}}>{l.video_status==='ready'?'✓ готово':'⟳ обрабатывается'}</div>}
                       </div>
@@ -1757,7 +1756,7 @@ function SectionMonths({showToast,isMobile}){
             <div style={{background:C.surface,border:`1px solid ${C.hairline}`}}>
               <div style={{padding:'14px 18px',borderBottom:`1px solid ${C.hairline}`,display:'flex',alignItems:'center',gap:10}}>
                 <span style={{fontFamily:F.kanji,fontSize:13,color:C.gold,letterSpacing:'0.14em',opacity:0.85}}>年</span>
-                <span style={{fontFamily:F.display,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>2026 · МЕСЯЦЫ</span>
+                <span style={{fontFamily:F.serif,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>2026 · МЕСЯЦЫ</span>
               </div>
               {months.map((m,i)=>{
                 const isA = activeMId===m.id;
@@ -1767,7 +1766,7 @@ function SectionMonths({showToast,isMobile}){
                     <span style={{fontFamily:F.mono,fontSize:10,color:isA?C.accent:C.muted,letterSpacing:'0.06em',minWidth:18}}>{String(i+1).padStart(2,'0')}</span>
                     <span style={{fontFamily:F.kanji,fontSize:16,color:isA?C.accent:C.copper,opacity:isA?0.9:0.55}}>{m.kanji}</span>
                     <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontFamily:F.ui,fontSize:13,color:isA?C.ink:C.ink2,fontWeight:isA?600:500}}>{m.label}</div>
+                      <div style={{fontFamily:F.mono,fontSize:13,color:isA?C.ink:C.ink2,fontWeight:isA?600:500}}>{m.label}</div>
                     </div>
                     <div style={{display:'flex',flexDirection:'column',alignItems:'flex-end',gap:3}}>
                       <button onClick={e=>{e.stopPropagation();toggleOpen(m.id);}}
@@ -1786,7 +1785,7 @@ function SectionMonths({showToast,isMobile}){
               <div style={{background:C.surface,border:`1px solid ${C.hairline}`,padding:'20px 24px',marginBottom:14,display:'flex',alignItems:'center',gap:16}}>
                 <span style={{fontFamily:F.kanji,fontSize:52,color:C.accent,opacity:0.15,lineHeight:0.8}}>{activeM?.kanji?.[0]||'月'}</span>
                 <div style={{flex:1}}>
-                  <div style={{fontFamily:F.display,fontSize:26,color:C.ink,letterSpacing:'0.04em',fontWeight:500,lineHeight:1}}>{activeM?.label||'—'}</div>
+                  <div style={{fontFamily:F.serif,fontSize:26,color:C.ink,letterSpacing:'0.04em',fontWeight:500,lineHeight:1}}>{activeM?.label||'—'}</div>
                   <div style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.12em',marginTop:5}}>{lessons.length} УРОКОВ · {totalPub} ОПУБЛИКОВАНО</div>
                 </div>
                 <Btn2 kind="accent" size="sm" onClick={doAdd}>+ Новый урок</Btn2>
@@ -1796,7 +1795,7 @@ function SectionMonths({showToast,isMobile}){
               <HairlineTable2 columns={lessonCols} rows={lessons} dense/>
 
               {lessons.length===0&&!lLoading&&(
-                <div style={{background:C.surface,border:`1px solid ${C.hairline}`,padding:'40px 24px',textAlign:'center',fontFamily:F.displaySerif,fontStyle:'italic',fontSize:14,color:C.muted}}>
+                <div style={{background:C.surface,border:`1px solid ${C.hairline}`,padding:'40px 24px',textAlign:'center',fontFamily:F.serif,fontStyle:'italic',fontSize:14,color:C.muted}}>
                   Уроков нет · нажмите «+ Новый урок»
                 </div>
               )}
@@ -2059,13 +2058,13 @@ function SectionIkkajo({showToast,isMobile}){
                   {isA&&<div style={{position:'absolute',top:14,left:14,width:6,height:6,background:C.accent,transform:'rotate(45deg)'}}/>}
                   <div style={{position:'relative',marginTop:isA?6:0}}>
                     <div style={{fontFamily:F.mono,fontSize:10,color:isA?C.accent:C.muted,letterSpacing:'0.22em',fontWeight:600,marginBottom:6}}>ПРОГРАММА {p.kanji}</div>
-                    <div style={{fontFamily:F.display,fontSize:26,color:C.ink,letterSpacing:'0.04em',fontWeight:500,lineHeight:1}}>{p.name}</div>
-                    <div style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:13,color:C.muted,marginTop:4}}>{p.romaji} · {p.sections} разделов</div>
+                    <div style={{fontFamily:F.serif,fontSize:26,color:C.ink,letterSpacing:'0.04em',fontWeight:500,lineHeight:1}}>{p.name}</div>
+                    <div style={{fontFamily:F.serif,fontStyle:'italic',fontSize:13,color:C.muted,marginTop:4}}>{p.romaji} · {p.sections} разделов</div>
                     <div style={{display:'flex',gap:16,marginTop:16}}>
                       {[['Всего',C.muted,p.techs],['Опубл.',C.success,p.published],['Черн.',C.goldSoft,p.drafts]].map(([lbl,clr,val])=>(
                         <div key={lbl}>
                           <div style={{fontFamily:F.mono,fontSize:9,color:clr,letterSpacing:'0.18em',textTransform:'uppercase'}}>{lbl}</div>
-                          <div style={{fontFamily:F.display,fontSize:22,color:C.ink,letterSpacing:'0.04em'}}>{val}</div>
+                          <div style={{fontFamily:F.serif,fontSize:22,color:C.ink,letterSpacing:'0.04em'}}>{val}</div>
                         </div>
                       ))}
                     </div>
@@ -2096,7 +2095,7 @@ function SectionIkkajo({showToast,isMobile}){
                   <div key={t.id} onClick={()=>selectTech(t)}
                     style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',borderBottom:i===filtered.length-1?'none':`1px solid ${C.hairline}`,cursor:'pointer',background:selectedId===t.id?C.surface2:'transparent',borderLeft:`2px solid ${selectedId===t.id?C.accent:'transparent'}`}}>
                     <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontFamily:F.ui,fontSize:13,color:C.ink,fontWeight:selectedId===t.id?500:400}}>{t.name_ru}</div>
+                      <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:selectedId===t.id?500:400}}>{t.name_ru}</div>
                       <div style={{fontFamily:F.mono,fontSize:9,color:C.muted,marginTop:2,letterSpacing:'0.06em'}}>{LEVEL_LABELS[t.kyu]||t.kyu}</div>
                     </div>
                     <div style={{display:'flex',gap:5}}>
@@ -2124,7 +2123,7 @@ function SectionIkkajo({showToast,isMobile}){
                   <div key={t.id} onClick={()=>selectTech(t)}
                     style={{padding:'12px 16px',borderBottom:i===filtered.length-1?'none':`1px solid ${C.hairline}`,cursor:'pointer',background:selectedId===t.id?C.bg2:'transparent',borderLeft:`2px solid ${selectedId===t.id?C.accent:'transparent'}`}}>
                     <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
-                      <span style={{fontFamily:F.ui,fontSize:13,color:C.ink,fontWeight:selectedId===t.id?600:400}}>{t.name_ru}</span>
+                      <span style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:selectedId===t.id?600:400}}>{t.name_ru}</span>
                       <div style={{display:'flex',alignItems:'center',gap:5}}>
                         <span style={{fontFamily:F.kanji,fontSize:12,color:C.accent,opacity:0.7}}>{LEVEL_KANJI_MAP[t.kyu]||'?'}</span>
                         <span style={{fontFamily:F.mono,fontSize:9,color:C.muted,letterSpacing:'0.06em'}}>{LEVEL_LABELS[t.kyu]||t.kyu}</span>
@@ -2215,7 +2214,7 @@ function SectionAccess({showToast,isMobile}){
           <div style={{background:C.surface,border:`1px solid ${C.hairline}`,padding:'22px 22px 20px'}}>
             <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16}}>
               <span style={{fontFamily:F.kanji,fontSize:13,color:C.gold,opacity:0.8}}>授</span>
-              <span style={{fontFamily:F.display,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>ВЫДАТЬ ДОСТУП</span>
+              <span style={{fontFamily:F.serif,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>ВЫДАТЬ ДОСТУП</span>
             </div>
             <div style={{display:'flex',flexDirection:'column',gap:12}}>
               <div>
@@ -2240,22 +2239,22 @@ function SectionAccess({showToast,isMobile}){
           <div style={{background:C.surface,border:`1px solid ${C.hairline}`,padding:'22px 22px 20px',minHeight:120}}>
             <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:16}}>
               <span style={{fontFamily:F.kanji,fontSize:13,color:C.copper,opacity:0.8}}>現</span>
-              <span style={{fontFamily:F.display,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>ТЕКУЩИЕ ДОСТУПЫ</span>
+              <span style={{fontFamily:F.serif,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>ТЕКУЩИЕ ДОСТУПЫ</span>
               {selectedUserId && <span style={{fontFamily:F.mono,fontSize:9,color:C.muted,letterSpacing:'0.1em'}}>{accessRows.length} записей</span>}
             </div>
             {!selectedUserId && (
-              <div style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:13,color:C.muted}}>Выберите пользователя слева</div>
+              <div style={{fontFamily:F.serif,fontStyle:'italic',fontSize:13,color:C.muted}}>Выберите пользователя слева</div>
             )}
             {selectedUserId && aLoading && <Spinner/>}
             {selectedUserId && !aLoading && accessRows.length===0 && (
-              <div style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:13,color:C.muted}}>Нет выданных доступов</div>
+              <div style={{fontFamily:F.serif,fontStyle:'italic',fontSize:13,color:C.muted}}>Нет выданных доступов</div>
             )}
             {selectedUserId && !aLoading && accessRows.map(row=>(
               <div key={row.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 0',borderBottom:`1px solid ${C.hairline}`,gap:8}}>
                 <div style={{display:'flex',alignItems:'center',gap:8}}>
                   <span style={{fontFamily:F.kanji,fontSize:13,color:row.type==='month'?C.gold:C.accent,opacity:0.8}}>{row.type==='month'?'月':'技'}</span>
                   <div>
-                    <div style={{fontFamily:F.ui,fontSize:13,color:C.ink}}>{refLabel[row.reference]||row.reference}</div>
+                    <div style={{fontFamily:F.mono,fontSize:13,color:C.ink}}>{refLabel[row.reference]||row.reference}</div>
                     {row.amount>0 && <div style={{fontFamily:F.mono,fontSize:10,color:C.muted}}>{row.amount?.toLocaleString()} ₽</div>}
                   </div>
                 </div>
@@ -2312,7 +2311,7 @@ function SectionKnowledge({showToast,isMobile}){
           <div style={{background:C.surface,border:`1px solid ${C.accent}`,padding:'24px 22px',marginBottom:20}}>
             <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,paddingBottom:14,borderBottom:`1px solid ${C.hairline}`}}>
               <span style={{fontFamily:F.kanji,fontSize:14,color:C.accent,opacity:0.85}}>智</span>
-              <span style={{fontFamily:F.display,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>
+              <span style={{fontFamily:F.serif,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>
                 {editId==='new'?'НОВЫЙ МАТЕРИАЛ':'РЕДАКТИРОВАНИЕ'}
               </span>
             </div>
@@ -2324,7 +2323,7 @@ function SectionKnowledge({showToast,isMobile}){
                 <div>
                   <Label>Категория (тег)</Label>
                   <select value={draft.tag||''} onChange={e=>setDraft(d=>({...d,tag:e.target.value||null}))}
-                    style={{width:'100%',padding:'8px 10px',border:`1px solid ${C.hairline}`,background:C.bg,fontSize:12,color:C.ink,appearance:'auto',fontFamily:F.ui}}>
+                    style={{width:'100%',padding:'8px 10px',border:`1px solid ${C.hairline}`,background:C.bg,fontSize:12,color:C.ink,appearance:'auto',fontFamily:F.mono}}>
                     <option value="">— без категории —</option>
                     <option value="история">История</option>
                     <option value="принципы">Принципы</option>
@@ -2355,7 +2354,7 @@ function SectionKnowledge({showToast,isMobile}){
                   }}
                 />
               ) : (
-                <div style={{padding:'10px 14px',background:C.bg,border:`1px solid ${C.hairline}`,fontFamily:F.displaySerif,fontStyle:'italic',fontSize:12,color:C.muted}}>
+                <div style={{padding:'10px 14px',background:C.bg,border:`1px solid ${C.hairline}`,fontFamily:F.serif,fontStyle:'italic',fontSize:12,color:C.muted}}>
                   Сначала сохраните материал, затем загрузите видео
                 </div>
               )}
@@ -2382,15 +2381,15 @@ function SectionKnowledge({showToast,isMobile}){
           {items.length===0 && (
             <div style={{padding:'48px 22px',textAlign:'center'}}>
               <div style={{fontFamily:F.kanji,fontSize:40,color:C.muted,opacity:0.3,marginBottom:8}}>智</div>
-              <div style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:14,color:C.muted}}>Нет материалов — добавьте первый</div>
+              <div style={{fontFamily:F.serif,fontStyle:'italic',fontSize:14,color:C.muted}}>Нет материалов — добавьте первый</div>
             </div>
           )}
           {items.map((item,ri)=>(
             <div key={item.id} onClick={()=>startEdit(item)}
               style={{display:'grid',gridTemplateColumns:'1fr 120px 80px 36px',borderBottom:ri<items.length-1?`1px solid ${C.hairline}`:'none',cursor:'pointer',background:editId===item.id?C.bg2:'transparent'}}>
               <div style={{padding:'14px 16px',minWidth:0}}>
-                <div style={{fontFamily:F.ui,fontSize:13,color:C.ink,fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.title||'Без названия'}</div>
-                {item.subtitle&&<div style={{fontFamily:F.ui,fontSize:11,color:C.muted,marginTop:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.subtitle}</div>}
+                <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.title||'Без названия'}</div>
+                {item.subtitle&&<div style={{fontFamily:F.mono,fontSize:11,color:C.muted,marginTop:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.subtitle}</div>}
                 {item.video_id&&<div style={{fontFamily:F.mono,fontSize:9,color:C.gold,marginTop:4,letterSpacing:'0.08em'}}>▶ видео</div>}
               </div>
               <div style={{padding:'14px 16px',display:'flex',alignItems:'center'}}>
@@ -2492,7 +2491,7 @@ function SectionComments({showToast,isMobile}){
                 <span style={{fontFamily:F.mono,fontSize:9,letterSpacing:'0.22em',color:C.muted,textTransform:'uppercase'}}>{m.label}</span>
                 <span style={{fontFamily:F.kanji,fontSize:14,color:C.copper,opacity:0.55}}>{m.kanji}</span>
               </div>
-              <div style={{fontFamily:F.display,fontSize:isMobile?26:34,color:C.ink,fontWeight:500,lineHeight:1,letterSpacing:'0.02em'}}>{m.value}</div>
+              <div style={{fontFamily:F.serif,fontSize:isMobile?26:34,color:C.ink,fontWeight:500,lineHeight:1,letterSpacing:'0.02em'}}>{m.value}</div>
               <div style={{marginTop:'auto',display:'flex',alignItems:'center',gap:6}}>
                 {m.delta&&<span style={{fontFamily:F.mono,fontSize:10,color:m.deltaDir==='up'?C.success:m.deltaDir==='down'?C.danger:C.muted}}>
                   {m.deltaDir==='up'?'▲':m.deltaDir==='down'?'▼':'·'} {m.delta}
@@ -2533,14 +2532,14 @@ function SectionComments({showToast,isMobile}){
                 <div style={{padding:isMobile?'14px 14px 10px':'16px 22px 16px 14px',minWidth:0}}>
                   <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8,flexWrap:'wrap'}}>
                     {isMobile&&<AvatarCircle letter={c.letter} size={28} color={isReported?C.danger:isSpam?C.muted:undefined}/>}
-                    <span style={{fontFamily:F.ui,fontSize:13,color:C.ink,fontWeight:600}}>{c.name}</span>
+                    <span style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:600}}>{c.name}</span>
                     <span style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.04em'}}>{c.email}</span>
                     <span style={{color:C.muted}}>·</span>
                     <span style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.04em'}}>{c.when}</span>
                     <span style={{color:C.muted}}>·</span>
                     <span style={{display:'inline-flex',alignItems:'center',gap:6}}>
                       <span style={{fontFamily:F.kanji,fontSize:13,color:C.accent,opacity:0.85}}>{c.atKanji}</span>
-                      <span style={{fontFamily:F.displaySerif,fontStyle:'italic',fontSize:12,color:C.ink2}}>{c.at}</span>
+                      <span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:12,color:C.ink2}}>{c.at}</span>
                     </span>
                     {/* state pill */}
                     {c.flag==='reported'&&<Pill2 kind="danger" dot>жалоба</Pill2>}
@@ -2548,7 +2547,7 @@ function SectionComments({showToast,isMobile}){
                     {!c.flag&&c.state==='pending' &&<Pill2 kind="accent"  dot>на модерации</Pill2>}
                     {!c.flag&&c.state==='approved'&&<Pill2 kind="success" dot>опубликован</Pill2>}
                   </div>
-                  <div style={{fontFamily:F.ui,fontSize:14,color:C.ink2,lineHeight:1.55,opacity:isSpam?0.55:1}}>{c.text}</div>
+                  <div style={{fontFamily:F.mono,fontSize:14,color:C.ink2,lineHeight:1.55,opacity:isSpam?0.55:1}}>{c.text}</div>
                   {c.replies>0&&(
                     <div style={{marginTop:10,fontFamily:F.mono,fontSize:10,color:C.success,letterSpacing:'0.1em'}}>✓ {c.replies} ответ сэнсэя</div>
                   )}

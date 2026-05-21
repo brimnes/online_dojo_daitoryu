@@ -27,7 +27,7 @@ export default function PaymentSuccessContent() {
   return (
     <div style={{
       minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      background: '#f5f3ee', fontFamily: "'Jost', sans-serif",
+      background: '#f5f3ee', fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     }}>
       <div style={{ textAlign: 'center', maxWidth: 400, padding: '0 24px' }}>
         <div style={{

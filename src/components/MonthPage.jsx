@@ -36,7 +36,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
   if (!monthsLoading && !month) {
     return (
       <div style={{ padding: '60px 32px', textAlign: 'center', background: C.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-        <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 20, color: C.accent }}>Месяц недоступен</div>
+        <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 20, color: C.accent }}>Месяц недоступен</div>
         <div style={{ fontSize: 13, color: C.muted, maxWidth: 320 }}>Этот раздел временно недоступен.</div>
         <button onClick={nav.dashboard}
           style={{ marginTop: 8, padding: '10px 24px', background: C.ink, color: '#fff', border: 'none', fontSize: 13, cursor: 'pointer' }}>
@@ -51,7 +51,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
     return (
       <div style={{ padding: '60px 32px', textAlign: 'center', background: C.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
         <div style={{ fontSize: 32 }}>🔒</div>
-        <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 20, color: C.accent }}>Нет доступа к этому месяцу</div>
+        <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 20, color: C.accent }}>Нет доступа к этому месяцу</div>
         <div style={{ fontSize: 13, color: C.muted, maxWidth: 320 }}>Приобретите доступ к разделу «{month?.label}» в личном кабинете.</div>
         <button onClick={nav.dashboard}
           style={{ marginTop: 8, padding: '10px 24px', background: C.ink, color: '#fff', border: 'none', fontSize: 13, cursor: 'pointer' }}>
@@ -82,7 +82,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
         }}>
           <button onClick={nav.back} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 24, color: C.accent, padding: '0 4px', display: 'flex', alignItems: 'center', minWidth: 36, minHeight: 44 }}>‹</button>
           <span style={{
-            fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+            fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
             fontSize: 14, letterSpacing: '0.12em', color: C.ink,
             flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             textTransform: 'uppercase',
@@ -100,13 +100,13 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
         }}>
           <button onClick={nav.back} style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            fontFamily: "var(--font-jost), 'Jost', sans-serif",
+            fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
             fontSize: 11, color: C.accent, letterSpacing: '0.1em',
             padding: '4px 0', minHeight: 44, display: 'flex', alignItems: 'center',
           }}>← МЕСЯЦЫ 2026</button>
           <span style={{ color: C.border }}>/</span>
           <span style={{
-            fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+            fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
             fontSize: 12, color: C.ink, letterSpacing: '0.18em', fontWeight: 600,
           }}>
             {month?.label?.toUpperCase()}{monthSub ? ` · ${monthSub.toUpperCase()}` : ''}
@@ -151,7 +151,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
 
               {/* Title */}
               <div style={{
-                fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+                fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
                 fontSize: isMobile ? 48 : 64,
                 letterSpacing: '0.04em', color: C.ink,
                 lineHeight: 1, fontWeight: 400, marginTop: isMobile ? 8 : 12,
@@ -176,7 +176,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
               }}>прогресс месяца</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 8 }}>
                 <span style={{
-                  fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+                  fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
                   fontSize: 36, color: C.ink, letterSpacing: '0.04em',
                 }}>{watchedCount}</span>
                 <span style={{
@@ -206,7 +206,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
                   fontSize: 10, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase',
                 }}>прогресс</span>
                 <span style={{
-                  fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+                  fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
                   fontSize: 18, color: C.accent, letterSpacing: '0.04em',
                 }}>{watchedCount} / {safelessons.length}</span>
               </div>
@@ -282,7 +282,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
         }}>
         {/* Number */}
         <span style={{
-          fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+          fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
           fontSize: 22, letterSpacing: '0.04em', minWidth: 30,
           color: isCurrent ? C.accent : watched ? C.muted : C.ink2,
         }}>{String(lesson.num).padStart(2, '0')}</span>
@@ -317,7 +317,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
 
         {/* Text */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 14, fontWeight: 500, color: C.ink, lineHeight: 1.35 }}>{lesson.title}</div>
+          <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 14, fontWeight: 500, color: C.ink, lineHeight: 1.35 }}>{lesson.title}</div>
           <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 11, color: C.accent, marginTop: 2 }}>{lesson.subtitle}</div>
         </div>
 
@@ -356,7 +356,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 14 }}>
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{
-            fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+            fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
             fontSize: 22, letterSpacing: '0.04em',
             color: watched ? C.muted : isCurrent ? C.accent : C.ink2,
           }}>{String(lesson.num).padStart(2, '0')}</span>
@@ -420,7 +420,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
 
       {/* Meta */}
       <div style={{ marginTop: 14 }}>
-        <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 15, fontWeight: 500, color: C.ink, lineHeight: 1.4, marginBottom: 4 }}>{lesson.title}</div>
+        <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 15, fontWeight: 500, color: C.ink, lineHeight: 1.4, marginBottom: 4 }}>{lesson.title}</div>
         <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 12, color: C.accent }}>{lesson.subtitle}</div>
       </div>
 

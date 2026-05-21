@@ -163,7 +163,7 @@ export function Eyebrow({ children, color = C.muted, diamond = false, style }) {
 export function DisplayTitle({ children, size = 32, color = C.ink, style }) {
   return (
     <div style={{
-      fontFamily: 'var(--font-cormorant-sc), var(--font-cormorant), "Cormorant Garamond", serif',
+      fontFamily: 'var(--font-cormorant), "Cormorant Garamond", serif',
       fontSize: size,
       fontWeight: 400,
       letterSpacing: '0.05em',

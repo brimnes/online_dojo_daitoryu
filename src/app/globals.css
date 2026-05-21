@@ -9,13 +9,13 @@
 html, body {
   background: #e6e0d2;
   color: #15120e;
-  font-family: var(--font-jost), 'Jost', sans-serif;
+  font-family: var(--font-cormorant), 'Cormorant Garamond', serif;
   -webkit-font-smoothing: antialiased;
   font-size: 15px;
 }
 
 button, input, textarea, select {
-  font-family: var(--font-jost), 'Jost', sans-serif;
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
   cursor: pointer;
 }
 
@@ -58,29 +58,31 @@ iframe                { display: block; }
    ─────────────────────────────────────────────────────────────── */
 
 /* ── Font utilities ── */
-.font-display   { font-family: var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif; }
-.font-ui        { font-family: var(--font-jost), 'Jost', sans-serif; }
+.font-display   { font-family: var(--font-cormorant), 'Cormorant Garamond', serif; }
+.font-ui        { font-family: var(--font-mono), 'JetBrains Mono', monospace; }
 .font-editorial { font-family: var(--font-cormorant), 'Cormorant Garamond', Georgia, serif; }
 
 /* ── Section / page titles — Cormorant SC + crimson ── */
 .section-title {
-  font-family: var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif;
+  font-family: var(--font-cormorant), 'Cormorant Garamond', serif;
   color: #9e2f1f;
   letter-spacing: 0.06em;
   line-height: 1.15;
+  text-transform: uppercase;
 }
 
-/* ── Sub-section headings — Cormorant SC, темнее ── */
+/* ── Sub-section headings — Cormorant Garamond uppercase ── */
 .section-subtitle {
-  font-family: var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif;
+  font-family: var(--font-cormorant), 'Cormorant Garamond', serif;
   color: #15120e;
-  letter-spacing: 0.04em;
+  letter-spacing: 0.06em;
   line-height: 1.2;
+  text-transform: uppercase;
 }
 
 /* ── Brand / logo text ── */
 .brand-text {
-  font-family: var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif;
+  font-family: var(--font-cormorant), 'Cormorant Garamond', serif;
   letter-spacing: 0.15em;
   text-transform: uppercase;
   color: #9e2f1f;
@@ -105,7 +107,7 @@ iframe                { display: block; }
 
 /* ── UI label / nav text ── */
 .ui-label {
-  font-family: var(--font-jost), 'Jost', sans-serif;
+  font-family: var(--font-mono), 'JetBrains Mono', monospace;
   font-size: 12px;
   letter-spacing: 0.05em;
 }
@@ -128,7 +130,7 @@ iframe                { display: block; }
 
 /* ── h1/h2 defaults for pages that use semantic HTML ── */
 h1, h2 {
-  font-family: var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif;
+  font-family: var(--font-cormorant), 'Cormorant Garamond', serif;
   line-height: 1.15;
 }
 

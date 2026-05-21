@@ -42,13 +42,13 @@ export const C = {
 };
 
 // Font tokens — единая typography system
-// serif    → hero titles, section titles, technique names (Cormorant Garamond)
-// serifSC  → одно-два hero слова, выделение (Cormorant SC)
-// mono     → labels, UI, metadata, breadcrumbs, UPPERCASE (JetBrains Mono)
-// sans     → body text (Jost)
+// serif → hero titles, section titles, technique names, body text (Cormorant Garamond)
+// mono  → labels, UI, metadata, breadcrumbs, UPPERCASE (JetBrains Mono)
+// kanji → японские иероглифы (Noto Serif JP)
+// sys   → системный sans для форм/inputs
 export const F = {
-  serif:   "var(--font-cormorant), 'Cormorant Garamond', serif",
-  serifSC: "var(--font-cormorant-sc), 'Cormorant SC', serif",
-  mono:    "var(--font-mono), 'JetBrains Mono', monospace",
-  sans:    "var(--font-jost), 'Jost', sans-serif",
+  serif: "var(--font-cormorant), 'Cormorant Garamond', serif",
+  mono:  "var(--font-mono), 'JetBrains Mono', monospace",
+  kanji: "var(--font-noto), 'Noto Serif JP', 'Hiragino Mincho Pro', serif",
+  sys:   "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 };

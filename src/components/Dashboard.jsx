@@ -60,7 +60,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, init
             gap: 10,
           }}>
             <TakedaMon size={26} color={C.accent} />
-            <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 15, letterSpacing: '0.06em', color: C.ink, flex: 1 }}>
+            <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, letterSpacing: '0.06em', color: C.ink, flex: 1 }}>
               {TABS.find(t => t.id === tab)?.label}
             </span>
             {curLv && (
@@ -74,7 +74,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, init
         {/* Desktop header */}
         {!isMobile && (
           <header style={{ display: 'flex', alignItems: 'center', padding: '14px 36px', background: C.surface, borderBottom: `1px solid ${C.border}`, position: 'sticky', top: 0, zIndex: 10 }}>
-            <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 16, letterSpacing: '0.06em', color: C.ink, flex: 1 }}>
+            <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 16, letterSpacing: '0.06em', color: C.ink, flex: 1 }}>
               {TABS.find(t => t.id === tab)?.label}
             </span>
             {curLv && (
@@ -115,7 +115,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, init
           <div onClick={e => e.stopPropagation()}
             style={{ background: C.white, border: `1px solid ${C.border}`, padding: isMobile ? '32px 24px' : '44px 40px', width: '100%', maxWidth: 380, textAlign: 'center', boxShadow: '0 8px 40px rgba(0,0,0,0.12)' }}>
             <div style={{ fontFamily: "'Noto Serif JP', serif", fontSize: 48, color: C.gold, lineHeight: 1, marginBottom: 12 }}>{modal.kanji}</div>
-            <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 18, fontWeight: 600, color: '#1a1a1a', marginBottom: 4 }}>{modal.label}</div>
+            <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 18, fontWeight: 600, color: '#1a1a1a', marginBottom: 4 }}>{modal.label}</div>
             <div style={{ fontSize: 11, color: C.muted, marginBottom: 12 }}>{modal.sublabel} · {modal.techniques} техник</div>
             <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 36, fontWeight: 300, color: C.dark, marginBottom: 6 }}>{modal.price}</div>
             <p style={{ fontSize: 11, color: '#888', lineHeight: 1.7, marginBottom: 20 }}>Разовая оплата — постоянный доступ без ограничений.</p>
@@ -317,7 +317,7 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
         </span>
         {m.current && (
           <span style={{
-            fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+            fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
             fontSize: 9, letterSpacing: '0.28em',
             color: C.accent, textTransform: 'uppercase', fontWeight: 600,
             padding: '3px 9px', border: `1px solid ${C.accent}`,
@@ -330,7 +330,7 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
 
       {/* Month title — Cormorant SC large */}
       <div style={{
-        fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+        fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
         fontSize: isMobile ? 26 : 32,
         letterSpacing: '0.06em', textTransform: 'uppercase',
         color: locked ? C.muted : C.ink,
@@ -348,7 +348,7 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
 
       {/* Description (desktop only) */}
       {!isMobile && (m.description || m.desc) && (m.subtitle !== (m.description || m.desc)) && (
-        <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 12, color: C.muted, lineHeight: 1.55, marginTop: 4, flex: 1, position: 'relative' }}>
+        <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 12, color: C.muted, lineHeight: 1.55, marginTop: 4, flex: 1, position: 'relative' }}>
           {m.description || m.desc}
         </div>
       )}
@@ -568,7 +568,7 @@ function TabKnowledge({ nav, isMobile }) {
                         )}
                       </div>
                       <div>
-                        <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant SC', serif", fontSize: 20, color: C.ink, letterSpacing: '0.02em', fontWeight: 500 }}>{item.title}</div>
+                        <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 20, color: C.ink, letterSpacing: '0.02em', fontWeight: 500 }}>{item.title}</div>
                         {item.subtitle && <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 14, color: C.muted, marginTop: 4 }}>{item.subtitle}</div>}
                       </div>
                       <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
@@ -723,13 +723,13 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
             <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.2em', color: v.muted, textTransform: 'uppercase' }}>{sec.programLabel}</span>
             <span style={{ width: 20, height: 1, background: v.hairline, flexShrink: 0 }} />
-            <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 10, letterSpacing: '0.18em', color: isOpen ? C.goldLight : v.ink2, fontWeight: 600 }}>{sec.program}</span>
+            <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 10, letterSpacing: '0.18em', color: isOpen ? C.goldLight : v.ink2, fontWeight: 600 }}>{sec.program}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 14 }}>
-            <h2 style={{ margin: 0, fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 44, lineHeight: 0.95, letterSpacing: '0.04em', color: v.ink, fontWeight: 500, textTransform: 'uppercase' }}>{sec.label}</h2>
+            <h2 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 44, lineHeight: 0.95, letterSpacing: '0.04em', color: v.ink, fontWeight: 500, textTransform: 'uppercase' }}>{sec.label}</h2>
             {sec.nameRomaji && <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 18, color: v.muted }}>{sec.nameRomaji}</span>}
           </div>
-          <p style={{ margin: 0, fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 13, color: v.ink2, lineHeight: 1.6, maxWidth: 480 }}>{sec.desc}</p>
+          <p style={{ margin: 0, fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, color: v.ink2, lineHeight: 1.6, maxWidth: 480 }}>{sec.desc}</p>
           <div style={{ display: 'flex', borderTop: `1px solid ${v.hairline}`, paddingTop: 12, marginTop: 4 }}>
             {[
               { label: 'Техник',   val: sec.techniques },
@@ -739,7 +739,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
             ].map((s, i, arr) => (
               <div key={s.label} style={{ flex: 1, paddingLeft: i === 0 ? 0 : 14, paddingRight: 14, borderLeft: i > 0 ? `1px solid ${v.hairline}` : 'none' }}>
                 <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.16em', color: v.muted, textTransform: 'uppercase', marginBottom: 3 }}>{s.label}</div>
-                <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 17, fontWeight: 500, color: v.ink }}>{s.val}</div>
+                <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 17, fontWeight: 500, color: v.ink }}>{s.val}</div>
               </div>
             ))}
           </div>
@@ -766,7 +766,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
             {sec.accessState === 'purchase' && (
               <div style={{ marginTop: 22 }}>
                 <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 5 }}>Стоимость</div>
-                <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 28, color: v.ink, fontWeight: 500 }}>{sec.price}</div>
+                <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 28, color: v.ink, fontWeight: 500 }}>{sec.price}</div>
                 <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 11, color: v.muted, marginTop: 3 }}>навсегда · без подписки</div>
               </div>
             )}
@@ -774,13 +774,13 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
             {isSoon && (
               <div style={{ marginTop: 22 }}>
                 <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 5 }}>Релиз</div>
-                <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 16, color: v.ink, fontWeight: 500, textTransform: 'uppercase' }}>осень 2026</div>
+                <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 16, color: v.ink, fontWeight: 500, textTransform: 'uppercase' }}>осень 2026</div>
                 <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 11, color: v.muted, marginTop: 3 }}>программа разрабатывается</div>
               </div>
             )}
           </div>
 
-          <button onClick={() => handleCta(sec)} disabled={isSoon || isLocked} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 46, padding: '12px 16px', background: v.ctaBg, color: v.ctaColor, border: `1px solid ${v.ctaBorder}`, fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 11, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', cursor: (isSoon || isLocked) ? 'default' : 'pointer', opacity: (isSoon || isLocked) ? 0.65 : 1 }}>
+          <button onClick={() => handleCta(sec)} disabled={isSoon || isLocked} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 46, padding: '12px 16px', background: v.ctaBg, color: v.ctaColor, border: `1px solid ${v.ctaBorder}`, fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, fontWeight: 600, letterSpacing: '0.18em', textTransform: 'uppercase', cursor: (isSoon || isLocked) ? 'default' : 'pointer', opacity: (isSoon || isLocked) ? 0.65 : 1 }}>
             {ctaLabel(sec)}
           </button>
         </div>
@@ -813,7 +813,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
               <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.18em', color: v.muted }}>{sec.num} / {String(allSecs.length).padStart(2, '0')}</span>
               {sec.nameJa && <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 10, color: v.muted }}>· {sec.nameJa}</span>}
             </div>
-            <h3 style={{ margin: 0, fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 26, letterSpacing: '0.04em', color: v.ink, fontWeight: 500, lineHeight: 0.95, textTransform: 'uppercase' }}>{sec.label}</h3>
+            <h3 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 26, letterSpacing: '0.04em', color: v.ink, fontWeight: 500, lineHeight: 0.95, textTransform: 'uppercase' }}>{sec.label}</h3>
             {sec.nameRomaji && (
               <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 12, color: v.muted }}>{sec.nameRomaji} · {sec.program}</div>
             )}
@@ -824,7 +824,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
             <span style={{ width: 4, height: 4, borderRadius: '50%', background: v.tagFg }} />
             {isOpen ? 'Открыт' : isSoon ? 'Скоро' : isLocked ? 'Нет доступа' : 'К покупке'}
           </div>
-          <p style={{ margin: '0 0 12px', fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 13, color: v.ink2, lineHeight: 1.55 }}>{sec.desc}</p>
+          <p style={{ margin: '0 0 12px', fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, color: v.ink2, lineHeight: 1.55 }}>{sec.desc}</p>
           <div style={{ display: 'flex', padding: '10px 0', borderTop: `1px solid ${v.hairline}`, borderBottom: `1px solid ${v.hairline}`, marginBottom: 14 }}>
             {[
               { label: 'Техник', val: sec.techniques },
@@ -833,23 +833,23 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
             ].map((s, i) => (
               <div key={s.label} style={{ flex: 1, paddingLeft: i === 0 ? 0 : 12, borderLeft: i > 0 ? `1px solid ${v.hairline}` : 'none' }}>
                 <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 2 }}>{s.label}</div>
-                <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 16, color: v.ink, fontWeight: 500 }}>{s.val}</div>
+                <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 16, color: v.ink, fontWeight: 500 }}>{s.val}</div>
               </div>
             ))}
           </div>
           {sec.accessState === 'purchase' && (
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
               <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Стоимость</span>
-              <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 22, color: v.ink, fontWeight: 500 }}>{sec.price}</span>
+              <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 22, color: v.ink, fontWeight: 500 }}>{sec.price}</span>
             </div>
           )}
           {isSoon && (
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
               <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Релиз</span>
-              <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 13, color: v.ink, fontWeight: 500, textTransform: 'uppercase' }}>осень 2026</span>
+              <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 13, color: v.ink, fontWeight: 500, textTransform: 'uppercase' }}>осень 2026</span>
             </div>
           )}
-          <button onClick={() => handleCta(sec)} disabled={isSoon || isLocked} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 48, padding: '13px 16px', background: v.ctaBg, color: v.ctaColor, border: `1px solid ${v.ctaBorder}`, fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 12, fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', cursor: (isSoon || isLocked) ? 'default' : 'pointer', opacity: (isSoon || isLocked) ? 0.65 : 1 }}>
+          <button onClick={() => handleCta(sec)} disabled={isSoon || isLocked} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 48, padding: '13px 16px', background: v.ctaBg, color: v.ctaColor, border: `1px solid ${v.ctaBorder}`, fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 12, fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', cursor: (isSoon || isLocked) ? 'default' : 'pointer', opacity: (isSoon || isLocked) ? 0.65 : 1 }}>
             {ctaLabel(sec)}
           </button>
         </div>
@@ -870,7 +870,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 12, color: C.muted, letterSpacing: '0.18em' }}>技 · 大東流</span>
           <span style={{ color: C.hairline2, fontSize: 13 }}>/</span>
-          <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 11, letterSpacing: '0.18em', color: C.ink, fontWeight: 600 }}>БАЗА ТЕХНИК</span>
+          <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.18em', color: C.ink, fontWeight: 600 }}>БАЗА ТЕХНИК</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
           <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.12em' }}>
@@ -890,14 +890,14 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
             <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 160, lineHeight: 0.85, color: C.accent, opacity: 0.1, flexShrink: 0, marginLeft: -8, marginBottom: -8 }}>技</div>
             <div style={{ flex: 1, paddingBottom: 4 }}>
               <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 12 }}>03 · БАЗА ТЕХНИК · ПРОГРАММЫ ШКОЛЫ</div>
-              <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 60, lineHeight: 0.9, letterSpacing: '0.04em', color: C.ink, fontWeight: 400, textTransform: 'uppercase' }}>База техник</h1>
+              <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 60, lineHeight: 0.9, letterSpacing: '0.04em', color: C.ink, fontWeight: 400, textTransform: 'uppercase' }}>База техник</h1>
               <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 16, color: C.muted, marginTop: 14, maxWidth: 540, lineHeight: 1.55 }}>
                 Полное собрание программ Дайто-рю — от ученических кю до старших данов. Каждый раздел открывается отдельно.
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, paddingBottom: 8, flexShrink: 0 }}>
               <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 10, color: C.muted, letterSpacing: '0.22em' }}>進度</span>
-              <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 42, color: C.accent, lineHeight: 1, fontWeight: 500 }}>
+              <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 42, color: C.accent, lineHeight: 1, fontWeight: 500 }}>
                 — <span style={{ fontSize: 21, color: C.ink2 }}>/ {totalTechs}</span>
               </div>
               <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.18em', color: C.muted, textTransform: 'uppercase' }}>техник всего</span>
@@ -915,7 +915,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 80, lineHeight: 0.85, color: C.accent, opacity: 0.13, flexShrink: 0 }}>技</span>
           <div style={{ paddingBottom: 4 }}>
             <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.22em', color: C.muted, textTransform: 'uppercase', marginBottom: 8 }}>03 · БАЗА ТЕХНИК</div>
-            <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 30, color: C.ink, fontWeight: 400, textTransform: 'uppercase', lineHeight: 0.95 }}>База<br />техник</h1>
+            <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 30, color: C.ink, fontWeight: 400, textTransform: 'uppercase', lineHeight: 0.95 }}>База<br />техник</h1>
           </div>
         </div>
       )}
@@ -930,7 +930,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
           <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: isMobile ? 22 : 28, color: C.hairline2, lineHeight: 1 }}>四 五 六 …</span>
           <div>
-            <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: isMobile ? 12 : 13, letterSpacing: '0.16em', color: C.ink2, textTransform: 'uppercase', fontWeight: 500 }}>Ёнкаджо · Гокаджо · Роккаджо</div>
+            <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: isMobile ? 12 : 13, letterSpacing: '0.16em', color: C.ink2, textTransform: 'uppercase', fontWeight: 500 }}>Ёнкаджо · Гокаджо · Роккаджо</div>
             <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 12, color: C.muted, marginTop: 3 }}>Старшие даны — программа разрабатывается</div>
           </div>
         </div>
@@ -981,7 +981,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
     <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: compact ? '16px' : '22px', position: 'relative', overflow: 'hidden' }}>
       <div style={{ position: 'absolute', top: compact ? 8 : 12, right: compact ? 10 : 14, fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: compact ? 48 : 56, color: C.goldSoft, opacity: 0.45, lineHeight: 1 }}>{curKanji}</div>
       <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: compact ? 6 : 8 }}>Текущий уровень</div>
-      <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: compact ? 38 : 52, color: C.ink, letterSpacing: '0.04em', lineHeight: 1, marginBottom: 4 }}>
+      <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: compact ? 38 : 52, color: C.ink, letterSpacing: '0.04em', lineHeight: 1, marginBottom: 4 }}>
         {curLv?.label?.toUpperCase() || '—'}
       </div>
       <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 13, color: C.muted, marginBottom: compact ? 12 : 16 }}>
@@ -1019,7 +1019,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 12, color: C.muted, letterSpacing: '0.15em' }}>個人</span>
           <span style={{ color: C.hairline2, fontSize: 13 }}>/</span>
-          <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 11, letterSpacing: '0.18em', color: C.ink, fontWeight: 600 }}>ЛИЧНЫЙ КАБИНЕТ</span>
+          <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.18em', color: C.ink, fontWeight: 600 }}>ЛИЧНЫЙ КАБИНЕТ</span>
         </div>
         {usr.joinedAt && (
           <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
@@ -1034,7 +1034,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
           {/* portrait placeholder */}
           <div style={{ background: C.ink, minHeight: 240, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, position: 'relative', overflow: 'hidden' }}>
             <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(45deg, #1a1510 0, #1a1510 2px, #0f0c08 2px, #0f0c08 10px)', opacity: 0.7 }} />
-            <div style={{ position: 'relative', zIndex: 1, width: 56, height: 56, borderRadius: '50%', border: `1px solid rgba(200,169,74,0.4)`, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 24, color: C.goldLight }}>
+            <div style={{ position: 'relative', zIndex: 1, width: 56, height: 56, borderRadius: '50%', border: `1px solid rgba(200,169,74,0.4)`, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 24, color: C.goldLight }}>
               {(usr.name || '?')[0].toUpperCase()}
             </div>
             <div style={{ position: 'relative', zIndex: 1, fontFamily: "var(--font-mono), monospace", fontSize: 9, color: 'rgba(200,169,74,0.45)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Портрет студента</div>
@@ -1046,7 +1046,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
               <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', color: C.gold, fontSize: 12 }}>04</span>
               Студент додзё
             </div>
-            <h2 style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 44, color: C.ink, letterSpacing: '0.04em', fontWeight: 400, lineHeight: 0.92, textTransform: 'uppercase', marginBottom: 12 }}>
+            <h2 style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 44, color: C.ink, letterSpacing: '0.04em', fontWeight: 400, lineHeight: 0.92, textTransform: 'uppercase', marginBottom: 12 }}>
               {(usr.name || 'Студент').toUpperCase()}
             </h2>
             <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 15, color: C.muted, marginBottom: 18 }}>
@@ -1070,7 +1070,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
             <div style={{ position: 'relative', flexShrink: 0 }}>
-              <div style={{ width: 64, height: 64, borderRadius: '50%', background: C.ink, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 22, color: C.goldLight }}>
+              <div style={{ width: 64, height: 64, borderRadius: '50%', background: C.ink, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 22, color: C.goldLight }}>
                 {(usr.name || '?')[0].toUpperCase()}
               </div>
               <span style={{ position: 'absolute', bottom: -4, right: -4, width: 22, height: 22, borderRadius: '50%', background: C.accent, color: '#fff', fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
@@ -1078,7 +1078,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
               </span>
             </div>
             <div>
-              <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 22, color: C.ink, fontWeight: 400, textTransform: 'uppercase', lineHeight: 0.95 }}>
+              <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 22, color: C.ink, fontWeight: 400, textTransform: 'uppercase', lineHeight: 0.95 }}>
                 {(usr.name || 'Студент').toUpperCase()}
               </div>
               <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 13, color: C.muted, marginTop: 4 }}>{usr.email}</div>
@@ -1097,7 +1097,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
               background: 'none', border: 'none',
               borderBottom: `2px solid ${sub === t.id ? C.accent : 'transparent'}`,
               color: sub === t.id ? C.ink : C.muted,
-              fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif",
+              fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
               fontSize: isMobile ? 12 : 12, letterSpacing: '0.14em', textTransform: 'uppercase',
               cursor: 'pointer', fontWeight: sub === t.id ? 600 : 400,
               marginBottom: -1, whiteSpace: 'nowrap', minHeight: 48,
@@ -1169,7 +1169,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
                       <div key={g.level} style={{ padding: '13px 14px', display: 'flex', alignItems: 'center', gap: 12, borderBottom: gi < grouped.length - 1 ? `1px solid ${C.border}` : 'none' }}>
                         <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 22, color: C.accent, opacity: 0.7, minWidth: 26, textAlign: 'center' }}>{kanjiShort}</span>
                         <div style={{ flex: 1 }}>
-                          <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 14, letterSpacing: '0.04em', color: C.ink, fontWeight: 500 }}>{lv?.label?.toUpperCase()}</div>
+                          <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 14, letterSpacing: '0.04em', color: C.ink, fontWeight: 500 }}>{lv?.label?.toUpperCase()}</div>
                           <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 12, color: C.muted, marginTop: 1 }}>
                             {bestAttempt?.comment || ''}{bestAttempt?.date ? ` · ${bestAttempt.date}` : ''}
                           </div>
@@ -1183,7 +1183,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
                     <div key={g.level} style={{ display: 'grid', gridTemplateColumns: '140px 110px 1fr 120px', padding: '17px 22px', alignItems: 'center', gap: 16, borderBottom: gi < grouped.length - 1 ? `1px solid ${C.hairline2}` : 'none' }}>
                       <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
                         <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 20, color: C.accent, opacity: 0.7 }}>{kanjiFull}</span>
-                        <span style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 16, color: C.ink, letterSpacing: '0.04em', fontWeight: 500 }}>{lv?.label?.toUpperCase()}</span>
+                        <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 16, color: C.ink, letterSpacing: '0.04em', fontWeight: 500 }}>{lv?.label?.toUpperCase()}</span>
                       </div>
                       <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.06em' }}>{bestAttempt?.date || '—'}</span>
                       <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 14, color: C.ink2 }}>{bestAttempt?.comment || '—'}</span>
@@ -1210,7 +1210,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
             <div key={p.id} style={{ display: 'grid', gridTemplateColumns: isMobile ? 'auto 1fr auto' : '90px 1fr 100px', padding: '13px 18px', background: C.surface, borderBottom: `1px solid ${C.border}`, alignItems: 'center', gap: 8 }}>
               <span style={{ color: C.muted, fontFamily: "var(--font-mono), monospace", fontSize: 10, whiteSpace: 'nowrap' }}>{p.date}</span>
               <span style={{ color: C.ink, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.desc}</span>
-              <span style={{ color: C.ink, fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 15, textAlign: 'right', whiteSpace: 'nowrap' }}>{p.amount}</span>
+              <span style={{ color: C.ink, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, textAlign: 'right', whiteSpace: 'nowrap' }}>{p.amount}</span>
             </div>
           ))}
         </div>
@@ -1390,7 +1390,7 @@ function TabUnlockAccess({ userAccess, isMobile }) {
 
   const sectionStyle = { marginBottom: 24 };
   const headerStyle  = { padding: '10px 0', marginBottom: 12, borderBottom: `1px solid ${C.border}` };
-  const labelStyle   = { fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: isMobile ? 17 : 20, fontWeight: 400, color: C.ink, letterSpacing: '0.04em' };
+  const labelStyle   = { fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: isMobile ? 17 : 20, fontWeight: 400, color: C.ink, letterSpacing: '0.04em' };
 
   return (
     <div style={{ border: `1px solid ${C.border}`, borderTop: 'none', background: C.surface, padding: isMobile ? '16px' : '20px 24px' }}>
@@ -1406,7 +1406,7 @@ function TabUnlockAccess({ userAccess, isMobile }) {
             const has = hasMonthAccess(ua, p.reference);
             return (
               <div key={p.id} style={{ padding: '14px', background: has ? `${C.success}10` : C.surface2, border: `1px solid ${has ? C.success + '40' : C.border}` }}>
-                <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 15, fontWeight: 500, color: C.ink, marginBottom: 4 }}>{p.title}</div>
+                <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 15, fontWeight: 500, color: C.ink, marginBottom: 4 }}>{p.title}</div>
                 <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.5, minHeight: 32 }}>{p.description}</div>
                 <CardBtn product={p} hasAccess={has} />
               </div>
@@ -1426,7 +1426,7 @@ function TabUnlockAccess({ userAccess, isMobile }) {
             const has = hasFull || hasIkkajoSectionAccess(ua, p.reference);
             return (
               <div key={p.id} style={{ padding: '14px', background: has ? `${C.success}10` : C.surface2, border: `1px solid ${has ? C.success + '40' : C.border}` }}>
-                <div style={{ fontFamily: "var(--font-jost), 'Jost', sans-serif", fontSize: 15, fontWeight: 500, color: C.ink, marginBottom: 4 }}>{p.title}</div>
+                <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 15, fontWeight: 500, color: C.ink, marginBottom: 4 }}>{p.title}</div>
                 <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.5 }}>{p.description}</div>
                 <CardBtn product={p} hasAccess={has} />
               </div>
@@ -1443,7 +1443,7 @@ function TabUnlockAccess({ userAccess, isMobile }) {
             <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.gold, marginLeft: 12, background: `${C.gold}15`, border: `1px solid ${C.goldBorder}`, padding: '2px 10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Выгодно</span>
           </div>
           <div style={{ padding: '18px', background: hasFull ? `${C.success}10` : C.surface2, border: `1px solid ${hasFull ? C.success + '40' : C.goldBorder}` }}>
-            <div style={{ fontFamily: "var(--font-cormorant-sc), var(--font-cormorant), serif", fontSize: 20, fontWeight: 400, color: C.ink, marginBottom: 8, letterSpacing: '0.04em' }}>{ikkajoFull.title}</div>
+            <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 20, fontWeight: 400, color: C.ink, marginBottom: 8, letterSpacing: '0.04em' }}>{ikkajoFull.title}</div>
             <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.6, marginBottom: 12 }}>{ikkajoFull.description}</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 4 }}>
               {IKKAJO_SECTIONS.map(s => (

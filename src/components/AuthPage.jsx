@@ -70,7 +70,7 @@ function Input({ value, onChange, placeholder, type='text', error }) {
         background: C.surface,
         border:`1px solid ${error?C.red:focused?C.accent:C.border}`,
         outline:'none', color:C.ink, width:'100%',
-        fontFamily:"'Jost',sans-serif",
+        fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
         transition:'border-color 0.15s',
         borderRadius: 0,
       }}
@@ -90,7 +90,7 @@ function Textarea({ value, onChange, placeholder, rows=4 }) {
         background: C.surface,
         border:`1px solid ${focused?C.accent:C.border}`,
         outline:'none', color:C.dark, width:'100%',
-        fontFamily:"'Jost',sans-serif", lineHeight:1.7,
+        fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", lineHeight:1.7,
         resize:'vertical', transition:'border-color 0.15s',
       }}
     />
@@ -108,7 +108,7 @@ function Select({ value, onChange, options }) {
         background: C.surface,
         border:`1px solid ${focused?C.accent:C.border}`,
         outline:'none', color:value?C.dark:C.muted, width:'100%',
-        fontFamily:"'Jost',sans-serif", cursor:'pointer',
+        fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", cursor:'pointer',
         transition:'border-color 0.15s', appearance:'none',
         backgroundImage:`url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6'%3E%3Cpath d='M0 0l5 6 5-6z' fill='%23999'/%3E%3C/svg%3E")`,
         backgroundRepeat:'no-repeat', backgroundPosition:'right 16px center',
@@ -141,7 +141,7 @@ export default function AuthPage({ onSuccess }) {
     <div style={{
       minHeight:'100vh', background:C.bg,
       display:'flex', alignItems:'stretch',
-      fontFamily:"'Jost',sans-serif",
+      fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     }}>
 
       {/* ── Левая героическая панель (desktop only) ── */}
@@ -357,7 +357,7 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
 
       {/* Heading */}
       <div style={{
-        fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+        fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
         fontSize: 42, fontWeight: 400, color: C.ink,
         marginBottom: 10, letterSpacing: '0.03em', lineHeight: 1.1,
       }}>Добро пожаловать</div>
@@ -408,7 +408,7 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
             padding:'16px', background: loading ? C.muted : C.accent,
             color:'#f1ece0', border:'none', fontSize:13,
             cursor: loading ? 'default' : 'pointer',
-            fontFamily:"'Jost',sans-serif", fontWeight:600,
+            fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontWeight:600,
             letterSpacing:'0.12em', transition:'background 0.15s',
             minHeight:52, textTransform:'uppercase',
           }}>
@@ -452,7 +452,7 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
                 padding:'14px', background:'transparent',
                 color:C.ink2, border:`1px solid ${C.border}`,
                 fontSize:12, cursor:'pointer',
-                fontFamily:"'Jost',sans-serif", fontWeight:500,
+                fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontWeight:500,
                 letterSpacing:'0.12em', textTransform:'uppercase',
                 transition:'border-color 0.15s',
               }}>
@@ -506,7 +506,7 @@ function SetPasswordForm({ userId, onSuccess, onBack }) {
     <div>
       <div style={{ marginBottom: 28 }}>
         <div style={{
-          fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+          fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
           fontSize: 28, color: C.ink, marginBottom: 8, letterSpacing: '0.04em', fontWeight: 400,
         }}>
           Придумайте пароль
@@ -536,7 +536,7 @@ function SetPasswordForm({ userId, onSuccess, onBack }) {
             padding:'15px', background: loading ? C.muted : C.accent,
             color:'#fff', border:'none', fontSize:15,
             cursor: loading ? 'default' : 'pointer',
-            fontFamily:"'Jost',sans-serif", fontWeight:600,
+            fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontWeight:600,
             letterSpacing:'0.04em', transition:'background 0.15s', minHeight:50,
             textTransform:'uppercase',
           }}>
@@ -544,7 +544,7 @@ function SetPasswordForm({ userId, onSuccess, onBack }) {
         </button>
 
         <button onClick={onBack}
-          style={{ background:'none', border:'none', fontSize:13, color:C.muted, cursor:'pointer', fontFamily:"'Jost',sans-serif" }}>
+          style={{ background:'none', border:'none', fontSize:13, color:C.muted, cursor:'pointer', fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
           ← Вернуться к входу
         </button>
       </div>
@@ -660,7 +660,7 @@ function RegisterForm({ onSuccess, onLogin }) {
               <span style={{ fontFamily:"var(--font-mono), 'JetBrains Mono', monospace", fontSize:10, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase' }}>Регистрация</span>
             </div>
             <div style={{
-              fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+              fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
               fontSize:36, color:C.ink, marginBottom:6, letterSpacing:'0.03em', fontWeight:400, lineHeight:1.1,
             }}>Создайте аккаунт</div>
             <p style={{ fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif", fontSize:15, fontStyle:'italic', color:C.muted, lineHeight:1.7 }}>Основные данные для входа в систему</p>
@@ -681,7 +681,7 @@ function RegisterForm({ onSuccess, onLogin }) {
             <button onClick={handleStep1}
               style={{
                 padding:'15px', background:C.accent, color:'#f1ece0', border:'none',
-                fontSize:14, cursor:'pointer', fontFamily:"'Jost',sans-serif",
+                fontSize:14, cursor:'pointer', fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
                 fontWeight:500, marginTop:4, letterSpacing:'0.06em',
                 textTransform:'uppercase',
               }}>
@@ -690,7 +690,7 @@ function RegisterForm({ onSuccess, onLogin }) {
           </div>
           <div style={{ marginTop:24, textAlign:'center', fontSize:13, color:C.muted }}>
             Уже есть аккаунт?{' '}
-            <button onClick={onLogin} style={{ background:'none', border:'none', color:C.accent, cursor:'pointer', fontSize:13, fontFamily:"'Jost',sans-serif", fontWeight:500 }}>Войти</button>
+            <button onClick={onLogin} style={{ background:'none', border:'none', color:C.accent, cursor:'pointer', fontSize:13, fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontWeight:500 }}>Войти</button>
           </div>
         </div>
       )}
@@ -705,7 +705,7 @@ function RegisterForm({ onSuccess, onLogin }) {
               <span style={{ fontFamily:"var(--font-mono), 'JetBrains Mono', monospace", fontSize:10, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase' }}>Регистрация</span>
             </div>
             <div style={{
-              fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif",
+              fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
               fontSize:36, color:C.ink, marginBottom:6, letterSpacing:'0.03em', fontWeight:400, lineHeight:1.1,
             }}>Расскажите о себе</div>
             <p style={{ fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif", fontSize:15, fontStyle:'italic', color:C.muted, lineHeight:1.7 }}>Эта информация поможет сэнсэю узнать вас лучше</p>
@@ -744,7 +744,7 @@ function RegisterForm({ onSuccess, onLogin }) {
                 style={{
                   padding:'15px 20px', background:'transparent',
                   color:C.muted, border:`1px solid ${C.border}`,
-                  fontSize:14, cursor:'pointer', fontFamily:"'Jost',sans-serif",
+                  fontSize:14, cursor:'pointer', fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
                 }}>
                 ← Назад
               </button>
@@ -753,7 +753,7 @@ function RegisterForm({ onSuccess, onLogin }) {
                   flex:1, padding:'15px', background: loading ? C.muted : C.accent,
                   color:'#fff', border:'none', fontSize:15,
                   cursor: loading ? 'default' : 'pointer',
-                  fontFamily:"'Jost',sans-serif", fontWeight:600,
+                  fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontWeight:600,
                   letterSpacing:'0.04em', textTransform:'uppercase',
                 }}>
                 {loading ? 'Создание аккаунта…' : 'Завершить регистрацию'}
@@ -773,7 +773,7 @@ function RegisterForm({ onSuccess, onLogin }) {
             display:'flex', alignItems:'center', justifyContent:'center',
             margin:'0 auto 24px', fontSize:26,
           }}>✓</div>
-          <div style={{ fontFamily:"var(--font-cormorant-sc), var(--font-cormorant), 'Cormorant Garamond', serif", fontSize:30, fontWeight:400, color:C.ink, marginBottom:8, letterSpacing:'0.05em' }}>
+          <div style={{ fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif", fontSize:30, fontWeight:400, color:C.ink, marginBottom:8, letterSpacing:'0.05em' }}>
             Добро пожаловать!
           </div>
           <div style={{ fontSize:15, color:C.muted, lineHeight:1.8, marginBottom:8 }}>{name}</div>
@@ -811,7 +811,7 @@ function RegisterForm({ onSuccess, onLogin }) {
               width:'100%', padding:'15px',
               background:C.accent, color:'#f1ece0', border:'none',
               fontSize:14, cursor:'pointer',
-              fontFamily:"'Jost',sans-serif", fontWeight:500,
+              fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontWeight:500,
               letterSpacing:'0.06em', textTransform:'uppercase',
             }}>
             Перейти в кабинет
