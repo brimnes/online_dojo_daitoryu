@@ -30,14 +30,9 @@ export default function PaymentSuccessContent() {
   const timerRef = useRef(null);
 
   useEffect(() => {
-    // Читаем provider_payment_id из sessionStorage
-    let pid = null;
-    try { pid = sessionStorage.getItem('yk_pending_pid'); } catch {}
-
-    if (!pid) {
-      // pid нет — возможно, открыли success вручную или старый редирект
-      // Просто ждём 4 сек и редиректим на главную (webhook мог сработать)
-      timerRef.current = setTimeout(() => { window.location.href = '/'; }, 4000);
+    if (!type || !ref) {
+      // Нет параметров в URL — редиректим на главную
+      timerRef.current = setTimeout(() => { window.location.href = '/'; }, 2000);
       return;
     }
 
@@ -51,13 +46,12 @@ export default function PaymentSuccessContent() {
         const res = await fetch('/api/yookassa/verify-payment', {
           method:  'POST',
           headers: { 'Content-Type': 'application/json' },
-          body:    JSON.stringify({ provider_payment_id: pid }),
+          body:    JSON.stringify({ type, reference: ref }),
         });
 
         const data = await res.json();
 
         if (data.status === 'succeeded') {
-          try { sessionStorage.removeItem('yk_pending_pid'); } catch {}
           setPhase('succeeded');
           // Небольшая задержка, чтобы пользователь увидел "✓ Оплата прошла", потом редирект
           timerRef.current = setTimeout(() => { window.location.href = '/'; }, 2500);
@@ -65,7 +59,6 @@ export default function PaymentSuccessContent() {
         }
 
         if (data.status === 'cancelled') {
-          try { sessionStorage.removeItem('yk_pending_pid'); } catch {}
           setPhase('error');
           setErrMsg('Платёж был отменён.');
           return;
