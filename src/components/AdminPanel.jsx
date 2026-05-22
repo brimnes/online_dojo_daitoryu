@@ -555,60 +555,95 @@ export default function AdminPanel({ onExit }) {
 const LEVEL_KANJI_MAP = {'6kyu':'六','5kyu':'五','4kyu':'四','3kyu':'三','2kyu':'二','1kyu':'一','1dan':'初','2dan':'二','3dan':'三'};
 const MONTHS_SHORT = ['янв','фев','мар','апр','май','июн','июл','авг','сен','окт','ноя','дек'];
 
-const DASH_METRICS_PROTO = [
-  { label: 'Учеников',           kanji:'人', value:'342',    delta:'+12 за неделю', deltaDir:'up',   sub:'· 287 активных' },
-  { label: 'Доход за месяц',     kanji:'銭', value:'486',    unit:'тыс. ₽',         delta:'+18%',     deltaDir:'up',   sub:'· к маю' },
-  { label: 'Просмотры уроков',   kanji:'視', value:'12 480', delta:'+4%',            deltaDir:'up',   sub:'· за 7 дней' },
-  { label: 'Заявок на экзамен',  kanji:'段', value:'14',     delta:'6 ждут',         deltaDir:'flat', sub:'· проверки' },
-  { label: 'Новых комментариев', kanji:'声', value:'38',     delta:'3 на модерации', deltaDir:'flat' },
-  { label: 'Уроков опубликовано',kanji:'巻', value:'89',     delta:'/ 124',          deltaDir:'flat', sub:'· программа' },
-];
+// ── useAdminDashboard ────────────────────────────────────────────
+function useAdminDashboard() {
+  const [data,    setData]    = useState(null);
+  const [loading, setLoading] = useState(true);
+  const [error,   setError]   = useState(null);
+  useEffect(() => {
+    fetch('/api/admin/dashboard')
+      .then(r => r.json())
+      .then(d => { if (d.error) setError(d.error); else setData(d); })
+      .catch(e => setError(e.message))
+      .finally(() => setLoading(false));
+  }, []);
+  return { data, loading, error };
+}
 
-const RECENT_ACTIVITY_PROTO = [
-  { time:'11:42', kanji:'銭', actor:'А. Соколов',   verb:'купил доступ',           target:'Никаджо · Татияй',          cost:'3 000 ₽', tone:'gold' },
-  { time:'11:28', kanji:'段', actor:'М. Иванова',   verb:'подала заявку',          target:'4 кю · экзамен',            cost:null,      tone:'accent' },
-  { time:'10:53', kanji:'声', actor:'К. Орлов',     verb:'оставил комментарий',    target:'Иппон-дори · урок 4',       cost:null,      tone:'neutral' },
-  { time:'10:11', kanji:'人', actor:'Новый ученик', verb:'зарегистрировался',      target:'Е. Тарасова · из Москвы',   cost:null,      tone:'success' },
-  { time:'09:47', kanji:'銭', actor:'Д. Лебедев',   verb:'оплатил',                target:'Подписка · год',            cost:'19 900 ₽',tone:'gold' },
-  { time:'09:24', kanji:'段', actor:'Сэнсэй',       verb:'подтвердил аттестацию',  target:'И. Тарасов · 5 кю → 4 кю', cost:null,      tone:'success' },
-  { time:'08:55', kanji:'巻', actor:'Сэнсэй',       verb:'опубликовал урок',       target:'Сихо-нагэ · детально',      cost:null,      tone:'neutral' },
-  { time:'08:12', kanji:'声', actor:'А. Кузнецов',  verb:'задал вопрос',           target:'Хандза-хандати · вход',     cost:null,      tone:'accent' },
-];
-
-const PENDING_EXAMS_PROTO = [
-  { name:'Иван Тарасов',     from:'4 кю', to:'3 кю', kanji:'三', when:'через 4 дн.',  city:'Москва' },
-  { name:'Мария Иванова',    from:'5 кю', to:'4 кю', kanji:'四', when:'через 6 дн.',  city:'Санкт-Петербург' },
-  { name:'Дмитрий Лебедев',  from:'6 кю', to:'5 кю', kanji:'五', when:'через 9 дн.',  city:'Казань' },
-  { name:'Екатерина Орлова', from:'без',  to:'6 кю', kanji:'六', when:'через 12 дн.', city:'Новосибирск' },
-];
-
-const POPULAR_TECHNIQUES_PROTO = [
-  { rank:'01', name:'Иппон-дори',       jp:'Ippon-dori',       views:1842, trend:[8,12,10,14,18,22,20,26] },
-  { rank:'02', name:'Котэ-гаэси',       jp:'Kote-gaeshi',      views:1430, trend:[10,14,13,12,15,18,17,20] },
-  { rank:'03', name:'Сихо-нагэ',        jp:'Shihō-nage',       views:1218, trend:[6,8,11,10,14,13,16,15] },
-  { rank:'04', name:'Идори иппон-дори', jp:'Idori ippon-dori', views:980,  trend:[4,6,7,9,10,12,14,13] },
-  { rank:'05', name:'Ирими-нагэ',       jp:'Irimi-nage',       views:822,  trend:[3,5,6,8,10,11,13,14] },
-];
-
-const REVENUE_BARS_PROTO = [
-  { m:'янв', v:0.42 }, { m:'фев', v:0.51 }, { m:'мар', v:0.58 },
-  { m:'апр', v:0.67 }, { m:'май', v:0.86, current:true },
-  { m:'июн', v:0.32, projected:true },
-];
+// ── Local date formatter ─────────────────────────────────────────
+function fmtDt(iso) {
+  if (!iso) return '—';
+  const d = new Date(iso);
+  return d.toLocaleString('ru-RU', { day: '2-digit', month: 'short', hour: '2-digit', minute: '2-digit' });
+}
 
 function SectionDashboard({showToast, isMobile, onNavigate}) {
-  const {exams}      = useExams();
-  const {payments}   = useAccess();
-  const {techniques} = useTechniques();
-  const [period, setPeriod] = useState('7d');
-
-  // Use real pending exams if available, else proto data
-  const realPending = exams.filter(e=>e.status==='pending');
-  const pendingList = realPending.length > 0
-    ? realPending.map(e=>({name:e.userName||'—', from:LEVEL_LABELS[e.currentLevel]||e.currentLevel||'—', to:LEVEL_LABELS[e.targetLevel]||e.targetLevel, kanji:LEVEL_KANJI_MAP[e.targetLevel]||'?', when:e.date||'—', city:'—'}))
-    : PENDING_EXAMS_PROTO;
-
+  const { data, loading, error } = useAdminDashboard();
   const thisMonthStr = new Date().toLocaleString('ru-RU',{month:'long',year:'numeric'});
+
+  if (loading) {
+    return (
+      <div style={{background:C.bg,minHeight:'100%',display:'flex',alignItems:'center',justifyContent:'center'}}>
+        <span style={{fontFamily:F.mono,fontSize:12,color:C.muted,letterSpacing:'0.08em'}}>Загрузка…</span>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div style={{background:C.bg,minHeight:'100%',padding:'40px 36px'}}>
+        <span style={{fontFamily:F.mono,fontSize:13,color:C.danger}}>Ошибка загрузки: {error}</span>
+      </div>
+    );
+  }
+
+  const revenueK = data.payments.totalRevenue > 0
+    ? (data.payments.totalRevenue / 1000).toFixed(1)
+    : '0';
+
+  // Metric tiles definition
+  const tiles = [
+    {
+      label: 'Учеников', kanji: '人',
+      value: String(data.users.active),
+      sub: `· всего ${data.users.total}`,
+      nav: 'users',
+    },
+    {
+      label: 'Новых (7 дн.)', kanji: '新',
+      value: String(data.users.new7d),
+      sub: `· за 30 дн. +${data.users.new30d}`,
+      nav: 'users',
+    },
+    {
+      label: 'Выручка', kanji: '銭',
+      value: revenueK,
+      unit: 'тыс. ₽',
+      sub: data.payments.countPending > 0 ? `· ${data.payments.countPending} ожид.` : null,
+      nav: 'payments',
+    },
+    {
+      label: 'Оплат', kanji: '決',
+      value: String(data.payments.countSucceeded),
+      sub: '· succeeded',
+      nav: 'payments',
+    },
+    {
+      label: 'Доступов', kanji: '鍵',
+      value: String(data.access.total),
+      sub: `· month: ${data.access.byType.month} / section: ${data.access.byType.section}`,
+      nav: 'users',
+    },
+    {
+      label: 'Комментариев', kanji: '声',
+      value: String(data.comments.unanswered),
+      sub: '· без ответа',
+      nav: 'comments',
+    },
+  ];
+
+  const lv = data.content.lessons.byVideoStatus;
+  const tv = data.content.techniqueVideos.byVideoStatus;
 
   return (
     <div style={{background:C.bg,minHeight:'100%',fontFamily:F.mono}}>
@@ -618,21 +653,15 @@ function SectionDashboard({showToast, isMobile, onNavigate}) {
         <AdminSectionHead
           num="01" kanji="見" title="Сводка"
           subtitle={`Доходы, ученики, активность · ${thisMonthStr}`}
-          actions={
-            <div style={{display:'flex',gap:4}}>
-              {[['today','сегодня'],['7d','7 дней'],['30d','30 дней'],['year','год']].map(([k,l])=>(
-                <Pill2 key={k} kind={period===k?'solidInk':'muted'} style={{cursor:'pointer'}} onClick={()=>setPeriod(k)}>{l}</Pill2>
-              ))}
-            </div>
-          }
         />
         <SumiStroke style={{margin:'0 0 28px'}}/>
 
         {/* ── 6 metric tiles ─────────────────────────────────── */}
         <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'repeat(6,1fr)',gap:14,marginBottom:36}}>
-          {DASH_METRICS_PROTO.map((m,i)=>(
-            <div key={i} style={{background:C.surface,border:`1px solid ${C.hairline}`,padding:'18px 20px',position:'relative',display:'flex',flexDirection:'column',gap:4,minHeight:isMobile?100:120,cursor:'pointer'}}
-              onClick={()=>onNavigate(['users','payments','months','users','comments','months'][i])}>
+          {tiles.map((m,i)=>(
+            <div key={i}
+              style={{background:C.surface,border:`1px solid ${C.hairline}`,padding:'18px 20px',position:'relative',display:'flex',flexDirection:'column',gap:4,minHeight:isMobile?100:120,cursor:'pointer'}}
+              onClick={()=>onNavigate(m.nav)}>
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}}>
                 <span style={{fontFamily:F.mono,fontSize:9,letterSpacing:'0.22em',color:C.muted,textTransform:'uppercase'}}>{m.label}</span>
                 <span style={{fontFamily:F.kanji,fontSize:14,color:C.copper,opacity:0.55}}>{m.kanji}</span>
@@ -641,14 +670,11 @@ function SectionDashboard({showToast, isMobile, onNavigate}) {
                 <span style={{fontFamily:F.serif,fontSize:isMobile?28:38,color:C.ink,fontWeight:500,lineHeight:1,letterSpacing:'0.02em'}}>{m.value}</span>
                 {m.unit && <span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:14,color:C.muted}}>{m.unit}</span>}
               </div>
-              <div style={{display:'flex',alignItems:'center',gap:8,marginTop:'auto'}}>
-                {m.delta && (
-                  <span style={{fontFamily:F.mono,fontSize:10,color:m.deltaDir==='up'?C.success:m.deltaDir==='down'?C.danger:C.muted,letterSpacing:'0.04em'}}>
-                    {m.deltaDir==='up'?'▲':m.deltaDir==='down'?'▼':'·'} {m.delta}
-                  </span>
-                )}
-                {m.sub && <span style={{fontFamily:F.mono,fontSize:10,color:C.muted}}>{m.sub}</span>}
-              </div>
+              {m.sub && (
+                <div style={{marginTop:'auto'}}>
+                  <span style={{fontFamily:F.mono,fontSize:10,color:C.muted}}>{m.sub}</span>
+                </div>
+              )}
             </div>
           ))}
         </div>
@@ -656,122 +682,113 @@ function SectionDashboard({showToast, isMobile, onNavigate}) {
         {/* ── 2-column layout ──────────────────────────────────── */}
         <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1.4fr 1fr',gap:24}}>
 
-          {/* LEFT */}
+          {/* LEFT — последние платежи */}
           <div style={{display:'flex',flexDirection:'column',gap:24}}>
-
-            {/* Revenue chart */}
             <div style={{background:C.surface,border:`1px solid ${C.hairline}`}}>
               <div style={{padding:'16px 22px',borderBottom:`1px solid ${C.hairline}`,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
                 <div style={{display:'flex',alignItems:'center',gap:12}}>
-                  <span style={{fontFamily:F.kanji,fontSize:13,color:C.gold,letterSpacing:'0.14em',opacity:0.8}}>収益</span>
-                  <span style={{fontFamily:F.serif,fontSize:12,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>ДОХОДЫ · 6 МЕС.</span>
+                  <span style={{fontFamily:F.kanji,fontSize:13,color:C.gold,letterSpacing:'0.14em',opacity:0.8}}>銭</span>
+                  <span style={{fontFamily:F.serif,fontSize:12,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>ПЛАТЕЖИ · ПОСЛЕДНИЕ</span>
                 </div>
-                <div style={{display:'flex',alignItems:'baseline',gap:6}}>
-                  <span style={{fontFamily:F.serif,fontSize:24,color:C.ink,letterSpacing:'0.04em'}}>2 480</span>
-                  <span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:12,color:C.muted}}>тыс. ₽ · полгода</span>
-                </div>
-              </div>
-              <div style={{padding:'24px 22px 18px',display:'flex',alignItems:'flex-end',gap:18,height:220}}>
-                {REVENUE_BARS_PROTO.map((b,i)=>(
-                  <div key={i} style={{flex:1,display:'flex',flexDirection:'column',alignItems:'center',gap:10,justifyContent:'flex-end',height:'100%'}}>
-                    <div style={{fontFamily:F.mono,fontSize:10,color:b.current?C.accent:C.muted,letterSpacing:'0.06em'}}>
-                      {Math.round(b.v*565)}к
-                    </div>
-                    <div style={{width:'100%',maxWidth:56,height:`${b.v*100}%`,background:b.current?C.accent:b.projected?'transparent':C.ink2,border:b.projected?`1px dashed ${C.hairline}`:'none',minHeight:6}}/>
-                    <div style={{fontFamily:F.mono,fontSize:10,color:b.current?C.accent:C.muted,letterSpacing:'0.16em',textTransform:'uppercase',fontWeight:b.current?600:400}}>{b.m}</div>
-                  </div>
-                ))}
-              </div>
-            </div>
-
-            {/* Activity feed */}
-            <div style={{background:C.surface,border:`1px solid ${C.hairline}`}}>
-              <div style={{padding:'16px 22px',borderBottom:`1px solid ${C.hairline}`,display:'flex',alignItems:'center',justifyContent:'space-between'}}>
-                <div style={{display:'flex',alignItems:'center',gap:12}}>
-                  <span style={{fontFamily:F.kanji,fontSize:13,color:C.gold,letterSpacing:'0.14em',opacity:0.8}}>動静</span>
-                  <span style={{fontFamily:F.serif,fontSize:12,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>АКТИВНОСТЬ · СЕГОДНЯ</span>
-                </div>
-                <span onClick={()=>onNavigate('payments')} style={{fontFamily:F.mono,fontSize:10,color:C.accent,letterSpacing:'0.12em',cursor:'pointer'}}>ВСЯ ЛЕНТА →</span>
               </div>
               <div>
-                {RECENT_ACTIVITY_PROTO.map((a,i)=>(
-                  <div key={i} style={{display:'grid',gridTemplateColumns:'64px 26px 1fr auto',gap:14,alignItems:'center',padding:'14px 22px',borderBottom:i<RECENT_ACTIVITY_PROTO.length-1?`1px solid ${C.hairline}`:'none'}}>
-                    <span style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.08em'}}>{a.time}</span>
-                    <span style={{fontFamily:F.kanji,fontSize:18,color:C.accent,opacity:0.7,lineHeight:1}}>{a.kanji}</span>
-                    <div style={{minWidth:0,fontFamily:F.mono,fontSize:13,color:C.ink,lineHeight:1.45}}>
-                      <span style={{fontWeight:600}}>{a.actor}</span>{' '}
-                      <span style={{color:C.muted}}>{a.verb}</span>{' '}
-                      <span style={{fontFamily:F.serif,fontStyle:'italic',color:C.ink2}}>{a.target}</span>
+                {data.payments.recent.length === 0 ? (
+                  <div style={{padding:'20px 22px',fontFamily:F.mono,fontSize:12,color:C.muted}}>Платежей пока нет</div>
+                ) : data.payments.recent.map((p,i)=>{
+                  const statusMap = {
+                    succeeded: {color:C.success, label:'оплачено'},
+                    pending:   {color:C.muted,   label:'ожидание'},
+                    cancelled: {color:C.danger,  label:'отменён'},
+                    failed:    {color:C.danger,  label:'ошибка'},
+                  };
+                  const st = statusMap[p.status] || {color:C.muted, label:p.status};
+                  const title = p.productTitle || [p.productType, p.productReference].filter(Boolean).join('/') || '—';
+                  return (
+                    <div key={i} style={{padding:'12px 22px',borderBottom:i<data.payments.recent.length-1?`1px solid ${C.hairline}`:'none',display:'flex',flexDirection:'column',gap:4}}>
+                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}>
+                        <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:500,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                          {p.userName || 'Аноним'}
+                        </div>
+                        <span style={{fontFamily:F.mono,fontSize:11,color:C.gold,fontWeight:600,flexShrink:0}}>
+                          {p.amount != null ? `${p.amount} ₽` : '—'}
+                        </span>
+                      </div>
+                      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',gap:12}}>
+                        <span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:12,color:C.ink2,minWidth:0,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{title}</span>
+                        <span style={{fontFamily:F.mono,fontSize:10,color:st.color,letterSpacing:'0.06em',flexShrink:0}}>{st.label}</span>
+                      </div>
+                      <div style={{fontFamily:F.mono,fontSize:10,color:C.muted}}>
+                        {fmtDt(p.paidAt || p.createdAt)}
+                      </div>
                     </div>
-                    <div>
-                      {a.cost
-                        ? <span style={{fontFamily:F.mono,fontSize:11,color:C.gold,letterSpacing:'0.06em',fontWeight:600}}>{a.cost}</span>
-                        : <Pill2 kind={a.tone==='accent'?'accent':a.tone==='success'?'success':a.tone==='gold'?'gold':'muted'}>
-                            {a.tone==='accent'?'требует':a.tone==='success'?'готово':a.tone==='gold'?'оплата':'событие'}
-                          </Pill2>
-                      }
-                    </div>
-                  </div>
-                ))}
+                  );
+                })}
+              </div>
+              <div style={{padding:'12px 22px',borderTop:`1px solid ${C.hairline}`}}>
+                <Btn2 kind="ghost" full onClick={()=>onNavigate('payments')}>Все платежи →</Btn2>
               </div>
             </div>
           </div>
 
-          {/* RIGHT */}
+          {/* RIGHT — последние пользователи + видео контент */}
           <div style={{display:'flex',flexDirection:'column',gap:24}}>
 
-            {/* Pending exams */}
-            <div style={{background:C.surface,border:`1px solid ${C.hairline}`,position:'relative'}}>
-              <div style={{position:'absolute',top:14,right:14,width:6,height:6,background:C.accent,transform:'rotate(45deg)'}}/>
-              <div style={{padding:'16px 22px',borderBottom:`1px solid ${C.hairline}`}}>
-                <div style={{display:'flex',alignItems:'center',gap:12,marginBottom:4}}>
-                  <span style={{fontFamily:F.kanji,fontSize:13,color:C.accent,letterSpacing:'0.14em'}}>段</span>
-                  <span style={{fontFamily:F.serif,fontSize:12,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>АТТЕСТАЦИИ В ОЧЕРЕДИ</span>
-                </div>
-                <span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:12,color:C.muted}}>
-                  {exams.length||14} заявок · {pendingList.length} ждут проверки
-                </span>
+            {/* Последние пользователи */}
+            <div style={{background:C.surface,border:`1px solid ${C.hairline}`}}>
+              <div style={{padding:'16px 22px',borderBottom:`1px solid ${C.hairline}`,display:'flex',alignItems:'center',gap:12}}>
+                <span style={{fontFamily:F.kanji,fontSize:13,color:C.copper,letterSpacing:'0.14em',opacity:0.8}}>人</span>
+                <span style={{fontFamily:F.serif,fontSize:12,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>УЧЕНИКИ · ПОСЛЕДНИЕ</span>
               </div>
               <div>
-                {pendingList.map((e,i)=>(
-                  <div key={i} style={{display:'flex',alignItems:'center',gap:14,padding:'14px 22px',borderBottom:i<pendingList.length-1?`1px solid ${C.hairline}`:'none'}}>
-                    <AvatarCircle letter={e.name.charAt(0)} size={36}/>
+                {data.users.recent.map((u,i)=>(
+                  <div key={i} style={{display:'flex',alignItems:'center',gap:12,padding:'12px 22px',borderBottom:i<data.users.recent.length-1?`1px solid ${C.hairline}`:'none'}}>
+                    <AvatarCircle letter={(u.name||'?')[0].toUpperCase()} size={32}/>
                     <div style={{flex:1,minWidth:0}}>
-                      <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:500}}>{e.name}</div>
-                      <div style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.06em',marginTop:2}}>
-                        {e.from} → {e.to} · {e.city}
-                      </div>
+                      <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{u.name||'—'}</div>
+                      <div style={{fontFamily:F.mono,fontSize:10,color:C.muted,marginTop:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{u.email||'—'}</div>
                     </div>
-                    <div style={{textAlign:'right'}}>
-                      <div style={{fontFamily:F.kanji,fontSize:18,color:C.accent,lineHeight:1,opacity:0.85}}>{e.kanji}</div>
-                      <div style={{fontFamily:F.mono,fontSize:9,color:C.muted,letterSpacing:'0.06em',marginTop:4}}>{e.when}</div>
+                    <div style={{fontFamily:F.mono,fontSize:10,color:C.muted,flexShrink:0,textAlign:'right'}}>
+                      {fmtDt(u.joinedAt)}
                     </div>
                   </div>
                 ))}
               </div>
               <div style={{padding:'12px 22px',borderTop:`1px solid ${C.hairline}`}}>
-                <Btn2 kind="ghost" full onClick={()=>onNavigate('users')}>Открыть учеников →</Btn2>
+                <Btn2 kind="ghost" full onClick={()=>onNavigate('users')}>Все ученики →</Btn2>
               </div>
             </div>
 
-            {/* Popular techniques */}
+            {/* Видео контент */}
             <div style={{background:C.surface,border:`1px solid ${C.hairline}`}}>
               <div style={{padding:'16px 22px',borderBottom:`1px solid ${C.hairline}`,display:'flex',alignItems:'center',gap:12}}>
-                <span style={{fontFamily:F.kanji,fontSize:13,color:C.gold,letterSpacing:'0.14em',opacity:0.85}}>人気</span>
-                <span style={{fontFamily:F.serif,fontSize:12,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>ПОПУЛЯРНЫЕ ТЕХНИКИ</span>
+                <span style={{fontFamily:F.kanji,fontSize:13,color:C.gold,letterSpacing:'0.14em',opacity:0.8}}>巻</span>
+                <span style={{fontFamily:F.serif,fontSize:12,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>ВИДЕО · СТАТУС</span>
               </div>
-              <div>
-                {POPULAR_TECHNIQUES_PROTO.map((p,i)=>(
-                  <div key={i} style={{display:'grid',gridTemplateColumns:'24px 1fr 80px 60px',gap:14,alignItems:'center',padding:'12px 22px',borderBottom:i<POPULAR_TECHNIQUES_PROTO.length-1?`1px solid ${C.hairline}`:'none'}}>
-                    <span style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.06em'}}>{p.rank}</span>
-                    <div style={{minWidth:0}}>
-                      <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:500}}>{p.name}</div>
-                      <div style={{fontFamily:F.serif,fontStyle:'italic',fontSize:11,color:C.muted}}>{p.jp}</div>
-                    </div>
-                    <Sparkline2 data={p.trend} width={70} height={20}/>
-                    <span style={{fontFamily:F.mono,fontSize:11,color:C.ink2,letterSpacing:'0.04em',textAlign:'right'}}>{p.views.toLocaleString('ru-RU')}</span>
+              <div style={{padding:'16px 22px',display:'flex',flexDirection:'column',gap:10}}>
+                {[
+                  {label:'Уроков всего', value: data.content.lessons.total},
+                  {label:'Готово', value: lv.ready},
+                  {label:'Обработка', value: lv.processing},
+                  ...(lv.error > 0 ? [{label:'Ошибка', value: lv.error, danger:true}] : []),
+                ].map((row,i)=>(
+                  <div key={i} style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                    <span style={{fontFamily:F.mono,fontSize:11,color:row.danger?C.danger:C.muted,letterSpacing:'0.04em'}}>{row.label}</span>
+                    <span style={{fontFamily:F.serif,fontSize:18,color:row.danger?C.danger:C.ink,fontWeight:500}}>{row.value}</span>
                   </div>
                 ))}
+                <div style={{height:1,background:C.hairline,margin:'4px 0'}}/>
+                <div style={{display:'flex',justifyContent:'space-between',alignItems:'center'}}>
+                  <span style={{fontFamily:F.mono,fontSize:11,color:C.muted,letterSpacing:'0.04em'}}>
+                    Видео техник{' '}
+                    <span style={{color:C.ink2}}>(готово: {tv.ready})</span>
+                  </span>
+                  <span style={{fontFamily:F.serif,fontSize:18,color:C.ink,fontWeight:500}}>{data.content.techniqueVideos.total}</span>
+                </div>
+                {lv.processing > 0 && (
+                  <div style={{fontFamily:F.mono,fontSize:10,color:C.copper,letterSpacing:'0.06em',marginTop:4}}>
+                    ⟳ {lv.processing} обрабатывается
+                  </div>
+                )}
               </div>
             </div>
           </div>
