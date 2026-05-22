@@ -13,6 +13,30 @@ import { INITIAL_COMMENTS } from '@/data/months';
 import { USER } from '@/data/users';
 import { registerServiceWorker } from '@/lib/mobile';
 
+// ─── Route persistence ────────────────────────────────────────────
+// Сохраняем текущий маршрут в localStorage, чтобы восстановить его
+// после refresh. Ключ включает userId (если есть), чтобы разные
+// пользователи не получали чужой маршрут при входе на том же устройстве.
+const ROUTE_KEY = (userId) => userId ? `dojo_route_${userId}` : 'dojo_route';
+
+function saveRoute(route, userId) {
+  try { localStorage.setItem(ROUTE_KEY(userId), JSON.stringify(route)); } catch {}
+}
+
+function loadRoute(userId) {
+  try {
+    const raw = localStorage.getItem(ROUTE_KEY(userId));
+    if (!raw) return null;
+    const r = JSON.parse(raw);
+    if (r && typeof r.page === 'string') return r;
+  } catch {}
+  return null;
+}
+
+function clearRoute(userId) {
+  try { localStorage.removeItem(ROUTE_KEY(userId)); } catch {}
+}
+
 /**
  * App — корневой клиентский компонент.
  *
@@ -36,6 +60,11 @@ export default function App({ initialUser = null }) {
   const [route,    setRoute]    = useState({ page: 'dashboard' });
   const [watched,  setWatched]  = useState({});
   const [comments, setComments] = useState(INITIAL_COMMENTS);
+
+  // ─── Восстановление маршрута после refresh ───────────────────────
+  // mounted: false пока не прочитали localStorage — показываем пустой
+  // экран, чтобы не было flash dashboard → правильная страница.
+  const [mounted, setMounted] = useState(false);
 
   // ─── Внутренний nav stack ────────────────────────────────────────
   // Ref (не state) — не вызывает лишних ре-рендеров.
@@ -87,6 +116,28 @@ export default function App({ initialUser = null }) {
     registerServiceWorker();
   }, []);
 
+  // ─── Восстановление маршрута из localStorage ─────────────────────
+  // Читаем сохранённый маршрут для текущего пользователя.
+  // Запускаем только после hydration (useEffect), чтобы не было
+  // mismatch между server-rendered HTML и client state.
+  useEffect(() => {
+    const userId = initialUser?.id ?? null;
+    const saved = loadRoute(userId);
+    if (saved) {
+      setRoute(saved);
+      // Восстанавливаем стек навигации пустым — back уйдёт на dashboard
+      navStackRef.current = [];
+    }
+    setMounted(true);
+  }, []); // eslint-disable-line react-hooks/exhaustive-deps
+
+  // ─── Сохранение маршрута при каждом переходе ─────────────────────
+  useEffect(() => {
+    if (!mounted) return; // не сохраняем дефолт до завершения восстановления
+    const userId = currentUser?.id ?? null;
+    saveRoute(route, userId);
+  }, [route, mounted]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // ─── Клиентская ревалидация сессии ──────────────────────────────
   useEffect(() => {
     fetch('/api/auth/me', { credentials: 'same-origin' })
@@ -105,6 +156,10 @@ export default function App({ initialUser = null }) {
     try {
       await fetch('/api/auth/logout', { method: 'POST' });
     } catch {}
+    // Очищаем сохранённый маршрут: следующий пользователь или
+    // повторный вход начнут с чистой страницы.
+    clearRoute(currentUser?.id ?? null);
+    setRoute({ page: 'dashboard' });
     setCurrentUser(null);
   };
 
@@ -148,6 +203,12 @@ export default function App({ initialUser = null }) {
 
   if (!currentUser) {
     return <AuthPage onSuccess={(userData) => setCurrentUser(userData)} />;
+  }
+
+  // Пока не прочитали localStorage — показываем фон без контента.
+  // useEffect восстановит маршрут до первого paint (очень быстро).
+  if (!mounted) {
+    return <div style={{ minHeight: '100vh', background: '#f5f3ee' }} />;
   }
 
   return (

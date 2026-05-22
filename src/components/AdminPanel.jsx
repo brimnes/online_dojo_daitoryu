@@ -375,6 +375,8 @@ const SECTIONS = [
   {id:'access',    num:'',   label:'Доступы',         kanji:'鍵', hidden:true},
 ];
 
+const ADMIN_SECTION_KEY = 'dojo_admin_section';
+
 export default function AdminPanel({ onExit }) {
   const [section,       setSection]       = useState('dashboard');
   const [toast,         setToast]         = useState(false);
@@ -386,12 +388,23 @@ export default function AdminPanel({ onExit }) {
     setTimeout(() => setToast(false), 2400);
   }, []);
 
+  // ─── Восстановление секции после refresh ────────────────────────
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem(ADMIN_SECTION_KEY);
+      if (saved && SECTIONS.some(s => s.id === saved)) {
+        setSection(saved);
+      }
+    } catch {}
+  }, []);
+
   // Close drawer when switching to desktop
   useEffect(() => { if (!isMobile) setDrawerOpen(false); }, [isMobile]);
 
   const handleSectionSelect = (id) => {
     setSection(id);
     setDrawerOpen(false); // auto-close drawer on mobile
+    try { localStorage.setItem(ADMIN_SECTION_KEY, id); } catch {}
   };
 
   const SidebarContent = () => (
@@ -533,7 +546,7 @@ export default function AdminPanel({ onExit }) {
         )}
 
         <div key={section} style={{flex:1}}>
-          {section==='dashboard' && <SectionDashboard showToast={showToast} isMobile={isMobile} onNavigate={setSection}/>}
+          {section==='dashboard' && <SectionDashboard showToast={showToast} isMobile={isMobile} onNavigate={handleSectionSelect}/>}
           {section==='users'     && <SectionUsers     showToast={showToast} isMobile={isMobile}/>}
           {section==='access'    && <SectionAccess    showToast={showToast} isMobile={isMobile}/>}
           {section==='knowledge' && <SectionKnowledge showToast={showToast} isMobile={isMobile}/>}
