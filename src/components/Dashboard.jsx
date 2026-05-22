@@ -254,6 +254,10 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
         setBuyError(res.status === 409 ? 'Доступ уже есть' : (data.error || 'Ошибка'));
         return;
       }
+      // Сохраняем provider_payment_id в sessionStorage — success-страница прочитает его
+      if (data.payment_id) {
+        try { sessionStorage.setItem('yk_pending_pid', data.payment_id); } catch {}
+      }
       window.location.href = data.confirmation_url;
     } catch {
       setBuyError('Ошибка соединения');
@@ -1344,6 +1348,10 @@ function TabUnlockAccess({ userAccess, isMobile }) {
         return;
       }
 
+      // Сохраняем provider_payment_id в sessionStorage — success-страница прочитает его
+      if (data.payment_id) {
+        try { sessionStorage.setItem('yk_pending_pid', data.payment_id); } catch {}
+      }
       // Редиректим на страницу оплаты ЮKassa
       window.location.href = data.confirmation_url;
 

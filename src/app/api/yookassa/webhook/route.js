@@ -15,7 +15,8 @@ const MONTH_REFS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct',
 export async function POST(request) {
   try {
     const body = await request.json();
-    console.log('[YooKassa webhook] event:', body.event, 'payment_id:', body.object?.id);
+    console.log('[YooKassa webhook] HIT — event:', body.event, '| payment_id:', body.object?.id, '| status:', body.object?.status);
+    console.log('[YooKassa webhook] metadata:', JSON.stringify(body.object?.metadata || {}));
 
     // Обрабатываем только payment.succeeded
     if (body.event !== 'payment.succeeded') {
