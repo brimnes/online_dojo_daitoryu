@@ -518,6 +518,22 @@ export function useUserAccessRows() {
   const [rows,    setRows]    = useState([]);
   const [loading, setLoading] = useState(true);
 
+  // Тихая фоновая проверка: находит pending-платежи, у которых YooKassa
+  // уже вернула succeeded, и выдаёт доступ. Затем перезагружает строки.
+  const refreshAndReload = useCallback(async () => {
+    setLoading(true);
+    try {
+      // Сначала пробуем закрыть «висящие» оплаченные платежи
+      await fetch('/api/user/refresh-access', { method: 'POST' }).catch(() => {});
+      const data = await api('/api/user/access');
+      setRows(data);
+    } catch {
+      setRows([]);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
   const reload = useCallback(async () => {
     setLoading(true);
     try {
@@ -530,19 +546,19 @@ export function useUserAccessRows() {
     }
   }, []);
 
-  // Первоначальная загрузка
-  useEffect(() => { reload(); }, [reload]);
+  // Первоначальная загрузка — с восстановлением зависших платежей
+  useEffect(() => { refreshAndReload(); }, [refreshAndReload]);
 
   // Рефетч при возврате на вкладку:
   // - пользователь вернулся со страницы оплаты (ЮKassa → return_url → /)
   // - администратор выдал доступ в другой вкладке
   useEffect(() => {
     const onVisible = () => {
-      if (document.visibilityState === 'visible') reload();
+      if (document.visibilityState === 'visible') refreshAndReload();
     };
     document.addEventListener('visibilitychange', onVisible);
     return () => document.removeEventListener('visibilitychange', onVisible);
-  }, [reload]);
+  }, [refreshAndReload]);
 
   return { rows, loading, reload };
 }
