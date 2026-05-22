@@ -29,6 +29,13 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, init
   useEffect(() => {
     if (initialTab) setTab(initialTab);
   }, [initialTab]);
+
+  // Меняем таб локально И сообщаем App.jsx через nav.dashboard,
+  // чтобы route.tab обновился и сохранился в localStorage.
+  const changeTab = (id) => {
+    setTab(id);
+    nav.dashboard?.(id);
+  };
   const isMobile          = useIsMobile();
   const u     = userProp || {};
   const curLv = LEVELS.find(l => l.id === u.level);
@@ -40,7 +47,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, init
 
       {/* ── Sidebar (desktop only) ── */}
       {!isMobile && (
-        <Sidebar activeTab={tab} onTabClick={setTab} user={u} onLogout={onLogout} />
+        <Sidebar activeTab={tab} onTabClick={changeTab} user={u} onLogout={onLogout} />
       )}
 
       {/* ── Main content ── */}
@@ -102,7 +109,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, init
       {/* ── Bottom navigation (mobile only) ── */}
       {isMobile && (
         <MobileBottomNav
-          nav={{ dashboard: (id) => setTab(id) }}
+          nav={{ dashboard: changeTab }}
           active={tab}
           isAdmin={isAdmin}
         />
