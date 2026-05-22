@@ -326,14 +326,19 @@ model LessonProgress {
 // Комментарии учеников к урокам.
 // ────────────────────────────────────────────────────────────
 model Comment {
-  id        Int      @id @default(autoincrement())
-  lessonId  String   @map("lesson_id")
-  userId    String   @map("user_id") @db.Uuid
-  text      String
-  createdAt DateTime @default(now()) @map("created_at")
+  id              Int       @id @default(autoincrement())
+  lessonId        String    @map("lesson_id")
+  userId          String    @map("user_id") @db.Uuid
+  text            String
+  status          String    @default("visible")
+  parentCommentId Int?      @map("parent_comment_id")
+  isAdminReply    Boolean   @default(false) @map("is_admin_reply")
+  createdAt       DateTime  @default(now()) @map("created_at")
 
-  lesson Lesson @relation(fields: [lessonId], references: [id], onDelete: Cascade)
-  user   User   @relation(fields: [userId],   references: [id], onDelete: Cascade)
+  lesson   Lesson    @relation(fields: [lessonId], references: [id], onDelete: Cascade)
+  user     User      @relation(fields: [userId],   references: [id], onDelete: Cascade)
+  parent   Comment?  @relation("CommentReplies", fields: [parentCommentId], references: [id], onDelete: Cascade)
+  replies  Comment[] @relation("CommentReplies")
 
   @@map("comments")
 }

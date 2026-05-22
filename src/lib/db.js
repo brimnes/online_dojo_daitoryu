@@ -436,27 +436,58 @@ export function useUserAccess() {
 }
 
 // ─────────────────────────────────────────────────────────────
-// HOOK: useComments
+// HOOK: useComments (admin)
 // ─────────────────────────────────────────────────────────────
 
 export function useComments() {
   const [comments, setComments] = useState([]);
   const [loading,  setLoading]  = useState(true);
 
-  useEffect(() => {
-    api('/api/admin/comments')
-      .then(data => {
-        setComments(data.map(c => ({ ...c, created_at: fmtDate(c.created_at) })));
-      })
-      .catch(() => {})
-      .finally(() => setLoading(false));
+  const reload = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await api('/api/admin/comments');
+      setComments(data.map(c => ({ ...c, created_at: fmtDate(c.created_at) })));
+    } catch {}
+    setLoading(false);
   }, []);
 
-  const markReplied = useCallback((id) => {
-    setComments(prev => prev.map(c => c.id === id ? { ...c, replied: true } : c));
+  useEffect(() => { reload(); }, [reload]);
+
+  const hideComment = useCallback(async (id) => {
+    try {
+      await api('/api/admin/comments', { method: 'PATCH', body: { id, action: 'hide' } });
+      setComments(prev => prev.map(c => c.id === id ? { ...c, status: 'hidden' } : c));
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
   }, []);
 
-  return { comments, loading, markReplied };
+  const unhideComment = useCallback(async (id) => {
+    try {
+      await api('/api/admin/comments', { method: 'PATCH', body: { id, action: 'unhide' } });
+      setComments(prev => prev.map(c => c.id === id ? { ...c, status: 'visible' } : c));
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }, []);
+
+  const replyToComment = useCallback(async (id, text) => {
+    try {
+      const { reply } = await api(`/api/admin/comments/${id}/reply`, { method: 'POST', body: { text } });
+      setComments(prev => prev.map(c => c.id === id
+        ? { ...c, replied: true, reply_count: (c.reply_count || 0) + 1, admin_replies: [...(c.admin_replies || []), reply] }
+        : c
+      ));
+      return { ok: true, reply };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }, []);
+
+  return { comments, loading, reload, hideComment, unhideComment, replyToComment };
 }
 
 // ─────────────────────────────────────────────────────────────

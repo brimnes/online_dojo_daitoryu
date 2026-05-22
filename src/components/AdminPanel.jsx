@@ -2641,65 +2641,65 @@ const COMMENTS_DATA_PROTO = [
 ];
 
 function SectionComments({showToast,isMobile}){
-  const {comments,loading,markReplied} = useComments();
+  const {comments, loading, hideComment, unhideComment, replyToComment} = useComments();
+  const [filter,    setFilter]    = useState('noreply');
   const [replyOpen, setReplyOpen] = useState({});
   const [replyText, setReplyText] = useState({});
-  const [filter,    setFilter]    = useState('pending');
+  const [saving,    setSaving]    = useState({});
 
-  const sendReply = (id) => {
-    if(!replyText[id]?.trim()) return;
-    markReplied(id);
-    setReplyOpen(p=>({...p,[id]:false}));
-    setReplyText(p=>({...p,[id]:''}));
-    showToast('Ответ отправлен');
+  const sendReply = async (id) => {
+    const text = replyText[id]?.trim();
+    if (!text) return;
+    setSaving(p=>({...p,[id]:true}));
+    const {ok, error} = await replyToComment(id, text);
+    setSaving(p=>({...p,[id]:false}));
+    if (ok) {
+      setReplyOpen(p=>({...p,[id]:false}));
+      setReplyText(p=>({...p,[id]:''}));
+      showToast('Ответ опубликован');
+    } else {
+      showToast('Ошибка: ' + error);
+    }
   };
 
-  // map real comments to design shape
-  const mapped = comments.map(c=>({
-    id:       String(c.id),
-    letter:   (c.user_name||'?')[0].toUpperCase(),
-    name:     c.user_name||'—',
-    email:    '—',
-    when:     c.created_at||'—',
-    at:       c.lesson_id||'—',
-    atKanji:  '声',
-    text:     c.text||'',
-    state:    c.replied?'approved':'pending',
-    flag:     null,
-    replies:  c.replied?1:0,
-    raw:      c,
-  }));
+  const doHide = async (id) => {
+    const {ok, error} = await hideComment(id);
+    if (ok) showToast('Комментарий скрыт');
+    else showToast('Ошибка: ' + error);
+  };
 
-  const unreplied  = mapped.filter(c=>!c.raw.replied);
-  const replied    = mapped.filter(c=>c.raw.replied);
-  const pending    = mapped.filter(c=>c.state==='pending'&&!c.flag);
-  const flagged    = mapped.filter(c=>c.flag==='reported');
+  const doUnhide = async (id) => {
+    const {ok, error} = await unhideComment(id);
+    if (ok) showToast('Комментарий восстановлен');
+    else showToast('Ошибка: ' + error);
+  };
 
-  // use real data if available, else proto
-  const displayAll = mapped.length > 0 ? mapped : COMMENTS_DATA_PROTO;
-  const displayFiltered = filter==='pending'  ? displayAll.filter(c=>c.state==='pending'&&c.flag!=='reported'&&c.flag!=='spam')
-    : filter==='flagged'  ? displayAll.filter(c=>c.flag==='reported')
-    : filter==='approved' ? displayAll.filter(c=>c.state==='approved')
-    : filter==='spam'     ? displayAll.filter(c=>c.flag==='spam')
-    : displayAll;
+  // counts
+  const noReply  = comments.filter(c => c.status !== 'hidden' && !c.replied);
+  const replied  = comments.filter(c => c.status !== 'hidden' && c.replied);
+  const hidden   = comments.filter(c => c.status === 'hidden');
 
-  if(loading) return <Spinner/>;
+  const displayList =
+    filter === 'noreply' ? noReply :
+    filter === 'replied' ? replied :
+    filter === 'spam'    ? hidden  :
+    comments;
+
+  if (loading) return <Spinner/>;
 
   return (
     <div style={{background:C.bg,minHeight:'100%'}}>
       <div style={{padding:isMobile?'20px 16px 40px':'32px 36px 60px'}}>
 
-        <AdminSectionHead num="07" title="Модерация" subtitle="Очередь комментариев · ответы сэнсэя" kanji="声"/>
+        <AdminSectionHead num="07" title="Комментарии" subtitle="Вопросы учеников · ответы сэнсэя" kanji="声"/>
         <SumiStroke style={{margin:'0 0 24px',opacity:0.3}}/>
 
-        {/* 5 metrics */}
-        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'repeat(5,1fr)',gap:14,marginBottom:24}}>
+        {/* 3 metric tiles */}
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'repeat(3,1fr)',gap:14,marginBottom:24}}>
           {[
-            {label:'Всего за месяц',kanji:'月',value:String(comments.length||248),delta:'+38',deltaDir:'up'},
-            {label:'На модерации',  kanji:'待',value:String(unreplied.length||3), delta:'требует',deltaDir:'flat'},
-            {label:'Жалоб',         kanji:'告',value:String(flagged.length||1),   delta:'новая',deltaDir:'flat'},
-            {label:'Спам · авто',   kanji:'禁',value:'14',sub:'· отсеяно'},
-            {label:'Без ответа',    kanji:'無',value:String(unreplied.length||22), sub:'· от сэнсэя'},
+            {label:'Без ответа',  kanji:'無', value:String(noReply.length),  delta: noReply.length > 0 ? 'требует внимания' : 'все отвечены', deltaDir: noReply.length > 0 ? 'flat' : 'up'},
+            {label:'Отвеченные',  kanji:'答', value:String(replied.length),  sub:'· ответы опубликованы'},
+            {label:'Скрытые',     kanji:'禁', value:String(hidden.length),   sub:'· спам / скрытые'},
           ].map((m,i)=>(
             <div key={i} style={{background:C.surface,border:`1px solid ${C.hairline}`,padding:'18px 20px',display:'flex',flexDirection:'column',gap:4,minHeight:isMobile?90:110}}>
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
@@ -2719,104 +2719,105 @@ function SectionComments({showToast,isMobile}){
 
         {/* filter chips */}
         <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:16,alignItems:'center'}}>
-          <FilterChip2 label="На модерации" value={String(unreplied.length||3)}  active={filter==='pending'}  onClick={()=>setFilter('pending')}  dot={C.accent}/>
-          <FilterChip2 label="Жалобы"       value={String(flagged.length||1)}     active={filter==='flagged'}  onClick={()=>setFilter('flagged')}  dot={C.danger}/>
-          <FilterChip2 label="Без ответа"   value={String(unreplied.length||22)}  active={filter==='noreply'} onClick={()=>setFilter('noreply')}/>
-          <FilterChip2 label="Опубликованные" value={String(replied.length||218)} active={filter==='approved'} onClick={()=>setFilter('approved')} dot={C.success}/>
-          <FilterChip2 label="Спам"         value="14"                            active={filter==='spam'}     onClick={()=>setFilter('spam')}     dot={C.muted}/>
+          <FilterChip2 label="Без ответа"  value={String(noReply.length)} active={filter==='noreply'} onClick={()=>setFilter('noreply')} dot={noReply.length>0?C.accent:undefined}/>
+          <FilterChip2 label="Отвеченные"  value={String(replied.length)} active={filter==='replied'} onClick={()=>setFilter('replied')} dot={C.success}/>
+          <FilterChip2 label="Спам / скрытые" value={String(hidden.length)} active={filter==='spam'} onClick={()=>setFilter('spam')} dot={C.muted}/>
           <div style={{flex:1}}/>
           <FilterChip2 label="↕ По дате ↓"/>
         </div>
 
         {/* comment cards */}
-        <div style={{display:'flex',flexDirection:'column',gap:12}}>
-          {(displayFiltered.length?displayFiltered:displayAll.slice(0,6)).map(c=>{
-            const isReported = c.flag==='reported';
-            const isSpam     = c.flag==='spam';
-            return (
-              <div key={c.id} style={{background:C.surface,border:`1px solid ${isReported?C.danger:C.hairline}`,display:isMobile?'block':'grid',gridTemplateColumns:'52px 1fr auto',gap:0}}>
+        {displayList.length === 0 ? (
+          <div style={{textAlign:'center',padding:'48px 16px',background:C.surface,border:`1px solid ${C.hairline}`}}>
+            <div style={{fontFamily:F.kanji,fontSize:40,color:C.accent,opacity:0.15,marginBottom:10}}>声</div>
+            <div style={{fontFamily:F.serif,fontStyle:'italic',fontSize:15,color:C.muted}}>
+              {filter==='noreply' ? 'Все комментарии отвечены' :
+               filter==='replied' ? 'Отвеченных нет' :
+               'Скрытых нет'}
+            </div>
+          </div>
+        ) : (
+          <div style={{display:'flex',flexDirection:'column',gap:12}}>
+            {displayList.map(c => {
+              const isHidden = c.status === 'hidden';
+              return (
+                <div key={c.id} style={{background:C.surface,border:`1px solid ${isHidden?C.hairline2:C.hairline}`,opacity:isHidden?0.7:1}}>
 
-                {/* avatar col */}
-                {!isMobile&&(
-                  <div style={{padding:'18px 0 18px 18px',display:'flex',flexDirection:'column',alignItems:'flex-start'}}>
-                    <AvatarCircle letter={c.letter} size={34} color={isReported?C.danger:isSpam?C.muted:undefined}/>
-                  </div>
-                )}
-
-                {/* body */}
-                <div style={{padding:isMobile?'14px 14px 10px':'16px 22px 16px 14px',minWidth:0}}>
-                  <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8,flexWrap:'wrap'}}>
-                    {isMobile&&<AvatarCircle letter={c.letter} size={28} color={isReported?C.danger:isSpam?C.muted:undefined}/>}
-                    <span style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:600}}>{c.name}</span>
-                    <span style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.04em'}}>{c.email}</span>
-                    <span style={{color:C.muted}}>·</span>
-                    <span style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.04em'}}>{c.when}</span>
-                    <span style={{color:C.muted}}>·</span>
-                    <span style={{display:'inline-flex',alignItems:'center',gap:6}}>
-                      <span style={{fontFamily:F.kanji,fontSize:13,color:C.accent,opacity:0.85}}>{c.atKanji}</span>
-                      <span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:12,color:C.ink2}}>{c.at}</span>
-                    </span>
-                    {/* state pill */}
-                    {c.flag==='reported'&&<Pill2 kind="danger" dot>жалоба</Pill2>}
-                    {c.flag==='spam'    &&<Pill2 kind="muted"   dot>спам</Pill2>}
-                    {!c.flag&&c.state==='pending' &&<Pill2 kind="accent"  dot>на модерации</Pill2>}
-                    {!c.flag&&c.state==='approved'&&<Pill2 kind="success" dot>опубликован</Pill2>}
-                  </div>
-                  <div style={{fontFamily:F.mono,fontSize:14,color:C.ink2,lineHeight:1.55,opacity:isSpam?0.55:1}}>{c.text}</div>
-                  {c.replies>0&&(
-                    <div style={{marginTop:10,fontFamily:F.mono,fontSize:10,color:C.success,letterSpacing:'0.1em'}}>✓ {c.replies} ответ сэнсэя</div>
-                  )}
-                  {/* reply form for real comments */}
-                  {c.raw&&replyOpen[c.id]&&(
-                    <div style={{marginTop:12}}>
-                      <Textarea value={replyText[c.id]||''} onChange={v=>setReplyText(p=>({...p,[c.id]:v}))} placeholder="Ответ сэнсэя…" rows={2}/>
-                      <div style={{display:'flex',gap:8,marginTop:8}}>
-                        <Btn2 kind="accent" size="sm" onClick={()=>sendReply(c.id)}>Отправить</Btn2>
-                        <Btn2 kind="quiet"  size="sm" onClick={()=>setReplyOpen(p=>({...p,[c.id]:false}))}>Отмена</Btn2>
+                  {/* header row */}
+                  <div style={{display:isMobile?'block':'flex',alignItems:'flex-start',gap:0}}>
+                    {/* body */}
+                    <div style={{flex:1,padding:isMobile?'14px 14px 10px':'16px 22px',minWidth:0}}>
+                      {/* meta */}
+                      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:8,flexWrap:'wrap'}}>
+                        <AvatarCircle letter={(c.user_name||'?')[0].toUpperCase()} size={28}
+                          color={isHidden?C.muted:undefined}/>
+                        <span style={{fontFamily:F.mono,fontSize:13,color:isHidden?C.muted:C.ink,fontWeight:600}}>{c.user_name}</span>
+                        {c.user_email && c.user_email !== '—' && (
+                          <span style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.04em'}}>{c.user_email}</span>
+                        )}
+                        <span style={{color:C.muted}}>·</span>
+                        <span style={{fontFamily:F.mono,fontSize:10,color:C.muted}}>{c.created_at}</span>
+                        <span style={{color:C.muted}}>·</span>
+                        <span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:12,color:C.muted}}>Урок: {c.lesson_id}</span>
+                        {isHidden && <Pill2 kind="muted" dot>скрыт</Pill2>}
+                        {!isHidden && c.replied && <Pill2 kind="success" dot>отвечен</Pill2>}
+                        {!isHidden && !c.replied && <Pill2 kind="accent" dot>без ответа</Pill2>}
                       </div>
+                      {/* text */}
+                      <div style={{fontFamily:F.mono,fontSize:14,color:isHidden?C.muted:C.ink2,lineHeight:1.55,opacity:isHidden?0.7:1}}>
+                        {c.text}
+                      </div>
+                      {/* existing admin replies */}
+                      {c.admin_replies && c.admin_replies.length > 0 && (
+                        <div style={{marginTop:12,paddingTop:12,borderTop:`1px solid ${C.hairline}`}}>
+                          <div style={{fontFamily:F.mono,fontSize:9,color:C.success,letterSpacing:'0.12em',textTransform:'uppercase',marginBottom:8}}>✓ Ответ сэнсэя</div>
+                          {c.admin_replies.map((r,ri)=>(
+                            <div key={r.id||ri} style={{fontFamily:F.serif,fontStyle:'italic',fontSize:13,color:C.ink2,lineHeight:1.6,background:C.bg2,padding:'8px 12px',borderLeft:`2px solid ${C.accent}`}}>
+                              {r.text}
+                            </div>
+                          ))}
+                        </div>
+                      )}
+                      {/* reply form */}
+                      {replyOpen[c.id] && (
+                        <div style={{marginTop:12}}>
+                          <Textarea value={replyText[c.id]||''} onChange={v=>setReplyText(p=>({...p,[c.id]:v}))} placeholder="Ответ сэнсэя…" rows={2}/>
+                          <div style={{display:'flex',gap:8,marginTop:8}}>
+                            <Btn2 kind="accent" size="sm" disabled={saving[c.id]||!replyText[c.id]?.trim()} onClick={()=>sendReply(c.id)}>
+                              {saving[c.id]?'…':'Опубликовать'}
+                            </Btn2>
+                            <Btn2 kind="quiet" size="sm" onClick={()=>setReplyOpen(p=>({...p,[c.id]:false}))}>Отмена</Btn2>
+                          </div>
+                        </div>
+                      )}
                     </div>
-                  )}
-                </div>
 
-                {/* action buttons */}
-                <div style={{padding:isMobile?'0 14px 14px':'16px 22px',borderLeft:isMobile?'none':`1px solid ${C.hairline}`,display:'flex',flexDirection:isMobile?'row':'column',gap:6,alignItems:'stretch',justifyContent:'center',minWidth:isMobile?0:180,flexWrap:'wrap'}}>
-                  {c.state==='pending'&&!isReported&&(
-                    <>
-                      <Btn2 kind="accent" size="sm">Одобрить</Btn2>
-                      <Btn2 kind="ghost"  size="sm" onClick={()=>c.raw&&setReplyOpen(p=>({...p,[c.id]:true}))}>Ответить</Btn2>
-                      <Btn2 kind="quiet"  size="sm">Скрыть</Btn2>
-                    </>
-                  )}
-                  {isReported&&(
-                    <>
-                      <Btn2 kind="accent" size="sm">Удалить</Btn2>
-                      <Btn2 kind="quiet"  size="sm">Откл. жалобу</Btn2>
-                    </>
-                  )}
-                  {c.state==='approved'&&!isReported&&(
-                    <>
-                      <Btn2 kind="ghost" size="sm" onClick={()=>c.raw&&setReplyOpen(p=>({...p,[c.id]:true}))}>{c.replies>0?'Изм. ответ':'Ответить'}</Btn2>
-                      <Btn2 kind="quiet" size="sm">Скрыть</Btn2>
-                    </>
-                  )}
-                  {isSpam&&(
-                    <>
-                      <Btn2 kind="quiet" size="sm">Не спам</Btn2>
-                      <Btn2 kind="quiet" size="sm">Бан · IP</Btn2>
-                    </>
-                  )}
+                    {/* actions */}
+                    <div style={{padding:isMobile?'0 14px 14px':'16px 22px',borderLeft:isMobile?'none':`1px solid ${C.hairline}`,display:'flex',flexDirection:isMobile?'row':'column',gap:6,alignItems:'stretch',justifyContent:'flex-start',minWidth:isMobile?0:160,flexShrink:0,flexWrap:'wrap'}}>
+                      {!isHidden && (
+                        <>
+                          <Btn2 kind="quiet" size="sm" onClick={()=>setReplyOpen(p=>({...p,[c.id]:!p[c.id]}))}>
+                            {replyOpen[c.id] ? '✕ Закрыть' : c.replied ? 'Изм. ответ' : 'Ответить'}
+                          </Btn2>
+                          <Btn2 kind="ghost" size="sm" onClick={()=>doHide(c.id)}>Скрыть</Btn2>
+                        </>
+                      )}
+                      {isHidden && (
+                        <Btn2 kind="quiet" size="sm" onClick={()=>doUnhide(c.id)}>Восстановить</Btn2>
+                      )}
+                    </div>
+                  </div>
                 </div>
-              </div>
-            );
-          })}
-        </div>
+              );
+            })}
+          </div>
+        )}
 
         {/* footer */}
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 4px',marginTop:4}}>
           <span style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.12em',textTransform:'uppercase'}}>
-            Показано {Math.min(6,displayFiltered.length||6)} из {comments.length||248}
+            Показано {displayList.length} из {comments.length}
           </span>
-          <Btn2 kind="ghost" size="sm">Загрузить ещё</Btn2>
         </div>
 
       </div>

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { C } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
 import { useMonths, useLessons } from '@/lib/db';
@@ -25,9 +25,44 @@ export default function LessonPage({
   const lessonIndex = lessons.findIndex(l => l.id === lessonId);
   const lesson      = lessons[lessonIndex];
   const isWatched   = !!watched[lessonId];
-  const lessonComments = comments[lessonId] || [];
 
   const [commentText, setCommentText] = useState('');
+
+  // ── Real comments from API ──────────────────────────────────
+  const [apiComments, setApiComments] = useState(null); // null = not loaded yet
+  const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!lessonId) return;
+    fetch(`/api/comments?lesson_id=${lessonId}`)
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data) setApiComments(data); })
+      .catch(() => {});
+  }, [lessonId]);
+
+  const submitComment = useCallback(async () => {
+    const trimmed = commentText.trim();
+    if (!trimmed || submitting) return;
+    setSubmitting(true);
+    try {
+      const res = await fetch('/api/comments', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ lesson_id: lessonId, text: trimmed }),
+      });
+      if (res.ok) {
+        const newComment = await res.json();
+        setApiComments(prev => [...(prev || []), newComment]);
+        setCommentText('');
+        // also call the prop addComment for optimistic update in App.jsx state
+        addComment?.(lessonId, trimmed);
+      }
+    } catch {}
+    setSubmitting(false);
+  }, [commentText, lessonId, submitting, addComment]);
+
+  // Use real API comments when loaded, else fall back to prop
+  const lessonComments = apiComments ?? (comments[lessonId] || []);
 
   const prevLesson = lessonIndex > 0                  ? lessons[lessonIndex - 1] : null;
   const nextLesson = lessonIndex < lessons.length - 1 ? lessons[lessonIndex + 1] : null;
@@ -245,46 +280,74 @@ export default function LessonPage({
                 {lessonComments.length > 0 && (
                   <div style={{ background: C.surface, border: `1px solid ${C.border}`, marginBottom: 14 }}>
                     {lessonComments.map((c, i) => (
-                      <div key={c.id} style={{
-                        display: 'flex', gap: 14, padding: isMobile ? '16px 16px' : '18px 20px',
-                        borderBottom: i < lessonComments.length - 1 ? `1px solid ${C.hairline2}` : 'none',
-                        background: c.role === 'sensei' ? C.bg2 : 'transparent',
-                      }}>
+                      <div key={c.id}>
                         <div style={{
-                          width: isMobile ? 32 : 36, height: isMobile ? 32 : 36,
-                          borderRadius: '50%', flexShrink: 0,
-                          background: c.role === 'sensei' ? C.accent : C.bg2,
-                          color: c.role === 'sensei' ? '#fff' : C.ink2,
-                          border: c.role === 'sensei' ? 'none' : `1px solid ${C.border}`,
-                          display: 'flex', alignItems: 'center', justifyContent: 'center',
-                          fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                          fontStyle: 'italic', fontSize: isMobile ? 14 : 16,
-                        }}>{c.avatar}</div>
-                        <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: isMobile ? 4 : 6, flexWrap: 'wrap' }}>
-                            <span style={{
-                              fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                              fontSize: isMobile ? 12 : 13, color: C.ink, fontWeight: 500,
-                            }}>{c.author}</span>
-                            {c.role === 'sensei' && (
+                          display: 'flex', gap: 14, padding: isMobile ? '16px 16px' : '18px 20px',
+                          borderBottom: (c.replies && c.replies.length > 0) ? `1px solid ${C.hairline2}` : (i < lessonComments.length - 1 ? `1px solid ${C.hairline2}` : 'none'),
+                          background: c.role === 'sensei' ? C.bg2 : 'transparent',
+                        }}>
+                          <div style={{
+                            width: isMobile ? 32 : 36, height: isMobile ? 32 : 36,
+                            borderRadius: '50%', flexShrink: 0,
+                            background: c.role === 'sensei' ? C.accent : C.bg2,
+                            color: c.role === 'sensei' ? '#fff' : C.ink2,
+                            border: c.role === 'sensei' ? 'none' : `1px solid ${C.border}`,
+                            display: 'flex', alignItems: 'center', justifyContent: 'center',
+                            fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                            fontStyle: 'italic', fontSize: isMobile ? 14 : 16,
+                          }}>{c.avatar}</div>
+                          <div style={{ flex: 1, minWidth: 0 }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: isMobile ? 4 : 6, flexWrap: 'wrap' }}>
                               <span style={{
                                 fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                                fontSize: 9, color: C.accent, letterSpacing: '0.18em',
-                                textTransform: 'uppercase', padding: '1px 7px',
-                                border: `1px solid ${C.accent}`,
-                              }}>СЭНСЭЙ</span>
-                            )}
-                            <span style={{
-                              marginLeft: 'auto',
+                                fontSize: isMobile ? 12 : 13, color: C.ink, fontWeight: 500,
+                              }}>{c.author}</span>
+                              {c.role === 'sensei' && (
+                                <span style={{
+                                  fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+                                  fontSize: 9, color: C.accent, letterSpacing: '0.18em',
+                                  textTransform: 'uppercase', padding: '1px 7px',
+                                  border: `1px solid ${C.accent}`,
+                                }}>СЭНСЭЙ</span>
+                              )}
+                              <span style={{
+                                marginLeft: 'auto',
+                                fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+                                fontSize: isMobile ? 9 : 10, color: C.muted,
+                              }}>{c.date}</span>
+                            </div>
+                            <div style={{
                               fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                              fontSize: isMobile ? 9 : 10, color: C.muted,
-                            }}>{c.date}</span>
+                              fontSize: isMobile ? 13 : 14, color: C.ink2, lineHeight: 1.55,
+                            }}>{c.text}</div>
                           </div>
-                          <div style={{
-                            fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                            fontSize: isMobile ? 13 : 14, color: C.ink2, lineHeight: 1.55,
-                          }}>{c.text}</div>
                         </div>
+                        {/* Admin replies */}
+                        {c.replies && c.replies.map((r, ri) => (
+                          <div key={`reply-${r.id}`} style={{
+                            display: 'flex', gap: 14, padding: isMobile ? '14px 16px 14px 32px' : '16px 20px 16px 36px',
+                            borderBottom: (ri < c.replies.length - 1 || i < lessonComments.length - 1) ? `1px solid ${C.hairline2}` : 'none',
+                            background: C.bg2,
+                            borderLeft: `3px solid ${C.accent}`,
+                          }}>
+                            <div style={{
+                              width: isMobile ? 28 : 32, height: isMobile ? 28 : 32,
+                              borderRadius: '50%', flexShrink: 0,
+                              background: C.accent, color: '#fff',
+                              display: 'flex', alignItems: 'center', justifyContent: 'center',
+                              fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                              fontStyle: 'italic', fontSize: isMobile ? 13 : 15,
+                            }}>{r.avatar}</div>
+                            <div style={{ flex: 1, minWidth: 0 }}>
+                              <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, flexWrap: 'wrap' }}>
+                                <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, color: C.ink, fontWeight: 500 }}>{r.author}</span>
+                                <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 9, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', padding: '1px 7px', border: `1px solid ${C.accent}` }}>СЭНСЭЙ</span>
+                                <span style={{ marginLeft: 'auto', fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: isMobile ? 9 : 10, color: C.muted }}>{r.date}</span>
+                              </div>
+                              <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: isMobile ? 13 : 14, color: C.ink2, lineHeight: 1.55 }}>{r.text}</div>
+                            </div>
+                          </div>
+                        ))}
                       </div>
                     ))}
                   </div>
@@ -319,18 +382,18 @@ export default function LessonPage({
                     />
                   </div>
                   <button
-                    onClick={() => { if (commentText.trim()) { addComment(lessonId, commentText); setCommentText(''); } }}
-                    disabled={!commentText.trim()}
+                    onClick={submitComment}
+                    disabled={!commentText.trim() || submitting}
                     style={{
-                      padding: '12px 20px', background: commentText.trim() ? C.ink : C.border,
-                      color: commentText.trim() ? '#fff' : C.muted,
+                      padding: '12px 20px', background: (commentText.trim() && !submitting) ? C.ink : C.border,
+                      color: (commentText.trim() && !submitting) ? '#fff' : C.muted,
                       border: 'none',
                       fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
                       fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase',
-                      cursor: commentText.trim() ? 'pointer' : 'default',
+                      cursor: (commentText.trim() && !submitting) ? 'pointer' : 'default',
                       transition: 'all 0.15s', flexShrink: 0,
                       alignSelf: 'stretch',
-                    }}>Отправить</button>
+                    }}>{submitting ? 'Отправляет…' : 'Отправить'}</button>
                 </div>
               </div>
 
