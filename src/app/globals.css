@@ -175,13 +175,15 @@ h1, h2 {
   background: #13110e;
   color: #c2b59c;
 }
-/* padding for content above fixed bottom nav */
+/* padding for content above fixed bottom nav.
+   !important is required to override the inline style shorthand `padding:`
+   that all page wrappers use — inline style wins over class without it. */
 .has-bottom-nav {
-  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
 }
 /* alias for sub-pages */
 .page-has-bottom-nav {
-  padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
 }
 
 /* ═══════════════════════════════════════════════════════════════
