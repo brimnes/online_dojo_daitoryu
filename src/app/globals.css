@@ -12,6 +12,7 @@ html, body {
   font-family: var(--font-cormorant), 'Cormorant Garamond', serif;
   -webkit-font-smoothing: antialiased;
   font-size: 15px;
+  overflow-x: hidden;
 }
 
 button, input, textarea, select {
@@ -20,6 +21,11 @@ button, input, textarea, select {
 }
 
 textarea { cursor: text; }
+
+/* Убираем 300ms задержку tap на мобайле */
+button, a, [role="button"] {
+  touch-action: manipulation;
+}
 
 ::-webkit-scrollbar       { width: 4px; }
 ::-webkit-scrollbar-track { background: #e6e0d2; }
@@ -186,10 +192,11 @@ h1, h2 {
     font-size: 16px;         /* базовый размер чуть крупнее на мобайле */
   }
 
-  /* bottom nav label */
-  .mobile-bottom-nav-item .nav-label,
+  /* bottom nav label — inline-стиль в BottomNav даёт 8px, форсируем override */
+  .mobile-bottom-nav-item span,
   .nav-label {
-    font-size: 11px !important;
+    font-size: 10px !important;
+    line-height: 1.2 !important;
   }
 
   /* Мелкие overline-метки — минимум 11px */

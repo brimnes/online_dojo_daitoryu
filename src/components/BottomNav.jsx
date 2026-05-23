@@ -67,7 +67,7 @@ export function MobileBottomNav({ nav, active, isAdmin }) {
             {/* label */}
             <span style={{
               fontFamily: "'JetBrains Mono', ui-monospace, 'Courier New', monospace",
-              fontSize: 8,
+              fontSize: 10,
               letterSpacing: '0.1em',
               color: isA ? NT : NM,
               textTransform: 'uppercase',

@@ -301,7 +301,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
             }}>{thumbKanji}</span>
           )}
           <div style={{
-            width: 24, height: 24, borderRadius: '50%',
+            width: 36, height: 36, borderRadius: '50%',
             background: 'rgba(255,255,255,0.1)', border: '1.5px solid rgba(255,255,255,0.25)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1,
           }}>
@@ -325,7 +325,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
         <button
           onClick={onToggleWatched}
           style={{
-            width: 24, height: 24, borderRadius: '50%', flexShrink: 0,
+            width: 36, height: 36, minWidth: 36, borderRadius: '50%', flexShrink: 0,
             border: `1px solid ${watched ? C.success : C.border}`,
             background: watched ? C.success : 'transparent',
             display: 'flex', alignItems: 'center', justifyContent: 'center',

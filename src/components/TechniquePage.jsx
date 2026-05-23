@@ -163,7 +163,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
   // ── MOBILE ───────────────────────────────────────────────────────
   if (isMobile) {
     return (
-      <div className="fade" style={{ background: C.bg, minHeight: '100vh', position: 'relative' }}>
+      <div className="fade page-has-bottom-nav" style={{ background: C.bg, minHeight: '100vh', position: 'relative' }}>
         {/* Mobile top bar */}
         <div style={{
           display: 'flex', alignItems: 'center', justifyContent: 'space-between',
@@ -174,6 +174,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
             background: 'none', border: 'none', color: C.accent, cursor: 'pointer',
             fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
             fontSize: 13, letterSpacing: '0.08em', display: 'flex', alignItems: 'center', gap: 4,
+            minHeight: 44, padding: '0 8px 0 0',
           }}>
             ‹ ИППОНДОРИ
           </button>
@@ -241,7 +242,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
           {vid ? (
             <div style={{ position: 'relative', marginBottom: 0 }}>
               <KinescopePlayer videoId={vid.video_id} videoStatus={vid.video_status} viewerId={viewerId} title={vid.title} duration={vid.duration} />
-              <button onClick={() => setVid(null)} style={{ position: 'absolute', top: 10, right: 10, background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', width: 28, height: 28, borderRadius: '50%', cursor: 'pointer', fontSize: 12 }}>✕</button>
+              <button onClick={() => setVid(null)} style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', width: 44, height: 44, borderRadius: '50%', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
             </div>
           ) : (
             <div style={{ background: '#0f0d0a', aspectRatio: '16/9', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, position: 'relative', overflow: 'hidden' }}>
@@ -309,7 +310,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
 
         {/* Sensei quote */}
         {content.senseiQuote && (
-          <div className="page-has-bottom-nav" style={{ margin: '12px 16px 0', background: C.surface, border: `1px solid ${C.border}`, padding: '18px 16px' }}>
+          <div style={{ margin: '12px 16px 0', background: C.surface, border: `1px solid ${C.border}`, padding: '18px 16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: C.light, border: `1px solid ${C.goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Cormorant Garamond', serif", fontSize: 14, color: C.gold, flexShrink: 0 }}>К</div>
               <div>

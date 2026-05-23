@@ -211,7 +211,7 @@ export default function LessonPage({
                 {/* Конспект / download */}
                 <button style={{
                   background: 'none', border: `1px solid ${C.border}`,
-                  padding: '9px 16px',
+                  padding: '9px 16px', minHeight: 44,
                   fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
                   fontSize: 11, letterSpacing: '0.1em', color: C.muted,
                   cursor: 'pointer', textTransform: 'uppercase',
@@ -221,7 +221,7 @@ export default function LessonPage({
                   onClick={() => toggleWatched(lessonId)}
                   style={{
                     display: 'flex', alignItems: 'center', gap: 8,
-                    padding: '9px 18px',
+                    padding: '9px 18px', minHeight: 44,
                     background: isWatched ? C.ink : C.ink,
                     border: `1px solid ${isWatched ? C.ink : C.ink}`,
                     color: '#fff',

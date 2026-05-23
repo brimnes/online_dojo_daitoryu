@@ -380,7 +380,7 @@ function SearchBar({ onSelect, userAccess = [], accessLoading = false }) {
   }, []);
 
   return (
-    <div ref={ref} style={{ position: 'relative', width: 320 }}>
+    <div ref={ref} style={{ position: 'relative', width: '100%', maxWidth: 380 }}>
       <div style={{
         display: 'flex', alignItems: 'center', gap: 10,
         background: C.bg, border: `1px solid ${C.border}`,

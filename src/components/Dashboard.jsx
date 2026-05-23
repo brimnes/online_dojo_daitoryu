@@ -383,7 +383,7 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
             </div>
             <div style={{ marginTop: 10 }}>
               <button onClick={() => nav.month(m.id)}
-                style={{ background: 'none', border: 'none', padding: 0, fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.accent, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer' }}>
+                style={{ background: 'none', border: 'none', padding: '8px 0', fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: C.accent, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer', minHeight: 36 }}>
                 Продолжить →
               </button>
             </div>
@@ -395,7 +395,7 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
             </span>
             <div style={{ marginTop: 10 }}>
               <button onClick={() => nav.month(m.id)}
-                style={{ background: 'none', border: 'none', padding: 0, fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.accent, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer' }}>
+                style={{ background: 'none', border: 'none', padding: '8px 0', fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: C.accent, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer', minHeight: 36 }}>
                 Открыть урок →
               </button>
             </div>
@@ -407,7 +407,7 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
                 {product.price?.toLocaleString('ru-RU')} ₽
               </span>
               <button onClick={handleBuy} disabled={buying}
-                style={{ background: 'none', border: 'none', padding: 0, fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: buying ? C.muted : C.gold, letterSpacing: '0.16em', textTransform: 'uppercase', cursor: buying ? 'default' : 'pointer' }}>
+                style={{ background: 'none', border: 'none', padding: '8px 0', fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: buying ? C.muted : C.gold, letterSpacing: '0.16em', textTransform: 'uppercase', cursor: buying ? 'default' : 'pointer', minHeight: 36 }}>
                 {buying ? 'Переход…' : 'Открыть →'}
               </button>
             </div>
@@ -445,11 +445,11 @@ function TabKnowledge({ nav, isMobile }) {
   const negW = isMobile ? -16 : -36;
 
   return (
-    <div>
+    <div style={{ overflow: 'hidden' }}>
 
       {/* ── Top bar — минимальный: только section index + open-access tag ── */}
       <div style={{
-        marginTop: negH, marginLeft: negW, marginRight: negW,
+        marginTop: negH, margin: `${negH}px ${negW}px 0`,
         padding: isMobile ? '12px 18px' : '16px 48px',
         borderBottom: `1px solid ${C.border}`, background: 'transparent',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',

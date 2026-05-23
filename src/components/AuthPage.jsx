@@ -395,7 +395,7 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
               fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
               fontSize:10, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase',
             }}>Пароль</label>
-            <button style={{ background:'none', border:'none', fontSize:11, color:C.accent, cursor:'pointer', padding:0, fontStyle:'italic' }}>забыли?</button>
+            <button style={{ background:'none', border:'none', fontSize:11, color:C.accent, cursor:'pointer', padding:'12px 0', fontStyle:'italic', minHeight:44, display:'flex', alignItems:'center' }}>забыли?</button>
           </div>
           <Input value={password} onChange={setPassword} placeholder="••••••••" type="password" error={!!errors.password}/>
           {errors.password && <div style={{ fontSize:12, color:C.red }}>{errors.password}</div>}
@@ -544,7 +544,7 @@ function SetPasswordForm({ userId, onSuccess, onBack }) {
         </button>
 
         <button onClick={onBack}
-          style={{ background:'none', border:'none', fontSize:13, color:C.muted, cursor:'pointer', fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif" }}>
+          style={{ background:'none', border:'none', fontSize:13, color:C.muted, cursor:'pointer', fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", minHeight:44, display:'flex', alignItems:'center', padding:'0 4px' }}>
           ← Вернуться к входу
         </button>
       </div>
