@@ -49,7 +49,7 @@ export default function KnowledgePage({ nav }) {
   const showSearch = !loading && items.length > 0;
 
   return (
-    <div className="fade" style={{ minHeight: '100vh', background: C.bg, overflowX: 'hidden' }}>
+    <div className={`fade${isMobile ? ' knowledge-page' : ''}`} style={{ minHeight: '100vh', background: C.bg }}>
 
       {/* ── Mobile sticky header ── */}
       {isMobile && (
@@ -178,7 +178,7 @@ export default function KnowledgePage({ nav }) {
 
         {/* ── Category filter chips ── */}
         {showChips && (
-          <div style={{ position: 'relative', overflow: 'hidden' }}>
+          <div style={{ position: 'relative' }}>
             {/* Chips scrollable row — hidden scrollbar via .chips-scroll class */}
             <div
               className="chips-scroll"
