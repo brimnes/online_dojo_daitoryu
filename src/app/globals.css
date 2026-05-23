@@ -186,6 +186,15 @@ h1, h2 {
   padding-bottom: calc(96px + env(safe-area-inset-bottom, 0px)) !important;
 }
 
+/* ── Horizontal scroll rows (chips, filters) — hidden scrollbar ── */
+.chips-scroll {
+  -ms-overflow-style: none;   /* IE/Edge */
+  scrollbar-width: none;      /* Firefox */
+}
+.chips-scroll::-webkit-scrollbar {
+  display: none;              /* Chrome/Safari/WebKit */
+}
+
 /* ═══════════════════════════════════════════════════════════════
    MOBILE TYPOGRAPHY OVERRIDES — комфортное чтение без приближения
    ═══════════════════════════════════════════════════════════════ */
