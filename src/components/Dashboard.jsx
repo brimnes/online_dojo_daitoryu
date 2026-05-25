@@ -464,24 +464,18 @@ function TabKnowledge({ nav, isMobile }) {
           </h1>
         </div>
 
-        {/* Filter chips — scrollable row, no page overflow */}
-        <div
-          className="chips-scroll"
-          style={{
-            display: 'flex', gap: 8, marginBottom: 16,
-            overflowX: 'auto', flexWrap: 'nowrap',
-            WebkitOverflowScrolling: 'touch',
-          }}>
+        {/* Filter chips — wrap to 2 rows so all are visible without scrolling */}
+        <div style={{ display: 'flex', gap: 6, flexWrap: 'wrap', marginBottom: 16 }}>
           {KNOWLEDGE_CATS.map(cat => {
             const isA = activeTag === cat.id;
             return (
               <button key={String(cat.id)} onClick={() => setActiveTag(cat.id)} style={{
-                flexShrink: 0, padding: '7px 14px', minHeight: 36,
+                padding: '6px 12px', minHeight: 34,
                 background: isA ? C.ink : 'transparent',
                 color: isA ? C.onAccent : C.muted,
                 border: `1px solid ${isA ? C.ink : C.border}`,
                 fontFamily: "var(--font-mono), monospace",
-                fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
+                fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase',
                 cursor: 'pointer', whiteSpace: 'nowrap',
               }}>
                 {cat.label}
