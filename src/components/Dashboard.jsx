@@ -51,7 +51,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, init
       )}
 
       {/* ── Main content ── */}
-      <main style={{ flex: 1, background: C.bg, minHeight: '100vh' }}>
+      <main style={{ flex: 1, background: C.bg, minHeight: '100vh', minWidth: 0 }}>
 
         {/* Mobile top header */}
         {isMobile && (
@@ -1047,24 +1047,25 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
 
   // Level card (reused on desktop and mobile)
   const renderLevelCard = (compact) => (
-    <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: compact ? '16px' : '22px', position: 'relative', overflow: 'hidden' }}>
+    <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: compact ? '16px' : '22px', position: 'relative', overflow: 'hidden', width: '100%', boxSizing: 'border-box' }}>
       <div style={{ position: 'absolute', top: compact ? 8 : 12, right: compact ? 10 : 14, fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: compact ? 48 : 56, color: C.goldSoft, opacity: 0.45, lineHeight: 1 }}>{curKanji}</div>
-      <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: compact ? 6 : 8 }}>Текущий уровень</div>
-      <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: compact ? 38 : 52, color: C.ink, letterSpacing: '0.04em', lineHeight: 1, marginBottom: 4 }}>
+      <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: compact ? 6 : 8 }}>Текущий уровень</div>
+      <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: compact ? 38 : 52, color: C.ink, letterSpacing: '0.03em', lineHeight: 1, marginBottom: 4 }}>
         {curLv?.label?.toUpperCase() || '—'}
       </div>
       <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 13, color: C.muted, marginBottom: compact ? 12 : 16 }}>
         {curLv?.program === 'ikkajo' ? 'Иккаджо · Татиай' : curLv?.label || ''}
       </div>
       <div style={{ height: 1, background: C.border, marginBottom: compact ? 10 : 14 }} />
-      <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.22em', textTransform: 'uppercase', marginBottom: compact ? 8 : 10 }}>Путь к Сёдан</div>
+      <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: compact ? 8 : 10 }}>Путь к Сёдан</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginBottom: 6 }}>
         {TRACK.map((id, i) => {
           const filled = i <= curIdx;
           const isCur  = i === curIdx;
           return (
-            <div key={id} style={{ flex: 1, height: 4, background: filled ? C.accent : C.bg2, position: 'relative' }}>
-              {isCur && <div style={{ position: 'absolute', top: -3, right: -4, width: 10, height: 10, borderRadius: '50%', background: C.accent, zIndex: 1 }} />}
+            <div key={id} style={{ flex: 1, minWidth: 0, height: 4, background: filled ? C.accent : C.bg2, position: 'relative' }}>
+              {/* marker: centered on the segment, not sticking out right */}
+              {isCur && <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 10, height: 10, borderRadius: '50%', background: C.accent, zIndex: 1 }} />}
             </div>
           );
         })}
