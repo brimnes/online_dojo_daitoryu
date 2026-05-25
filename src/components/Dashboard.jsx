@@ -1029,11 +1029,11 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
   });
 
   const SUB_TABS = [
-    { id: 'info',     label: 'Обо мне'    },
-    { id: 'exams',    label: 'Экзамены'   },
-    { id: 'access',   label: 'Мой доступ' },
-    { id: 'payments', label: 'Оплаты'     },
-    { id: 'unlock',   label: 'Купить'     },
+    { id: 'info',     label: 'Обо мне',   short: 'Обо мне'  },
+    { id: 'exams',    label: 'Экзамены',  short: 'Экзамены' },
+    { id: 'access',   label: 'Мой доступ',short: 'Доступ'   },
+    { id: 'payments', label: 'Оплаты',    short: 'Оплаты'   },
+    { id: 'unlock',   label: 'Купить',    short: 'Купить'   },
   ];
 
   // Level kanji
@@ -1075,27 +1075,54 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
     </div>
   );
 
+  // Format joinedAt → "МАР. 2026" (short, avoids raw ISO string overflow)
+  const joinedStr = usr.joinedAt
+    ? new Date(usr.joinedAt).toLocaleDateString('ru-RU', { year: 'numeric', month: 'short' }).toUpperCase().replace('.', '')
+    : null;
+
   return (
     <div>
       {/* ── Top bar ── */}
-      <div style={{
-        display: 'flex', alignItems: 'center', justifyContent: 'space-between',
-        marginTop: isMobile ? -16 : -32, marginLeft: isMobile ? -16 : -36, marginRight: isMobile ? -16 : -36,
-        padding: isMobile ? '12px 16px' : '14px 36px',
-        borderBottom: `1px solid ${C.border}`, background: C.surface,
-        marginBottom: isMobile ? 20 : 36, gap: 12, flexWrap: 'wrap',
-      }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-          <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 12, color: C.muted, letterSpacing: '0.15em' }}>個人</span>
-          <span style={{ color: C.hairline2, fontSize: 13 }}>/</span>
-          <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.18em', color: C.ink, fontWeight: 600 }}>ЛИЧНЫЙ КАБИНЕТ</span>
+      {isMobile ? (
+        /* Mobile: no negative margins, fits within 16px parent padding */
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          paddingBottom: 12, marginBottom: 20,
+          borderBottom: `1px solid ${C.border}`,
+          gap: 8,
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+            <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 11, color: C.muted }}>個人</span>
+            <span style={{ color: C.hairline2, fontSize: 12 }}>/</span>
+            <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, letterSpacing: '0.14em', color: C.muted, textTransform: 'uppercase' }}>Профиль</span>
+          </div>
+          {joinedStr && (
+            <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.1em', textTransform: 'uppercase', flexShrink: 0 }}>
+              С {joinedStr}
+            </span>
+          )}
         </div>
-        {usr.joinedAt && (
-          <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-            В ШКОЛЕ С {usr.joinedAt}
-          </span>
-        )}
-      </div>
+      ) : (
+        /* Desktop: edge-to-edge with negative margins */
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          marginTop: -32, marginLeft: -36, marginRight: -36,
+          padding: '14px 36px',
+          borderBottom: `1px solid ${C.border}`, background: C.surface,
+          marginBottom: 36, gap: 12, flexWrap: 'wrap',
+        }}>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
+            <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 12, color: C.muted, letterSpacing: '0.15em' }}>個人</span>
+            <span style={{ color: C.hairline2, fontSize: 13 }}>/</span>
+            <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.18em', color: C.ink, fontWeight: 600 }}>ЛИЧНЫЙ КАБИНЕТ</span>
+          </div>
+          {joinedStr && (
+            <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+              В ШКОЛЕ С {joinedStr}
+            </span>
+          )}
+        </div>
+      )}
 
       {/* ── Desktop hero: 3-col grid ── */}
       {!isMobile && (
@@ -1158,20 +1185,20 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
       )}
 
       {/* ── Sub-tabs ── */}
-      <div style={{ display: 'flex', borderBottom: `1px solid ${C.border}`, overflowX: 'auto', WebkitOverflowScrolling: 'touch', scrollbarWidth: 'none' }}>
+      <div className="chips-scroll" style={{ display: 'flex', borderBottom: `1px solid ${C.border}`, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
         {SUB_TABS.map(t => (
           <button key={t.id} onClick={() => setSub(t.id)}
             style={{
-              padding: isMobile ? '12px 14px' : '13px 20px',
+              padding: isMobile ? '12px 12px' : '13px 20px',
               background: 'none', border: 'none',
               borderBottom: `2px solid ${sub === t.id ? C.accent : 'transparent'}`,
               color: sub === t.id ? C.ink : C.muted,
               fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-              fontSize: isMobile ? 12 : 12, letterSpacing: '0.14em', textTransform: 'uppercase',
+              fontSize: 12, letterSpacing: '0.12em', textTransform: 'uppercase',
               cursor: 'pointer', fontWeight: sub === t.id ? 600 : 400,
               marginBottom: -1, whiteSpace: 'nowrap', minHeight: 48,
               WebkitTapHighlightColor: 'transparent',
-            }}>{t.label}</button>
+            }}>{isMobile ? t.short : t.label}</button>
         ))}
       </div>
 
