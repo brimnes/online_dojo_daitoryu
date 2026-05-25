@@ -445,9 +445,10 @@ function TabKnowledge({ nav, isMobile }) {
   const negW = isMobile ? -16 : -36;
 
   return (
-    <div style={{ overflow: 'hidden' }}>
+    <div>
 
-      {/* ── Top bar — минимальный: только section index + open-access tag ── */}
+      {/* ── Top bar — overflow:hidden only here to contain negative margins ── */}
+      <div style={{ overflow: 'hidden' }}>
       <div style={{
         marginTop: negH, margin: `${negH}px ${negW}px 0`,
         padding: isMobile ? '12px 18px' : '16px 48px',
@@ -461,6 +462,7 @@ function TabKnowledge({ nav, isMobile }) {
           Открыто для всех
         </span>
       </div>
+      </div>{/* end overflow:hidden top-bar wrapper */}
 
       {/* ── Hero ── */}
       <div style={{ paddingTop: isMobile ? 20 : 48 }}>
@@ -486,7 +488,7 @@ function TabKnowledge({ nav, isMobile }) {
           </div>
         ) : (
           <div style={{ marginBottom: 24, paddingTop: 8 }}>
-            <h1 style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 48, color: C.ink, lineHeight: 0.98, margin: '0 0 14px', fontWeight: 300, letterSpacing: '0.01em' }}>
+            <h1 style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 40, color: C.ink, lineHeight: 1, margin: '0 0 12px', fontWeight: 300, letterSpacing: '0.01em' }}>
               База знаний
             </h1>
             <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 16, fontWeight: 300, color: C.muted, lineHeight: 1.5, marginBottom: 20 }}>
@@ -511,19 +513,30 @@ function TabKnowledge({ nav, isMobile }) {
           </svg>
         )}
 
-        {/* ── Filter bar ── */}
-        <div style={{ display: 'flex', gap: 6, marginBottom: 20, overflowX: 'auto', flexWrap: isMobile ? undefined : 'wrap' }}>
-          {KNOWLEDGE_CATS.map(cat => {
+        {/* ── Filter bar — horizontally scrollable on mobile ── */}
+        <div
+          className="chips-scroll"
+          style={{
+            display: 'flex', gap: 6, marginBottom: 20,
+            overflowX: isMobile ? 'auto' : undefined,
+            flexWrap: isMobile ? 'nowrap' : 'wrap',
+            WebkitOverflowScrolling: 'touch',
+            // right fade spacer handled by last chip margin
+          }}>
+          {KNOWLEDGE_CATS.map((cat, catIdx) => {
             const isA = activeTag === cat.id;
+            const isLast = catIdx === KNOWLEDGE_CATS.length - 1;
             return (
               <button key={String(cat.id)} onClick={() => setActiveTag(cat.id)} style={{
-                padding: isMobile ? '8px 14px' : '8px 16px', flexShrink: 0,
+                padding: isMobile ? '8px 14px' : '8px 16px',
+                flexShrink: 0,
+                marginRight: isMobile && isLast ? 4 : 0,
                 background: isA ? C.ink : 'transparent',
                 color: isA ? C.onAccent : C.ink2,
                 border: `1px solid ${isA ? C.ink : C.border}`,
                 fontFamily: "var(--font-mono), monospace",
                 fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase',
-                cursor: 'pointer',
+                cursor: 'pointer', whiteSpace: 'nowrap', minHeight: 36,
               }}>
                 {cat.label}
               </button>
