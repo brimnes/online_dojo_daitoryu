@@ -441,17 +441,120 @@ function TabKnowledge({ nav, isMobile }) {
   const [activeTag, setActiveTag] = useState(null);
 
   const filtered = activeTag ? items.filter(it => it.tag === activeTag) : items;
-  const negH = isMobile ? -16 : -32;
-  const negW = isMobile ? -16 : -36;
+
+  // ── MOBILE layout — clean, no negative-margin hacks ──────────────
+  if (isMobile) {
+    return (
+      <div>
+        {/* Hero — compact, no quote block */}
+        <div style={{ marginBottom: 20 }}>
+          <div style={{
+            fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+            fontSize: 10, letterSpacing: '0.2em', color: C.muted,
+            textTransform: 'uppercase', marginBottom: 10,
+          }}>
+            01 · Архив · Открыто для всех
+          </div>
+          <h1 style={{
+            fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+            fontSize: 36, color: C.ink, lineHeight: 1.05, fontWeight: 300,
+            letterSpacing: '0.01em', margin: 0,
+          }}>
+            База знаний
+          </h1>
+        </div>
+
+        {/* Filter chips — scrollable row, no page overflow */}
+        <div
+          className="chips-scroll"
+          style={{
+            display: 'flex', gap: 8, marginBottom: 16,
+            overflowX: 'auto', flexWrap: 'nowrap',
+            WebkitOverflowScrolling: 'touch',
+          }}>
+          {KNOWLEDGE_CATS.map(cat => {
+            const isA = activeTag === cat.id;
+            return (
+              <button key={String(cat.id)} onClick={() => setActiveTag(cat.id)} style={{
+                flexShrink: 0, padding: '7px 14px', minHeight: 36,
+                background: isA ? C.ink : 'transparent',
+                color: isA ? C.onAccent : C.muted,
+                border: `1px solid ${isA ? C.ink : C.border}`,
+                fontFamily: "var(--font-mono), monospace",
+                fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
+                cursor: 'pointer', whiteSpace: 'nowrap',
+              }}>
+                {cat.label}
+              </button>
+            );
+          })}
+        </div>
+
+        {/* Loading */}
+        {loading && (
+          <div style={{ color: C.muted, fontFamily: "var(--font-mono), monospace", fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', padding: '24px 0' }}>
+            Загрузка
+          </div>
+        )}
+
+        {/* Empty */}
+        {!loading && filtered.length === 0 && (
+          <div style={{ padding: '40px 0', textAlign: 'center', color: C.muted, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 15 }}>
+            {activeTag ? 'В этой категории пока нет материалов' : 'Материалов пока нет'}
+          </div>
+        )}
+
+        {/* Items list */}
+        <div style={{ display: 'flex', flexDirection: 'column' }}>
+          {filtered.map((item, i) => {
+            const kanji = KNOWLEDGE_TAG_KANJI[item.tag] || '智';
+            return (
+              <div key={item.id}
+                onClick={() => nav.knowledgeItem(item.id)}
+                style={{
+                  display: 'flex', alignItems: 'center', gap: 14,
+                  padding: '14px 0', borderTop: `1px solid ${C.border}`,
+                  cursor: 'pointer', WebkitTapHighlightColor: 'transparent',
+                }}>
+                <div style={{
+                  width: 44, height: 44, flexShrink: 0,
+                  background: C.surface, border: `1px solid ${C.border}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                }}>
+                  <span style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 20, color: C.accent, opacity: 0.85 }}>
+                    {kanji}
+                  </span>
+                </div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 18, color: C.ink, fontWeight: 400, lineHeight: 1.25 }}>
+                    {item.title}
+                  </div>
+                  {item.subtitle && (
+                    <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 300, fontSize: 13, color: C.muted, marginTop: 2, lineHeight: 1.4 }}>
+                      {item.subtitle}
+                    </div>
+                  )}
+                </div>
+                <span style={{ color: C.muted, fontSize: 14, flexShrink: 0, opacity: 0.5 }}>→</span>
+              </div>
+            );
+          })}
+        </div>
+      </div>
+    );
+  }
+
+  // ── DESKTOP layout — unchanged ────────────────────────────────────
+  const negH = -32;
+  const negW = -36;
 
   return (
-    <div>
+    <div style={{ overflow: 'hidden' }}>
 
-      {/* ── Top bar — overflow:hidden only here to contain negative margins ── */}
-      <div style={{ overflow: 'hidden' }}>
+      {/* Top bar */}
       <div style={{
         marginTop: negH, margin: `${negH}px ${negW}px 0`,
-        padding: isMobile ? '12px 18px' : '16px 48px',
+        padding: '16px 48px',
         borderBottom: `1px solid ${C.border}`, background: 'transparent',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
@@ -462,81 +565,47 @@ function TabKnowledge({ nav, isMobile }) {
           Открыто для всех
         </span>
       </div>
-      </div>{/* end overflow:hidden top-bar wrapper */}
 
-      {/* ── Hero ── */}
-      <div style={{ paddingTop: isMobile ? 20 : 48 }}>
-        {!isMobile ? (
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 48, marginBottom: 56 }}>
-            <div>
-              <h1 style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 72, color: C.ink, letterSpacing: '0.01em', lineHeight: 0.95, margin: '0 0 20px', fontWeight: 300 }}>
-                База знаний
-              </h1>
-              <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 18, fontWeight: 300, color: C.muted, lineHeight: 1.55, maxWidth: 520 }}>
-                История, философия и базовая терминология школы. Открытый архив для всех учеников.
-              </div>
-            </div>
-            <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: '22px 22px' }}>
-              <div style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 40, color: C.accent, opacity: 0.7, marginBottom: 8, lineHeight: 1 }}>道</div>
-              <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 18, color: C.ink2, lineHeight: 1.5 }}>
-                «Сначала путь — потом техника. Сначала смысл — потом форма.»
-              </div>
-              <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.2em', marginTop: 14, textTransform: 'uppercase' }}>
-                — Такэда Сокаку
-              </div>
-            </div>
-          </div>
-        ) : (
-          <div style={{ marginBottom: 24, paddingTop: 8 }}>
-            <h1 style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 40, color: C.ink, lineHeight: 1, margin: '0 0 12px', fontWeight: 300, letterSpacing: '0.01em' }}>
+      {/* Hero */}
+      <div style={{ paddingTop: 48 }}>
+        <div style={{ display: 'grid', gridTemplateColumns: '1fr 280px', gap: 48, marginBottom: 56 }}>
+          <div>
+            <h1 style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 72, color: C.ink, letterSpacing: '0.01em', lineHeight: 0.95, margin: '0 0 20px', fontWeight: 300 }}>
               База знаний
             </h1>
-            <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 16, fontWeight: 300, color: C.muted, lineHeight: 1.5, marginBottom: 20 }}>
-              История, философия и термины. Открытый архив.
-            </div>
-            <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: '16px', marginBottom: 20, position: 'relative' }}>
-              <div style={{ position: 'absolute', top: 8, right: 12, fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 36, color: C.accent, opacity: 0.5, lineHeight: 1 }}>道</div>
-              <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 15, color: C.ink2, lineHeight: 1.55, paddingRight: 40 }}>
-                «Сначала путь — потом техника.»
-              </div>
-              <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.18em', marginTop: 10, textTransform: 'uppercase' }}>
-                — Такэда Сокаку
-              </div>
+            <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 18, fontWeight: 300, color: C.muted, lineHeight: 1.55, maxWidth: 520 }}>
+              История, философия и базовая терминология школы. Открытый архив для всех учеников.
             </div>
           </div>
-        )}
+          <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: '22px 22px' }}>
+            <div style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 40, color: C.accent, opacity: 0.7, marginBottom: 8, lineHeight: 1 }}>道</div>
+            <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 18, color: C.ink2, lineHeight: 1.5 }}>
+              «Сначала путь — потом техника. Сначала смысл — потом форма.»
+            </div>
+            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.2em', marginTop: 14, textTransform: 'uppercase' }}>
+              — Такэда Сокаку
+            </div>
+          </div>
+        </div>
 
-        {/* Sumi stroke (desktop) */}
-        {!isMobile && (
-          <svg viewBox="0 0 800 20" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: 20, opacity: 0.25, marginBottom: 32, display: 'block' }}>
-            <path d="M0,10 Q200,4 400,10 Q600,16 800,10" stroke={C.ink2} strokeWidth="1.5" fill="none" strokeLinecap="round" />
-          </svg>
-        )}
+        {/* Sumi stroke */}
+        <svg viewBox="0 0 800 20" xmlns="http://www.w3.org/2000/svg" style={{ width: '100%', height: 20, opacity: 0.25, marginBottom: 32, display: 'block' }}>
+          <path d="M0,10 Q200,4 400,10 Q600,16 800,10" stroke={C.ink2} strokeWidth="1.5" fill="none" strokeLinecap="round" />
+        </svg>
 
-        {/* ── Filter bar — horizontally scrollable on mobile ── */}
-        <div
-          className="chips-scroll"
-          style={{
-            display: 'flex', gap: 6, marginBottom: 20,
-            overflowX: isMobile ? 'auto' : undefined,
-            flexWrap: isMobile ? 'nowrap' : 'wrap',
-            WebkitOverflowScrolling: 'touch',
-            // right fade spacer handled by last chip margin
-          }}>
-          {KNOWLEDGE_CATS.map((cat, catIdx) => {
+        {/* Filter bar */}
+        <div style={{ display: 'flex', gap: 6, marginBottom: 20, flexWrap: 'wrap' }}>
+          {KNOWLEDGE_CATS.map(cat => {
             const isA = activeTag === cat.id;
-            const isLast = catIdx === KNOWLEDGE_CATS.length - 1;
             return (
               <button key={String(cat.id)} onClick={() => setActiveTag(cat.id)} style={{
-                padding: isMobile ? '8px 14px' : '8px 16px',
-                flexShrink: 0,
-                marginRight: isMobile && isLast ? 4 : 0,
+                padding: '8px 16px', flexShrink: 0,
                 background: isA ? C.ink : 'transparent',
                 color: isA ? C.onAccent : C.ink2,
                 border: `1px solid ${isA ? C.ink : C.border}`,
                 fontFamily: "var(--font-mono), monospace",
                 fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase',
-                cursor: 'pointer', whiteSpace: 'nowrap', minHeight: 36,
+                cursor: 'pointer',
               }}>
                 {cat.label}
               </button>
@@ -544,7 +613,7 @@ function TabKnowledge({ nav, isMobile }) {
           })}
         </div>
 
-        {/* ── Items ── */}
+        {/* Items */}
         {loading && (
           <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 15, color: C.muted, padding: '24px 0' }}>Загрузка…</div>
         )}
@@ -564,50 +633,32 @@ function TabKnowledge({ nav, isMobile }) {
                   style={{ cursor: 'pointer', borderBottom: i < filtered.length - 1 ? `1px solid ${C.hairline2}` : 'none' }}
                   onMouseEnter={e => e.currentTarget.style.background = C.bg2}
                   onMouseLeave={e => e.currentTarget.style.background = 'transparent'}>
-                  {isMobile ? (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 14, padding: '16px 14px', minHeight: 76 }}>
-                      <div style={{ width: 48, height: 48, background: C.bg2, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', flexShrink: 0 }}>
-                        <span style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 22, color: C.accent, opacity: 0.85 }}>{kanji}</span>
-                      </div>
-                      <div style={{ flex: 1, minWidth: 0 }}>
-                        {tagLabel && (
-                          <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.accent, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 2 }}>
-                            {tagLabel}
-                          </div>
-                        )}
-                        <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 18, color: C.ink, fontWeight: 400, lineHeight: 1.25, letterSpacing: '0.005em' }}>{item.title}</div>
-                        {item.subtitle && <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 300, fontSize: 13, color: C.muted, marginTop: 3, lineHeight: 1.4 }}>{item.subtitle}</div>}
-                      </div>
-                      <span style={{ color: C.muted, fontSize: 16, flexShrink: 0 }}>→</span>
+                  <div style={{ display: 'grid', gridTemplateColumns: '60px 88px 1fr 120px 24px', gap: 24, alignItems: 'center', padding: '22px 28px' }}>
+                    <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.1em' }}>
+                      {String(i + 1).padStart(2, '0')}
+                    </span>
+                    <div style={{ width: 64, height: 64, background: C.bg2, border: `1px solid ${C.border}`, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+                      <span style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 28, color: C.accent, opacity: 0.85 }}>{kanji}</span>
+                      {item.video_id && (
+                        <span style={{ position: 'absolute', bottom: 2, right: 4, fontFamily: "var(--font-mono), monospace", fontSize: 8, color: C.muted }}>▷</span>
+                      )}
                     </div>
-                  ) : (
-                    <div style={{ display: 'grid', gridTemplateColumns: '60px 88px 1fr 120px 24px', gap: 24, alignItems: 'center', padding: '22px 28px' }}>
-                      <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.1em' }}>
-                        {String(i + 1).padStart(2, '0')}
-                      </span>
-                      <div style={{ width: 64, height: 64, background: C.bg2, border: `1px solid ${C.border}`, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-                        <span style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 28, color: C.accent, opacity: 0.85 }}>{kanji}</span>
-                        {item.video_id && (
-                          <span style={{ position: 'absolute', bottom: 2, right: 4, fontFamily: "var(--font-mono), monospace", fontSize: 8, color: C.muted }}>▷</span>
-                        )}
-                      </div>
-                      <div>
-                        <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 20, color: C.ink, letterSpacing: '0.02em', fontWeight: 500 }}>{item.title}</div>
-                        {item.subtitle && <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 14, color: C.muted, marginTop: 4 }}>{item.subtitle}</div>}
-                      </div>
-                      <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
-                        {tagLabel && (
-                          <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', padding: '2px 8px', border: `1px solid ${C.accent}` }}>
-                            {tagLabel}
-                          </span>
-                        )}
-                        {item.video_id && item.duration && (
-                          <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.08em' }}>{item.duration}</span>
-                        )}
-                      </div>
-                      <span style={{ color: C.muted, fontSize: 18 }}>→</span>
+                    <div>
+                      <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 20, color: C.ink, letterSpacing: '0.02em', fontWeight: 500 }}>{item.title}</div>
+                      {item.subtitle && <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 14, color: C.muted, marginTop: 4 }}>{item.subtitle}</div>}
                     </div>
-                  )}
+                    <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
+                      {tagLabel && (
+                        <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', padding: '2px 8px', border: `1px solid ${C.accent}` }}>
+                          {tagLabel}
+                        </span>
+                      )}
+                      {item.video_id && item.duration && (
+                        <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.08em' }}>{item.duration}</span>
+                      )}
+                    </div>
+                    <span style={{ color: C.muted, fontSize: 18 }}>→</span>
+                  </div>
                 </div>
               );
             })}
