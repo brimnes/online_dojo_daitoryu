@@ -278,6 +278,28 @@ function HairlineTable2({ columns, rows, dense=false, onRowClick }) {
 
 // ── AdminSectionHead ────────────────────────────────────────────
 function AdminSectionHead({ num, title, subtitle, kanji, actions }) {
+  const isMobile = useIsMobile();
+  if (isMobile) {
+    return (
+      <div style={{marginBottom:18}}>
+        {/* top row: kanji + text */}
+        <div style={{display:'flex',alignItems:'flex-end',gap:10,minWidth:0,marginBottom: actions ? 12 : 0}}>
+          {kanji && <span style={{fontFamily:F.kanji,fontSize:48,lineHeight:0.85,color:C.accent,opacity:0.14,letterSpacing:0,flexShrink:0}}>{kanji}</span>}
+          <div style={{minWidth:0}}>
+            {(num||subtitle) && (
+              <div style={{display:'flex',alignItems:'center',gap:8,marginBottom:4,flexWrap:'wrap'}}>
+                {num && <span style={{fontFamily:F.mono,fontSize:9,color:C.accent,letterSpacing:'0.22em'}}>{num}</span>}
+                {subtitle && <span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:11,color:C.muted,lineHeight:1.4}}>{subtitle}</span>}
+              </div>
+            )}
+            <div style={{fontFamily:F.serif,fontSize:26,color:C.ink,letterSpacing:'0.04em',lineHeight:1,fontWeight:500}}>{title}</div>
+          </div>
+        </div>
+        {/* actions row below */}
+        {actions && <div style={{display:'flex',gap:8,alignItems:'center',flexWrap:'wrap'}}>{actions}</div>}
+      </div>
+    );
+  }
   return (
     <div style={{display:'flex',alignItems:'flex-end',justifyContent:'space-between',gap:24,marginBottom:18}}>
       <div style={{display:'flex',alignItems:'flex-end',gap:14,minWidth:0}}>
