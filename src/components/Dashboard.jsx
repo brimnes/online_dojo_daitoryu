@@ -240,10 +240,10 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
   const hasProg      = (lessons ?? []).length > 0 && watchedCount > 0;
 
   // ─── SOURCE OF TRUTH для доступа ────────────────────────────────
-  // ТОЛЬКО user_access из БД: type='month', reference=m.id.
-  // Никаких bypass: ни isAdmin, ни mock, ни products, ни is_open.
+  // is_open=true → месяц открыт для всех авторизованных учеников (бесплатно).
+  // Иначе — проверяем user_access в БД: type='month', reference=m.id.
   // Пока accessLoading=true — доступ неизвестен, CTA нейтральный.
-  const hasAccess = !accessLoading && hasMonthAccess(userAccess ?? [], m.id);
+  const hasAccess = !!m.is_open || (!accessLoading && hasMonthAccess(userAccess ?? [], m.id));
 
   // ─── Оплата конкретного месяца ───────────────────────────────────
   const handleBuy = async () => {

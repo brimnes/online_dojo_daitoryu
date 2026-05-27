@@ -15,8 +15,8 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
   const { rows: userAccess, loading: accessLoading } = useUserAccessRows();
 
   const month       = months.find(m => m.id === monthId);
-  const canView     = hasMonthAccess(userAccess, monthId);
-  console.log(`[MonthPage] monthId=${monthId} canView=${canView}`);
+  // is_open=true → месяц открыт для всех авторизованных учеников бесплатно
+  const canView     = !!month?.is_open || hasMonthAccess(userAccess, monthId);
 
   const safelessons  = lessons ?? [];
   const watchedCount = safelessons.filter(l => watched[l.id]).length;
