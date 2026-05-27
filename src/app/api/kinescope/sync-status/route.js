@@ -53,20 +53,34 @@ export async function POST(request) {
   // Kinescope возвращает { data: { id, status, duration, ... } }
   const data   = json.data ?? json;
   const status = mapStatus(data.status);
-  const duration = data.duration ? String(data.duration) : undefined;
-  const poster   = data.poster_url ?? data.poster ?? undefined;
+  const durationSec = data.duration;
+  const poster      = data.poster_url ?? data.poster ?? undefined;
 
   if (!status) {
     return NextResponse.json({ error: 'Cannot determine status from Kinescope response', raw: json }, { status: 502 });
   }
+
+  // Секунды → "MM:SS" / "H:MM:SS"
+  function fmtDuration(secs) {
+    if (!secs) return null;
+    const s = Math.round(Number(secs));
+    if (isNaN(s) || s <= 0) return null;
+    const h = Math.floor(s / 3600);
+    const m = Math.floor((s % 3600) / 60);
+    const sec = s % 60;
+    if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+    return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+  }
+  const durationFmt = fmtDuration(durationSec);
 
   // Обновляем все три таблицы
   const lessonData    = { videoStatus: status };
   const techData      = { videoStatus: status };
   const knowledgeData = { videoStatus: status };
   if (status === 'ready') {
-    if (duration) { lessonData.videoDuration = duration; techData.duration = duration; }
-    if (poster)   { lessonData.videoPosterUrl = poster; }
+    if (durationSec) lessonData.videoDuration = String(durationSec);
+    if (durationFmt) { lessonData.duration = durationFmt; techData.duration = durationFmt; }
+    if (poster)      lessonData.videoPosterUrl = poster;
   }
 
   const [lessonRes, techRes, knowledgeRes] = await Promise.allSettled([

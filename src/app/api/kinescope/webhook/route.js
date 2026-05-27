@@ -30,8 +30,21 @@ export async function POST(request) {
     }
 
     const videoId  = data?.id;
-    const duration = data?.duration;
+    const duration = data?.duration;  // секунды (число) от Kinescope
     const poster   = data?.poster_url;
+
+    // Конвертация секунд → "MM:SS" или "H:MM:SS"
+    function fmtDuration(secs) {
+      if (!secs) return null;
+      const s = Math.round(Number(secs));
+      if (isNaN(s) || s <= 0) return null;
+      const h = Math.floor(s / 3600);
+      const m = Math.floor((s % 3600) / 60);
+      const sec = s % 60;
+      if (h > 0) return `${h}:${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+      return `${String(m).padStart(2,'0')}:${String(sec).padStart(2,'0')}`;
+    }
+    const durationFmt = fmtDuration(duration);
 
     if (!videoId) {
       console.error('[kinescope-webhook] no videoId in payload');
@@ -46,17 +59,18 @@ export async function POST(request) {
 
     console.log('[kinescope-webhook] setting status:', videoStatus, 'for:', videoId);
 
-    // lessons: поля videoDuration, videoPosterUrl
+    // lessons: videoDuration (сырые сек) + duration (читаемый формат) + poster
     const lessonData = { videoStatus };
     if (videoStatus === 'ready') {
-      if (duration) lessonData.videoDuration   = String(duration);
-      if (poster)   lessonData.videoPosterUrl  = poster;
+      if (duration)    lessonData.videoDuration  = String(duration);
+      if (durationFmt) lessonData.duration       = durationFmt;  // автозаполняем поле длительности
+      if (poster)      lessonData.videoPosterUrl = poster;
     }
 
-    // technique_videos: поле duration (не videoDuration!)
+    // technique_videos: поле duration
     const techData = { videoStatus };
     if (videoStatus === 'ready') {
-      if (duration) techData.duration = String(duration);
+      if (durationFmt) techData.duration = durationFmt;
     }
 
     // knowledge_items: только videoStatus
