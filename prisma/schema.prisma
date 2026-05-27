@@ -53,12 +53,13 @@ model User {
   updatedAt    DateTime @updatedAt      @map("updated_at")
 
   // Relations
-  userAccess     UserAccess[]
-  examsAsStudent Exam[]         @relation("ExamStudent")
-  examsAsTeacher Exam[]         @relation("ExamTeacher")
-  lessonProgress LessonProgress[]
-  comments       Comment[]
-  payments       Payment[]
+  userAccess        UserAccess[]
+  examsAsStudent    Exam[]             @relation("ExamStudent")
+  examsAsTeacher    Exam[]             @relation("ExamTeacher")
+  lessonProgress    LessonProgress[]
+  comments          Comment[]
+  knowledgeComments KnowledgeComment[]
+  payments          Payment[]
 
   @@map("users")
 }
@@ -372,5 +373,30 @@ model KnowledgeItem {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt      @map("updated_at")
 
+  comments KnowledgeComment[]
+
   @@map("knowledge_items")
+}
+
+
+// ────────────────────────────────────────────────────────────
+// knowledge_comments
+// Комментарии учеников к статьям базы знаний.
+// ────────────────────────────────────────────────────────────
+model KnowledgeComment {
+  id              Int       @id @default(autoincrement())
+  knowledgeItemId String    @map("knowledge_item_id") @db.Uuid
+  userId          String    @map("user_id") @db.Uuid
+  text            String
+  status          String    @default("visible")
+  parentCommentId Int?      @map("parent_comment_id")
+  isAdminReply    Boolean   @default(false) @map("is_admin_reply")
+  createdAt       DateTime  @default(now()) @map("created_at")
+
+  knowledgeItem KnowledgeItem      @relation(fields: [knowledgeItemId], references: [id], onDelete: Cascade)
+  user          User               @relation(fields: [userId],          references: [id], onDelete: Cascade)
+  parent        KnowledgeComment?  @relation("KnowledgeCommentReplies", fields: [parentCommentId], references: [id], onDelete: Cascade)
+  replies       KnowledgeComment[] @relation("KnowledgeCommentReplies")
+
+  @@map("knowledge_comments")
 }
