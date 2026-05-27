@@ -1876,13 +1876,15 @@ function SectionMonths({showToast,isMobile}){
   const {months,loading:mLoading,toggleOpen} = useMonths();
   const [activeMonth, setActiveMonth] = useState(null);
   const [showLessons, setShowLessons] = useState(false);
-  const {lessons,loading:lLoading,saving,saveLesson,addLesson,deleteLesson} = useLessons(activeMonth||'jan');
+
+  // activeMId вычисляется ДО useLessons — оба используют один источник истины.
+  // null пока месяцы не загружены → useLessons не делает запрос.
+  const activeMId = activeMonth || months[0]?.id || null;
+  const activeM   = months.find(m=>m.id===activeMId);
+
+  const {lessons,loading:lLoading,saving,saveLesson,addLesson,deleteLesson} = useLessons(activeMId);
   const [editId, setEditId] = useState(null);
   const [draft,  setDraft]  = useState({});
-
-  // pick first month as default once loaded
-  const activeMId = activeMonth || months[0]?.id || 'jan';
-  const activeM   = months.find(m=>m.id===activeMId);
 
   const startEdit = (l) => { setEditId(l.id); setDraft({...l}); };
   const doSave    = async () => {
@@ -1954,7 +1956,7 @@ function SectionMonths({showToast,isMobile}){
             <div style={{display:'flex',gap:6,alignItems:'center'}}>
               <Pill2 kind="success" dot>{totalPub} опубл.</Pill2>
               <Pill2 kind="gold"    dot>{totalDraft} черн.</Pill2>
-              <Btn2 kind="accent" size="sm" onClick={doAdd}>+ Урок</Btn2>
+              <Btn2 kind="accent" size="sm" onClick={doAdd} disabled={!activeMId || mLoading}>+ Урок</Btn2>
             </div>
           }
         />
