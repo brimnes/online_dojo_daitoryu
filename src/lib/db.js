@@ -454,9 +454,9 @@ export function useComments() {
 
   useEffect(() => { reload(); }, [reload]);
 
-  const hideComment = useCallback(async (id) => {
+  const hideComment = useCallback(async (id, type) => {
     try {
-      await api('/api/admin/comments', { method: 'PATCH', body: { id, action: 'hide' } });
+      await api('/api/admin/comments', { method: 'PATCH', body: { id, type: type || 'lesson', action: 'hide' } });
       setComments(prev => prev.map(c => c.id === id ? { ...c, status: 'hidden' } : c));
       return { ok: true };
     } catch (e) {
@@ -464,9 +464,9 @@ export function useComments() {
     }
   }, []);
 
-  const unhideComment = useCallback(async (id) => {
+  const unhideComment = useCallback(async (id, type) => {
     try {
-      await api('/api/admin/comments', { method: 'PATCH', body: { id, action: 'unhide' } });
+      await api('/api/admin/comments', { method: 'PATCH', body: { id, type: type || 'lesson', action: 'unhide' } });
       setComments(prev => prev.map(c => c.id === id ? { ...c, status: 'visible' } : c));
       return { ok: true };
     } catch (e) {
@@ -474,9 +474,12 @@ export function useComments() {
     }
   }, []);
 
-  const replyToComment = useCallback(async (id, text) => {
+  const replyToComment = useCallback(async (id, text, type) => {
+    const endpoint = type === 'knowledge'
+      ? `/api/admin/knowledge-comments/${id}/reply`
+      : `/api/admin/comments/${id}/reply`;
     try {
-      const { reply } = await api(`/api/admin/comments/${id}/reply`, { method: 'POST', body: { text } });
+      const { reply } = await api(endpoint, { method: 'POST', body: { text } });
       setComments(prev => prev.map(c => c.id === id
         ? { ...c, replied: true, reply_count: (c.reply_count || 0) + 1, admin_replies: [...(c.admin_replies || []), reply] }
         : c

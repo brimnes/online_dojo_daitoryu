@@ -36,6 +36,7 @@ export async function GET(request) {
       allTechniqueVideos,
       allTechniques,
       allComments,
+      allKnowledgeComments,
     ] = await Promise.all([
       prisma.user.findMany({
         select: { id: true, name: true, email: true, level: true, status: true, joinedAt: true },
@@ -61,6 +62,13 @@ export async function GET(request) {
       prisma.comment.findMany({
         where: { parentCommentId: null },
         select: { id: true, lessonId: true, userId: true, text: true, status: true, createdAt: true,
+                  user: { select: { name: true } },
+                  replies: { where: { isAdminReply: true }, select: { id: true } } },
+        orderBy: { createdAt: 'desc' },
+      }),
+      prisma.knowledgeComment.findMany({
+        where: { parentCommentId: null },
+        select: { id: true, knowledgeItemId: true, userId: true, text: true, status: true, createdAt: true,
                   user: { select: { name: true } },
                   replies: { where: { isAdminReply: true }, select: { id: true } } },
         orderBy: { createdAt: 'desc' },
@@ -167,24 +175,30 @@ export async function GET(request) {
       techniques: { total: allTechniques.length },
     };
 
-    // ── Comments ─────────────────────────────────────────────
-    const topLevel = allComments; // already filtered parentCommentId: null
-    const visibleTopLevel = topLevel.filter(c => c.status === 'visible');
+    // ── Comments (уроки + база знаний) ───────────────────────
+    const allTopLevel = [
+      ...allComments.map(c => ({ ...c, _type: 'lesson' })),
+      ...allKnowledgeComments.map(c => ({ ...c, _type: 'knowledge' })),
+    ].sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+
+    const visibleTopLevel = allTopLevel.filter(c => c.status === 'visible');
     const unanswered = visibleTopLevel.filter(c => c.replies.length === 0).length;
     const answered   = visibleTopLevel.filter(c => c.replies.length > 0).length;
-    const hidden     = topLevel.filter(c => c.status === 'hidden').length;
+    const hidden     = allTopLevel.filter(c => c.status === 'hidden').length;
 
     const comments = {
-      total: topLevel.length,
+      total: allTopLevel.length,
       unanswered,
       answered,
       hidden,
-      recent: topLevel.slice(0, 5).map(c => ({
-        id: c.id,
-        lessonId: c.lessonId,
+      recent: allTopLevel.slice(0, 5).map(c => ({
+        id:       c.id,
+        type:     c._type,
+        lessonId: c._type === 'lesson' ? c.lessonId : null,
+        knowledgeItemId: c._type === 'knowledge' ? c.knowledgeItemId : null,
         userName: c.user?.name || null,
-        text: c.text,
-        status: c.status,
+        text:     c.text,
+        status:   c.status,
         createdAt: c.createdAt,
       })),
     };

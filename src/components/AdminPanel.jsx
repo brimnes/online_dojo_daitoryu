@@ -2701,11 +2701,11 @@ function SectionComments({showToast,isMobile}){
   const [replyText, setReplyText] = useState({});
   const [saving,    setSaving]    = useState({});
 
-  const sendReply = async (id) => {
+  const sendReply = async (id, type) => {
     const text = replyText[id]?.trim();
     if (!text) return;
     setSaving(p=>({...p,[id]:true}));
-    const {ok, error} = await replyToComment(id, text);
+    const {ok, error} = await replyToComment(id, text, type);
     setSaving(p=>({...p,[id]:false}));
     if (ok) {
       setReplyOpen(p=>({...p,[id]:false}));
@@ -2716,14 +2716,14 @@ function SectionComments({showToast,isMobile}){
     }
   };
 
-  const doHide = async (id) => {
-    const {ok, error} = await hideComment(id);
+  const doHide = async (id, type) => {
+    const {ok, error} = await hideComment(id, type);
     if (ok) showToast('Комментарий скрыт');
     else showToast('Ошибка: ' + error);
   };
 
-  const doUnhide = async (id) => {
-    const {ok, error} = await unhideComment(id);
+  const doUnhide = async (id, type) => {
+    const {ok, error} = await unhideComment(id, type);
     if (ok) showToast('Комментарий восстановлен');
     else showToast('Ошибка: ' + error);
   };
@@ -2812,7 +2812,13 @@ function SectionComments({showToast,isMobile}){
                         <span style={{color:C.muted}}>·</span>
                         <span style={{fontFamily:F.mono,fontSize:10,color:C.muted}}>{c.created_at}</span>
                         <span style={{color:C.muted}}>·</span>
-                        <span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:12,color:C.muted}}>Урок: {c.lesson_id}</span>
+                        {c.type === 'knowledge' ? (
+                          <span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:12,color:C.copper}}>
+                            База знаний: {c.knowledge_item_title || c.knowledge_item_id}
+                          </span>
+                        ) : (
+                          <span style={{fontFamily:F.serif,fontStyle:'italic',fontSize:12,color:C.muted}}>Урок: {c.lesson_id}</span>
+                        )}
                         {isHidden && <Pill2 kind="muted" dot>скрыт</Pill2>}
                         {!isHidden && c.replied && <Pill2 kind="success" dot>отвечен</Pill2>}
                         {!isHidden && !c.replied && <Pill2 kind="accent" dot>без ответа</Pill2>}
@@ -2837,7 +2843,7 @@ function SectionComments({showToast,isMobile}){
                         <div style={{marginTop:12}}>
                           <Textarea value={replyText[c.id]||''} onChange={v=>setReplyText(p=>({...p,[c.id]:v}))} placeholder="Ответ сэнсэя…" rows={2}/>
                           <div style={{display:'flex',gap:8,marginTop:8}}>
-                            <Btn2 kind="accent" size="sm" disabled={saving[c.id]||!replyText[c.id]?.trim()} onClick={()=>sendReply(c.id)}>
+                            <Btn2 kind="accent" size="sm" disabled={saving[c.id]||!replyText[c.id]?.trim()} onClick={()=>sendReply(c.id, c.type)}>
                               {saving[c.id]?'…':'Опубликовать'}
                             </Btn2>
                             <Btn2 kind="quiet" size="sm" onClick={()=>setReplyOpen(p=>({...p,[c.id]:false}))}>Отмена</Btn2>
@@ -2853,11 +2859,11 @@ function SectionComments({showToast,isMobile}){
                           <Btn2 kind="quiet" size="sm" onClick={()=>setReplyOpen(p=>({...p,[c.id]:!p[c.id]}))}>
                             {replyOpen[c.id] ? '✕ Закрыть' : c.replied ? 'Изм. ответ' : 'Ответить'}
                           </Btn2>
-                          <Btn2 kind="ghost" size="sm" onClick={()=>doHide(c.id)}>Скрыть</Btn2>
+                          <Btn2 kind="ghost" size="sm" onClick={()=>doHide(c.id, c.type)}>Скрыть</Btn2>
                         </>
                       )}
                       {isHidden && (
-                        <Btn2 kind="quiet" size="sm" onClick={()=>doUnhide(c.id)}>Восстановить</Btn2>
+                        <Btn2 kind="quiet" size="sm" onClick={()=>doUnhide(c.id, c.type)}>Восстановить</Btn2>
                       )}
                     </div>
                   </div>
