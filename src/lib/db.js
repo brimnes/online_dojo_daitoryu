@@ -232,7 +232,18 @@ export function useMonths() {
     }
   }, [months]);
 
-  return { months, loading, toggleOpen };
+  const saveMonth = useCallback(async (id, fields) => {
+    // fields: { label?, kanji?, description? }
+    try {
+      await api(`/api/months/${id}`, { method: 'PATCH', body: fields });
+      setMonths(prev => prev.map(m => m.id === id ? { ...m, ...fields } : m));
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }, []);
+
+  return { months, loading, toggleOpen, saveMonth };
 }
 
 // ─────────────────────────────────────────────────────────────

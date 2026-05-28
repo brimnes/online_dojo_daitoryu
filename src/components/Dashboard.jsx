@@ -348,20 +348,15 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
         position: 'relative', fontWeight: 500, lineHeight: 0.95,
       }}>{m.label}</div>
 
-      {/* Italic subtitle */}
-      <div style={{
-        fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-        fontStyle: 'italic',
-        fontSize: isMobile ? 13 : 15,
-        color: locked ? C.muted : C.ink2,
-        position: 'relative', marginTop: 2,
-      }}>{m.subtitle || m.description || m.desc}</div>
-
-      {/* Description (desktop only) */}
-      {!isMobile && (m.description || m.desc) && (m.subtitle !== (m.description || m.desc)) && (
-        <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 12, color: C.muted, lineHeight: 1.55, marginTop: 4, flex: 1, position: 'relative' }}>
-          {m.description || m.desc}
-        </div>
+      {/* Italic subtitle / description */}
+      {(m.subtitle || m.description || m.desc) && (
+        <div style={{
+          fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+          fontStyle: 'italic',
+          fontSize: isMobile ? 13 : 15,
+          color: locked ? C.muted : C.ink2,
+          position: 'relative', marginTop: 2,
+        }}>{m.subtitle || m.description || m.desc}</div>
       )}
 
       {/* Bottom area: progress or CTA */}
