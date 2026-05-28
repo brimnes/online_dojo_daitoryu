@@ -36,14 +36,23 @@ export default function Sidebar({ activeTab, onTabClick, user = {}, onLogout }) 
   const isAdmin = user.role === 'admin';
 
   return (
+    /* Outer aside: stretches to full content height so the dark background
+       never cuts off when the page is taller than the viewport */
     <aside style={{
-      width: 260, flexShrink: 0, height: '100vh',
+      width: 260, flexShrink: 0,
+      minHeight: '100vh',   // at least full viewport
+      alignSelf: 'stretch', // grow with the flex container (= content height)
       background: '#0a0807',
       backgroundImage: 'linear-gradient(180deg, #16130f 0%, #0a0807 30%, #13110e 100%)',
       borderRight: '1px solid #1f1a16',
-      display: 'flex', flexDirection: 'column',
-      position: 'sticky', top: 0,
       boxShadow: 'inset -1px 0 0 rgba(184,146,58,0.06)',
+      position: 'relative',
+    }}>
+    {/* Inner sticky wrapper: keeps nav content in view while scrolling */}
+    <div style={{
+      position: 'sticky', top: 0,
+      height: '100dvh',
+      display: 'flex', flexDirection: 'column',
       overflow: 'hidden',
     }}>
       {/* top accent stripe — gradient */}
@@ -150,6 +159,7 @@ export default function Sidebar({ activeTab, onTabClick, user = {}, onLogout }) 
       <div style={{ position: 'absolute', bottom: 12, right: 14, fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 11, color: '#b8923a', letterSpacing: '0.2em', opacity: 0.35, pointerEvents: 'none' }}>
         武道
       </div>
+    </div>{/* end sticky inner */}
     </aside>
   );
 }
