@@ -13,7 +13,7 @@
  * 4. onSuccess → update Supabase video_status via callback
  */
 
-import { useState, useRef, useCallback } from 'react';
+import { useState, useRef, useCallback, useEffect } from 'react';
 
 const C = {
   gold: '#8B6914', goldBorder: '#e8dcc8', goldBg: '#faf6ee',
@@ -60,10 +60,48 @@ export default function KinescopeUploader({
   const [progress, setProgress] = useState(0);
   const [errorMsg, setErrorMsg] = useState('');
   const [dragOver, setDragOver] = useState(false);
-  const [syncing, setSyncing]   = useState(false);
-  const [syncResult, setSyncResult] = useState(null); // { status, error }
-  const fileRef  = useRef(null);
-  const tusRef   = useRef(null);  // tus.Upload instance (for abort/resume)
+  const fileRef    = useRef(null);
+  const tusRef     = useRef(null);   // tus.Upload instance (for abort/resume)
+  const onCompleteRef = useRef(onComplete); // stable ref to avoid re-subscribing
+  useEffect(() => { onCompleteRef.current = onComplete; }, [onComplete]);
+
+  // ── Auto-poll when video is processing/uploading ─────────────────────────
+  // Removes the need to manually click "Проверить статус".
+  // Fires every POLL_MS until Kinescope reports 'ready' or 'error'.
+  const POLL_MS = 10_000;
+  useEffect(() => {
+    const needsPoll = currentStatus === 'processing' || currentStatus === 'uploading';
+    if (!currentVideoId || !needsPoll) return;
+
+    let active = true;
+    let timerId;
+
+    const poll = async () => {
+      if (!active) return;
+      try {
+        const res  = await fetch('/api/kinescope/sync-status', {
+          method:  'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body:    JSON.stringify({ videoId: currentVideoId }),
+        });
+        const json = await res.json();
+        if (!active) return;
+        if (res.ok && json.status && json.status !== currentStatus) {
+          // Status changed — notify parent; it will auto-save the lesson
+          onCompleteRef.current?.({ videoId: currentVideoId, status: json.status });
+        }
+        // If still processing/uploading, schedule next tick
+        const done = json.status === 'ready' || json.status === 'error';
+        if (!done) timerId = setTimeout(poll, POLL_MS);
+      } catch {
+        if (active) timerId = setTimeout(poll, POLL_MS);
+      }
+    };
+
+    // First check after a short delay (give Kinescope time to register the upload)
+    timerId = setTimeout(poll, POLL_MS);
+    return () => { active = false; clearTimeout(timerId); };
+  }, [currentVideoId, currentStatus]); // re-run if parent updates status prop
 
   // ── core upload ──────────────────────────────────────────────────────────
   const startUpload = useCallback(async (file) => {
@@ -168,27 +206,6 @@ export default function KinescopeUploader({
     setPhase('idle'); setErrorMsg(''); setProgress(0);
   }, []);
 
-  // ── sync status directly from Kinescope API ───────────────────────────────
-  const handleSync = useCallback(async () => {
-    if (!currentVideoId) return;
-    setSyncing(true);
-    setSyncResult(null);
-    try {
-      const res = await fetch('/api/kinescope/sync-status', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ videoId: currentVideoId }),
-      });
-      const json = await res.json();
-      if (!res.ok) throw new Error(json.error || `Ошибка ${res.status}`);
-      setSyncResult({ status: json.status });
-      onComplete?.({ videoId: currentVideoId, status: json.status });
-    } catch (e) {
-      setSyncResult({ error: e.message });
-    } finally {
-      setSyncing(false);
-    }
-  }, [currentVideoId, onComplete]);
 
   // ── guard: record must exist in DB before upload is allowed ─────────────
   const hasValidId = !!(lessonId || techniqueVideoId || knowledgeItemId);
@@ -209,6 +226,7 @@ export default function KinescopeUploader({
   // ── status badge ─────────────────────────────────────────────────────────
   const StatusBadge = () => {
     if (!currentVideoId) return null;
+    const isPolling = currentStatus === 'processing' || currentStatus === 'uploading';
     const cfg = {
       uploading:  { label: 'Загружается…',   color: C.gold,  bg: C.goldBg  },
       processing: { label: 'Обрабатывается', color: C.gold,  bg: C.goldBg  },
@@ -217,11 +235,9 @@ export default function KinescopeUploader({
       none:       { label: 'Не загружено',    color: C.muted, bg: '#f5f5f5' },
     }[currentStatus || 'none'] ?? { label: currentStatus, color: C.muted, bg: '#f5f5f5' };
 
-    const showSync = currentStatus === 'processing' || currentStatus === 'uploading';
-
     return (
       <div style={{ marginBottom: 8 }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 8, flexWrap: 'wrap' }}>
           <span style={{ fontSize: 11, color: cfg.color, background: cfg.bg,
             border: `1px solid ${cfg.color}33`, padding: '2px 8px' }}>
             {cfg.label}
@@ -229,31 +245,18 @@ export default function KinescopeUploader({
           <span style={{ fontSize: 10, color: C.muted, fontFamily: 'monospace' }}>
             {currentVideoId.slice(0, 8)}…
           </span>
-          {showSync && (
-            <button
-              onClick={handleSync}
-              disabled={syncing}
-              style={{
-                fontSize: 11, color: syncing ? C.muted : C.gold,
-                background: 'none', border: `1px solid ${C.goldBorder}`,
-                padding: '2px 10px', cursor: syncing ? 'default' : 'pointer',
-                opacity: syncing ? 0.6 : 1,
-              }}
-            >
-              {syncing ? 'Проверяем…' : '↻ Проверить статус'}
-            </button>
+          {isPolling && (
+            <span style={{ fontSize: 10, color: C.gold, display: 'flex', alignItems: 'center', gap: 4 }}>
+              <span style={{
+                display: 'inline-block', width: 8, height: 8, borderRadius: '50%',
+                background: C.gold, opacity: 0.8,
+                animation: 'kup-pulse 1.4s ease-in-out infinite',
+              }}/>
+              Обновится автоматически · обычно 2–5 мин
+              <style>{`@keyframes kup-pulse { 0%,100%{opacity:.25} 50%{opacity:1} }`}</style>
+            </span>
           )}
         </div>
-        {syncResult && (
-          <div style={{ marginTop: 4, fontSize: 11,
-            color: syncResult.error ? C.red : (syncResult.status === 'ready' ? C.green : C.gold) }}>
-            {syncResult.error
-              ? `Ошибка: ${syncResult.error}`
-              : syncResult.status === 'ready'
-                ? '✓ Готово — обновите страницу чтобы увидеть видео'
-                : `Статус на Kinescope: ${syncResult.status}`}
-          </div>
-        )}
       </div>
     );
   };
