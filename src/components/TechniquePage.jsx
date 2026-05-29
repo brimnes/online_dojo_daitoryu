@@ -264,7 +264,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
 
         {/* Progress (mobile) */}
         <div style={{ margin: '16px 16px 0', background: C.surface, border: `1px solid ${C.border}`, padding: '16px' }}>
-          <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
+          <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', marginBottom: 10, display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
             <span>ПРОГРЕСС РАЗДЕЛА</span>
             <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 13, color: C.muted }}>{sectionKanji}</span>
           </div>
@@ -281,7 +281,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
         {/* Principles */}
         {content.principles?.length > 0 && (
           <div style={{ margin: '12px 16px 0', background: C.surface, border: `1px solid ${C.border}`, padding: '18px 16px' }}>
-            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ color: C.gold, fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 13 }}>道</span>КЛЮЧЕВЫЕ ПРИНЦИПЫ
             </div>
             {content.principles.map((p, i) => (
@@ -296,7 +296,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
         {/* Mistakes */}
         {content.mistakes?.length > 0 && (
           <div style={{ margin: '12px 16px 0', background: C.surface, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.accent}`, padding: '18px 16px' }}>
-            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ color: C.accent, fontSize: 10 }}>✕</span>ТИПИЧНЫЕ ОШИБКИ
             </div>
             {content.mistakes.map((m, i) => (
@@ -314,8 +314,8 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: C.light, border: `1px solid ${C.goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Cormorant Garamond', serif", fontSize: 14, color: C.gold, flexShrink: 0 }}>К</div>
               <div>
-                <div style={{ fontSize: 14, fontWeight: 600, color: C.ink }}>Сэнсэй Копин</div>
-                <div style={{ fontSize: 13, color: C.muted }}>Комментарий к технике</div>
+                <div style={{ fontSize: 16, fontWeight: 600, color: C.ink }}>Сэнсэй Копин</div>
+                <div style={{ fontSize: 15, color: C.muted }}>Комментарий к технике</div>
               </div>
             </div>
             <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 17, color: C.ink2, lineHeight: 1.85, borderLeft: `2px solid ${C.goldBorder}`, paddingLeft: 14 }}>
@@ -484,7 +484,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
                 padding: '20px 20px', marginBottom: 16,
               }}>
                 <div style={{
-                  fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.2em',
+                  fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.2em',
                   color: C.muted, textTransform: 'uppercase', marginBottom: 14,
                   display: 'flex', alignItems: 'center', justifyContent: 'space-between',
                 }}>
@@ -499,7 +499,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
                 <div style={{ width: '100%', height: 2, background: C.bg2, marginBottom: 14 }}>
                   <div style={{ height: 2, width: `${progressPct}%`, background: C.accent }} />
                 </div>
-                <p style={{ fontSize: 14, color: C.muted, lineHeight: 1.7, margin: 0 }}>
+                <p style={{ fontSize: 16, color: C.muted, lineHeight: 1.7, margin: 0 }}>
                   Раздел {section.nameRu}. Завершите все {totalTechs} техник, чтобы перейти к следующему уровню.
                 </p>
               </div>
@@ -512,7 +512,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
                     display: 'flex', alignItems: 'center', gap: 10,
                   }}>
                     <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 15, color: C.muted }}>関</span>
-                    <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase' }}>СВЯЗАННЫЕ ТЕХНИКИ</span>
+                    <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase' }}>СВЯЗАННЫЕ ТЕХНИКИ</span>
                   </div>
                   {related.map((t, i) => {
                     const idx = (section.techniques || []).findIndex(st => st.name === t.name) + 1;
@@ -527,8 +527,8 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
                           minWidth: 20, letterSpacing: '0.1em',
                         }}>{String(idx).padStart(2, '0')}</span>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 14, color: C.ink, fontWeight: 500 }}>{t.nameRu}</div>
-                          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: C.muted, letterSpacing: '0.03em' }}>{t.name}</div>
+                          <div style={{ fontSize: 16, color: C.ink, fontWeight: 500 }}>{t.nameRu}</div>
+                          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: C.muted, letterSpacing: '0.03em' }}>{t.name}</div>
                         </div>
                         <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.1em', flexShrink: 0 }}>{kyu.label.toUpperCase()}</span>
                         <span style={{ color: C.muted, fontSize: 13, flexShrink: 0 }}>→</span>
