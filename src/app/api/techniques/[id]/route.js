@@ -20,7 +20,11 @@ export async function PATCH(request, { params }) {
     if (body.name_ru     !== undefined) data.nameRu      = body.name_ru;
     if (body.sensei_quote !== undefined) data.senseiQuote = body.sensei_quote;
 
-    await prisma.technique.update({ where: { id: params.id }, data });
+    await prisma.technique.upsert({
+      where:  { id: params.id },
+      update: data,
+      create: { id: params.id, nameRu: data.nameRu || params.id, kyu: data.kyu || '6kyu', section: data.section || 'Tachiai', ...data },
+    });
     return NextResponse.json({ ok: true });
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 500 });

@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useRef, useCallback, useEffect } from 'react';
+import { useState, useRef, useCallback, useEffect, useMemo } from 'react';
 import {
   useUsers, useAccess, useExams,
   useMonths, useLessons, useTechniques,
@@ -10,6 +10,7 @@ import {
 } from '@/lib/db';
 // Supabase removed — always connected to Timeweb PostgreSQL
 import { IKKAJO_SECTION_OPTIONS, IKKAJO_SECTION_LABELS as IKKAJO_LABELS } from '@/lib/ikkajoSections';
+import { KYU_DATA } from '@/data/techniques';
 import KinescopeUploader from '@/components/KinescopeUploader';
 
 // ═══════════════════════════════════════════════════════════════
@@ -2167,17 +2168,45 @@ function SectionIkkajo({showToast,isMobile}){
   const [showEditor,  setShowEditor]  = useState(false); // mobile nav
   const [draft, setDraft] = useState(null);
 
-  // Накопительный фильтр: на уровне 4кю пользователь видит техники 6кю+5кю+4кю,
-  // поэтому фильтруем "до выбранного уровня включительно" (как у пользователя).
   const KYU_ORDER = ['6kyu','5kyu','4kyu','3kyu','2kyu','1kyu'];
-  const filtered = filterKyu === 'all'
-    ? techniques
-    : techniques.filter(t => {
-        const tIdx    = KYU_ORDER.indexOf(t.kyu);
-        const selIdx  = KYU_ORDER.indexOf(filterKyu);
-        return tIdx !== -1 && tIdx <= selIdx; // включает все более лёгкие уровни
+
+  // Строим полный список из статических данных KYU_DATA (дедупликация по tech.name).
+  // Для каждой техники ищем запись в БД — если есть, используем её данные.
+  // Существующие данные из БД не трогаются.
+  const allStaticTechs = useMemo(() => {
+    const seen = new Set();
+    const list = [];
+    KYU_DATA.forEach(kyu => {
+      kyu.sections.forEach(section => {
+        section.techniques.forEach(tech => {
+          if (!seen.has(tech.name)) {
+            seen.add(tech.name);
+            const dbRec = techniques.find(t => t.id === tech.name);
+            list.push({
+              id:       tech.name,
+              name_ru:  dbRec?.name_ru  || tech.nameRu,
+              kyu:      dbRec?.kyu      || kyu.id,
+              section:  dbRec?.section  || section.id,
+              _hasDb:   !!dbRec,
+            });
+          }
+        });
       });
-  const tech     = techniques.find(t=>t.id===selectedId);
+    });
+    return list;
+  }, [techniques]);
+
+  const filtered = filterKyu === 'all'
+    ? allStaticTechs
+    : allStaticTechs.filter(t => {
+        const tIdx   = KYU_ORDER.indexOf(t.kyu);
+        const selIdx = KYU_ORDER.indexOf(filterKyu);
+        return tIdx !== -1 && tIdx <= selIdx;
+      });
+
+  // tech: сначала ищем в БД, если нет — берём из статики (для новых техник без записи в БД)
+  const tech = techniques.find(t => t.id === selectedId)
+            || allStaticTechs.find(t => t.id === selectedId);
 
   const selectTech = (t) => {
     setSelectedId(t.id);
