@@ -2160,14 +2160,7 @@ function SectionMonths({showToast,isMobile}){
 // 5. ИККАДЖО
 // ═══════════════════════════════════════════════════════════════
 function SectionIkkajo({showToast,isMobile}){
-  const {techniques,loading,saving,getTechContent,saveTechInfo,saveMistakes,saveVideos,addTechnique,deleteTechnique} = useTechniques();
-
-  const doDeleteTechnique = async (t) => {
-    if (!confirm(`Удалить технику «${t.name_ru}» (${t.id})? Это также удалит все видео и ошибки к ней.`)) return;
-    const { ok, error } = await deleteTechnique(t.id);
-    if (ok) { if (selectedId === t.id) { setSelectedId(null); setDraft(null); } showToast('Техника удалена'); }
-    else showToast('Ошибка: ' + error);
-  };
+  const {techniques,loading,saving,getTechContent,saveTechInfo,saveMistakes,saveVideos,addTechnique} = useTechniques();
   const [selectedId,  setSelectedId]  = useState(null);
   const [filterKyu,   setFilterKyu]   = useState('all');
   const [filterSection, setFilterSection] = useState('all');
@@ -2552,10 +2545,6 @@ function SectionIkkajo({showToast,isMobile}){
                       <div style={{display:'flex',alignItems:'center',gap:5}}>
                         <span style={{fontFamily:F.kanji,fontSize:12,color:C.accent,opacity:0.7}}>{LEVEL_KANJI_MAP[t.kyu]||'?'}</span>
                         <span style={{fontFamily:F.mono,fontSize:9,color:C.muted,letterSpacing:'0.06em'}}>{LEVEL_LABELS[t.kyu]||t.kyu}</span>
-                        <button onClick={e=>{e.stopPropagation();doDeleteTechnique(t);}}
-                          style={{background:'none',border:`1px solid ${C.danger}22`,color:C.danger,fontSize:9,padding:'2px 6px',cursor:'pointer',fontFamily:F.mono,opacity:0.7,lineHeight:1}}>
-                          ✕
-                        </button>
                       </div>
                     </div>
                     <div style={{display:'flex',gap:5}}>
