@@ -52,3 +52,11 @@ export const F = {
   kanji: "var(--font-noto), 'Noto Serif JP', 'Hiragino Mincho Pro', serif",
   sys:   "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
 };
+
+
+// Returns null for empty or zero-duration strings ("00:00", "0:00", "")
+// so UI can show "—" instead of a meaningless zero.
+export function validDur(d) {
+  if (!d || d === '00:00' || d === '0:00') return null;
+  return d;
+}

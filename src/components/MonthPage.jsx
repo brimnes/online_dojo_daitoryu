@@ -1,7 +1,7 @@
 'use client';
 
 import { useState } from 'react';
-import { C } from '@/lib/utils';
+import { C, validDur } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
 import { useMonths, useLessons, useUserAccessRows } from '@/lib/db';
 import { hasMonthAccess } from '@/lib/access';
@@ -312,7 +312,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
               <span style={{ color: '#fff', fontSize: 8 }}>✓</span>
             </div>
           )}
-          <div style={{ position: 'absolute', bottom: 4, right: 6, fontFamily: "var(--font-mono), monospace", fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>{lesson.duration}</div>
+          {validDur(lesson.duration) && <div style={{ position: 'absolute', bottom: 4, right: 6, fontFamily: "var(--font-mono), monospace", fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>{validDur(lesson.duration)}</div>}
         </div>
 
         {/* Text */}
@@ -364,7 +364,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
             fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
             fontSize: 10, color: C.muted, letterSpacing: '0.08em',
             background: C.bg, padding: '3px 8px',
-          }}>{lesson.duration}</span>
+          }}>{validDur(lesson.duration) || '—'}</span>
         </div>
         <button
           onClick={onToggleWatched}
@@ -415,7 +415,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
           </div>
         )}
         {/* Duration */}
-        <div style={{ position: 'absolute', bottom: 8, right: 10, fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>{lesson.duration}</div>
+        {validDur(lesson.duration) && <div style={{ position: 'absolute', bottom: 8, right: 10, fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>{validDur(lesson.duration)}</div>}
       </div>
 
       {/* Meta */}
