@@ -177,7 +177,7 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
           </h1>
           {/* Subtitle */}
           {!isMobile && (
-            <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 300, fontSize: 18, color: C.muted, marginTop: 20, maxWidth: 520, lineHeight: 1.55 }}>
+            <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 20, color: C.muted, marginTop: 20, maxWidth: 520, lineHeight: 1.55 }}>
               Программа от Введения через Иккаджо к экзамену 3 кю. 1 990 ₽ за месяц.
             </div>
           )}
@@ -398,7 +398,7 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
         ) : product ? (
           <div>
             <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 13, color: C.muted }}>
+              <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, color: C.muted }}>
                 {product.price?.toLocaleString('ru-RU')} ₽
               </span>
               <button onClick={handleBuy} disabled={buying}
@@ -488,7 +488,7 @@ function TabKnowledge({ nav, isMobile }) {
 
         {/* Empty */}
         {!loading && filtered.length === 0 && (
-          <div style={{ padding: '40px 0', textAlign: 'center', color: C.muted, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 15 }}>
+          <div style={{ padding: '40px 0', textAlign: 'center', color: C.muted, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 16 }}>
             {activeTag ? 'В этой категории пока нет материалов' : 'Материалов пока нет'}
           </div>
         )}
@@ -519,7 +519,7 @@ function TabKnowledge({ nav, isMobile }) {
                     {item.title}
                   </div>
                   {item.subtitle && (
-                    <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 300, fontSize: 13, color: C.muted, marginTop: 2, lineHeight: 1.4 }}>
+                    <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, color: C.muted, marginTop: 2, lineHeight: 1.5 }}>
                       {item.subtitle}
                     </div>
                   )}
@@ -562,13 +562,13 @@ function TabKnowledge({ nav, isMobile }) {
             <h1 style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 72, color: C.ink, letterSpacing: '0.01em', lineHeight: 0.95, margin: '0 0 20px', fontWeight: 300 }}>
               База знаний
             </h1>
-            <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 18, fontWeight: 300, color: C.muted, lineHeight: 1.55, maxWidth: 520 }}>
+            <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 20, color: C.muted, lineHeight: 1.55, maxWidth: 520 }}>
               История, философия и базовая терминология школы. Открытый архив для всех учеников.
             </div>
           </div>
           <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: '22px 22px' }}>
             <div style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 40, color: C.accent, opacity: 0.7, marginBottom: 8, lineHeight: 1 }}>道</div>
-            <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 18, color: C.ink2, lineHeight: 1.5 }}>
+            <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 19, color: C.ink2, lineHeight: 1.6 }}>
               «Сначала путь — потом техника. Сначала смысл — потом форма.»
             </div>
             <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.2em', marginTop: 14, textTransform: 'uppercase' }}>
@@ -604,10 +604,10 @@ function TabKnowledge({ nav, isMobile }) {
 
         {/* Items */}
         {loading && (
-          <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 15, color: C.muted, padding: '24px 0' }}>Загрузка…</div>
+          <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 16, color: C.muted, padding: '24px 0' }}>Загрузка…</div>
         )}
         {!loading && filtered.length === 0 && (
-          <div style={{ padding: '40px 0', textAlign: 'center', color: C.muted, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 15 }}>
+          <div style={{ padding: '40px 0', textAlign: 'center', color: C.muted, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 16 }}>
             Материалов пока нет
           </div>
         )}
@@ -634,7 +634,7 @@ function TabKnowledge({ nav, isMobile }) {
                     </div>
                     <div>
                       <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 20, color: C.ink, letterSpacing: '0.02em', fontWeight: 500 }}>{item.title}</div>
-                      {item.subtitle && <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 14, color: C.muted, marginTop: 4 }}>{item.subtitle}</div>}
+                      {item.subtitle && <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 16, color: C.muted, marginTop: 4 }}>{item.subtitle}</div>}
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
                       {tagLabel && (
@@ -788,9 +788,9 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 14 }}>
             <h2 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 44, lineHeight: 0.95, letterSpacing: '0.04em', color: v.ink, fontWeight: 500, textTransform: 'uppercase' }}>{sec.label}</h2>
-            {sec.nameRomaji && <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 18, color: v.muted }}>{sec.nameRomaji}</span>}
+            {sec.nameRomaji && <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: v.muted, letterSpacing: '0.04em' }}>{sec.nameRomaji}</span>}
           </div>
-          <p style={{ margin: 0, fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, color: v.ink2, lineHeight: 1.6, maxWidth: 480 }}>{sec.desc}</p>
+          <p style={{ margin: 0, fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 14, color: v.ink2, lineHeight: 1.65, maxWidth: 480 }}>{sec.desc}</p>
           <div style={{ display: 'flex', borderTop: `1px solid ${v.hairline}`, paddingTop: 12, marginTop: 4 }}>
             {[
               { label: 'Техник',   val: sec.techniques },
@@ -820,7 +820,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
                 <div style={{ width: '100%', height: 2, background: 'rgba(184,146,58,0.15)' }}>
                   <div style={{ height: 2, width: '36%', background: C.accent }} />
                 </div>
-                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 11, color: v.muted, marginTop: 5 }}>изучение в процессе</div>
+                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: v.muted, marginTop: 5 }}>изучение в процессе</div>
               </div>
             )}
 
@@ -828,7 +828,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
               <div style={{ marginTop: 22 }}>
                 <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 5 }}>Стоимость</div>
                 <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 28, color: v.ink, fontWeight: 500 }}>{sec.price}</div>
-                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 11, color: v.muted, marginTop: 3 }}>навсегда · без подписки</div>
+                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: v.muted, marginTop: 3 }}>навсегда · без подписки</div>
               </div>
             )}
 
@@ -836,7 +836,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
               <div style={{ marginTop: 22 }}>
                 <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 5 }}>Релиз</div>
                 <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 16, color: v.ink, fontWeight: 500, textTransform: 'uppercase' }}>осень 2026</div>
-                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 11, color: v.muted, marginTop: 3 }}>программа разрабатывается</div>
+                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: v.muted, marginTop: 3 }}>программа разрабатывается</div>
               </div>
             )}
           </div>

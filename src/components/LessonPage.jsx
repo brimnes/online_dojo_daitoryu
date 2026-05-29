@@ -172,7 +172,7 @@ export default function LessonPage({
               {lesson.subtitle && (
                 <div style={{
                   fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                  fontStyle: 'italic', fontSize: isMobile ? 14 : 16,
+                  fontSize: isMobile ? 16 : 18,
                   color: C.muted,
                 }}>{lesson.subtitle}</div>
               )}
@@ -262,7 +262,7 @@ export default function LessonPage({
                   {!isMobile && (
                     <span style={{
                       fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                      fontStyle: 'italic', fontSize: 12, color: C.muted,
+                      fontSize: 14, color: C.muted,
                     }}>Сэнсэй отвечает в течение 24 часов</span>
                   )}
                 </div>
@@ -285,7 +285,7 @@ export default function LessonPage({
                             border: c.role === 'sensei' ? 'none' : `1px solid ${C.border}`,
                             display: 'flex', alignItems: 'center', justifyContent: 'center',
                             fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                            fontStyle: 'italic', fontSize: isMobile ? 14 : 16,
+                            fontSize: isMobile ? 14 : 16,
                           }}>{c.avatar}</div>
                           <div style={{ flex: 1, minWidth: 0 }}>
                             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: isMobile ? 4 : 6, flexWrap: 'wrap' }}>
@@ -309,7 +309,7 @@ export default function LessonPage({
                             </div>
                             <div style={{
                               fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                              fontSize: isMobile ? 13 : 14, color: C.ink2, lineHeight: 1.55,
+                              fontSize: isMobile ? 15 : 16, color: C.ink2, lineHeight: 1.6,
                             }}>{c.text}</div>
                           </div>
                         </div>
@@ -327,7 +327,7 @@ export default function LessonPage({
                               background: C.accent, color: '#fff',
                               display: 'flex', alignItems: 'center', justifyContent: 'center',
                               fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                              fontStyle: 'italic', fontSize: isMobile ? 13 : 15,
+                              fontSize: isMobile ? 13 : 15,
                             }}>{r.avatar}</div>
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, flexWrap: 'wrap' }}>
@@ -349,7 +349,7 @@ export default function LessonPage({
                     padding: '20px', background: C.surface, border: `1px solid ${C.border}`,
                     marginBottom: 14,
                     fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                    fontStyle: 'italic', fontSize: 14, color: C.muted, textAlign: 'center',
+                    fontSize: 15, color: C.muted, textAlign: 'center',
                   }}>Комментариев пока нет. Будьте первым!</div>
                 )}
 
@@ -368,7 +368,7 @@ export default function LessonPage({
                         width: '100%', border: 'none', outline: 'none',
                         background: 'transparent', resize: 'none',
                         fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                        fontStyle: 'italic', fontSize: 14, color: C.ink, lineHeight: 1.5,
+                        fontSize: 16, color: C.ink, lineHeight: 1.6,
                       }}
                     />
                   </div>

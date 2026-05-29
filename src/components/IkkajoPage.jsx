@@ -123,8 +123,8 @@ export default function IkkajoPage({ nav, user = {}, onLogout }) {
               {/* Description */}
               <div style={{
                 fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                fontStyle: 'italic', fontSize: isMobile ? 14 : 18,
-                color: C.muted, marginTop: isMobile ? 8 : 10, maxWidth: 540, lineHeight: 1.5,
+                fontSize: isMobile ? 16 : 20,
+                color: C.muted, marginTop: isMobile ? 8 : 10, maxWidth: 540, lineHeight: 1.55,
               }}>
                 Программа ученических степеней от 6 кю до 1 кю.{!isMobile && ' Семь разделов, сто восемнадцать техник.'}
               </div>
@@ -244,7 +244,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout }) {
                     }}>{sec.nameRu}</span>
                     <span style={{
                       fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                      fontStyle: 'italic', fontSize: isMobile ? 12 : 14, color: C.muted,
+                      fontSize: isMobile ? 13 : 15, color: C.muted, letterSpacing: '0.03em',
                     }}>{sec.name}</span>
                     <span style={{
                       marginLeft: 'auto',
@@ -284,7 +284,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout }) {
                       )}
                       <div style={{
                         fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                        fontStyle: 'italic', fontSize: isMobile ? 15 : 16, color: C.ink2, marginBottom: 6,
+                        fontSize: isMobile ? 16 : 17, color: C.ink2, marginBottom: 6,
                       }}>Раздел недоступен</div>
                       <div style={{
                         fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
@@ -333,7 +333,7 @@ function TechCard({ tech, index, videoCount, onClick, isMobile }) {
         }}>{tech.nameRu}</div>
         <div style={{
           fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-          fontStyle: 'italic', fontSize: 12, color: C.muted, marginTop: 1,
+          fontSize: 14, color: C.muted, marginTop: 1, letterSpacing: '0.03em',
         }}>
           {isMobile && videoCount > 0
             ? `${tech.name} · ${videoCount} видео`
@@ -395,7 +395,7 @@ function SearchBar({ onSelect, userAccess = [], accessLoading = false }) {
           style={{
             flex: 1, border: 'none', outline: 'none', background: 'transparent',
             fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-            fontStyle: 'italic', fontSize: 13, color: C.ink,
+            fontSize: 15, color: C.ink,
           }}
         />
         {q && (
@@ -416,7 +416,7 @@ function SearchBar({ onSelect, userAccess = [], accessLoading = false }) {
             ? <div style={{
                 padding: '12px 16px',
                 fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                fontStyle: 'italic', color: C.muted, fontSize: 14,
+                color: C.muted, fontSize: 15,
               }}>Ничего не найдено</div>
             : results.map(({ kyu, section, tech }) => {
                 const b = BELT[kyu.belt] || {};
@@ -435,7 +435,7 @@ function SearchBar({ onSelect, userAccess = [], accessLoading = false }) {
                     <div style={{ flex: 1 }}>
                       <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 14, color: C.ink, fontWeight: 500 }}>
                         {tech.nameRu}{' '}
-                        <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', color: C.muted, fontWeight: 400, fontSize: 12 }}>{tech.name}</span>
+                        <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: C.muted, fontWeight: 400, fontSize: 14, letterSpacing: '0.03em' }}>{tech.name}</span>
                       </div>
                       <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: C.muted, letterSpacing: '0.04em' }}>
                         {kyu.label} · {section.nameRu}

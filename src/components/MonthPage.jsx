@@ -157,10 +157,10 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
                 lineHeight: 1, fontWeight: 400, marginTop: isMobile ? 8 : 12,
               }}>{month?.label}</div>
 
-              {/* Subtitle italic */}
+              {/* Subtitle */}
               <div style={{
                 fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                fontStyle: 'italic', fontSize: isMobile ? 14 : 19,
+                fontSize: isMobile ? 16 : 20,
                 color: C.muted, marginTop: isMobile ? 8 : 8,
                 maxWidth: 540, lineHeight: 1.55,
               }}>{month?.description}</div>
@@ -181,7 +181,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
                 }}>{watchedCount}</span>
                 <span style={{
                   fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                  fontStyle: 'italic', fontSize: 18, color: C.muted,
+                  fontSize: 18, color: C.muted,
                 }}>из {safelessons.length}</span>
               </div>
               <div style={{ height: 2, background: C.border, borderRadius: 2, overflow: 'hidden' }}>
@@ -196,7 +196,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
           <>
             <div style={{
               fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-              fontStyle: 'italic', fontSize: 14, color: C.muted,
+              fontSize: 16, color: C.muted,
               marginBottom: 16, lineHeight: 1.55,
             }}>{month?.description}</div>
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: '14px 16px', marginBottom: 20 }}>
@@ -317,7 +317,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
         {/* Text */}
         <div style={{ flex: 1, minWidth: 0 }}>
           <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 14, fontWeight: 500, color: C.ink, lineHeight: 1.35 }}>{lesson.title}</div>
-          <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 11, color: C.accent, marginTop: 2 }}>{lesson.subtitle}</div>
+          <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 13, color: C.accent, marginTop: 2 }}>{lesson.subtitle}</div>
         </div>
 
         {/* Check circle */}
@@ -414,7 +414,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
       {/* Meta */}
       <div style={{ marginTop: 14 }}>
         <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 15, fontWeight: 500, color: C.ink, lineHeight: 1.4, marginBottom: 4 }}>{lesson.title}</div>
-        <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 12, color: C.accent }}>{lesson.subtitle}</div>
+        <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 14, color: C.accent }}>{lesson.subtitle}</div>
       </div>
 
       {/* CTA */}

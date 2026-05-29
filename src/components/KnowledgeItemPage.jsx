@@ -76,7 +76,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
       padding: '80px 32px', textAlign: 'center', display: 'flex',
       flexDirection: 'column', alignItems: 'center', gap: 16,
     }}>
-      <div style={{ fontFamily: F.serif, fontStyle: 'italic', fontSize: 18, color: C.muted }}>
+      <div style={{ fontFamily: F.serif, fontSize: 19, color: C.muted }}>
         Материал не найден
       </div>
       <button
@@ -151,9 +151,9 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
           </h1>
           {item.subtitle && (
             <div style={{
-              fontFamily: F.serif, fontStyle: 'italic', fontWeight: 300,
-              fontSize: isMobile ? 16 : 18, color: C.muted,
-              marginTop: 16, lineHeight: 1.5,
+              fontFamily: F.serif,
+              fontSize: isMobile ? 17 : 20, color: C.muted,
+              marginTop: 16, lineHeight: 1.55,
             }}>
               {item.subtitle}
             </div>
@@ -200,7 +200,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
             </div>
             {!isMobile && (
               <span style={{
-                fontFamily: F.serif, fontStyle: 'italic', fontSize: 12, color: C.muted,
+                fontFamily: F.serif, fontSize: 14, color: C.muted,
               }}>Сэнсэй отвечает в течение 24 часов</span>
             )}
           </div>
@@ -225,7 +225,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
                       color: c.role === 'sensei' ? '#fff' : C.ink2,
                       border: c.role === 'sensei' ? 'none' : `1px solid ${C.border}`,
                       display: 'flex', alignItems: 'center', justifyContent: 'center',
-                      fontFamily: F.serif, fontStyle: 'italic',
+                      fontFamily: F.serif,
                       fontSize: isMobile ? 14 : 16,
                     }}>{c.avatar}</div>
                     <div style={{ flex: 1, minWidth: 0 }}>
@@ -247,8 +247,8 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
                         }}>{c.date}</span>
                       </div>
                       <div style={{
-                        fontFamily: F.mono, fontSize: isMobile ? 13 : 14,
-                        color: C.ink2, lineHeight: 1.55,
+                        fontFamily: F.mono, fontSize: isMobile ? 15 : 16,
+                        color: C.ink2, lineHeight: 1.6,
                       }}>{c.text}</div>
                     </div>
                   </div>
@@ -266,7 +266,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
                         borderRadius: '50%', flexShrink: 0,
                         background: C.accent, color: '#fff',
                         display: 'flex', alignItems: 'center', justifyContent: 'center',
-                        fontFamily: F.serif, fontStyle: 'italic',
+                        fontFamily: F.serif,
                         fontSize: isMobile ? 13 : 15,
                       }}>{r.avatar}</div>
                       <div style={{ flex: 1, minWidth: 0 }}>
@@ -275,7 +275,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
                           <span style={{ fontFamily: F.mono, fontSize: 9, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', padding: '1px 7px', border: `1px solid ${C.accent}` }}>СЭНСЭЙ</span>
                           <span style={{ marginLeft: 'auto', fontFamily: F.mono, fontSize: isMobile ? 9 : 10, color: C.muted }}>{r.date}</span>
                         </div>
-                        <div style={{ fontFamily: F.mono, fontSize: isMobile ? 13 : 14, color: C.ink2, lineHeight: 1.55 }}>{r.text}</div>
+                        <div style={{ fontFamily: F.mono, fontSize: isMobile ? 15 : 16, color: C.ink2, lineHeight: 1.6 }}>{r.text}</div>
                       </div>
                     </div>
                   ))}
@@ -287,8 +287,8 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
           {itemComments.length === 0 && (
             <div style={{
               padding: '20px', background: C.surface, border: `1px solid ${C.border}`,
-              marginBottom: 14, fontFamily: F.serif, fontStyle: 'italic',
-              fontSize: 14, color: C.muted, textAlign: 'center',
+              marginBottom: 14, fontFamily: F.serif,
+              fontSize: 15, color: C.muted, textAlign: 'center',
             }}>Комментариев пока нет. Будьте первым!</div>
           )}
 
@@ -306,8 +306,8 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
                 style={{
                   width: '100%', border: 'none', outline: 'none',
                   background: 'transparent', resize: 'none',
-                  fontFamily: F.serif, fontStyle: 'italic',
-                  fontSize: 14, color: C.ink, lineHeight: 1.5,
+                  fontFamily: F.serif,
+                  fontSize: 16, color: C.ink, lineHeight: 1.6,
                 }}
               />
             </div>
