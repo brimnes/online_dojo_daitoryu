@@ -1877,6 +1877,36 @@ function SectionMonths({showToast,isMobile}){
   const [activeMonth, setActiveMonth] = useState(null);
   const [showLessons, setShowLessons] = useState(false);
 
+  // ── Site subtitle edit ──────────────────────────────────
+  const [subtitle,        setSubtitle]        = useState('');
+  const [subtitleEditing, setSubtitleEditing] = useState(false);
+  const [subtitleDraft,   setSubtitleDraft]   = useState('');
+  const [subtitleSaving,  setSubtitleSaving]  = useState(false);
+  useEffect(() => {
+    fetch('/api/settings?keys=months_subtitle')
+      .then(r => r.json())
+      .then(d => setSubtitle(d.months_subtitle || ''))
+      .catch(() => {});
+  }, []);
+  const saveSubtitle = async () => {
+    setSubtitleSaving(true);
+    try {
+      const res = await fetch('/api/settings', {
+        method: 'PATCH',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ key: 'months_subtitle', value: subtitleDraft }),
+      });
+      if (res.ok) {
+        setSubtitle(subtitleDraft);
+        setSubtitleEditing(false);
+        showToast('Подзаголовок сохранён');
+      } else {
+        showToast('Ошибка сохранения');
+      }
+    } catch { showToast('Ошибка сохранения'); }
+    finally { setSubtitleSaving(false); }
+  };
+
   // activeMId вычисляется ДО useLessons — оба используют один источник истины.
   // null пока месяцы не загружены → useLessons не делает запрос.
   const activeMId = activeMonth || months[0]?.id || null;
@@ -1977,6 +2007,39 @@ function SectionMonths({showToast,isMobile}){
           }
         />
         <SumiStroke style={{margin:'0 0 24px',opacity:0.3}}/>
+
+        {/* ── Подзаголовок страницы месяцев ────────────────── */}
+        <div style={{marginBottom:20,padding:'14px 16px',background:C.surface,border:`1px solid ${C.hairline}`}}>
+          <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom: subtitleEditing ? 10 : 0}}>
+            <span style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.14em',textTransform:'uppercase'}}>Подзаголовок страницы «Месяцы»</span>
+            {!subtitleEditing && (
+              <button onClick={()=>{setSubtitleDraft(subtitle);setSubtitleEditing(true);}}
+                style={{background:'none',border:`1px solid ${C.hairline}`,cursor:'pointer',color:C.muted,fontSize:11,padding:'3px 10px',fontFamily:F.mono,letterSpacing:'0.08em'}}>
+                Изменить
+              </button>
+            )}
+          </div>
+          {subtitleEditing ? (
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              <textarea
+                value={subtitleDraft}
+                onChange={e=>setSubtitleDraft(e.target.value)}
+                rows={2}
+                style={{width:'100%',boxSizing:'border-box',fontFamily:F.serif,fontStyle:'italic',fontSize:14,color:C.ink,background:C.bg,border:`1px solid ${C.hairline}`,padding:'8px 10px',resize:'vertical',outline:'none'}}
+              />
+              <div style={{display:'flex',gap:8}}>
+                <Btn2 kind="accent" size="sm" onClick={saveSubtitle} disabled={subtitleSaving}>
+                  {subtitleSaving ? 'Сохраняем…' : 'Сохранить'}
+                </Btn2>
+                <Btn2 kind="ghost" size="sm" onClick={()=>setSubtitleEditing(false)}>Отмена</Btn2>
+              </div>
+            </div>
+          ) : (
+            <div style={{fontFamily:F.serif,fontStyle:'italic',fontSize:14,color:C.ink,marginTop:6,lineHeight:1.5}}>
+              {subtitle || <span style={{color:C.muted,opacity:0.5}}>—</span>}
+            </div>
+          )}
+        </div>
 
         {/* edit form (inline, top of content) */}
         {editId&&(
