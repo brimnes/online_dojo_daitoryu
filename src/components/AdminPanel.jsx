@@ -431,7 +431,7 @@ export default function AdminPanel({ onExit }) {
   };
 
   const SidebarContent = () => (
-    <aside style={{width:'100%',height:'100vh',background:C.side,borderRight:`1px solid ${C.sideBorder}`,display:'flex',flexDirection:'column',position:'relative',backgroundImage:`linear-gradient(180deg,${C.sideTop||'#16130f'} 0%,${C.side} 30%,${C.side2} 100%)`,boxShadow:'inset -1px 0 0 rgba(184,146,58,0.06)'}}>
+    <aside style={{width:'100%',height:'100%',background:C.side,borderRight:`1px solid ${C.sideBorder}`,display:'flex',flexDirection:'column',position:'relative',backgroundImage:`linear-gradient(180deg,${C.sideTop||'#16130f'} 0%,${C.side} 30%,${C.side2} 100%)`,boxShadow:'inset -1px 0 0 rgba(184,146,58,0.06)'}}>
       {/* top accent stripe */}
       <div style={{position:'absolute',top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${C.accent} 30%,${C.sideGold} 70%,transparent)`,opacity:0.5}}/>
 
@@ -499,7 +499,7 @@ export default function AdminPanel({ onExit }) {
 
       {/* ── Desktop sidebar ─────────────────────────────────── */}
       {!isMobile && (
-        <aside style={{width:260,flexShrink:0,position:'sticky',top:0,height:'100vh'}}>
+        <aside style={{position:'fixed',top:0,left:0,bottom:0,width:260,zIndex:100}}>
           <SidebarContent/>
         </aside>
       )}
@@ -542,7 +542,7 @@ export default function AdminPanel({ onExit }) {
       )}
 
       {/* ── Main content ────────────────────────────────────── */}
-      <main style={{flex:1,overflow:'auto',minWidth:0,paddingTop:isMobile?52:0,display:'flex',flexDirection:'column'}}>
+      <main style={{flex:1,overflow:'auto',minWidth:0,paddingTop:isMobile?52:0,paddingLeft:isMobile?0:260,display:'flex',flexDirection:'column'}}>
 
         {/* ── Admin top bar (desktop) ─────────────────────── */}
         {!isMobile && (
