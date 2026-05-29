@@ -390,11 +390,6 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
               marginBottom: 14, textTransform: 'uppercase', fontWeight: 400,
             }}>{tech.nameRu}</h1>
 
-            {/* Romanization */}
-            <div style={{ marginBottom: 16 }}>
-              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, color: C.muted, letterSpacing: '0.04em' }}>{tech.name}</span>
-            </div>
-
             {/* Description */}
             {content.description && (
               <p style={{ fontSize: 17, color: C.ink2, lineHeight: 1.75, maxWidth: 640, marginBottom: 20 }}>{content.description}</p>
@@ -516,7 +511,6 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
                         }}>{String(idx).padStart(2, '0')}</span>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: 16, color: C.ink, fontWeight: 500 }}>{t.nameRu}</div>
-                          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: C.muted, letterSpacing: '0.03em' }}>{t.name}</div>
                         </div>
                         <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.1em', flexShrink: 0 }}>{kyu.label.toUpperCase()}</span>
                         <span style={{ color: C.muted, fontSize: 13, flexShrink: 0 }}>→</span>
