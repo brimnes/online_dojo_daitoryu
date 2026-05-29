@@ -642,9 +642,6 @@ function TabKnowledge({ nav, isMobile }) {
                           {tagLabel}
                         </span>
                       )}
-                      {item.video_id && item.duration && (
-                        <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.08em' }}>{item.duration}</span>
-                      )}
                     </div>
                     <span style={{ color: C.muted, fontSize: 18 }}>→</span>
                   </div>
