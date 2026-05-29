@@ -172,7 +172,7 @@ export default function LessonPage({
               {lesson.subtitle && (
                 <div style={{
                   fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                  fontSize: isMobile ? 16 : 18,
+                  fontSize: 17,
                   color: C.muted,
                 }}>{lesson.subtitle}</div>
               )}
@@ -309,7 +309,7 @@ export default function LessonPage({
                             </div>
                             <div style={{
                               fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                              fontSize: isMobile ? 15 : 16, color: C.ink2, lineHeight: 1.6,
+                              fontSize: 17, color: C.ink2, lineHeight: 1.6,
                             }}>{c.text}</div>
                           </div>
                         </div>
@@ -349,7 +349,7 @@ export default function LessonPage({
                     padding: '20px', background: C.surface, border: `1px solid ${C.border}`,
                     marginBottom: 14,
                     fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                    fontSize: 15, color: C.muted, textAlign: 'center',
+                    fontSize: 17, color: C.muted, textAlign: 'center',
                   }}>Комментариев пока нет. Будьте первым!</div>
                 )}
 
@@ -368,7 +368,7 @@ export default function LessonPage({
                         width: '100%', border: 'none', outline: 'none',
                         background: 'transparent', resize: 'none',
                         fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                        fontSize: 16, color: C.ink, lineHeight: 1.6,
+                        fontSize: 17, color: C.ink, lineHeight: 1.6,
                       }}
                     />
                   </div>

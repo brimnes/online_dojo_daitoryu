@@ -152,7 +152,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
           {item.subtitle && (
             <div style={{
               fontFamily: F.serif,
-              fontSize: isMobile ? 17 : 20, color: C.muted,
+              fontSize: 17, color: C.muted,
               marginTop: 16, lineHeight: 1.55,
             }}>
               {item.subtitle}
@@ -247,7 +247,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
                         }}>{c.date}</span>
                       </div>
                       <div style={{
-                        fontFamily: F.mono, fontSize: isMobile ? 15 : 16,
+                        fontFamily: F.mono, fontSize: 17,
                         color: C.ink2, lineHeight: 1.6,
                       }}>{c.text}</div>
                     </div>
@@ -275,7 +275,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
                           <span style={{ fontFamily: F.mono, fontSize: 9, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', padding: '1px 7px', border: `1px solid ${C.accent}` }}>СЭНСЭЙ</span>
                           <span style={{ marginLeft: 'auto', fontFamily: F.mono, fontSize: isMobile ? 9 : 10, color: C.muted }}>{r.date}</span>
                         </div>
-                        <div style={{ fontFamily: F.mono, fontSize: isMobile ? 15 : 16, color: C.ink2, lineHeight: 1.6 }}>{r.text}</div>
+                        <div style={{ fontFamily: F.mono, fontSize: 17, color: C.ink2, lineHeight: 1.6 }}>{r.text}</div>
                       </div>
                     </div>
                   ))}
@@ -288,7 +288,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
             <div style={{
               padding: '20px', background: C.surface, border: `1px solid ${C.border}`,
               marginBottom: 14, fontFamily: F.serif,
-              fontSize: 15, color: C.muted, textAlign: 'center',
+              fontSize: 17, color: C.muted, textAlign: 'center',
             }}>Комментариев пока нет. Будьте первым!</div>
           )}
 
@@ -307,7 +307,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
                   width: '100%', border: 'none', outline: 'none',
                   background: 'transparent', resize: 'none',
                   fontFamily: F.serif,
-                  fontSize: 16, color: C.ink, lineHeight: 1.6,
+                  fontSize: 17, color: C.ink, lineHeight: 1.6,
                 }}
               />
             </div>

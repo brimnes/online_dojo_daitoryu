@@ -519,7 +519,7 @@ function TabKnowledge({ nav, isMobile }) {
                     {item.title}
                   </div>
                   {item.subtitle && (
-                    <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, color: C.muted, marginTop: 2, lineHeight: 1.5 }}>
+                    <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 17, color: C.muted, marginTop: 2, lineHeight: 1.5 }}>
                       {item.subtitle}
                     </div>
                   )}
@@ -634,7 +634,7 @@ function TabKnowledge({ nav, isMobile }) {
                     </div>
                     <div>
                       <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 20, color: C.ink, letterSpacing: '0.02em', fontWeight: 500 }}>{item.title}</div>
-                      {item.subtitle && <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 16, color: C.muted, marginTop: 4 }}>{item.subtitle}</div>}
+                      {item.subtitle && <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 17, color: C.muted, marginTop: 4 }}>{item.subtitle}</div>}
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
                       {tagLabel && (
@@ -790,7 +790,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
             <h2 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 44, lineHeight: 0.95, letterSpacing: '0.04em', color: v.ink, fontWeight: 500, textTransform: 'uppercase' }}>{sec.label}</h2>
             {sec.nameRomaji && <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: v.muted, letterSpacing: '0.04em' }}>{sec.nameRomaji}</span>}
           </div>
-          <p style={{ margin: 0, fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 14, color: v.ink2, lineHeight: 1.65, maxWidth: 480 }}>{sec.desc}</p>
+          <p style={{ margin: 0, fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 17, color: v.ink2, lineHeight: 1.65, maxWidth: 480 }}>{sec.desc}</p>
           <div style={{ display: 'flex', borderTop: `1px solid ${v.hairline}`, paddingTop: 12, marginTop: 4 }}>
             {[
               { label: 'Техник',   val: sec.techniques },

@@ -222,7 +222,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
           </div>
 
           {content.description && (
-            <p style={{ fontSize: 16, color: C.ink2, lineHeight: 1.7, marginBottom: 12 }}>{content.description}</p>
+            <p style={{ fontSize: 17, color: C.ink2, lineHeight: 1.7, marginBottom: 12 }}>{content.description}</p>
           )}
 
           {/* tags */}
@@ -287,7 +287,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
             {content.principles.map((p, i) => (
               <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
                 <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, minWidth: 20, flexShrink: 0 }}>{String(i + 1).padStart(2, '0')}</div>
-                <div style={{ fontSize: 16, color: C.ink2, lineHeight: 1.7 }}>{p}</div>
+                <div style={{ fontSize: 17, color: C.ink2, lineHeight: 1.7 }}>{p}</div>
               </div>
             ))}
           </div>
@@ -301,8 +301,8 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
             </div>
             {content.mistakes.map((m, i) => (
               <div key={i} style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 15, fontWeight: 600, color: C.accent, marginBottom: 3 }}>{m.title}</div>
-                <div style={{ fontSize: 15, color: C.muted, lineHeight: 1.65 }}>{m.description || m.desc}</div>
+                <div style={{ fontSize: 17, fontWeight: 600, color: C.accent, marginBottom: 3 }}>{m.title}</div>
+                <div style={{ fontSize: 17, color: C.muted, lineHeight: 1.65 }}>{m.description || m.desc}</div>
               </div>
             ))}
           </div>
@@ -409,7 +409,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
 
             {/* Description */}
             {content.description && (
-              <p style={{ fontSize: 16, color: C.ink2, lineHeight: 1.75, maxWidth: 640, marginBottom: 20 }}>{content.description}</p>
+              <p style={{ fontSize: 17, color: C.ink2, lineHeight: 1.75, maxWidth: 640, marginBottom: 20 }}>{content.description}</p>
             )}
 
             {/* Tags row */}
@@ -554,7 +554,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
               {content.principles.map((p, i) => (
                 <div key={i} style={{ display: 'flex', gap: 14, marginBottom: 12 }}>
                   <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, minWidth: 22, flexShrink: 0 }}>{String(i + 1).padStart(2, '0')}</div>
-                  <div style={{ fontSize: 16, color: C.ink2, lineHeight: 1.7 }}>{p}</div>
+                  <div style={{ fontSize: 17, color: C.ink2, lineHeight: 1.7 }}>{p}</div>
                 </div>
               ))}
             </div>
@@ -572,8 +572,8 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
               </div>
               {content.mistakes.map((m, i) => (
                 <div key={i} style={{ marginBottom: 14 }}>
-                  <div style={{ fontSize: 15, fontWeight: 600, color: C.accent, marginBottom: 4 }}>{m.title}</div>
-                  <div style={{ fontSize: 15, color: C.muted, lineHeight: 1.65 }}>{m.description || m.desc}</div>
+                  <div style={{ fontSize: 17, fontWeight: 600, color: C.accent, marginBottom: 4 }}>{m.title}</div>
+                  <div style={{ fontSize: 17, color: C.muted, lineHeight: 1.65 }}>{m.description || m.desc}</div>
                 </div>
               ))}
             </div>
