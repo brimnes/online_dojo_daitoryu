@@ -2167,7 +2167,16 @@ function SectionIkkajo({showToast,isMobile}){
   const [showEditor,  setShowEditor]  = useState(false); // mobile nav
   const [draft, setDraft] = useState(null);
 
-  const filtered = filterKyu==='all' ? techniques : techniques.filter(t=>t.kyu===filterKyu);
+  // Накопительный фильтр: на уровне 4кю пользователь видит техники 6кю+5кю+4кю,
+  // поэтому фильтруем "до выбранного уровня включительно" (как у пользователя).
+  const KYU_ORDER = ['6kyu','5kyu','4kyu','3kyu','2kyu','1kyu'];
+  const filtered = filterKyu === 'all'
+    ? techniques
+    : techniques.filter(t => {
+        const tIdx    = KYU_ORDER.indexOf(t.kyu);
+        const selIdx  = KYU_ORDER.indexOf(filterKyu);
+        return tIdx !== -1 && tIdx <= selIdx; // включает все более лёгкие уровни
+      });
   const tech     = techniques.find(t=>t.id===selectedId);
 
   const selectTech = (t) => {
