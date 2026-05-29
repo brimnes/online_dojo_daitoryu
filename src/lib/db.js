@@ -9,7 +9,9 @@
 
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { KYU_DATA, FLAT_INDEX } from '@/data/techniques';
+import { IKKAJO_SECTION_CONFIG } from '@/lib/ikkajoSections';
 
 // ─────────────────────────────────────────────────────────────
 // MOCK DATA — используется как fallback при ошибке загрузки
@@ -431,7 +433,100 @@ export function useTechniques() {
     }
   }, []);
 
-  return { techniques, videos, mistakes, loading, saving, getTechContent, saveTechInfo, saveMistakes, saveVideos, addTechnique };
+  const deleteTechnique = useCallback(async (techId) => {
+    setSaving(true);
+    try {
+      await api(`/api/techniques/${techId}`, { method: 'DELETE' });
+      setTechniques(prev => prev.filter(t => t.id !== techId));
+      setMistakes(prev => prev.filter(m => m.technique_id !== techId));
+      setVideos(prev => prev.filter(v => v.technique_id !== techId));
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    } finally {
+      setSaving(false);
+    }
+  }, []);
+
+  return { techniques, videos, mistakes, loading, saving, getTechContent, saveTechInfo, saveMistakes, saveVideos, addTechnique, deleteTechnique };
+}
+
+// ─────────────────────────────────────────────────────────────
+// HOOK: useIkkajoData
+// Строит структуру KYU_DATA из БД (накопительно по уровням кю).
+// Используется в IkkajoPage вместо статичного KYU_DATA.
+// ─────────────────────────────────────────────────────────────
+const KYU_ORDER = ['6kyu','5kyu','4kyu','3kyu','2kyu','1kyu'];
+
+// Map: lowercase section key → metadata
+const SEC_META = Object.fromEntries(
+  IKKAJO_SECTION_CONFIG.map(s => [s.key, s])
+);
+
+// Get subtitle from static KYU_DATA for a given section
+function getSecSubtitle(secKey) {
+  for (const kyu of KYU_DATA) {
+    const sec = kyu.sections?.find(s => s.id === secKey);
+    if (sec?.subtitle) return sec.subtitle;
+  }
+  return '';
+}
+
+export function useIkkajoData() {
+  const { techniques, loading } = useTechniques();
+
+  const kyuData = useMemo(() => {
+    // While loading — show static data as fallback (no flicker)
+    if (loading || !techniques.length) return KYU_DATA;
+
+    return KYU_ORDER.map((kyuId, idx) => {
+      // Cumulative: all techniques introduced at this kyu or earlier (easier) kyus
+      const cumulativeKyus = KYU_ORDER.slice(0, idx + 1);
+      const cumTechs = techniques
+        .filter(t => cumulativeKyus.includes(t.kyu))
+        .sort((a, b) => (a.sort_order ?? 9999) - (b.sort_order ?? 9999));
+
+      if (!cumTechs.length) return null;
+
+      // Group by section key (normalize to lowercase)
+      const secMap = {};
+      const secOrder = []; // preserve insertion order
+      cumTechs.forEach(t => {
+        const secKey = (t.section || '').toLowerCase();
+        if (!secMap[secKey]) { secMap[secKey] = []; secOrder.push(secKey); }
+        // avoid duplicates (same tech shown once per section per kyu)
+        if (!secMap[secKey].find(x => x.name === t.id)) {
+          secMap[secKey].push({ name: t.id, nameRu: t.name_ru, id: `${kyuId}-${t.id}` });
+        }
+      });
+
+      const sections = secOrder.map(secKey => ({
+        id:       secKey,
+        name:     SEC_META[secKey]?.nameEn  || secKey,
+        nameRu:   SEC_META[secKey]?.nameRu  || secKey,
+        label:    SEC_META[secKey]?.label   || secKey,
+        subtitle: getSecSubtitle(secKey),
+        techniques: secMap[secKey],
+      }));
+
+      // Preserve kyu metadata (label, belt, program) from static
+      const staticKyu = KYU_DATA.find(k => k.id === kyuId) || {};
+      return { ...staticKyu, id: kyuId, sections };
+    }).filter(Boolean);
+  }, [techniques, loading]);
+
+  const flatIndex = useMemo(() => {
+    if (kyuData === KYU_DATA) return FLAT_INDEX; // static fallback
+    const result = [];
+    kyuData.forEach(kyu =>
+      kyu.sections?.forEach(sec =>
+        sec.techniques?.forEach(tech => result.push({ kyu, section: sec, tech }))
+      )
+    );
+    return result;
+  }, [kyuData]);
+
+  return { kyuData, flatIndex, loading };
 }
 
 // ─────────────────────────────────────────────────────────────

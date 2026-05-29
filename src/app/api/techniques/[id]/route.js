@@ -26,3 +26,16 @@ export async function PATCH(request, { params }) {
     return NextResponse.json({ error: e.message }, { status: 500 });
   }
 }
+
+export async function DELETE(request, { params }) {
+  const { error } = await requireAdmin(request);
+  if (error) return error;
+
+  try {
+    // Cascade: mistakes and videos deleted via onDelete: Cascade in schema
+    await prisma.technique.delete({ where: { id: params.id } });
+    return NextResponse.json({ ok: true });
+  } catch (e) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
+}

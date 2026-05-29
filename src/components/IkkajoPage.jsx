@@ -3,8 +3,8 @@
 import { useState, useMemo, useRef, useEffect } from 'react';
 import { C } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
-import { BELT, KYU_DATA, FLAT_INDEX } from '@/data/techniques';
-import { useTechniques, useUserAccessRows, hasIkkajoSectionAccess } from '@/lib/db';
+import { BELT } from '@/data/techniques';
+import { useIkkajoData, useUserAccessRows, hasIkkajoSectionAccess } from '@/lib/db';
 import { IKKAJO_SECTION_KEYS as IKKAJO_SECTIONS } from '@/lib/ikkajoSections';
 import Sidebar from '@/components/Sidebar';
 import { MobileBottomNav } from '@/components/BottomNav';
@@ -23,8 +23,8 @@ const SECTION_KANJI = {
 export default function IkkajoPage({ nav, user = {}, onLogout }) {
   const isMobile = useIsMobile();
   const [activeKyu, setActiveKyu] = useState('6kyu');
-  const cur = KYU_DATA.find(k => k.id === activeKyu);
-  const { videos } = useTechniques();
+  const { kyuData, flatIndex, loading: techLoading } = useIkkajoData();
+  const cur = kyuData.find(k => k.id === activeKyu);
   const { rows: userAccess, loading: accessLoading } = useUserAccessRows();
 
   const videoCountByTech = useMemo(() => {
@@ -33,7 +33,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout }) {
     return map;
   }, [videos]);
 
-  const totalTechs = FLAT_INDEX.length;
+  const totalTechs = flatIndex.length;
 
   return (
     <div className="fade" style={{ display: 'flex', minHeight: '100vh' }}>
@@ -83,6 +83,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout }) {
               <SearchBar
                 userAccess={userAccess}
                 accessLoading={accessLoading}
+                flatIndex={flatIndex}
                 onSelect={({ kyu, section, tech }) => nav.technique(kyu, section, tech)}
               />
             </div>
@@ -160,6 +161,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout }) {
               <SearchBar
                 userAccess={userAccess}
                 accessLoading={accessLoading}
+                flatIndex={flatIndex}
                 onSelect={({ kyu, section, tech }) => nav.technique(kyu, section, tech)}
               />
             </div>
@@ -173,7 +175,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout }) {
             background: C.surface, border: `1px solid ${C.border}`,
             overflowX: isMobile ? 'auto' : 'visible',
           }}>
-            {KYU_DATA.map(k => {
+            {kyuData.map(k => {
               const active = activeKyu === k.id;
               const b = BELT[k.belt] || {};
               return (
@@ -358,7 +360,7 @@ function TechCard({ tech, index, videoCount, onClick, isMobile }) {
 }
 
 // ── Search bar ────────────────────────────────────────────────────
-function SearchBar({ onSelect, userAccess = [], accessLoading = false }) {
+function SearchBar({ onSelect, userAccess = [], accessLoading = false, flatIndex = [] }) {
   const [q, setQ] = useState('');
   const [open, setOpen] = useState(false);
   const ref = useRef(null);
@@ -366,7 +368,7 @@ function SearchBar({ onSelect, userAccess = [], accessLoading = false }) {
   const results = useMemo(() => {
     if (q.trim().length < 2) return [];
     const lq = q.toLowerCase();
-    return FLAT_INDEX.filter(({ tech, section }) =>
+    return flatIndex.filter(({ tech, section }) =>
       tech.name.toLowerCase().includes(lq) ||
       tech.nameRu.toLowerCase().includes(lq) ||
       section.nameRu.toLowerCase().includes(lq)
