@@ -1,6 +1,6 @@
 import { NextResponse } from 'next/server';
-import { prisma } from '@/lib/prisma.js';
-import { requireAdmin } from '@/lib/auth-server.js';
+import prisma from '@/lib/prisma';
+import { getSessionUser } from '@/lib/auth';
 
 // GET /api/settings?keys=months_subtitle,other_key
 // Returns { months_subtitle: "...", ... }
@@ -17,8 +17,10 @@ export async function GET(req) {
 // PATCH /api/settings  { key: 'months_subtitle', value: '...' }
 // Admin only
 export async function PATCH(req) {
-  const { error } = await requireAdmin(req);
-  if (error) return error;
+  const user = await getSessionUser(req);
+  if (!user || user.role !== 'admin') {
+    return NextResponse.json({ error: 'Forbidden' }, { status: 403 });
+  }
 
   const { key, value } = await req.json();
   if (!key || value === undefined) {
