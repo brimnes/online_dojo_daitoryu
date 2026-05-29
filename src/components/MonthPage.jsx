@@ -312,7 +312,6 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
               <span style={{ color: '#fff', fontSize: 8 }}>✓</span>
             </div>
           )}
-          <div style={{ position: 'absolute', bottom: 4, right: 6, fontFamily: "var(--font-mono), monospace", fontSize: 9, color: 'rgba(255,255,255,0.4)' }}>{lesson.duration}</div>
         </div>
 
         {/* Text */}
@@ -360,11 +359,6 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
             fontSize: 22, letterSpacing: '0.04em',
             color: watched ? C.muted : isCurrent ? C.accent : C.ink2,
           }}>{String(lesson.num).padStart(2, '0')}</span>
-          <span style={{
-            fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-            fontSize: 10, color: C.muted, letterSpacing: '0.08em',
-            background: C.bg, padding: '3px 8px',
-          }}>{lesson.duration}</span>
         </div>
         <button
           onClick={onToggleWatched}
@@ -415,7 +409,6 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
           </div>
         )}
         {/* Duration */}
-        <div style={{ position: 'absolute', bottom: 8, right: 10, fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: 'rgba(255,255,255,0.4)' }}>{lesson.duration}</div>
       </div>
 
       {/* Meta */}

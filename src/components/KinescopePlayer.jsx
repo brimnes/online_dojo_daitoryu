@@ -98,15 +98,6 @@ export default function KinescopePlayer({ videoId, videoStatus, viewerId, poster
         }}>
           <PlayButton />
         </div>
-        {/* Длительность в углу */}
-        {duration && (
-          <div style={{
-            position: 'absolute', bottom: 10, right: 12,
-            fontFamily: "var(--font-mono), monospace",
-            fontSize: 12, color: 'rgba(255,255,255,0.85)',
-            background: 'rgba(0,0,0,0.55)', padding: '2px 6px', borderRadius: 3,
-          }}>{duration}</div>
-        )}
       </div>
     );
   }
@@ -139,9 +130,6 @@ export default function KinescopePlayer({ videoId, videoStatus, viewerId, poster
           pointerEvents: 'none',
         }}>
           <LoadingRing />
-          {duration && (
-            <div style={{ color: 'rgba(255,255,255,0.3)', fontSize: 12 }}>{duration}</div>
-          )}
         </div>
       )}
     </div>
@@ -211,7 +199,6 @@ function VideoPlaceholder({ title, duration, label, spinner, error, polling }) {
           </div>
         )}
         {title && <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, textAlign: 'center' }}>{title}</div>}
-        {duration && <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11 }}>{duration}</div>}
       </div>
     </div>
   );

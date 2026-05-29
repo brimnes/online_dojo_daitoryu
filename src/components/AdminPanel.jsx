@@ -1949,7 +1949,6 @@ function SectionMonths({showToast,isMobile}){
         }
       </div>
     )},
-    {label:'Длит.',  width:'0.5fr',render:(l)=>(<span style={{fontFamily:F.mono,fontSize:11,color:C.ink2,letterSpacing:'0.04em'}}>{l.duration||'—'}</span>)},
     {label:'Статус', width:'0.9fr',render:(l)=>{
       const st = l.video_status==='ready'?'published':l.video_id?'draft':'draft';
       return st==='published'
@@ -2045,7 +2044,7 @@ function SectionMonths({showToast,isMobile}){
                       <span style={{fontFamily:F.mono,fontSize:11,color:C.muted,minWidth:20}}>{String(l.num).padStart(2,'0')}</span>
                       <div style={{flex:1,minWidth:0}}>
                         <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:500}}>{l.title}</div>
-                        <div style={{fontFamily:F.mono,fontSize:10,color:C.muted,marginTop:2}}>{l.subtitle} · {l.duration}</div>
+                        <div style={{fontFamily:F.mono,fontSize:10,color:C.muted,marginTop:2}}>{l.subtitle}</div>
                         {l.video_id&&<div style={{fontFamily:F.mono,fontSize:9,color:l.video_status==='ready'?C.success:C.goldSoft,marginTop:2,letterSpacing:'0.06em'}}>{l.video_status==='ready'?'✓ готово':'⟳ обрабатывается'}</div>}
                       </div>
                     </div>
