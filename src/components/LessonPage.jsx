@@ -197,15 +197,6 @@ export default function LessonPage({
               background: isMobile ? C.surface : 'transparent',
             }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 12 : 24 }}>
-                {lesson.duration && (
-                  <div style={{ display: 'flex', alignItems: 'center', gap: 6 }}>
-                    <span style={{ width: 6, height: 6, borderRadius: '50%', background: C.accent, flexShrink: 0 }} />
-                    <span style={{
-                      fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                      fontSize: 10, color: C.muted, letterSpacing: '0.12em', textTransform: 'uppercase',
-                    }}>{lesson.duration} · 1080P</span>
-                  </div>
-                )}
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
                 {/* Конспект / download */}
@@ -473,12 +464,6 @@ export default function LessonPage({
                           overflow: 'hidden', textOverflow: 'ellipsis',
                           whiteSpace: 'nowrap',
                         }}>{l.title}</div>
-                        {l.duration && (
-                          <div style={{
-                            fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                            fontSize: 10, color: C.muted, letterSpacing: '0.06em', marginTop: 2,
-                          }}>{l.duration}</div>
-                        )}
                       </div>
                     </div>
                   );
