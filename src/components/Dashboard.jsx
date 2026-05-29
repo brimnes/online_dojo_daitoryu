@@ -296,8 +296,7 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
     <div style={{
       position: 'relative',
       padding: isMobile ? '16px 14px' : '22px 20px',
-      height: isMobile ? 'auto' : 220,
-      minHeight: isMobile ? 160 : 220,
+      minHeight: isMobile ? 170 : 220,
       background: cardBg,
       border: cardBorder,
       display: 'flex', flexDirection: 'column', gap: 6,
@@ -349,17 +348,14 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
         position: 'relative', fontWeight: 500, lineHeight: 0.95,
       }}>{m.label}</div>
 
-      {/* Subtitle / description — clamped to 2 lines */}
+      {/* Italic subtitle / description */}
       {(m.subtitle || m.description || m.desc) && (
         <div style={{
           fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-          fontSize: isMobile ? 15 : 17,
+          fontStyle: 'italic',
+          fontSize: isMobile ? 13 : 15,
           color: locked ? C.muted : C.ink2,
-          position: 'relative', marginTop: 4, lineHeight: 1.45,
-          display: '-webkit-box',
-          WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical',
-          overflow: 'hidden',
+          position: 'relative', marginTop: 2,
         }}>{m.subtitle || m.description || m.desc}</div>
       )}
 
