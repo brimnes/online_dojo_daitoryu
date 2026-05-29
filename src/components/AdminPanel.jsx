@@ -2162,9 +2162,10 @@ function SectionMonths({showToast,isMobile}){
 // ═══════════════════════════════════════════════════════════════
 function SectionIkkajo({showToast,isMobile}){
   const {techniques,loading,saving,getTechContent,saveTechInfo,saveMistakes,saveVideos} = useTechniques();
-  const [selectedId,  setSelectedId]  = useState(null);
-  const [filterKyu,   setFilterKyu]   = useState('all');
-  const [activeTab,   setActiveTab]   = useState('info');
+  const [selectedId,    setSelectedId]    = useState(null);
+  const [filterKyu,     setFilterKyu]     = useState('all');
+  const [filterSection, setFilterSection] = useState('all');
+  const [activeTab,     setActiveTab]     = useState('info');
   const [showEditor,  setShowEditor]  = useState(false); // mobile nav
   const [draft, setDraft] = useState(null);
 
@@ -2183,11 +2184,12 @@ function SectionIkkajo({showToast,isMobile}){
             seen.add(tech.name);
             const dbRec = techniques.find(t => t.id === tech.name);
             list.push({
-              id:       tech.name,
-              name_ru:  dbRec?.name_ru  || tech.nameRu,
-              kyu:      dbRec?.kyu      || kyu.id,
-              section:  dbRec?.section  || section.id,
-              _hasDb:   !!dbRec,
+              id:          tech.name,
+              name_ru:     dbRec?.name_ru || tech.nameRu,
+              kyu:         dbRec?.kyu     || kyu.id,
+              section:     section.id,   // всегда lowercase из статики
+              section_ru:  section.nameRu,
+              _hasDb:      !!dbRec,
             });
           }
         });
@@ -2196,13 +2198,32 @@ function SectionIkkajo({showToast,isMobile}){
     return list;
   }, [techniques]);
 
-  const filtered = filterKyu === 'all'
-    ? allStaticTechs
-    : allStaticTechs.filter(t => {
+  // Уникальные разделы из статики
+  const sectionList = useMemo(() => {
+    const seen = new Set();
+    const list = [];
+    KYU_DATA.forEach(kyu =>
+      kyu.sections.forEach(sec => {
+        if (!seen.has(sec.id)) { seen.add(sec.id); list.push({ id: sec.id, nameRu: sec.nameRu }); }
+      })
+    );
+    return list;
+  }, []);
+
+  const filtered = useMemo(() => {
+    let list = allStaticTechs;
+    if (filterKyu !== 'all') {
+      list = list.filter(t => {
         const tIdx   = KYU_ORDER.indexOf(t.kyu);
         const selIdx = KYU_ORDER.indexOf(filterKyu);
         return tIdx !== -1 && tIdx <= selIdx;
       });
+    }
+    if (filterSection !== 'all') {
+      list = list.filter(t => t.section === filterSection);
+    }
+    return list;
+  }, [allStaticTechs, filterKyu, filterSection]);
 
   // tech: сначала ищем в БД, если нет — берём из статики (для новых техник без записи в БД)
   const tech = techniques.find(t => t.id === selectedId)
@@ -2461,11 +2482,18 @@ function SectionIkkajo({showToast,isMobile}){
           </div>
         )}
 
-        {/* filter chips */}
-        <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:16,alignItems:'center'}}>
-          <FilterChip2 label="Все разделы" value={String(techniques.length)} active={filterKyu==='all'} onClick={()=>setFilterKyu('all')}/>
+        {/* filter chips — кю */}
+        <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:8,alignItems:'center'}}>
+          <FilterChip2 label="Все кю" value={String(allStaticTechs.length)} active={filterKyu==='all'} onClick={()=>setFilterKyu('all')}/>
           {LEVELS_LIST.slice(0,6).map(l=>(
             <FilterChip2 key={l} label={LEVEL_LABELS[l]} active={filterKyu===l} onClick={()=>setFilterKyu(l)}/>
+          ))}
+        </div>
+        {/* filter chips — раздел */}
+        <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:16,alignItems:'center'}}>
+          <FilterChip2 label="Все разделы" active={filterSection==='all'} onClick={()=>setFilterSection('all')}/>
+          {sectionList.map(s=>(
+            <FilterChip2 key={s.id} label={s.nameRu} active={filterSection===s.id} onClick={()=>setFilterSection(s.id)}/>
           ))}
         </div>
 
@@ -2500,8 +2528,9 @@ function SectionIkkajo({showToast,isMobile}){
           <div style={{display:'grid',gridTemplateColumns:'280px 1fr',gap:16,alignItems:'start'}}>
             {/* tech list */}
             <div style={{background:C.surface,border:`1px solid ${C.hairline}`}}>
-              <div style={{padding:'10px 16px',borderBottom:`1px solid ${C.hairline}`,background:C.bg2}}>
+              <div style={{padding:'10px 16px',borderBottom:`1px solid ${C.hairline}`,background:C.bg2,display:'flex',flexDirection:'column',gap:8}}>
                 <Select value={filterKyu} onChange={setFilterKyu} options={[{value:'all',label:'Все уровни'},...LEVELS_LIST.slice(0,6).map(l=>({value:l,label:LEVEL_LABELS[l]}))]}/>
+                <Select value={filterSection} onChange={setFilterSection} options={[{value:'all',label:'Все разделы'},...sectionList.map(s=>({value:s.id,label:s.nameRu}))]}/>
               </div>
               {filtered.map((t,i)=>{
                 const cnt = getTechContent(t.id);
