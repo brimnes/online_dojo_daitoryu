@@ -51,7 +51,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, init
       )}
 
       {/* ── Main content ── */}
-      <main style={{ flex: 1, background: C.bg, minHeight: '100vh', minWidth: 0 }}>
+      <main style={{ flex: 1, background: C.bg, minHeight: '100vh', minWidth: 0, paddingLeft: isMobile ? 0 : 260 }}>
 
         {/* Mobile top header */}
         {isMobile && (

@@ -36,22 +36,13 @@ export default function Sidebar({ activeTab, onTabClick, user = {}, onLogout }) 
   const isAdmin = user.role === 'admin';
 
   return (
-    /* Outer aside: stretches to full content height so the dark background
-       never cuts off when the page is taller than the viewport */
     <aside style={{
-      width: 260, flexShrink: 0,
-      minHeight: '100vh',   // at least full viewport
-      alignSelf: 'stretch', // grow with the flex container (= content height)
+      position: 'fixed', top: 0, left: 0, bottom: 0,
+      width: 260, zIndex: 100,
       background: '#0a0807',
       backgroundImage: 'linear-gradient(180deg, #16130f 0%, #0a0807 30%, #13110e 100%)',
       borderRight: '1px solid #1f1a16',
       boxShadow: 'inset -1px 0 0 rgba(184,146,58,0.06)',
-      position: 'relative',
-    }}>
-    {/* Inner sticky wrapper: keeps nav content in view while scrolling */}
-    <div style={{
-      position: 'sticky', top: 0,
-      height: '100dvh',
       display: 'flex', flexDirection: 'column',
       overflow: 'hidden',
     }}>
@@ -144,7 +135,7 @@ export default function Sidebar({ activeTab, onTabClick, user = {}, onLogout }) 
         })}
       </nav>
 
-      <div style={{ height: 1, background: '#1f1a16', position: 'relative', flexShrink: 0 }} />
+      <div style={{ height: 1, background: '#1f1a16', position: 'relative', flexShrink: 0, marginTop: 'auto' }} />
       <div style={{ padding: '14px 28px', display: 'flex', flexDirection: 'column', gap: 8, position: 'relative', flexShrink: 0 }}>
         {isAdmin && (
           <a href="/admin" style={{ display: 'block', fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: '#7a6c52', letterSpacing: '0.06em', cursor: 'pointer', textDecoration: 'none' }}>
@@ -159,7 +150,6 @@ export default function Sidebar({ activeTab, onTabClick, user = {}, onLogout }) 
       <div style={{ position: 'absolute', bottom: 12, right: 14, fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 11, color: '#b8923a', letterSpacing: '0.2em', opacity: 0.35, pointerEvents: 'none' }}>
         武道
       </div>
-    </div>{/* end sticky inner */}
     </aside>
   );
 }
