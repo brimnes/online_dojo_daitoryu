@@ -1830,12 +1830,6 @@ function SectionPayments({isMobile}){
   );
 }
 
-// Helper: treat "00:00" and empty string as no duration
-function validDur(d) {
-  if (!d || d === '00:00' || d === '0:00') return null;
-  return d;
-}
-
 // ── LessonEditForm — standalone to prevent remount on every keystroke ──────
 function LessonEditForm({ draft, setDraft, doSave, setEditId, saving, showToast, isMobile }) {
   return (
@@ -1909,28 +1903,6 @@ function SectionMonths({showToast,isMobile}){
     else showToast('Ошибка: ' + error);
   };
 
-  // ── Batch sync durations from Kinescope for current month ──
-  const [durSyncing, setDurSyncing] = useState(false);
-  const syncDurations = async () => {
-    const toSync = lessons.filter(l => l.video_id && !validDur(l.duration));
-    if (!toSync.length) { showToast('Все длительности уже заполнены'); return; }
-    setDurSyncing(true);
-    let updated = 0;
-    for (const l of toSync) {
-      try {
-        const res  = await fetch('/api/kinescope/sync-status', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ videoId: l.video_id }),
-        });
-        const json = await res.json();
-        if (res.ok && json.status) updated++;
-      } catch {}
-    }
-    setDurSyncing(false);
-    showToast(`Синхронизировано ${updated} из ${toSync.length} уроков — перезагрузите страницу`);
-  };
-
   const startEdit = (l) => { setEditId(l.id); setDraft({...l}); };
   const doSave    = async () => {
     const {ok,error} = await saveLesson({...draft});
@@ -1977,10 +1949,7 @@ function SectionMonths({showToast,isMobile}){
         }
       </div>
     )},
-    {label:'Длит.',  width:'0.5fr',render:(l)=>{
-      const dur = validDur(l.duration);
-      return <span style={{fontFamily:F.mono,fontSize:11,color:dur?C.ink2:C.muted,letterSpacing:'0.04em'}}>{dur||'—'}</span>;
-    }},
+    {label:'Длит.',  width:'0.5fr',render:(l)=>(<span style={{fontFamily:F.mono,fontSize:11,color:C.ink2,letterSpacing:'0.04em'}}>{l.duration||'—'}</span>)},
     {label:'Статус', width:'0.9fr',render:(l)=>{
       const st = l.video_status==='ready'?'published':l.video_id?'draft':'draft';
       return st==='published'
@@ -2133,13 +2102,8 @@ function SectionMonths({showToast,isMobile}){
                     )}
                     <div style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.12em',marginTop:5}}>{lessons.length} УРОКОВ · {totalPub} ОПУБЛИКОВАНО</div>
                   </div>
-                  <div style={{display:'flex',gap:6,flexShrink:0,flexWrap:'wrap',justifyContent:'flex-end'}}>
+                  <div style={{display:'flex',gap:6,flexShrink:0}}>
                     <Btn2 kind="quiet" size="sm" onClick={startEditMonth}>Описание</Btn2>
-                    {lessons.some(l=>l.video_id&&!validDur(l.duration)) && (
-                      <Btn2 kind="quiet" size="sm" disabled={durSyncing} onClick={syncDurations}>
-                        {durSyncing?'Синхр…':'↻ Длительности'}
-                      </Btn2>
-                    )}
                     <Btn2 kind="accent" size="sm" onClick={doAdd}>+ Урок</Btn2>
                   </div>
                 </div>
