@@ -217,10 +217,6 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
             position: 'relative', zIndex: 1,
           }}>{tech.nameRu}</h1>
 
-          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 17, color: C.muted, marginBottom: 12, letterSpacing: '0.04em' }}>
-            {tech.name}
-          </div>
-
           {content.description && (
             <p style={{ fontSize: 17, color: C.ink2, lineHeight: 1.7, marginBottom: 12 }}>{content.description}</p>
           )}
@@ -394,17 +390,9 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
               marginBottom: 14, textTransform: 'uppercase', fontWeight: 400,
             }}>{tech.nameRu}</h1>
 
-            {/* Romanization + short tagline */}
-            <div style={{ display: 'flex', alignItems: 'center', gap: 16, marginBottom: 16 }}>
+            {/* Romanization */}
+            <div style={{ marginBottom: 16 }}>
               <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 20, color: C.muted, letterSpacing: '0.04em' }}>{tech.name}</span>
-              {content.senseiQuote && (
-                <>
-                  <span style={{ width: 24, height: 1, background: C.border, flexShrink: 0 }} />
-                  <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: C.muted }}>
-                    «{content.senseiQuote.length > 48 ? content.senseiQuote.slice(0, 48) + '…' : content.senseiQuote}»
-                  </span>
-                </>
-              )}
             </div>
 
             {/* Description */}
