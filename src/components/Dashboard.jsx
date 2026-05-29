@@ -24,11 +24,6 @@ const TABS = [
 export default function Dashboard({ nav, watched, user: userProp, onLogout, initialTab }) {
   const [tab, setTab]     = useState(initialTab || 'months');
   const [modal, setModal] = useState(null);
-  const [siteSettings, setSiteSettings] = useState({});
-  useEffect(() => {
-    fetch('/api/settings?keys=months_subtitle')
-      .then(r => r.json()).then(setSiteSettings).catch(() => {});
-  }, []);
 
   // Sync tab when navigating back to dashboard with specific tab
   useEffect(() => {
@@ -183,7 +178,7 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
           {/* Subtitle */}
           {!isMobile && (
             <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontWeight: 300, fontSize: 18, color: C.muted, marginTop: 20, maxWidth: 520, lineHeight: 1.55 }}>
-              {siteSettings.months_subtitle ?? 'Программа от Введения через Иккаджо к экзамену 3 кю. 1 990 ₽ за месяц.'}
+              Программа от Введения через Иккаджо к экзамену 3 кю. 1 990 ₽ за месяц.
             </div>
           )}
         </div>

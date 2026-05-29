@@ -383,17 +383,6 @@ model KnowledgeItem {
 // knowledge_comments
 // Комментарии учеников к статьям базы знаний.
 // ────────────────────────────────────────────────────────────
-// site_settings
-// Глобальные настройки сайта (key → value).
-// ────────────────────────────────────────────────────────────
-model SiteSetting {
-  key       String   @id
-  value     String
-  updatedAt DateTime @default(now()) @updatedAt @map("updated_at")
-
-  @@map("site_settings")
-}
-
 model KnowledgeComment {
   id              Int       @id @default(autoincrement())
   knowledgeItemId String    @map("knowledge_item_id") @db.Uuid
