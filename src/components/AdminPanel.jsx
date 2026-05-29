@@ -431,7 +431,7 @@ export default function AdminPanel({ onExit }) {
   };
 
   const SidebarContent = () => (
-    <aside style={{width:'100%',height:'100%',background:C.side,borderRight:`1px solid ${C.sideBorder}`,display:'flex',flexDirection:'column',position:'relative',backgroundImage:`linear-gradient(180deg,${C.sideTop||'#16130f'} 0%,${C.side} 30%,${C.side2} 100%)`,boxShadow:'inset -1px 0 0 rgba(184,146,58,0.06)'}}>
+    <aside style={{width:'100%',height:'100vh',background:C.side,borderRight:`1px solid ${C.sideBorder}`,display:'flex',flexDirection:'column',position:'relative',backgroundImage:`linear-gradient(180deg,${C.sideTop||'#16130f'} 0%,${C.side} 30%,${C.side2} 100%)`,boxShadow:'inset -1px 0 0 rgba(184,146,58,0.06)'}}>
       {/* top accent stripe */}
       <div style={{position:'absolute',top:0,left:0,right:0,height:2,background:`linear-gradient(90deg,transparent,${C.accent} 30%,${C.sideGold} 70%,transparent)`,opacity:0.5}}/>
 
@@ -480,7 +480,7 @@ export default function AdminPanel({ onExit }) {
       <div style={{height:1,background:C.sideBorder}}/>
 
       {/* Bottom links */}
-      <div style={{padding:'14px 26px',display:'flex',flexDirection:'column',gap:8,position:'relative'}}>
+      <div style={{padding:'14px 26px',display:'flex',flexDirection:'column',gap:8,position:'relative',marginTop:'auto'}}>
         {onExit && (
           <span onClick={onExit} style={{fontFamily:F.mono,fontSize:11,color:C.sideMuted,letterSpacing:'0.06em',cursor:'pointer'}}>↗ Открыть сайт</span>
         )}
@@ -2211,19 +2211,9 @@ function SectionIkkajo({showToast,isMobile}){
   }, []);
 
   const filtered = useMemo(() => {
-    let list = allStaticTechs;
-    if (filterKyu !== 'all') {
-      list = list.filter(t => {
-        const tIdx   = KYU_ORDER.indexOf(t.kyu);
-        const selIdx = KYU_ORDER.indexOf(filterKyu);
-        return tIdx !== -1 && tIdx <= selIdx;
-      });
-    }
-    if (filterSection !== 'all') {
-      list = list.filter(t => t.section === filterSection);
-    }
-    return list;
-  }, [allStaticTechs, filterKyu, filterSection]);
+    if (filterSection === 'all') return allStaticTechs;
+    return allStaticTechs.filter(t => t.section === filterSection);
+  }, [allStaticTechs, filterSection]);
 
   // tech: сначала ищем в БД, если нет — берём из статики (для новых техник без записи в БД)
   const tech = techniques.find(t => t.id === selectedId)
@@ -2482,13 +2472,6 @@ function SectionIkkajo({showToast,isMobile}){
           </div>
         )}
 
-        {/* filter chips — кю */}
-        <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:8,alignItems:'center'}}>
-          <FilterChip2 label="Все кю" value={String(allStaticTechs.length)} active={filterKyu==='all'} onClick={()=>setFilterKyu('all')}/>
-          {LEVELS_LIST.slice(0,6).map(l=>(
-            <FilterChip2 key={l} label={LEVEL_LABELS[l]} active={filterKyu===l} onClick={()=>setFilterKyu(l)}/>
-          ))}
-        </div>
         {/* filter chips — раздел */}
         <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:16,alignItems:'center'}}>
           <FilterChip2 label="Все разделы" active={filterSection==='all'} onClick={()=>setFilterSection('all')}/>
@@ -2528,8 +2511,7 @@ function SectionIkkajo({showToast,isMobile}){
           <div style={{display:'grid',gridTemplateColumns:'280px 1fr',gap:16,alignItems:'start'}}>
             {/* tech list */}
             <div style={{background:C.surface,border:`1px solid ${C.hairline}`}}>
-              <div style={{padding:'10px 16px',borderBottom:`1px solid ${C.hairline}`,background:C.bg2,display:'flex',flexDirection:'column',gap:8}}>
-                <Select value={filterKyu} onChange={setFilterKyu} options={[{value:'all',label:'Все уровни'},...LEVELS_LIST.slice(0,6).map(l=>({value:l,label:LEVEL_LABELS[l]}))]}/>
+              <div style={{padding:'10px 16px',borderBottom:`1px solid ${C.hairline}`,background:C.bg2}}>
                 <Select value={filterSection} onChange={setFilterSection} options={[{value:'all',label:'Все разделы'},...sectionList.map(s=>({value:s.id,label:s.nameRu}))]}/>
               </div>
               {filtered.map((t,i)=>{
