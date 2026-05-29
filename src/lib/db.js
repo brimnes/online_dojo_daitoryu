@@ -415,7 +415,23 @@ export function useTechniques() {
     }
   }, []);
 
-  return { techniques, videos, mistakes, loading, saving, getTechContent, saveTechInfo, saveMistakes, saveVideos };
+  const addTechnique = useCallback(async ({ id, nameRu, kyu, section }) => {
+    setSaving(true);
+    try {
+      const t = await api('/api/techniques', {
+        method: 'POST',
+        body: { id, nameRu, kyu, section },
+      });
+      setTechniques(prev => [...prev, t]);
+      return { ok: true, technique: t };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    } finally {
+      setSaving(false);
+    }
+  }, []);
+
+  return { techniques, videos, mistakes, loading, saving, getTechContent, saveTechInfo, saveMistakes, saveVideos, addTechnique };
 }
 
 // ─────────────────────────────────────────────────────────────

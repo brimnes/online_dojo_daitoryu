@@ -2160,14 +2160,37 @@ function SectionMonths({showToast,isMobile}){
 // 5. ИККАДЖО
 // ═══════════════════════════════════════════════════════════════
 function SectionIkkajo({showToast,isMobile}){
-  const {techniques,loading,saving,getTechContent,saveTechInfo,saveMistakes,saveVideos} = useTechniques();
+  const {techniques,loading,saving,getTechContent,saveTechInfo,saveMistakes,saveVideos,addTechnique} = useTechniques();
   const [selectedId,  setSelectedId]  = useState(null);
   const [filterKyu,   setFilterKyu]   = useState('all');
+  const [filterSection, setFilterSection] = useState('all');
   const [activeTab,   setActiveTab]   = useState('info');
   const [showEditor,  setShowEditor]  = useState(false); // mobile nav
   const [draft, setDraft] = useState(null);
 
-  const filtered = filterKyu==='all' ? techniques : techniques.filter(t=>t.kyu===filterKyu);
+  // ── Add technique form ──────────────────────────────────
+  const [showAddForm, setShowAddForm] = useState(false);
+  const EMPTY_NEW = { id: '', nameRu: '', kyu: '6kyu', section: 'Tachiai' };
+  const [newDraft, setNewDraft] = useState(EMPTY_NEW);
+  const [addError, setAddError] = useState('');
+
+  const doAddTechnique = async () => {
+    setAddError('');
+    if (!newDraft.nameRu.trim()) { setAddError('Введите название'); return; }
+    if (!newDraft.id.trim())     { setAddError('Введите ID (латиница)'); return; }
+    if (!/^[A-Za-z0-9_-]+$/.test(newDraft.id)) { setAddError('ID — только латинские буквы и цифры'); return; }
+    const { ok, technique, error } = await addTechnique(newDraft);
+    if (!ok) { setAddError(error || 'Ошибка'); return; }
+    showToast('Техника добавлена');
+    setShowAddForm(false);
+    setNewDraft(EMPTY_NEW);
+    // Сразу открываем созданную технику для редактирования
+    selectTech(technique);
+  };
+
+  const filtered = techniques
+    .filter(t => filterKyu     === 'all' || t.kyu === filterKyu)
+    .filter(t => filterSection === 'all' || t.section?.toLowerCase() === filterSection);
   const tech     = techniques.find(t=>t.id===selectedId);
 
   const selectTech = (t) => {
@@ -2423,13 +2446,60 @@ function SectionIkkajo({showToast,isMobile}){
           </div>
         )}
 
-        {/* filter chips */}
-        <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:16,alignItems:'center'}}>
-          <FilterChip2 label="Все разделы" value={String(techniques.length)} active={filterKyu==='all'} onClick={()=>setFilterKyu('all')}/>
-          {LEVELS_LIST.slice(0,6).map(l=>(
-            <FilterChip2 key={l} label={LEVEL_LABELS[l]} active={filterKyu===l} onClick={()=>setFilterKyu(l)}/>
+        {/* filter chips — по разделу */}
+        <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:8,alignItems:'center'}}>
+          <FilterChip2 label="Все разделы" value={String(techniques.length)} active={filterSection==='all'} onClick={()=>setFilterSection('all')}/>
+          {[['tachiai','Татиай'],['idori','Идори'],['ushirodori','Усиродори'],['hanzahandachi','Хандза-хандати']].map(([key,label])=>(
+            <FilterChip2 key={key} label={label} value={String(techniques.filter(t=>t.section?.toLowerCase()===key).length)} active={filterSection===key} onClick={()=>setFilterSection(key)}/>
           ))}
         </div>
+        {/* filter chips — по уровню */}
+        <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:16,alignItems:'center',justifyContent:'space-between'}}>
+          <div style={{display:'flex',flexWrap:'wrap',gap:6}}>
+            <FilterChip2 label="Все уровни" active={filterKyu==='all'} onClick={()=>setFilterKyu('all')}/>
+            {LEVELS_LIST.slice(0,6).map(l=>(
+              <FilterChip2 key={l} label={LEVEL_LABELS[l]} active={filterKyu===l} onClick={()=>setFilterKyu(l)}/>
+            ))}
+          </div>
+          <Btn2 kind="accent" size="sm" onClick={()=>{ setNewDraft({...EMPTY_NEW, section: filterSection!=='all' ? filterSection.charAt(0).toUpperCase()+filterSection.slice(1) : 'Tachiai' }); setShowAddForm(true); setAddError(''); }}>
+            + Техника
+          </Btn2>
+        </div>
+
+        {/* ── Форма добавления техники ── */}
+        {showAddForm && (
+          <div style={{background:C.surface,border:`1px solid ${C.accent}`,padding:'16px',marginBottom:20}}>
+            <div style={{fontFamily:F.mono,fontSize:11,color:C.accent,letterSpacing:'0.14em',textTransform:'uppercase',marginBottom:14}}>Новая техника</div>
+            <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 1fr',gap:12,marginBottom:12}}>
+              <div>
+                <Label>Название (рус) *</Label>
+                <Input value={newDraft.nameRu} onChange={v=>setNewDraft(d=>({...d,nameRu:v}))} placeholder="Курумадаоси"/>
+              </div>
+              <div>
+                <Label>ID (латиница, уникальный) *</Label>
+                <Input value={newDraft.id} onChange={v=>setNewDraft(d=>({...d,id:v.replace(/[^A-Za-z0-9_-]/g,'')}))} placeholder="Kurumadaoshi"/>
+              </div>
+              <div>
+                <Label>Раздел</Label>
+                <Select value={newDraft.section} onChange={v=>setNewDraft(d=>({...d,section:v}))} options={[
+                  {value:'Tachiai',      label:'Татиай'},
+                  {value:'Idori',        label:'Идори'},
+                  {value:'Ushirodori',   label:'Усиродори'},
+                  {value:'Hanzahandachi',label:'Хандза-хандати'},
+                ]}/>
+              </div>
+              <div>
+                <Label>Уровень</Label>
+                <Select value={newDraft.kyu} onChange={v=>setNewDraft(d=>({...d,kyu:v}))} options={LEVELS_LIST.slice(0,6).map(l=>({value:l,label:LEVEL_LABELS[l]}))}/>
+              </div>
+            </div>
+            {addError && <div style={{fontFamily:F.mono,fontSize:11,color:C.danger,marginBottom:10}}>{addError}</div>}
+            <div style={{display:'flex',gap:8}}>
+              <Btn2 kind="accent" size="sm" onClick={doAddTechnique} disabled={saving}>{saving?'Создаём…':'Создать технику'}</Btn2>
+              <Btn2 kind="ghost"  size="sm" onClick={()=>{setShowAddForm(false);setAddError('');}}>Отмена</Btn2>
+            </div>
+          </div>
+        )}
 
         {/* content: tech list + editor */}
         {isMobile ? (

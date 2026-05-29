@@ -1,7 +1,9 @@
-/** GET /api/techniques — все техники + ошибки + видео */
+/** GET /api/techniques — все техники + ошибки + видео
+ *  POST /api/techniques — создать новую технику (admin)
+ */
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma.js';
-import { requireAuth } from '@/lib/auth-server.js';
+import { requireAuth, requireAdmin } from '@/lib/auth-server.js';
 
 export async function GET(request) {
   const { error } = await requireAuth(request);
@@ -31,4 +33,31 @@ export async function GET(request) {
       sort_order: v.sortOrder,
     })),
   });
+}
+
+export async function POST(request) {
+  const { error } = await requireAdmin(request);
+  if (error) return error;
+
+  try {
+    const { id, nameRu, kyu, section } = await request.json();
+    if (!id || !nameRu || !kyu || !section) {
+      return NextResponse.json({ error: 'id, nameRu, kyu, section — обязательные поля' }, { status: 400 });
+    }
+    // ID должен быть уникальным — проверяем
+    const exists = await prisma.technique.findUnique({ where: { id } });
+    if (exists) {
+      return NextResponse.json({ error: `Техника с ID «${id}» уже существует` }, { status: 409 });
+    }
+    const t = await prisma.technique.create({
+      data: { id, nameRu, kyu, section, principles: [] },
+    });
+    return NextResponse.json({
+      id: t.id, name_ru: t.nameRu, kyu: t.kyu, section: t.section,
+      description: t.description, principles: t.principles,
+      sensei_quote: t.senseiQuote, sort_order: t.sortOrder,
+    }, { status: 201 });
+  } catch (e) {
+    return NextResponse.json({ error: e.message }, { status: 500 });
+  }
 }
