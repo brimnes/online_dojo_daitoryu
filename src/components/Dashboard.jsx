@@ -537,7 +537,7 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
 
   const watchedCount = (lessons ?? []).filter(l => watched[l.id]).length;
   const hasProg      = (lessons ?? []).length > 0 && watchedCount > 0;
-  const hasAccess    = !!m.is_open || (!accessLoading && hasMonthAccess(userAccess ?? [], m.id));
+  const hasAccess    = !accessLoading && hasMonthAccess(userAccess ?? [], m.id);
   const locked       = !hasAccess && !accessLoading;
   const pct          = (lessons ?? []).length ? Math.round((watchedCount / (lessons ?? []).length) * 100) : 0;
 

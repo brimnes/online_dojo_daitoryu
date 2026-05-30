@@ -565,7 +565,7 @@ export function useUserAccessRows() {
 
   // Рефетч при возврате на вкладку:
   // - пользователь вернулся со страницы оплаты (ЮKassa → return_url → /)
-  // - администратор выдал доступ в другой вкладке
+  // - администратор выдал / отозвал доступ в другой вкладке
   useEffect(() => {
     const onVisible = () => {
       if (document.visibilityState === 'visible') refreshAndReload();
@@ -573,6 +573,15 @@ export function useUserAccessRows() {
     document.addEventListener('visibilitychange', onVisible);
     return () => document.removeEventListener('visibilitychange', onVisible);
   }, [refreshAndReload]);
+
+  // Тихая фоновая синхронизация каждые 30 с — подхватывает изменения доступа
+  // (выдача / отзыв администратором) без необходимости переключать вкладку.
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (document.visibilityState === 'visible') reload();
+    }, 30_000);
+    return () => clearInterval(id);
+  }, [reload]);
 
   return { rows, loading, reload };
 }

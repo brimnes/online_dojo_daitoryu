@@ -20,9 +20,24 @@ export async function POST(request) {
 
   try {
     if (revoke) {
+      // 1. Удаляем строку доступа
       await prisma.userAccess.deleteMany({
         where: { userId: user_id, type, reference },
       });
+
+      // 2. Аннулируем «висящие» платежи за этот же продукт, чтобы
+      //    refresh-access не выдал доступ снова при следующем визите пользователя.
+      //    Сопоставляем по productType/productReference — те же поля, что refresh-access использует.
+      await prisma.payment.updateMany({
+        where: {
+          userId:           user_id,
+          status:           'pending',
+          productType:      type,
+          productReference: reference,
+        },
+        data: { status: 'cancelled' },
+      });
+
       return NextResponse.json({ ok: true, action: 'revoked' });
     }
 

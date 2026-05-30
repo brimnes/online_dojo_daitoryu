@@ -51,19 +51,13 @@ export async function POST(request) {
       return NextResponse.json({ allow: true });
     }
 
-    // 3a. Lesson video → параллельно: month.isOpen + user_access
+    // 3a. Lesson video → проверяем user_access
     if (lesson) {
-      const [month, access] = await Promise.all([
-        prisma.month.findUnique({
-          where:  { id: lesson.monthId },
-          select: { isOpen: true },
-        }),
-        prisma.userAccess.findFirst({
-          where: { userId: viewer_id, type: 'month', reference: lesson.monthId },
-        }),
-      ]);
+      const access = await prisma.userAccess.findFirst({
+        where: { userId: viewer_id, type: 'month', reference: lesson.monthId },
+      });
 
-      if (month?.isOpen || access) return NextResponse.json({ allow: true });
+      if (access) return NextResponse.json({ allow: true });
       return NextResponse.json({ error: 'No access to this month' }, { status: 403 });
     }
 
