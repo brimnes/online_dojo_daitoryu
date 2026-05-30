@@ -73,9 +73,17 @@ model Month {
   id          String  @id           // 'jan','feb',...,'dec'
   label       String                // 'Январь', 'Февраль', ...
   kanji       String?               // '一', '二', ...
-  description String?
+  description String?               // краткое описание карточки (1-2 строки)
+  subtitle    String?               // подзаголовок карточки
   isOpen      Boolean @default(false) @map("is_open")
   sortOrder   Int?    @map("sort_order")
+
+  // Modal purchase content
+  modalTheme       String? @map("modal_theme")         // основная тема месяца
+  modalTopics      String? @map("modal_topics")        // JSON: ["тема1","тема2",...]
+  modalLessonsDesc String? @map("modal_lessons_desc")  // описание уроков
+  modalResults     String? @map("modal_results")       // JSON: ["результат1",...]
+  modalExtras      String? @map("modal_extras")        // доп. материалы
 
   // Relations
   lessons Lesson[]

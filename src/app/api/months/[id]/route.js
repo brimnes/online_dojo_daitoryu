@@ -25,10 +25,16 @@ export async function PATCH(request, { params }) {
 
   const body = await request.json();
   const data = {};
-  if (body.is_open   !== undefined) data.isOpen     = body.is_open;
-  if (body.label     !== undefined) data.label      = body.label;
-  if (body.kanji     !== undefined) data.kanji      = body.kanji;
-  if (body.description !== undefined) data.description = body.description;
+  if (body.is_open            !== undefined) data.isOpen          = body.is_open;
+  if (body.label              !== undefined) data.label           = body.label;
+  if (body.kanji              !== undefined) data.kanji           = body.kanji;
+  if (body.description        !== undefined) data.description     = body.description;
+  if (body.subtitle           !== undefined) data.subtitle        = body.subtitle;
+  if (body.modal_theme        !== undefined) data.modalTheme      = body.modal_theme;
+  if (body.modal_topics       !== undefined) data.modalTopics     = body.modal_topics;
+  if (body.modal_lessons_desc !== undefined) data.modalLessonsDesc = body.modal_lessons_desc;
+  if (body.modal_results      !== undefined) data.modalResults    = body.modal_results;
+  if (body.modal_extras       !== undefined) data.modalExtras     = body.modal_extras;
 
   try {
     const m = await prisma.month.update({ where: { id: params.id }, data });

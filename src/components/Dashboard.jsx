@@ -140,10 +140,300 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, init
   );
 }
 
+// ── helpers ──────────────────────────────────────────────────────
+function tryParseJSON(str, fallback = []) {
+  if (!str) return fallback;
+  try { return JSON.parse(str); } catch { return fallback; }
+}
+
+const MODAL_KANJI_NUM = ['一','二','三','四','五','六','七','八','九','十'];
+
+// ── MonthPurchaseModal ───────────────────────────────────────────
+function MonthPurchaseModal({ month, product, onClose, isMobile }) {
+  const [buying,   setBuying]   = useState(false);
+  const [buyError, setBuyError] = useState('');
+
+  const handleBuy = async () => {
+    if (!product || buying) return;
+    setBuying(true); setBuyError('');
+    try {
+      const res  = await fetch('/api/yookassa/create-payment', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: product.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setBuyError(data.error || 'Ошибка'); return; }
+      if (data.payment_id) { try { sessionStorage.setItem('yk_pending_pid', data.payment_id); } catch {} }
+      window.location.href = data.confirmation_url;
+    } catch { setBuyError('Ошибка соединения'); }
+    finally { setBuying(false); }
+  };
+
+  const topics  = tryParseJSON(month.modal_topics,  []);
+  const results = tryParseJSON(month.modal_results, []);
+
+  // Static access format block
+  const accessItems = ['Бессрочный доступ', 'Просмотр с любого устройства', 'Всегда можно вернуться к урокам'];
+
+  const leftBg   = 'linear-gradient(160deg,#1a1510 0%,#0d0b08 60%,#13110e 100%)';
+  const goldClr  = '#b8923a';
+  const sideText = '#ede5d3';
+  const sideMuted= '#7a6c52';
+
+  const content = (
+    <div onClick={e => e.stopPropagation()}
+      style={{
+        display: 'flex', flexDirection: isMobile ? 'column' : 'row',
+        background: C.surface, border: `1px solid ${C.border}`,
+        width: '100%', maxWidth: isMobile ? '100%' : 780,
+        maxHeight: isMobile ? '92vh' : '88vh',
+        overflow: 'hidden',
+        boxShadow: '0 24px 80px rgba(0,0,0,0.28)',
+      }}>
+
+      {/* ── Left panel ── */}
+      <div style={{
+        width: isMobile ? '100%' : 240, flexShrink: 0,
+        background: leftBg, padding: isMobile ? '24px 24px 20px' : '36px 28px 28px',
+        display: 'flex', flexDirection: 'column', position: 'relative', overflow: 'hidden',
+      }}>
+        {/* kanji watermark */}
+        <div style={{
+          position: 'absolute', bottom: -20, right: -10,
+          fontFamily: "var(--font-noto),'Noto Serif JP',serif",
+          fontSize: 140, color: goldClr, opacity: 0.08,
+          lineHeight: 1, pointerEvents: 'none', userSelect: 'none',
+        }}>{month.kanji || '月'}</div>
+
+        {/* top label */}
+        <div style={{
+          fontFamily: "var(--font-mono),'JetBrains Mono',monospace",
+          fontSize: 9, letterSpacing: '0.22em', color: sideMuted,
+          textTransform: 'uppercase', marginBottom: isMobile ? 12 : 20,
+        }}>
+          МЕСЯЦ {String(month.sort_order || '').padStart(2, '0')} · ДАЙТО-РЮ
+        </div>
+
+        {/* month name */}
+        <div style={{
+          fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif",
+          fontSize: isMobile ? 42 : 52, letterSpacing: '0.05em',
+          textTransform: 'uppercase', color: sideText, lineHeight: 0.9,
+          fontWeight: 400, position: 'relative', marginBottom: 16,
+        }}>{month.label}</div>
+
+        {/* subtitle */}
+        {(month.subtitle || month.description) && (
+          <div style={{
+            fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif",
+            fontSize: 15, color: sideMuted, lineHeight: 1.55, position: 'relative',
+            marginBottom: 16,
+          }}>{month.subtitle || month.description}</div>
+        )}
+
+        {/* modal theme teaser */}
+        {month.modal_theme && (
+          <div style={{
+            fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif",
+            fontSize: 14, color: `${sideText}99`, lineHeight: 1.5,
+            position: 'relative', marginBottom: 20,
+          }}>{month.modal_theme}</div>
+        )}
+
+        <div style={{ flex: 1 }} />
+
+        {/* price */}
+        {product && (
+          <div style={{ position: 'relative' }}>
+            <div style={{
+              fontFamily: "var(--font-mono),'JetBrains Mono',monospace",
+              fontSize: 9, letterSpacing: '0.22em', color: sideMuted,
+              textTransform: 'uppercase', marginBottom: 6,
+            }}>ЦЕНА</div>
+            <div style={{
+              fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif",
+              fontSize: 36, color: goldClr, letterSpacing: '0.03em', lineHeight: 1,
+            }}>{product.price?.toLocaleString('ru-RU')} ₽</div>
+          </div>
+        )}
+      </div>
+
+      {/* ── Right panel ── */}
+      <div style={{
+        flex: 1, display: 'flex', flexDirection: 'column',
+        minWidth: 0, overflow: 'hidden',
+      }}>
+        {/* Right header */}
+        <div style={{
+          display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+          padding: '18px 24px 14px', borderBottom: `1px solid ${C.border}`, flexShrink: 0,
+        }}>
+          <span style={{
+            fontFamily: "var(--font-mono),'JetBrains Mono',monospace",
+            fontSize: 9, letterSpacing: '0.22em', color: C.muted, textTransform: 'uppercase',
+          }}>ПРИОБРЕТЕНИЕ МЕСЯЦА</span>
+          <button onClick={onClose} style={{
+            background: 'none', border: 'none', cursor: 'pointer',
+            color: C.muted, fontSize: 18, lineHeight: 1, padding: '2px 4px',
+          }}>✕</button>
+        </div>
+
+        {/* Scrollable content */}
+        <div style={{ flex: 1, overflowY: 'auto', padding: isMobile ? '20px 20px' : '28px 32px' }}>
+
+          {/* ЧТО ВХОДИТ heading */}
+          <div style={{
+            fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif",
+            fontSize: isMobile ? 28 : 34, fontWeight: 300, color: C.ink,
+            letterSpacing: '0.04em', marginBottom: 24,
+          }}>ЧТО ВХОДИТ</div>
+
+          {/* Topics block */}
+          {topics.length > 0 ? (
+            <div style={{ marginBottom: 24 }}>
+              {topics.map((t, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'baseline', gap: 14,
+                  padding: '12px 0', borderBottom: `1px solid ${C.border}`,
+                }}>
+                  <span style={{
+                    fontFamily: "var(--font-noto),'Noto Serif JP',serif",
+                    fontSize: 14, color: C.accent, flexShrink: 0, minWidth: 16,
+                  }}>{MODAL_KANJI_NUM[i] || String(i+1)}</span>
+                  <div>
+                    <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 13, color: C.ink, fontWeight: 500 }}>
+                      {typeof t === 'object' ? t.title : t}
+                    </div>
+                    {typeof t === 'object' && t.desc && (
+                      <div style={{ fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif", fontSize: 14, color: C.muted, marginTop: 2 }}>{t.desc}</div>
+                    )}
+                  </div>
+                </div>
+              ))}
+            </div>
+          ) : (
+            /* Static default items when no topics set */
+            <div style={{ marginBottom: 24 }}>
+              {[
+                { title: 'Постоянный доступ', desc: 'Без срока действия' },
+                { title: 'Видеоуроки в HD', desc: 'Подробный разбор техники сэнсэем' },
+                { title: 'Личные комментарии', desc: 'Сэнсэй отвечает на ваши вопросы' },
+              ].map((t, i) => (
+                <div key={i} style={{
+                  display: 'flex', alignItems: 'baseline', gap: 14,
+                  padding: '12px 0', borderBottom: `1px solid ${C.border}`,
+                }}>
+                  <span style={{ fontFamily: "var(--font-noto),'Noto Serif JP',serif", fontSize: 14, color: C.accent, flexShrink: 0, minWidth: 16 }}>
+                    {MODAL_KANJI_NUM[i]}
+                  </span>
+                  <div>
+                    <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 13, color: C.ink, fontWeight: 500 }}>{t.title}</div>
+                    <div style={{ fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif", fontSize: 14, color: C.muted, marginTop: 2 }}>{t.desc}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Lessons description */}
+          {month.modal_lessons_desc && (
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 9, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', marginBottom: 10 }}>УРОКИ МЕСЯЦА</div>
+              <div style={{ fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif", fontSize: 16, color: C.ink2, lineHeight: 1.6 }}>{month.modal_lessons_desc}</div>
+            </div>
+          )}
+
+          {/* Results */}
+          {results.length > 0 && (
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 9, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', marginBottom: 10 }}>РЕЗУЛЬТАТ</div>
+              {results.map((r, i) => (
+                <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 6 }}>
+                  <span style={{ color: C.accent, fontSize: 12, marginTop: 3, flexShrink: 0 }}>—</span>
+                  <span style={{ fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif", fontSize: 16, color: C.ink2, lineHeight: 1.5 }}>{r}</span>
+                </div>
+              ))}
+            </div>
+          )}
+
+          {/* Access format */}
+          <div style={{ marginBottom: 24 }}>
+            <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 9, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', marginBottom: 10 }}>ФОРМАТ ДОСТУПА</div>
+            {accessItems.map((a, i) => (
+              <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 6 }}>
+                <span style={{ color: C.accent, fontSize: 12, marginTop: 3, flexShrink: 0 }}>—</span>
+                <span style={{ fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif", fontSize: 16, color: C.ink2, lineHeight: 1.5 }}>{a}</span>
+              </div>
+            ))}
+          </div>
+
+          {/* Extras */}
+          {month.modal_extras && (
+            <div style={{ marginBottom: 24 }}>
+              <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 9, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', marginBottom: 10 }}>ДОПОЛНИТЕЛЬНО</div>
+              <div style={{ fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif", fontSize: 16, color: C.ink2, lineHeight: 1.6 }}>{month.modal_extras}</div>
+            </div>
+          )}
+        </div>
+
+        {/* CTA area */}
+        <div style={{ padding: isMobile ? '16px 20px' : '20px 32px', borderTop: `1px solid ${C.border}`, flexShrink: 0, background: C.surface }}>
+          {product ? (
+            <button onClick={handleBuy} disabled={buying}
+              style={{
+                width: '100%', padding: '14px', minHeight: 52,
+                background: buying ? C.muted : C.accent, color: '#fff',
+                border: 'none', cursor: buying ? 'default' : 'pointer',
+                fontFamily: "var(--font-mono),'JetBrains Mono',monospace",
+                fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase',
+                marginBottom: 8, transition: 'background 0.15s',
+              }}>
+              {buying ? 'Переход к оплате…' : `ПЕРЕЙТИ К ОПЛАТЕ · ЮKASSA →`}
+            </button>
+          ) : (
+            <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 12, color: C.muted, textAlign: 'center', marginBottom: 8 }}>
+              Продукт недоступен для покупки
+            </div>
+          )}
+          <button onClick={onClose}
+            style={{
+              width: '100%', padding: '10px', minHeight: 40,
+              background: 'none', border: `1px solid ${C.border}`, cursor: 'pointer',
+              fontFamily: "var(--font-mono),'JetBrains Mono',monospace",
+              fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase',
+              color: C.muted, marginBottom: 10,
+            }}>
+            ОТМЕНА
+          </button>
+          {buyError && <div style={{ fontSize: 11, color: '#a03030', textAlign: 'center' }}>{buyError}</div>}
+          <div style={{
+            fontFamily: "var(--font-mono),'JetBrains Mono',monospace",
+            fontSize: 9, letterSpacing: '0.18em', color: C.muted,
+            textTransform: 'uppercase', textAlign: 'center',
+          }}>БЕЗОПАСНАЯ ОПЛАТА · СБП · КАРТА · БАНК</div>
+        </div>
+      </div>
+    </div>
+  );
+
+  return (
+    <div onClick={onClose} style={{
+      position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', zIndex: 400,
+      display: 'flex',
+      alignItems: isMobile ? 'flex-end' : 'center',
+      justifyContent: 'center',
+      padding: isMobile ? 0 : 20,
+    }}>
+      {content}
+    </div>
+  );
+}
+
 // ── Вкладка: Месяцы ──────────────────────────────────────────────
 function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) {
   const { months,   loading: monthsLoading }   = useMonths();
   const { products, loading: productsLoading } = useProducts();
+  const [purchaseMonth, setPurchaseMonth] = useState(null); // month object for modal
 
   if (monthsLoading) return <div style={{ color: C.muted, fontSize: 13 }}>Загрузка…</div>;
 
@@ -224,192 +514,121 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
             accessLoading={accessLoading}
             product={productByRef[m.id] ?? null}
             isMobile={isMobile}
+            onBuyClick={() => setPurchaseMonth({ month: m, product: productByRef[m.id] ?? null })}
           />
         ))}
       </div>
+
+      {/* Purchase modal */}
+      {purchaseMonth && (
+        <MonthPurchaseModal
+          month={purchaseMonth.month}
+          product={purchaseMonth.product}
+          onClose={() => setPurchaseMonth(null)}
+          isMobile={isMobile}
+        />
+      )}
     </div>
   );
 }
 
-function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product, isMobile }) {
+function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product, isMobile, onBuyClick }) {
   const { lessons } = useLessons(m.id);
-  const [buying,   setBuying]   = useState(false);
-  const [buyError, setBuyError] = useState('');
 
   const watchedCount = (lessons ?? []).filter(l => watched[l.id]).length;
   const hasProg      = (lessons ?? []).length > 0 && watchedCount > 0;
+  const hasAccess    = !!m.is_open || (!accessLoading && hasMonthAccess(userAccess ?? [], m.id));
+  const locked       = !hasAccess && !accessLoading;
+  const pct          = (lessons ?? []).length ? Math.round((watchedCount / (lessons ?? []).length) * 100) : 0;
 
-  // ─── SOURCE OF TRUTH для доступа ────────────────────────────────
-  // is_open=true → месяц открыт для всех авторизованных учеников (бесплатно).
-  // Иначе — проверяем user_access в БД: type='month', reference=m.id.
-  // Пока accessLoading=true — доступ неизвестен, CTA нейтральный.
-  const hasAccess = !!m.is_open || (!accessLoading && hasMonthAccess(userAccess ?? [], m.id));
-
-  // ─── Оплата конкретного месяца ───────────────────────────────────
-  const handleBuy = async () => {
-    if (!product || buying) return;
-    setBuying(true);
-    setBuyError('');
-    try {
-      const res  = await fetch('/api/yookassa/create-payment', {
-        method:  'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body:    JSON.stringify({ product_id: product.id }),
-      });
-      const data = await res.json();
-      if (!res.ok) {
-        setBuyError(res.status === 409 ? 'Доступ уже есть' : (data.error || 'Ошибка'));
-        return;
-      }
-      // Сохраняем provider_payment_id в sessionStorage — success-страница прочитает его
-      if (data.payment_id) {
-        try { sessionStorage.setItem('yk_pending_pid', data.payment_id); } catch {}
-      }
-      window.location.href = data.confirmation_url;
-    } catch {
-      setBuyError('Ошибка соединения');
-    } finally {
-      setBuying(false);
-    }
-  };
-
-  // ─── Визуальные состояния ────────────────────────────────────────
-  const locked    = !hasAccess && !accessLoading;
-  const pct       = (lessons ?? []).length ? Math.round((watchedCount / (lessons ?? []).length) * 100) : 0;
-
-  const cardBg     = locked
-    ? C.bg2
-    : m.current
-      ? `linear-gradient(155deg, ${C.surface2} 0%, ${C.surface} 60%, ${C.bg2} 100%)`
-      : C.surface;
-  const cardBorder = m.current
-    ? `1px solid ${C.accent}`
-    : locked
-      ? `1px dashed ${C.hairline2}`
-      : `1px solid ${C.border}`;
-  const cardShadow = m.current
-    ? `0 1px 0 ${C.accent} inset, 0 30px 60px -28px ${C.accent}55, 0 12px 32px -10px rgba(0,0,0,0.15)`
-    : locked ? 'none' : C.shadow;
-  const kanjiWatermarkColor = locked ? C.hairline2 : m.current ? C.accent : C.goldSoft;
+  const cardBg     = locked ? C.bg2 : m.current ? `linear-gradient(155deg,${C.surface2} 0%,${C.surface} 60%,${C.bg2} 100%)` : C.surface;
+  const cardBorder = m.current ? `1px solid ${C.accent}` : locked ? `1px dashed ${C.hairline2}` : `1px solid ${C.border}`;
+  const cardShadow = m.current ? `0 1px 0 ${C.accent} inset,0 30px 60px -28px ${C.accent}55,0 12px 32px -10px rgba(0,0,0,0.15)` : locked ? 'none' : C.shadow;
+  const kanjiClr   = locked ? C.hairline2 : m.current ? C.accent : C.goldSoft;
 
   return (
     <div style={{
       position: 'relative',
-      padding: isMobile ? '16px 14px' : '22px 20px',
-      minHeight: isMobile ? 170 : 220,
-      background: cardBg,
-      border: cardBorder,
-      display: 'flex', flexDirection: 'column', gap: 6,
-      boxShadow: cardShadow,
-      opacity: locked ? 0.6 : 1,
+      padding: isMobile ? '14px 12px' : '20px 18px',
+      height: isMobile ? 'auto' : 220,
+      minHeight: isMobile ? 160 : 220,
+      background: cardBg, border: cardBorder, boxShadow: cardShadow,
+      display: 'flex', flexDirection: 'column',
+      opacity: locked ? 0.65 : 1,
       overflow: 'hidden',
-      transition: 'transform 0.25s ease, box-shadow 0.25s ease',
     }}>
 
-      {/* Kanji watermark — absolute background */}
+      {/* Kanji watermark */}
       <div style={{
-        position: 'absolute', top: -8, right: 8,
-        fontFamily: "'Noto Serif JP', var(--font-noto), serif",
-        fontSize: isMobile ? 64 : 100,
-        color: kanjiWatermarkColor,
-        opacity: locked ? 0.4 : m.current ? 0.18 : 0.16,
-        lineHeight: 1, pointerEvents: 'none', fontWeight: 300, userSelect: 'none',
+        position: 'absolute', top: -8, right: 6,
+        fontFamily: "'Noto Serif JP',var(--font-noto),serif",
+        fontSize: isMobile ? 60 : 90,
+        color: kanjiClr,
+        opacity: locked ? 0.35 : m.current ? 0.18 : 0.15,
+        lineHeight: 1, pointerEvents: 'none', userSelect: 'none',
       }}>{m.kanji}</div>
 
-      {/* Current month diamond */}
-      {m.current && (
-        <div style={{ position: 'absolute', top: 12, left: 12, width: 6, height: 6, background: C.accent, transform: 'rotate(45deg)' }} />
-      )}
+      {/* Current month indicator */}
+      {m.current && <div style={{ position: 'absolute', top: 10, left: 10, width: 6, height: 6, background: C.accent, transform: 'rotate(45deg)' }} />}
 
-      {/* Top row: number + badge */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', marginBottom: 4, marginTop: m.current ? 6 : 0 }}>
-        <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, letterSpacing: '0.22em', color: m.current ? C.accent : C.muted, fontWeight: 600 }}>
-          {m.sort_order ? `${String(m.sort_order).padStart(2, '0')} / 12` : '– / 12'}
+      {/* Number row */}
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', marginBottom: 6, marginTop: m.current ? 4 : 0 }}>
+        <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 9, letterSpacing: '0.22em', color: m.current ? C.accent : C.muted, fontWeight: 600 }}>
+          {m.sort_order ? `${String(m.sort_order).padStart(2,'0')} / 12` : '– / 12'}
         </span>
-        {m.current && (
-          <span style={{
-            fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-            fontSize: 9, letterSpacing: '0.28em',
-            color: C.accent, textTransform: 'uppercase', fontWeight: 600,
-            padding: '3px 9px', border: `1px solid ${C.accent}`,
-          }}>текущий</span>
-        )}
-        {locked && !accessLoading && (
-          <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: C.muted, letterSpacing: '0.1em' }}>🔒</span>
-        )}
+        {m.current && <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 8, letterSpacing: '0.28em', color: C.accent, padding: '2px 7px', border: `1px solid ${C.accent}` }}>ТЕКУЩИЙ</span>}
+        {locked && !accessLoading && <span style={{ fontSize: 11, color: C.muted }}>🔒</span>}
       </div>
 
-      {/* Month title — Cormorant SC large */}
+      {/* Month name */}
       <div style={{
-        fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-        fontSize: isMobile ? 26 : 32,
+        fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif",
+        fontSize: isMobile ? 24 : 30,
         letterSpacing: '0.06em', textTransform: 'uppercase',
         color: locked ? C.muted : C.ink,
         position: 'relative', fontWeight: 500, lineHeight: 0.95,
+        marginBottom: 8,
       }}>{m.label}</div>
 
-      {/* Italic subtitle / description */}
-      {(m.subtitle || m.description || m.desc) && (
+      {/* Subtitle — clamped to 2 lines */}
+      {(m.subtitle || m.description) && (
         <div style={{
-          fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-          fontStyle: 'italic',
-          fontSize: isMobile ? 13 : 15,
+          fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif",
+          fontSize: isMobile ? 14 : 15,
           color: locked ? C.muted : C.ink2,
-          position: 'relative', marginTop: 2,
-        }}>{m.subtitle || m.description || m.desc}</div>
+          position: 'relative', lineHeight: 1.4,
+          display: '-webkit-box', WebkitLineClamp: 2,
+          WebkitBoxOrient: 'vertical', overflow: 'hidden',
+        }}>{m.subtitle || m.description}</div>
       )}
 
-      {/* Bottom area: progress or CTA */}
-      <div style={{ marginTop: 'auto', paddingTop: isMobile ? 10 : 14, position: 'relative' }}>
+      {/* Bottom CTA */}
+      <div style={{ marginTop: 'auto', paddingTop: 10, position: 'relative' }}>
         {accessLoading ? (
-          <div style={{ height: 12, background: C.border, borderRadius: 2, width: '60%', opacity: 0.5 }} />
+          <div style={{ height: 10, background: C.border, width: '55%', opacity: 0.4 }} />
         ) : hasAccess && hasProg ? (
           <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 8 }}>
-              <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.muted, letterSpacing: '0.1em', fontWeight: 500 }}>
-                {watchedCount} / {(lessons ?? []).length} уроков
-              </span>
-              <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.accent, letterSpacing: '0.1em', fontWeight: 600 }}>
-                {pct}%
-              </span>
+            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+              <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 9, color: C.muted, letterSpacing: '0.1em' }}>{watchedCount} / {(lessons ?? []).length} уроков</span>
+              <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 9, color: C.accent, letterSpacing: '0.1em', fontWeight: 600 }}>{pct}%</span>
             </div>
-            <div style={{ height: 2, background: C.border, borderRadius: 2, overflow: 'hidden' }}>
-              <div style={{ height: '100%', width: `${pct}%`, background: C.accent, borderRadius: 2, transition: 'width 0.4s ease' }} />
+            <div style={{ height: 2, background: C.border, overflow: 'hidden', marginBottom: 8 }}>
+              <div style={{ height: '100%', width: `${pct}%`, background: C.accent, transition: 'width 0.4s ease' }} />
             </div>
-            <div style={{ marginTop: 10 }}>
-              <button onClick={() => nav.month(m.id)}
-                style={{ background: 'none', border: 'none', padding: '8px 0', fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: C.accent, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer', minHeight: 36 }}>
-                Продолжить →
-              </button>
-            </div>
+            <button onClick={() => nav.month(m.id)} style={{ background: 'none', border: 'none', padding: '6px 0', fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 10, color: C.accent, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer', minHeight: 32 }}>
+              Продолжить →
+            </button>
           </>
         ) : hasAccess ? (
-          <>
-            <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.muted, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-              {(lessons ?? []).length > 0 ? `${(lessons ?? []).length} уроков · не начат` : 'не начат'}
-            </span>
-            <div style={{ marginTop: 10 }}>
-              <button onClick={() => nav.month(m.id)}
-                style={{ background: 'none', border: 'none', padding: '8px 0', fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: C.accent, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer', minHeight: 36 }}>
-                Открыть урок →
-              </button>
-            </div>
-          </>
+          <button onClick={() => nav.month(m.id)} style={{ background: 'none', border: 'none', padding: '6px 0', fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 10, color: C.accent, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer', minHeight: 32 }}>
+            Открыть уроки →
+          </button>
         ) : product ? (
-          <div>
-            <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
-              <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, color: C.muted }}>
-                {product.price?.toLocaleString('ru-RU')} ₽
-              </span>
-              <button onClick={handleBuy} disabled={buying}
-                style={{ background: 'none', border: 'none', padding: '8px 0', fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: buying ? C.muted : C.gold, letterSpacing: '0.16em', textTransform: 'uppercase', cursor: buying ? 'default' : 'pointer', minHeight: 36 }}>
-                {buying ? 'Переход…' : 'Открыть →'}
-              </button>
-            </div>
-            {buyError && <div style={{ fontSize: 10, color: '#a03030', marginTop: 4 }}>{buyError}</div>}
-          </div>
+          <button onClick={onBuyClick} style={{ background: 'none', border: 'none', padding: '6px 0', fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 10, color: C.gold, letterSpacing: '0.16em', textTransform: 'uppercase', cursor: 'pointer', minHeight: 32 }}>
+            Что входит →
+          </button>
         ) : (
-          <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.muted, letterSpacing: '0.12em' }}>недоступно</span>
+          <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 9, color: C.muted, letterSpacing: '0.12em' }}>недоступно</span>
         )}
       </div>
     </div>

@@ -9,7 +9,13 @@ import { requireAuth } from '@/lib/auth-server.js';
 function toMonth(m, lessons) {
   const base = {
     id: m.id, label: m.label, kanji: m.kanji,
-    description: m.description, is_open: m.isOpen, sort_order: m.sortOrder,
+    description: m.description, subtitle: m.subtitle,
+    is_open: m.isOpen, sort_order: m.sortOrder,
+    modal_theme:        m.modalTheme,
+    modal_topics:       m.modalTopics,
+    modal_lessons_desc: m.modalLessonsDesc,
+    modal_results:      m.modalResults,
+    modal_extras:       m.modalExtras,
   };
   if (!lessons) return base;
   return {

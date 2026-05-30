@@ -1870,6 +1870,112 @@ function LessonEditForm({ draft, setDraft, doSave, setEditId, saving, showToast,
   );
 }
 
+// ── MonthEditForm — переиспользуется для mobile и desktop ───────
+function MonthEditForm({mDraft,setMDraft,mSaving,onSave,onCancel,desktop}){
+  const fieldStyle = {width:'100%',background:C.bg,border:`1px solid ${C.hairline}`,padding:'8px 10px',fontFamily:F.serif,fontSize:14,color:C.ink,outline:'none',boxSizing:'border-box'};
+  const labelStyle = {fontFamily:F.mono,fontSize:9,letterSpacing:'0.16em',color:C.muted,textTransform:'uppercase',marginBottom:5};
+
+  const addListItem = (key) => setMDraft(p=>({...p,[key]:[...(p[key]||[]),''] }));
+  const updateListItem = (key,i,val) => setMDraft(p=>({...p,[key]:p[key].map((v,j)=>j===i?val:v)}));
+  const removeListItem = (key,i) => setMDraft(p=>({...p,[key]:p[key].filter((_,j)=>j!==i)}));
+
+  return (
+    <div style={{
+      background:C.surface,border:`1px solid ${C.hairline}`,
+      padding:'16px',marginBottom:14,
+      display:'flex',flexDirection:'column',gap:12,
+      borderTop: desktop ? `1px solid ${C.hairline}` : undefined,
+      marginTop: desktop ? 16 : 0,
+      paddingTop: desktop ? 16 : 16,
+    }}>
+      <div style={{fontFamily:F.mono,fontSize:10,letterSpacing:'0.16em',color:C.accent,textTransform:'uppercase',marginBottom:4}}>КОНТЕНТ МЕСЯЦА</div>
+
+      {/* Basic info row */}
+      <div style={{display:'grid',gridTemplateColumns:desktop?'1fr 1fr 80px':'1fr',gap:10}}>
+        <div>
+          <div style={labelStyle}>Подзаголовок карточки</div>
+          <input value={mDraft.subtitle||''} onChange={e=>setMDraft(p=>({...p,subtitle:e.target.value}))}
+            placeholder="Фундаментальная подготовка." style={fieldStyle}/>
+        </div>
+        <div>
+          <div style={labelStyle}>Описание (карточка)</div>
+          <input value={mDraft.description||''} onChange={e=>setMDraft(p=>({...p,description:e.target.value}))}
+            placeholder="Работа корпуса, устойчивость." style={fieldStyle}/>
+        </div>
+        {desktop && (
+          <div>
+            <div style={labelStyle}>Кандзи</div>
+            <input value={mDraft.kanji||''} onChange={e=>setMDraft(p=>({...p,kanji:e.target.value}))}
+              placeholder="六" style={{...fieldStyle,fontFamily:F.kanji,fontSize:22,textAlign:'center'}}/>
+          </div>
+        )}
+      </div>
+
+      {/* Modal theme */}
+      <div>
+        <div style={labelStyle}>Основная тема (левая колонка модала)</div>
+        <textarea value={mDraft.modal_theme||''} onChange={e=>setMDraft(p=>({...p,modal_theme:e.target.value}))}
+          rows={2} placeholder="Фундаментальная подготовка для дальнейшего освоения техники Дайто-рю."
+          style={{...fieldStyle,resize:'vertical'}}/>
+      </div>
+
+      {/* Topics list */}
+      <div>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}}>
+          <div style={labelStyle}>Что изучаем (список)</div>
+          <button onClick={()=>addListItem('modal_topics')} style={{background:'none',border:`1px solid ${C.hairline}`,padding:'2px 8px',fontFamily:F.mono,fontSize:9,color:C.accent,cursor:'pointer',letterSpacing:'0.1em'}}>+ ПУНКТ</button>
+        </div>
+        {(mDraft.modal_topics||[]).map((t,i)=>(
+          <div key={i} style={{display:'flex',gap:6,marginBottom:6}}>
+            <input value={typeof t==='object'?t.title:t} onChange={e=>updateListItem('modal_topics',i,e.target.value)}
+              placeholder={`Пункт ${i+1}`} style={{...fieldStyle,flex:1}}/>
+            <button onClick={()=>removeListItem('modal_topics',i)} style={{background:'none',border:`1px solid ${C.hairline}`,padding:'0 8px',color:C.danger,cursor:'pointer',fontFamily:F.mono,fontSize:11,flexShrink:0}}>✕</button>
+          </div>
+        ))}
+        {(!mDraft.modal_topics||mDraft.modal_topics.length===0)&&(
+          <div style={{fontFamily:F.serif,fontSize:12,color:C.muted,padding:'6px 0'}}>Нет пунктов — нажмите + ПУНКТ</div>
+        )}
+      </div>
+
+      {/* Lessons desc */}
+      <div>
+        <div style={labelStyle}>Описание уроков</div>
+        <textarea value={mDraft.modal_lessons_desc||''} onChange={e=>setMDraft(p=>({...p,modal_lessons_desc:e.target.value}))}
+          rows={2} placeholder="Видеоуроки с подробными объяснениями, демонстрацией и практическими заданиями."
+          style={{...fieldStyle,resize:'vertical'}}/>
+      </div>
+
+      {/* Results list */}
+      <div>
+        <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:6}}>
+          <div style={labelStyle}>Результат прохождения</div>
+          <button onClick={()=>addListItem('modal_results')} style={{background:'none',border:`1px solid ${C.hairline}`,padding:'2px 8px',fontFamily:F.mono,fontSize:9,color:C.accent,cursor:'pointer',letterSpacing:'0.1em'}}>+ ПУНКТ</button>
+        </div>
+        {(mDraft.modal_results||[]).map((r,i)=>(
+          <div key={i} style={{display:'flex',gap:6,marginBottom:6}}>
+            <input value={r} onChange={e=>updateListItem('modal_results',i,e.target.value)}
+              placeholder={`Результат ${i+1}`} style={{...fieldStyle,flex:1}}/>
+            <button onClick={()=>removeListItem('modal_results',i)} style={{background:'none',border:`1px solid ${C.hairline}`,padding:'0 8px',color:C.danger,cursor:'pointer',fontFamily:F.mono,fontSize:11,flexShrink:0}}>✕</button>
+          </div>
+        ))}
+      </div>
+
+      {/* Extras */}
+      <div>
+        <div style={labelStyle}>Дополнительные материалы</div>
+        <textarea value={mDraft.modal_extras||''} onChange={e=>setMDraft(p=>({...p,modal_extras:e.target.value}))}
+          rows={2} placeholder="Конспекты, домашние задания, разбор ошибок."
+          style={{...fieldStyle,resize:'vertical'}}/>
+      </div>
+
+      <div style={{display:'flex',gap:8,paddingTop:4}}>
+        <Btn2 kind="accent" size="sm" disabled={mSaving} onClick={onSave}>{mSaving?'…':'Сохранить'}</Btn2>
+        <Btn2 kind="quiet"  size="sm" onClick={onCancel}>Отмена</Btn2>
+      </div>
+    </div>
+  );
+}
+
 // ═══════════════════════════════════════════════════════════════
 // 4. МЕСЯЦЫ
 // ═══════════════════════════════════════════════════════════════
@@ -1892,15 +1998,33 @@ function SectionMonths({showToast,isMobile}){
   const [mDraft, setMDraft] = useState({});
   const [mSaving, setMSaving] = useState(false);
 
+  // helpers for JSON list fields
+  const parseList = (jsonStr) => { try { return JSON.parse(jsonStr || '[]'); } catch { return []; } };
+  const serializeList = (arr) => JSON.stringify(arr);
+
   const startEditMonth = () => {
-    setMDraft({ description: activeM?.description || '', kanji: activeM?.kanji || '' });
+    setMDraft({
+      description:        activeM?.description        || '',
+      subtitle:           activeM?.subtitle           || '',
+      kanji:              activeM?.kanji              || '',
+      modal_theme:        activeM?.modal_theme        || '',
+      modal_topics:       parseList(activeM?.modal_topics),
+      modal_lessons_desc: activeM?.modal_lessons_desc || '',
+      modal_results:      parseList(activeM?.modal_results),
+      modal_extras:       activeM?.modal_extras       || '',
+    });
     setEditingMonth(true);
   };
   const saveMonthDraft = async () => {
     setMSaving(true);
-    const { ok, error } = await saveMonth(activeMId, mDraft);
+    const payload = {
+      ...mDraft,
+      modal_topics:  serializeList(mDraft.modal_topics),
+      modal_results: serializeList(mDraft.modal_results),
+    };
+    const { ok, error } = await saveMonth(activeMId, payload);
     setMSaving(false);
-    if (ok) { setEditingMonth(false); showToast('Описание месяца сохранено'); }
+    if (ok) { setEditingMonth(false); showToast('Контент месяца сохранён'); }
     else showToast('Ошибка: ' + error);
   };
 
@@ -2017,26 +2141,10 @@ function SectionMonths({showToast,isMobile}){
                     <div style={{fontFamily:F.serif,fontStyle:'italic',fontSize:12,color:C.muted,marginTop:2}}>{activeM.description}</div>
                   )}
                 </div>
-                <Btn2 kind="quiet" size="sm" onClick={startEditMonth}>Описание</Btn2>
+                <Btn2 kind="quiet" size="sm" onClick={startEditMonth}>Контент</Btn2>
               </div>
               {/* Mobile month edit form */}
-              {editingMonth && (
-                <div style={{background:C.surface,border:`1px solid ${C.hairline}`,padding:'14px',marginBottom:10,display:'flex',flexDirection:'column',gap:10}}>
-                  <div>
-                    <div style={{fontFamily:F.mono,fontSize:9,letterSpacing:'0.14em',color:C.muted,textTransform:'uppercase',marginBottom:5}}>Описание карточки</div>
-                    <input
-                      value={mDraft.description}
-                      onChange={e=>setMDraft(p=>({...p,description:e.target.value}))}
-                      placeholder="Атэми — вспомогательные удары."
-                      style={{width:'100%',background:C.bg,border:`1px solid ${C.hairline}`,padding:'8px 10px',fontFamily:F.serif,fontStyle:'italic',fontSize:14,color:C.ink,outline:'none',boxSizing:'border-box'}}
-                    />
-                  </div>
-                  <div style={{display:'flex',gap:8}}>
-                    <Btn2 kind="accent" size="sm" disabled={mSaving} onClick={saveMonthDraft}>{mSaving?'…':'Сохранить'}</Btn2>
-                    <Btn2 kind="quiet"  size="sm" onClick={()=>setEditingMonth(false)}>Отмена</Btn2>
-                  </div>
-                </div>
-              )}
+              {editingMonth && <MonthEditForm mDraft={mDraft} setMDraft={setMDraft} mSaving={mSaving} onSave={saveMonthDraft} onCancel={()=>setEditingMonth(false)}/>}
               {lLoading&&<Spinner/>}
               <div style={{background:C.surface,border:`1px solid ${C.hairline}`}}>
                 {lessons.map((l,i)=>(
@@ -2097,46 +2205,19 @@ function SectionMonths({showToast,isMobile}){
                   <span style={{fontFamily:F.kanji,fontSize:52,color:C.accent,opacity:0.15,lineHeight:0.8}}>{activeM?.kanji?.[0]||'月'}</span>
                   <div style={{flex:1,minWidth:0}}>
                     <div style={{fontFamily:F.serif,fontSize:26,color:C.ink,letterSpacing:'0.04em',fontWeight:500,lineHeight:1}}>{activeM?.label||'—'}</div>
-                    {activeM?.description && !editingMonth && (
-                      <div style={{fontFamily:F.serif,fontStyle:'italic',fontSize:13,color:C.muted,marginTop:4,lineHeight:1.4}}>{activeM.description}</div>
+                    {(activeM?.subtitle||activeM?.description) && !editingMonth && (
+                      <div style={{fontFamily:F.serif,fontSize:13,color:C.muted,marginTop:4,lineHeight:1.4}}>{activeM.subtitle||activeM.description}</div>
                     )}
                     <div style={{fontFamily:F.mono,fontSize:10,color:C.muted,letterSpacing:'0.12em',marginTop:5}}>{lessons.length} УРОКОВ · {totalPub} ОПУБЛИКОВАНО</div>
                   </div>
                   <div style={{display:'flex',gap:6,flexShrink:0}}>
-                    <Btn2 kind="quiet" size="sm" onClick={startEditMonth}>Описание</Btn2>
+                    <Btn2 kind="quiet" size="sm" onClick={startEditMonth}>Контент</Btn2>
                     <Btn2 kind="accent" size="sm" onClick={doAdd}>+ Урок</Btn2>
                   </div>
                 </div>
 
                 {/* Inline month edit form */}
-                {editingMonth && (
-                  <div style={{borderTop:`1px solid ${C.hairline}`,marginTop:16,paddingTop:16,display:'flex',flexDirection:'column',gap:10}}>
-                    <div style={{display:'grid',gridTemplateColumns:'1fr 120px',gap:10}}>
-                      <div>
-                        <div style={{fontFamily:F.mono,fontSize:9,letterSpacing:'0.16em',color:C.muted,textTransform:'uppercase',marginBottom:5}}>Описание карточки</div>
-                        <input
-                          value={mDraft.description}
-                          onChange={e=>setMDraft(p=>({...p,description:e.target.value}))}
-                          placeholder="Атэми — вспомогательные удары."
-                          style={{width:'100%',background:C.bg,border:`1px solid ${C.hairline}`,padding:'8px 10px',fontFamily:F.serif,fontStyle:'italic',fontSize:14,color:C.ink,outline:'none',boxSizing:'border-box'}}
-                        />
-                      </div>
-                      <div>
-                        <div style={{fontFamily:F.mono,fontSize:9,letterSpacing:'0.16em',color:C.muted,textTransform:'uppercase',marginBottom:5}}>Кандзи</div>
-                        <input
-                          value={mDraft.kanji}
-                          onChange={e=>setMDraft(p=>({...p,kanji:e.target.value}))}
-                          placeholder="六"
-                          style={{width:'100%',background:C.bg,border:`1px solid ${C.hairline}`,padding:'8px 10px',fontFamily:F.kanji,fontSize:22,color:C.copper,outline:'none',textAlign:'center',boxSizing:'border-box'}}
-                        />
-                      </div>
-                    </div>
-                    <div style={{display:'flex',gap:8}}>
-                      <Btn2 kind="accent" size="sm" disabled={mSaving} onClick={saveMonthDraft}>{mSaving?'…':'Сохранить'}</Btn2>
-                      <Btn2 kind="quiet"  size="sm" onClick={()=>setEditingMonth(false)}>Отмена</Btn2>
-                    </div>
-                  </div>
-                )}
+                {editingMonth && <MonthEditForm mDraft={mDraft} setMDraft={setMDraft} mSaving={mSaving} onSave={saveMonthDraft} onCancel={()=>setEditingMonth(false)} desktop/>}
               </div>
               {editingMonth && <div style={{marginBottom:14}}/>}
 
