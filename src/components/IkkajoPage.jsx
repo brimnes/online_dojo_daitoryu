@@ -44,7 +44,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout }) {
       )}
 
       {/* ── Page content ── */}
-      <div style={{ flex: 1, background: C.bg, minHeight: '100vh' }}>
+      <div style={{ flex: 1, background: C.bg, minHeight: '100vh', paddingLeft: isMobile ? 0 : 260 }}>
 
         {/* ── Mobile sticky header ── */}
         {isMobile && (

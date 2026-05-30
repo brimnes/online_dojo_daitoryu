@@ -329,7 +329,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
     <div className="fade" style={{ display: 'flex', minHeight: '100vh' }}>
       <Sidebar activeTab="database" onTabClick={onBack} user={user} onLogout={onLogout} />
 
-      <div style={{ flex: 1, background: C.bg, minHeight: '100vh', overflow: 'auto' }}>
+      <div style={{ flex: 1, background: C.bg, minHeight: '100vh', overflow: 'auto', paddingLeft: 260 }}>
 
         {/* Sticky breadcrumb bar */}
         <div style={{
