@@ -5,6 +5,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma.js';
 import { requireAuth, requireAdmin } from '@/lib/auth-server.js';
+import { hasMonthAccess } from '@/lib/access.js';
 
 function toSnake(l) {
   return {
@@ -19,12 +20,23 @@ function toSnake(l) {
 }
 
 export async function GET(request) {
-  const { error } = await requireAuth(request);
+  const { user, error } = await requireAuth(request);
   if (error) return error;
 
   const { searchParams } = new URL(request.url);
   const monthId = searchParams.get('month_id');
   if (!monthId) return NextResponse.json({ error: 'month_id required' }, { status: 400 });
+
+  // Admin и teacher видят всё
+  if (user.role !== 'admin' && user.role !== 'teacher') {
+    const accessRows = await prisma.userAccess.findMany({
+      where:  { userId: user.id },
+      select: { type: true, reference: true },
+    });
+    if (!hasMonthAccess(accessRows, monthId)) {
+      return NextResponse.json({ error: 'No access to this month' }, { status: 403 });
+    }
+  }
 
   const lessons = await prisma.lesson.findMany({
     where: { monthId },
