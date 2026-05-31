@@ -215,7 +215,7 @@ export default function KinescopeUploader({
         padding: '12px 14px',
         background: '#faf6ee',
         border: '1px solid #e8dcc8',
-        fontSize: 12,
+        fontSize: 13,
         color: '#999',
       }}>
         Сначала сохраните запись, затем загрузите видео
@@ -277,8 +277,8 @@ export default function KinescopeUploader({
           cursor: 'pointer', transition: 'all 0.15s',
         }}
       >
-        <div style={{ fontSize: 20, marginBottom: 6 }}>↑</div>
-        <div style={{ fontSize: 12, color: C.dark, marginBottom: 2 }}>
+        <div style={{ fontSize: 18, marginBottom: 6 }}>↑</div>
+        <div style={{ fontSize: 13, color: C.dark, marginBottom: 2 }}>
           {currentVideoId ? 'Заменить видео' : 'Загрузить видео в Kinescope'}
         </div>
         <div style={{ fontSize: 11, color: C.muted }}>
@@ -314,9 +314,9 @@ export default function KinescopeUploader({
   if (phase === 'done') return (
     <div style={{ display: 'flex', alignItems: 'center', gap: 10,
       padding: '10px 14px', background: C.greenBg, border: `1px solid ${C.greenBorder}` }}>
-      <span style={{ color: C.green, fontSize: 14 }}>✓</span>
+      <span style={{ color: C.green, fontSize: 15 }}>✓</span>
       <div>
-        <div style={{ fontSize: 12, color: C.green, fontWeight: 600 }}>Файл загружен</div>
+        <div style={{ fontSize: 13, color: C.green, fontWeight: 600 }}>Файл загружен</div>
         <div style={{ fontSize: 11, color: C.muted }}>Kinescope обрабатывает — 2–5 минут</div>
       </div>
       <button onClick={handleRetry}
@@ -332,7 +332,7 @@ export default function KinescopeUploader({
   return (
     <div style={{ padding: '10px 14px', background: C.redBg,
       border: `1px solid ${C.redBorder}` }}>
-      <div style={{ fontSize: 12, color: C.red, marginBottom: 6 }}>
+      <div style={{ fontSize: 13, color: C.red, marginBottom: 6 }}>
         Ошибка: {errorMsg}
       </div>
       <button onClick={handleRetry}

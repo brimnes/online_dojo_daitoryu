@@ -191,14 +191,14 @@ function VideoPlaceholder({ title, duration, label, spinner, error, polling }) {
             <span style={{ color: 'rgba(255,255,255,0.4)', fontSize: 18 }}>▶</span>
           </div>
         )}
-        {error && <span style={{ color: '#b04030', fontSize: 20 }}>✕</span>}
+        {error && <span style={{ color: '#b04030', fontSize: 18 }}>✕</span>}
         <div style={{ color: 'rgba(255,255,255,0.5)', fontSize: 13, textAlign: 'center' }}>{label}</div>
         {polling && (
           <div style={{ color: 'rgba(255,255,255,0.2)', fontSize: 11, textAlign: 'center' }}>
             Проверяем каждые 8 сек. · обычно 2–5 мин.
           </div>
         )}
-        {title && <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: 12, textAlign: 'center' }}>{title}</div>}
+        {title && <div style={{ color: 'rgba(255,255,255,0.25)', fontSize: 13, textAlign: 'center' }}>{title}</div>}
       </div>
     </div>
   );

@@ -130,7 +130,7 @@ export default function LessonPage({
             <span style={{
               marginLeft: 'auto',
               fontFamily: "'Noto Serif JP', var(--font-noto), serif",
-              fontSize: 12, color: C.muted, letterSpacing: '0.18em',
+              fontSize: 13, color: C.muted, letterSpacing: '0.18em',
             }}>{month?.kanji} · 第{numKanji}課</span>
           </div>
         )}
@@ -172,7 +172,7 @@ export default function LessonPage({
               {lesson.subtitle && (
                 <div style={{
                   fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                  fontSize: 17,
+                  fontSize: 18,
                   color: C.muted,
                 }}>{lesson.subtitle}</div>
               )}
@@ -262,7 +262,7 @@ export default function LessonPage({
                   {!isMobile && (
                     <span style={{
                       fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                      fontSize: 14, color: C.muted,
+                      fontSize: 15, color: C.muted,
                     }}>Сэнсэй отвечает в течение 24 часов</span>
                   )}
                 </div>
@@ -309,7 +309,7 @@ export default function LessonPage({
                             </div>
                             <div style={{
                               fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                              fontSize: 17, color: C.ink2, lineHeight: 1.6,
+                              fontSize: 18, color: C.ink2, lineHeight: 1.6,
                             }}>{c.text}</div>
                           </div>
                         </div>
@@ -349,7 +349,7 @@ export default function LessonPage({
                     padding: '20px', background: C.surface, border: `1px solid ${C.border}`,
                     marginBottom: 14,
                     fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                    fontSize: 17, color: C.muted, textAlign: 'center',
+                    fontSize: 18, color: C.muted, textAlign: 'center',
                   }}>Комментариев пока нет. Будьте первым!</div>
                 )}
 
@@ -368,7 +368,7 @@ export default function LessonPage({
                         width: '100%', border: 'none', outline: 'none',
                         background: 'transparent', resize: 'none',
                         fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                        fontSize: 17, color: C.ink, lineHeight: 1.6,
+                        fontSize: 18, color: C.ink, lineHeight: 1.6,
                       }}
                     />
                   </div>
@@ -380,7 +380,7 @@ export default function LessonPage({
                       color: (commentText.trim() && !submitting) ? '#fff' : C.muted,
                       border: 'none',
                       fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                      fontSize: 12, letterSpacing: '0.1em', textTransform: 'uppercase',
+                      fontSize: 13, letterSpacing: '0.1em', textTransform: 'uppercase',
                       cursor: (commentText.trim() && !submitting) ? 'pointer' : 'default',
                       transition: 'all 0.15s', flexShrink: 0,
                       alignSelf: 'stretch',

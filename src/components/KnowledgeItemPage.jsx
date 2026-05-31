@@ -76,7 +76,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
       padding: '80px 32px', textAlign: 'center', display: 'flex',
       flexDirection: 'column', alignItems: 'center', gap: 16,
     }}>
-      <div style={{ fontFamily: F.serif, fontSize: 19, color: C.muted }}>
+      <div style={{ fontFamily: F.serif, fontSize: 18, color: C.muted }}>
         Материал не найден
       </div>
       <button
@@ -104,7 +104,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
         }}>
           <button onClick={nav.back} style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: 22, color: C.accent, padding: '0 4px',
+            fontSize: 24, color: C.accent, padding: '0 4px',
             display: 'flex', alignItems: 'center', minWidth: 36, minHeight: 44,
           }}>‹</button>
           <span style={{
@@ -152,7 +152,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
           {item.subtitle && (
             <div style={{
               fontFamily: F.serif,
-              fontSize: 17, color: C.muted,
+              fontSize: 18, color: C.muted,
               marginTop: 16, lineHeight: 1.55,
             }}>
               {item.subtitle}
@@ -200,7 +200,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
             </div>
             {!isMobile && (
               <span style={{
-                fontFamily: F.serif, fontSize: 14, color: C.muted,
+                fontFamily: F.serif, fontSize: 15, color: C.muted,
               }}>Сэнсэй отвечает в течение 24 часов</span>
             )}
           </div>
@@ -247,7 +247,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
                         }}>{c.date}</span>
                       </div>
                       <div style={{
-                        fontFamily: F.mono, fontSize: 17,
+                        fontFamily: F.mono, fontSize: 18,
                         color: C.ink2, lineHeight: 1.6,
                       }}>{c.text}</div>
                     </div>
@@ -275,7 +275,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
                           <span style={{ fontFamily: F.mono, fontSize: 11, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', padding: '1px 7px', border: `1px solid ${C.accent}` }}>СЭНСЭЙ</span>
                           <span style={{ marginLeft: 'auto', fontFamily: F.mono, fontSize: isMobile ? 9 : 10, color: C.muted }}>{r.date}</span>
                         </div>
-                        <div style={{ fontFamily: F.mono, fontSize: 17, color: C.ink2, lineHeight: 1.6 }}>{r.text}</div>
+                        <div style={{ fontFamily: F.mono, fontSize: 18, color: C.ink2, lineHeight: 1.6 }}>{r.text}</div>
                       </div>
                     </div>
                   ))}
@@ -288,7 +288,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
             <div style={{
               padding: '20px', background: C.surface, border: `1px solid ${C.border}`,
               marginBottom: 14, fontFamily: F.serif,
-              fontSize: 17, color: C.muted, textAlign: 'center',
+              fontSize: 18, color: C.muted, textAlign: 'center',
             }}>Комментариев пока нет. Будьте первым!</div>
           )}
 
@@ -307,7 +307,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
                   width: '100%', border: 'none', outline: 'none',
                   background: 'transparent', resize: 'none',
                   fontFamily: F.serif,
-                  fontSize: 17, color: C.ink, lineHeight: 1.6,
+                  fontSize: 18, color: C.ink, lineHeight: 1.6,
                 }}
               />
             </div>
@@ -319,7 +319,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
                 background: (commentText.trim() && !submitting) ? C.ink : C.border,
                 color: (commentText.trim() && !submitting) ? '#fff' : C.muted,
                 border: 'none',
-                fontFamily: F.mono, fontSize: 12,
+                fontFamily: F.mono, fontSize: 13,
                 letterSpacing: '0.1em', textTransform: 'uppercase',
                 cursor: (commentText.trim() && !submitting) ? 'pointer' : 'default',
                 transition: 'all 0.15s', flexShrink: 0, alignSelf: 'stretch',

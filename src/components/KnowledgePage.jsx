@@ -61,7 +61,7 @@ export default function KnowledgePage({ nav }) {
         }}>
           <button onClick={nav.back} style={{
             background: 'none', border: 'none', cursor: 'pointer',
-            fontSize: 22, color: C.accent, padding: '0 4px',
+            fontSize: 24, color: C.accent, padding: '0 4px',
             display: 'flex', alignItems: 'center', minWidth: 36, minHeight: 44,
           }}>‹</button>
           <span style={{
@@ -167,7 +167,7 @@ export default function KnowledgePage({ nav }) {
                   position: 'absolute', right: isMobile ? 20 : 6,
                   top: '50%', transform: 'translateY(-50%)',
                   background: 'none', border: 'none',
-                  color: C.muted, cursor: 'pointer', fontSize: 14, lineHeight: 1,
+                  color: C.muted, cursor: 'pointer', fontSize: 15, lineHeight: 1,
                   fontFamily: F.mono, minHeight: 44, display: 'flex', alignItems: 'center',
                 }}>
                 ✕
@@ -247,7 +247,7 @@ export default function KnowledgePage({ nav }) {
             padding: isMobile ? '52px 20px 40px' : '64px 0',
             textAlign: 'center',
             color: C.muted, fontFamily: F.serif, fontStyle: 'italic',
-            fontSize: 16, lineHeight: 1.6,
+            fontSize: 15, lineHeight: 1.6,
           }}>
             Материалы скоро появятся
           </div>
@@ -333,7 +333,7 @@ export default function KnowledgePage({ nav }) {
 
               {/* Arrow */}
               <span style={{
-                color: C.muted, fontSize: 16, flexShrink: 0, opacity: 0.45,
+                color: C.muted, fontSize: 15, flexShrink: 0, opacity: 0.45,
                 fontFamily: F.mono,
               }}>→</span>
             </div>

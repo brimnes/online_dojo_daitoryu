@@ -80,8 +80,8 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
       <div style={{ display: 'flex', minHeight: '100vh' }}>
         {!isMobile && <Sidebar activeTab="database" onTabClick={onBack} user={user} onLogout={onLogout} />}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '60px 32px', background: C.bg, textAlign: 'center' }}>
-          <div style={{ fontSize: 32 }}>🔒</div>
-          <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 20, color: C.accent }}>Нет доступа к разделу</div>
+          <div style={{ fontSize: 36 }}>🔒</div>
+          <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 18, color: C.accent }}>Нет доступа к разделу</div>
           <div style={{ fontSize: 13, color: C.muted, maxWidth: 320 }}>Приобретите доступ к разделу «{section?.nameRu}» чтобы просматривать техники.</div>
           <button onClick={onBack} style={{ marginTop: 8, padding: '10px 24px', background: C.ink, color: C.onAccent, border: 'none', fontSize: 13, cursor: 'pointer' }}>
             ← Назад к Иккаджо
@@ -117,7 +117,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
       </div>
       <div style={{ border: `1px solid ${C.border}`, borderTop: 'none' }}>
         {curV.length === 0
-          ? <div style={{ padding: '14px 16px', color: C.muted, fontSize: 12, fontFamily: "var(--font-mono), monospace" }}>Видео пока нет.</div>
+          ? <div style={{ padding: '14px 16px', color: C.muted, fontSize: 13, fontFamily: "var(--font-mono), monospace" }}>Видео пока нет.</div>
           : curV.map((v, i) => {
               const active = vid?.id === v.id;
               return (
@@ -218,7 +218,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
           }}>{tech.nameRu}</h1>
 
           {content.description && (
-            <p style={{ fontSize: 17, color: C.ink2, lineHeight: 1.7, marginBottom: 12 }}>{content.description}</p>
+            <p style={{ fontSize: 18, color: C.ink2, lineHeight: 1.7, marginBottom: 12 }}>{content.description}</p>
           )}
 
           {/* tags */}
@@ -238,13 +238,13 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
           {vid ? (
             <div style={{ position: 'relative', marginBottom: 0 }}>
               <KinescopePlayer videoId={vid.video_id} videoStatus={vid.video_status} viewerId={viewerId} title={vid.title} duration={vid.duration} />
-              <button onClick={() => setVid(null)} style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', width: 44, height: 44, borderRadius: '50%', cursor: 'pointer', fontSize: 14, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
+              <button onClick={() => setVid(null)} style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff', width: 44, height: 44, borderRadius: '50%', cursor: 'pointer', fontSize: 15, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>✕</button>
             </div>
           ) : (
             <div style={{ background: '#0f0d0a', aspectRatio: '16/9', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, position: 'relative', overflow: 'hidden' }}>
               <div style={{ position: 'absolute', fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 120, color: '#fff', opacity: 0.04, lineHeight: 0.85, pointerEvents: 'none' }}>{sectionKanji}</div>
               <div style={{ width: 48, height: 48, borderRadius: '50%', background: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
-                <span style={{ color: '#fff', fontSize: 16, marginLeft: 3 }}>▶</span>
+                <span style={{ color: '#fff', fontSize: 15, marginLeft: 3 }}>▶</span>
               </div>
               <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: '#555', letterSpacing: '0.18em', textTransform: 'uppercase' }}>KINESCOPE</div>
             </div>
@@ -283,7 +283,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
             {content.principles.map((p, i) => (
               <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
                 <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, minWidth: 20, flexShrink: 0 }}>{String(i + 1).padStart(2, '0')}</div>
-                <div style={{ fontSize: 17, color: C.ink2, lineHeight: 1.7 }}>{p}</div>
+                <div style={{ fontSize: 18, color: C.ink2, lineHeight: 1.7 }}>{p}</div>
               </div>
             ))}
           </div>
@@ -297,8 +297,8 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
             </div>
             {content.mistakes.map((m, i) => (
               <div key={i} style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 17, fontWeight: 600, color: C.accent, marginBottom: 3 }}>{m.title}</div>
-                <div style={{ fontSize: 17, color: C.muted, lineHeight: 1.65 }}>{m.description || m.desc}</div>
+                <div style={{ fontSize: 18, fontWeight: 600, color: C.accent, marginBottom: 3 }}>{m.title}</div>
+                <div style={{ fontSize: 18, color: C.muted, lineHeight: 1.65 }}>{m.description || m.desc}</div>
               </div>
             ))}
           </div>
@@ -308,13 +308,13 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
         {content.senseiQuote && (
           <div style={{ margin: '12px 16px 0', background: C.surface, border: `1px solid ${C.border}`, padding: '18px 16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
-              <div style={{ width: 32, height: 32, borderRadius: '50%', background: C.light, border: `1px solid ${C.goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Cormorant Garamond', serif", fontSize: 14, color: C.gold, flexShrink: 0 }}>К</div>
+              <div style={{ width: 32, height: 32, borderRadius: '50%', background: C.light, border: `1px solid ${C.goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: C.gold, flexShrink: 0 }}>К</div>
               <div>
-                <div style={{ fontSize: 16, fontWeight: 600, color: C.ink }}>Сэнсэй Копин</div>
+                <div style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>Сэнсэй Копин</div>
                 <div style={{ fontSize: 15, color: C.muted }}>Комментарий к технике</div>
               </div>
             </div>
-            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 17, color: C.ink2, lineHeight: 1.85, borderLeft: `2px solid ${C.goldBorder}`, paddingLeft: 14 }}>
+            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: C.ink2, lineHeight: 1.85, borderLeft: `2px solid ${C.goldBorder}`, paddingLeft: 14 }}>
               «{content.senseiQuote}»
             </div>
           </div>
@@ -350,7 +350,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
             <span style={{ color: C.hairline2 }}>/</span>
             <span style={{ color: C.ink, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.1em' }}>{tech.nameRu.toUpperCase()}</span>
           </div>
-          <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 12, color: C.muted, letterSpacing: '0.22em' }}>
+          <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 13, color: C.muted, letterSpacing: '0.22em' }}>
             一教 · {sectionKanji}
           </div>
         </div>
@@ -377,7 +377,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
               <span style={{ width: 9, height: 9, borderRadius: '50%', background: belt.color, border: `1.5px solid ${belt.border}`, display: 'inline-block', flexShrink: 0 }} />
               <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase' }}>{belt.label.toUpperCase()}</span>
               <span style={{ width: 20, height: 1, background: C.border, flexShrink: 0 }} />
-              <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 12, color: C.muted }}>{kyuKanji}</span>
+              <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 13, color: C.muted }}>{kyuKanji}</span>
               <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.16em', color: C.muted, textTransform: 'uppercase' }}>{kyu.label.toUpperCase()}</span>
               <span style={{ width: 20, height: 1, background: C.border, flexShrink: 0 }} />
               <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase' }}>{section.nameRu.toUpperCase()}</span>
@@ -392,7 +392,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
 
             {/* Description */}
             {content.description && (
-              <p style={{ fontSize: 17, color: C.ink2, lineHeight: 1.75, maxWidth: 640, marginBottom: 20 }}>{content.description}</p>
+              <p style={{ fontSize: 18, color: C.ink2, lineHeight: 1.75, maxWidth: 640, marginBottom: 20 }}>{content.description}</p>
             )}
 
             {/* Tags row */}
@@ -431,7 +431,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
                   <button onClick={() => setVid(null)} style={{
                     position: 'absolute', top: 12, right: 12,
                     background: 'rgba(0,0,0,0.5)', border: 'none', color: '#fff',
-                    width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', fontSize: 14,
+                    width: 30, height: 30, borderRadius: '50%', cursor: 'pointer', fontSize: 15,
                   }}>✕</button>
                 </div>
               ) : (
@@ -451,7 +451,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
                     width: 60, height: 60, borderRadius: '50%', background: C.accent,
                     display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative',
                   }}>
-                    <span style={{ color: '#fff', fontSize: 20, marginLeft: 5 }}>▶</span>
+                    <span style={{ color: '#fff', fontSize: 18, marginLeft: 5 }}>▶</span>
                   </div>
                   <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: '#555', letterSpacing: '0.2em', textTransform: 'uppercase' }}>KINESCOPE</div>
                 </div>
@@ -476,13 +476,13 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
                 </div>
                 <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 10 }}>
                   <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 48, color: C.ink, fontWeight: 400, lineHeight: 1 }}>{techNum}</span>
-                  <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 22, color: C.muted }}>/ {totalTechs}</span>
+                  <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 24, color: C.muted }}>/ {totalTechs}</span>
                   <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.accent, marginLeft: 8, letterSpacing: '0.1em' }}>{progressPct}%</span>
                 </div>
                 <div style={{ width: '100%', height: 2, background: C.bg2, marginBottom: 14 }}>
                   <div style={{ height: 2, width: `${progressPct}%`, background: C.accent }} />
                 </div>
-                <p style={{ fontSize: 16, color: C.muted, lineHeight: 1.7, margin: 0 }}>
+                <p style={{ fontSize: 15, color: C.muted, lineHeight: 1.7, margin: 0 }}>
                   Раздел {section.nameRu}. Завершите все {totalTechs} техник, чтобы перейти к следующему уровню.
                 </p>
               </div>
@@ -510,7 +510,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
                           minWidth: 20, letterSpacing: '0.1em',
                         }}>{String(idx).padStart(2, '0')}</span>
                         <div style={{ flex: 1, minWidth: 0 }}>
-                          <div style={{ fontSize: 16, color: C.ink, fontWeight: 500 }}>{t.nameRu}</div>
+                          <div style={{ fontSize: 15, color: C.ink, fontWeight: 500 }}>{t.nameRu}</div>
                         </div>
                         <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.1em', flexShrink: 0 }}>{kyu.label.toUpperCase()}</span>
                         <span style={{ color: C.muted, fontSize: 13, flexShrink: 0 }}>→</span>
@@ -536,7 +536,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
               {content.principles.map((p, i) => (
                 <div key={i} style={{ display: 'flex', gap: 14, marginBottom: 12 }}>
                   <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, minWidth: 22, flexShrink: 0 }}>{String(i + 1).padStart(2, '0')}</div>
-                  <div style={{ fontSize: 17, color: C.ink2, lineHeight: 1.7 }}>{p}</div>
+                  <div style={{ fontSize: 18, color: C.ink2, lineHeight: 1.7 }}>{p}</div>
                 </div>
               ))}
             </div>
@@ -554,8 +554,8 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
               </div>
               {content.mistakes.map((m, i) => (
                 <div key={i} style={{ marginBottom: 14 }}>
-                  <div style={{ fontSize: 17, fontWeight: 600, color: C.accent, marginBottom: 4 }}>{m.title}</div>
-                  <div style={{ fontSize: 17, color: C.muted, lineHeight: 1.65 }}>{m.description || m.desc}</div>
+                  <div style={{ fontSize: 18, fontWeight: 600, color: C.accent, marginBottom: 4 }}>{m.title}</div>
+                  <div style={{ fontSize: 18, color: C.muted, lineHeight: 1.65 }}>{m.description || m.desc}</div>
                 </div>
               ))}
             </div>
@@ -568,14 +568,14 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
                 <div style={{
                   width: 36, height: 36, borderRadius: '50%', background: C.light,
                   border: `1px solid ${C.goldBorder}`, display: 'flex', alignItems: 'center',
-                  justifyContent: 'center', fontFamily: "'Cormorant Garamond', serif", fontSize: 16, color: C.gold,
+                  justifyContent: 'center', fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: C.gold,
                 }}>К</div>
                 <div>
-                  <div style={{ fontSize: 14, fontWeight: 600, color: C.ink }}>Сэнсэй Копин</div>
+                  <div style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>Сэнсэй Копин</div>
                   <div style={{ fontSize: 13, color: C.muted }}>Комментарий к технике</div>
                 </div>
               </div>
-              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 17, color: C.ink2, lineHeight: 1.85, borderLeft: `2px solid ${C.goldBorder}`, paddingLeft: 16 }}>
+              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: C.ink2, lineHeight: 1.85, borderLeft: `2px solid ${C.goldBorder}`, paddingLeft: 16 }}>
                 «{content.senseiQuote}»
               </div>
             </div>

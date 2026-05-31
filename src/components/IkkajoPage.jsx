@@ -57,7 +57,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout }) {
             <button onClick={nav.back} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 24, color: C.accent, padding: '0 4px', display: 'flex', alignItems: 'center', minWidth: 36, minHeight: 44 }}>‹</button>
             <span style={{
               fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-              fontSize: 14, letterSpacing: '0.12em', color: C.ink, flex: 1, textTransform: 'uppercase',
+              fontSize: 15, letterSpacing: '0.12em', color: C.ink, flex: 1, textTransform: 'uppercase',
             }}>Иккаджо</span>
           </header>
         )}
@@ -77,7 +77,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout }) {
             <span style={{ color: C.border }}>/</span>
             <span style={{
               fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-              fontSize: 12, letterSpacing: '0.18em', color: C.ink, fontWeight: 600,
+              fontSize: 13, letterSpacing: '0.18em', color: C.ink, fontWeight: 600,
             }}>ИККАДЖО</span>
             <div style={{ marginLeft: 'auto' }}>
               <SearchBar
@@ -139,7 +139,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout }) {
                 }}>進度</div>
                 <div style={{
                   fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                  fontSize: 32, color: C.ink, letterSpacing: '0.04em',
+                  fontSize: 36, color: C.ink, letterSpacing: '0.04em',
                 }}>–– / {totalTechs}</div>
               </div>
             )}
@@ -197,7 +197,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout }) {
                     flexShrink: 0, transition: 'all 0.15s',
                   }} />
                   {!isMobile && (
-                    <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 12, opacity: 0.8 }}>{k.kanji}</span>
+                    <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 13, opacity: 0.8 }}>{k.kanji}</span>
                   )}
                   <span style={{
                     fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
@@ -251,7 +251,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout }) {
                       fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
                       fontSize: isMobile ? 9 : 10, color: C.muted, letterSpacing: '0.12em',
                     }}>{sec.subtitle}</span>
-                    {!canAccess && <span style={{ fontSize: 12 }}>🔒</span>}
+                    {!canAccess && <span style={{ fontSize: 13 }}>🔒</span>}
                   </div>
 
                   {canAccess ? (
@@ -333,7 +333,7 @@ function TechCard({ tech, index, videoCount, onClick, isMobile }) {
         }}>{tech.nameRu}</div>
         <div style={{
           fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-          fontSize: 14, color: C.muted, marginTop: 1, letterSpacing: '0.03em',
+          fontSize: 15, color: C.muted, marginTop: 1, letterSpacing: '0.03em',
         }}>
           {isMobile && videoCount > 0
             ? `${tech.name} · ${videoCount} видео`
@@ -351,7 +351,7 @@ function TechCard({ tech, index, videoCount, onClick, isMobile }) {
       {/* Arrow */}
       <span style={{
         color: hover ? C.accent : C.muted,
-        fontSize: 14, transition: 'color 0.15s', flexShrink: 0,
+        fontSize: 15, transition: 'color 0.15s', flexShrink: 0,
       }}>→</span>
     </div>
   );
@@ -386,7 +386,7 @@ function SearchBar({ onSelect, userAccess = [], accessLoading = false }) {
         background: C.bg, border: `1px solid ${C.border}`,
         padding: '8px 14px', height: 44,
       }}>
-        <span style={{ color: C.muted, fontSize: 14 }}>⌕</span>
+        <span style={{ color: C.muted, fontSize: 15 }}>⌕</span>
         <input
           value={q}
           onChange={e => { setQ(e.target.value); setOpen(true); }}
@@ -400,7 +400,7 @@ function SearchBar({ onSelect, userAccess = [], accessLoading = false }) {
         />
         {q && (
           <button onClick={() => { setQ(''); setOpen(false); }}
-            style={{ background: 'none', border: 'none', color: C.muted, cursor: 'pointer', fontSize: 14 }}>
+            style={{ background: 'none', border: 'none', color: C.muted, cursor: 'pointer', fontSize: 15 }}>
             ✕
           </button>
         )}
@@ -433,9 +433,9 @@ function SearchBar({ onSelect, userAccess = [], accessLoading = false }) {
                     onMouseLeave={e => e.currentTarget.style.background = C.surface}>
                     <span style={{ width: 8, height: 8, borderRadius: '50%', background: b.color, border: `2px solid ${b.border}`, flexShrink: 0 }} />
                     <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 14, color: C.ink, fontWeight: 500 }}>
+                      <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 15, color: C.ink, fontWeight: 500 }}>
                         {tech.nameRu}{' '}
-                        <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: C.muted, fontWeight: 400, fontSize: 14, letterSpacing: '0.03em' }}>{tech.name}</span>
+                        <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: C.muted, fontWeight: 400, fontSize: 15, letterSpacing: '0.03em' }}>{tech.name}</span>
                       </div>
                       <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: C.muted, letterSpacing: '0.04em' }}>
                         {kyu.label} · {section.nameRu}

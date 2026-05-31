@@ -58,7 +58,7 @@ export function MobileBottomNav({ nav, active, isAdmin }) {
             {/* kanji icon */}
             <span style={{
               fontFamily: "'Noto Serif JP', 'Yu Mincho', serif",
-              fontSize: 19,
+              fontSize: 18,
               color: isA ? NG : NM,
               lineHeight: 1,
               transition: 'color 0.15s',

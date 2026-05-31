@@ -53,7 +53,7 @@ function Field({ label, hint, error, children }) {
         }}>{hint}</span>}
       </div>
       {children}
-      {error && <div style={{ fontSize:12, color:C.red }}>{error}</div>}
+      {error && <div style={{ fontSize:13, color:C.red }}>{error}</div>}
     </div>
   );
 }
@@ -220,7 +220,7 @@ export default function AuthPage({ onSuccess }) {
             <div style={{ borderLeft:'2px solid rgba(183,56,40,0.3)', paddingLeft: 16 }}>
               <div style={{
                 fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
-                fontSize: 16, fontStyle:'italic',
+                fontSize: 15, fontStyle:'italic',
                 color:'rgba(237,229,211,0.55)', lineHeight: 1.9,
                 marginBottom: 12,
               }}>
@@ -385,7 +385,7 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
             fontSize:11, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase',
           }}>Email</label>
           <Input value={email} onChange={setEmail} placeholder="ivan@dojo.ru" type="email" error={!!errors.email}/>
-          {errors.email && <div style={{ fontSize:12, color:C.red }}>{errors.email}</div>}
+          {errors.email && <div style={{ fontSize:13, color:C.red }}>{errors.email}</div>}
         </div>
 
         {/* Password field */}
@@ -398,7 +398,7 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
             <button style={{ background:'none', border:'none', fontSize:11, color:C.accent, cursor:'pointer', padding:'12px 0', fontStyle:'italic', minHeight:44, display:'flex', alignItems:'center' }}>забыли?</button>
           </div>
           <Input value={password} onChange={setPassword} placeholder="••••••••" type="password" error={!!errors.password}/>
-          {errors.password && <div style={{ fontSize:12, color:C.red }}>{errors.password}</div>}
+          {errors.password && <div style={{ fontSize:13, color:C.red }}>{errors.password}</div>}
         </div>
 
         {/* Primary CTA */}
@@ -451,7 +451,7 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
               style={{
                 padding:'14px', background:'transparent',
                 color:C.ink2, border:`1px solid ${C.border}`,
-                fontSize:12, cursor:'pointer',
+                fontSize:13, cursor:'pointer',
                 fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontWeight:500,
                 letterSpacing:'0.12em', textTransform:'uppercase',
                 transition:'border-color 0.15s',
@@ -507,18 +507,18 @@ function SetPasswordForm({ userId, onSuccess, onBack }) {
       <div style={{ marginBottom: 28 }}>
         <div style={{
           fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
-          fontSize: 28, color: C.ink, marginBottom: 8, letterSpacing: '0.04em', fontWeight: 400,
+          fontSize: 24, color: C.ink, marginBottom: 8, letterSpacing: '0.04em', fontWeight: 400,
         }}>
           Придумайте пароль
         </div>
-        <div style={{ fontSize:14, color:C.muted, lineHeight:1.7 }}>
+        <div style={{ fontSize:15, color:C.muted, lineHeight:1.7 }}>
           Ваш аккаунт был перенесён из старой системы.<br/>
           Установите новый пароль для входа.
         </div>
       </div>
 
       {serverErr && (
-        <div style={{ padding:'13px 16px', background:C.redBg, border:`1px solid ${C.redBorder}`, fontSize:14, color:C.red, marginBottom:20 }}>
+        <div style={{ padding:'13px 16px', background:C.redBg, border:`1px solid ${C.redBorder}`, fontSize:15, color:C.red, marginBottom:20 }}>
           {serverErr}
         </div>
       )}
@@ -681,7 +681,7 @@ function RegisterForm({ onSuccess, onLogin }) {
             <button onClick={handleStep1}
               style={{
                 padding:'15px', background:C.accent, color:'#f1ece0', border:'none',
-                fontSize:14, cursor:'pointer', fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                fontSize:15, cursor:'pointer', fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
                 fontWeight:500, marginTop:4, letterSpacing:'0.06em',
                 textTransform:'uppercase',
               }}>
@@ -715,7 +715,7 @@ function RegisterForm({ onSuccess, onLogin }) {
             <Field label="Ваш уровень в Дайто-рю" hint="По последней аттестации">
               <Select value={selfLevel} onChange={setSelfLevel} options={SELF_LEVELS}/>
               {selfLevel !== 'none' && (
-                <div style={{ fontSize:12, color:C.muted, marginTop:4 }}>
+                <div style={{ fontSize:13, color:C.muted, marginTop:4 }}>
                   Выбрано: {selfLevelLabel}. Официальный уровень будет подтверждён преподавателем.
                 </div>
               )}
@@ -723,7 +723,7 @@ function RegisterForm({ onSuccess, onLogin }) {
 
             <Field label="Имя вашего сэнсэя" hint="Необязательно">
               <Input value={senseiName} onChange={setSenseiName} placeholder="Если занимались у другого преподавателя…"/>
-              <div style={{ fontSize:12, color:'#aaa', marginTop:3 }}>Оставьте пустым, если ваш сэнсэй — Станислав Копин</div>
+              <div style={{ fontSize:13, color:'#aaa', marginTop:3 }}>Оставьте пустым, если ваш сэнсэй — Станислав Копин</div>
             </Field>
 
             <Field label="Ваш опыт и цели" hint="Необязательно">
@@ -735,7 +735,7 @@ function RegisterForm({ onSuccess, onLogin }) {
             </Field>
 
             {serverErr && (
-              <div style={{ padding:'13px 16px', background:'#fff8f7', border:'1px solid #e8c0c0', fontSize:14, color:'#a03030' }}>
+              <div style={{ padding:'13px 16px', background:'#fff8f7', border:'1px solid #e8c0c0', fontSize:15, color:'#a03030' }}>
                 {serverErr}
               </div>
             )}
@@ -744,7 +744,7 @@ function RegisterForm({ onSuccess, onLogin }) {
                 style={{
                   padding:'15px 20px', background:'transparent',
                   color:C.muted, border:`1px solid ${C.border}`,
-                  fontSize:14, cursor:'pointer', fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+                  fontSize:15, cursor:'pointer', fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
                 }}>
                 ← Назад
               </button>
@@ -771,13 +771,13 @@ function RegisterForm({ onSuccess, onLogin }) {
             background:C.greenBg, border:`1px solid ${C.greenBorder}`,
             borderRadius:'50%',
             display:'flex', alignItems:'center', justifyContent:'center',
-            margin:'0 auto 24px', fontSize:26,
+            margin:'0 auto 24px', fontSize:24,
           }}>✓</div>
-          <div style={{ fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif", fontSize:30, fontWeight:400, color:C.ink, marginBottom:8, letterSpacing:'0.05em' }}>
+          <div style={{ fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif", fontSize:36, fontWeight:400, color:C.ink, marginBottom:8, letterSpacing:'0.05em' }}>
             Добро пожаловать!
           </div>
           <div style={{ fontSize:15, color:C.muted, lineHeight:1.8, marginBottom:8 }}>{name}</div>
-          <p style={{ fontSize:14, color:C.muted, lineHeight:1.8, marginBottom:8 }}>
+          <p style={{ fontSize:15, color:C.muted, lineHeight:1.8, marginBottom:8 }}>
             Ваш аккаунт создан. Преподаватель рассмотрит ваш уровень<br/>
             и подтвердит его в течение одного-двух рабочих дней.
           </p>
@@ -810,7 +810,7 @@ function RegisterForm({ onSuccess, onLogin }) {
             style={{
               width:'100%', padding:'15px',
               background:C.accent, color:'#f1ece0', border:'none',
-              fontSize:14, cursor:'pointer',
+              fontSize:15, cursor:'pointer',
               fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif", fontWeight:500,
               letterSpacing:'0.06em', textTransform:'uppercase',
             }}>

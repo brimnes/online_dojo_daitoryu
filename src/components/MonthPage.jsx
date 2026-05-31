@@ -35,7 +35,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
   if (!monthsLoading && !month) {
     return (
       <div style={{ padding: '60px 32px', textAlign: 'center', background: C.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-        <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 20, color: C.accent }}>Месяц недоступен</div>
+        <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 18, color: C.accent }}>Месяц недоступен</div>
         <div style={{ fontSize: 13, color: C.muted, maxWidth: 320 }}>Этот раздел временно недоступен.</div>
         <button onClick={nav.dashboard}
           style={{ marginTop: 8, padding: '10px 24px', background: C.ink, color: '#fff', border: 'none', fontSize: 13, cursor: 'pointer' }}>
@@ -49,8 +49,8 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
   if (!accessLoading && !canView) {
     return (
       <div style={{ padding: '60px 32px', textAlign: 'center', background: C.bg, minHeight: '100vh', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16 }}>
-        <div style={{ fontSize: 32 }}>🔒</div>
-        <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 20, color: C.accent }}>Нет доступа к этому месяцу</div>
+        <div style={{ fontSize: 36 }}>🔒</div>
+        <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 18, color: C.accent }}>Нет доступа к этому месяцу</div>
         <div style={{ fontSize: 13, color: C.muted, maxWidth: 320 }}>Приобретите доступ к разделу «{month?.label}» в личном кабинете.</div>
         <button onClick={nav.dashboard}
           style={{ marginTop: 8, padding: '10px 24px', background: C.ink, color: '#fff', border: 'none', fontSize: 13, cursor: 'pointer' }}>
@@ -82,7 +82,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
           <button onClick={nav.back} style={{ background: 'none', border: 'none', cursor: 'pointer', fontSize: 24, color: C.accent, padding: '0 4px', display: 'flex', alignItems: 'center', minWidth: 36, minHeight: 44 }}>‹</button>
           <span style={{
             fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-            fontSize: 14, letterSpacing: '0.12em', color: C.ink,
+            fontSize: 15, letterSpacing: '0.12em', color: C.ink,
             flex: 1, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap',
             textTransform: 'uppercase',
           }}>
@@ -106,14 +106,14 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
           <span style={{ color: C.border }}>/</span>
           <span style={{
             fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-            fontSize: 12, color: C.ink, letterSpacing: '0.18em', fontWeight: 600,
+            fontSize: 13, color: C.ink, letterSpacing: '0.18em', fontWeight: 600,
           }}>
             {month?.label?.toUpperCase()}{monthSub ? ` · ${monthSub.toUpperCase()}` : ''}
           </span>
           <span style={{
             marginLeft: 'auto',
             fontFamily: "'Noto Serif JP', var(--font-noto), serif",
-            fontSize: 12, color: C.muted, letterSpacing: '0.18em',
+            fontSize: 13, color: C.muted, letterSpacing: '0.18em',
           }}>{month?.kanji}月</span>
         </div>
       )}
@@ -195,7 +195,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
           <>
             <div style={{
               fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-              fontSize: 17, color: C.muted,
+              fontSize: 18, color: C.muted,
               marginBottom: 16, lineHeight: 1.55,
             }}>{month?.description}</div>
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: '14px 16px', marginBottom: 20 }}>
@@ -282,7 +282,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
         {/* Number */}
         <span style={{
           fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-          fontSize: 22, letterSpacing: '0.04em', minWidth: 30,
+          fontSize: 24, letterSpacing: '0.04em', minWidth: 30,
           color: isCurrent ? C.accent : watched ? C.muted : C.ink2,
         }}>{String(lesson.num).padStart(2, '0')}</span>
 
@@ -315,8 +315,8 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
 
         {/* Text */}
         <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 14, fontWeight: 500, color: C.ink, lineHeight: 1.35 }}>{lesson.title}</div>
-          <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 17, color: C.accent, marginTop: 2 }}>{lesson.subtitle}</div>
+          <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 15, fontWeight: 500, color: C.ink, lineHeight: 1.35 }}>{lesson.title}</div>
+          <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 18, color: C.accent, marginTop: 2 }}>{lesson.subtitle}</div>
         </div>
 
         {/* Check circle */}
@@ -355,7 +355,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{
             fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-            fontSize: 22, letterSpacing: '0.04em',
+            fontSize: 24, letterSpacing: '0.04em',
             color: watched ? C.muted : isCurrent ? C.accent : C.ink2,
           }}>{String(lesson.num).padStart(2, '0')}</span>
         </div>
@@ -399,7 +399,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
           transform: hover ? 'scale(1.1)' : 'scale(1)', transition: 'transform 0.15s',
           position: 'relative', zIndex: 1,
         }}>
-          <span style={{ color: '#fff', fontSize: 12, marginLeft: 2 }}>▶</span>
+          <span style={{ color: '#fff', fontSize: 13, marginLeft: 2 }}>▶</span>
         </div>
         {/* Watched badge */}
         {watched && (
@@ -413,7 +413,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
       {/* Meta */}
       <div style={{ marginTop: 14 }}>
         <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 15, fontWeight: 500, color: C.ink, lineHeight: 1.4, marginBottom: 4 }}>{lesson.title}</div>
-        <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 17, color: C.accent }}>{lesson.subtitle}</div>
+        <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 18, color: C.accent }}>{lesson.subtitle}</div>
       </div>
 
       {/* CTA */}
