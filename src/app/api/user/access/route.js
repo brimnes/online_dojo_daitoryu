@@ -7,19 +7,9 @@ export async function GET(request) {
   const { user, error } = await requireAuth(request);
   if (error) return error;
 
-  // Администратор получает полный доступ ко всему контенту автоматически
-  if (user.role === 'admin') {
-    const allMonths = await prisma.month.findMany({ select: { id: true } });
-    return NextResponse.json([
-      ...allMonths.map(m => ({ type: 'month', reference: m.id })),
-      { type: 'section', reference: 'ikkajo' },
-      { type: 'section', reference: 'tachiai' },
-      { type: 'section', reference: 'idori' },
-      { type: 'section', reference: 'ushirodori' },
-      { type: 'section', reference: 'hanzahandachi' },
-    ]);
-  }
-
+  // Возвращаем реальные строки user_access для всех пользователей, включая admin.
+  // Это нужно чтобы выдача/отзыв доступа работали корректно даже на admin-аккаунте.
+  // Просмотр видео для admin по-прежнему всегда разрешён в /api/kinescope/auth.
   const rows = await prisma.userAccess.findMany({
     where:  { userId: user.id },
     select: { type: true, reference: true },
