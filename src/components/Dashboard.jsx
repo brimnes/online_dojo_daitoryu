@@ -1131,13 +1131,13 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
 
       {/* ── Desktop hero ── */}
       {!isMobile && (
-        <div style={{ marginBottom: 32 }}>
+        <div style={{ marginBottom: 36 }}>
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 24, marginBottom: 16 }}>
             <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 160, lineHeight: 0.85, color: C.accent, opacity: 0.1, flexShrink: 0, marginLeft: -8, marginBottom: -8 }}>技</div>
             <div style={{ flex: 1, paddingBottom: 4 }}>
-              <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 12 }}>03 · БАЗА ТЕХНИК · ПРОГРАММЫ ШКОЛЫ</div>
+              <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 12 }}>03 · БАЗА ТЕХНИК · ПРОГРАММЫ ШКОЛЫ</div>
               <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 60, lineHeight: 0.9, letterSpacing: '0.04em', color: C.ink, fontWeight: 400, textTransform: 'uppercase' }}>База техник</h1>
-              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: C.muted, marginTop: 14, maxWidth: 540, lineHeight: 1.55 }}>
+              <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, color: C.muted, marginTop: 14, maxWidth: 540, lineHeight: 1.55 }}>
                 Полное собрание программ Дайто-рю — от ученических кю до старших данов. Каждый раздел открывается отдельно.
               </div>
             </div>
@@ -1146,10 +1146,10 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
               <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 42, color: C.accent, lineHeight: 1, fontWeight: 500 }}>
                 — <span style={{ fontSize: 24, color: C.ink2 }}>/ {totalTechs}</span>
               </div>
-              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.18em', color: C.muted, textTransform: 'uppercase' }}>техник всего</span>
+              <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, letterSpacing: '0.18em', color: C.muted, textTransform: 'uppercase' }}>техник всего</span>
             </div>
           </div>
-          <svg viewBox="0 0 800 20" style={{ width: '100%', height: 20, opacity: 0.22, display: 'block', marginBottom: 32 }}>
+          <svg viewBox="0 0 800 20" style={{ width: '100%', height: 20, opacity: 0.22, display: 'block', marginBottom: 36 }}>
             <path d="M0,10 Q200,4 400,10 Q600,16 800,10" stroke={C.ink2} strokeWidth="1.2" fill="none" strokeLinecap="round" />
           </svg>
         </div>
