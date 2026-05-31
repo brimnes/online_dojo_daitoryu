@@ -41,17 +41,23 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
     ? { description: '', principles: [], senseiQuote: '', mistakes: [], videos: {} }
     : getTechContent(tech.name);
 
-  const byC    = content.videos || {};
-  const curV   = byC[cat] || [];
-  const curCat = VIDEO_CATS.find(c => c.id === cat);
+  const byC         = content.videos || {};
+  const availableCats = VIDEO_CATS.filter(c => (byC[c.id] || []).length > 0);
+  const curV        = byC[cat] || [];
+  const curCat      = VIDEO_CATS.find(c => c.id === cat);
 
-  // Auto-select first available video when category changes or content loads
+  // Auto-select first available category + video when content loads or cat becomes empty
   useEffect(() => {
+    if (availableCats.length > 0 && (byC[cat] || []).length === 0) {
+      setCat(availableCats[0].id);
+      setVid(null);
+      return;
+    }
     if (vid === null && curV.length > 0) {
       const firstReady = curV.find(v => v.video_status === 'ready') ?? curV[0];
       setVid(firstReady);
     }
-  }, [curV]); // eslint-disable-line react-hooks/exhaustive-deps
+  }, [content]); // eslint-disable-line react-hooks/exhaustive-deps
 
   // Computed helpers
   const sectionKanji = SECTION_KANJI[sectionKey] || '';
@@ -92,10 +98,12 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
   }
 
   // ── Video tabs + list block (shared desktop/mobile) ──────────────
-  const VideoBlock = () => (
+  const VideoBlock = () => {
+    if (availableCats.length === 0) return null;
+    return (
     <>
       <div style={{ display: 'flex', background: C.surface, border: `1px solid ${C.border}`, overflowX: 'auto', borderTop: 'none' }}>
-        {VIDEO_CATS.map(c => (
+        {availableCats.map(c => (
           <button key={c.id} onClick={() => { setCat(c.id); setVid(null); }}
             style={{
               padding: '10px 14px', background: 'none', border: 'none',
@@ -116,9 +124,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
         ))}
       </div>
       <div style={{ border: `1px solid ${C.border}`, borderTop: 'none' }}>
-        {curV.length === 0
-          ? <div style={{ padding: '14px 16px', color: C.muted, fontSize: 13, fontFamily: "var(--font-mono), monospace" }}>Видео пока нет.</div>
-          : curV.map((v, i) => {
+        {curV.map((v, i) => {
               const active = vid?.id === v.id;
               return (
                 <div key={v.id} onClick={() => setVid(v)}
@@ -154,11 +160,11 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
                   <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, flexShrink: 0 }}>{v.duration}</div>
                 </div>
               );
-            })
-        }
+            })}
       </div>
     </>
-  );
+    );
+  };
 
   // ── MOBILE ───────────────────────────────────────────────────────
   if (isMobile) {
@@ -233,7 +239,8 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
           </div>
         </div>
 
-        {/* Player */}
+        {/* Player + video tabs — only when there are videos */}
+        {availableCats.length > 0 && (
         <div style={{ padding: '16px 16px 0' }}>
           {vid ? (
             <div style={{ position: 'relative', marginBottom: 0 }}>
@@ -257,6 +264,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
           )}
           <VideoBlock />
         </div>
+        )}
 
         {/* Progress (mobile) */}
         <div style={{ margin: '16px 16px 0', background: C.surface, border: `1px solid ${C.border}`, padding: '16px' }}>
@@ -417,9 +425,10 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
 
         {/* Two-column main content */}
         <div style={{ padding: '0 36px 48px' }}>
-          <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', gap: 0, alignItems: 'start' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: availableCats.length > 0 ? '1fr 300px' : '300px', gap: 0, alignItems: 'start' }}>
 
-            {/* ── Left: player + video tabs + list ── */}
+            {/* ── Left: player + video tabs + list — only when there are videos ── */}
+            {availableCats.length > 0 && (
             <div style={{ paddingRight: 24, paddingTop: 24 }}>
               {/* Player */}
               {vid ? (
@@ -458,6 +467,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
               )}
               <VideoBlock />
             </div>
+            )}
 
             {/* ── Right: progress + related ── */}
             <div style={{ paddingTop: 24 }}>
