@@ -1095,7 +1095,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
             </div>
             <h3 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 24, letterSpacing: '0.04em', color: v.ink, fontWeight: 500, lineHeight: 0.95, textTransform: 'uppercase' }}>{sec.label}</h3>
             {sec.nameRomaji && (
-              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 13, color: v.muted }}>{sec.nameRomaji} · {sec.program}</div>
+              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: v.muted }}>{sec.nameRomaji} · {sec.program}</div>
             )}
           </div>
         </div>
@@ -1158,7 +1158,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: C.bg, border: `1px solid ${C.border}`, padding: '7px 12px', width: isMobile ? '100%' : 256 }}>
             <span style={{ color: C.muted, fontSize: 13, flexShrink: 0 }}>⌕</span>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Поиск техники или раздела…" style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 13, color: C.ink }} />
+            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Поиск техники или раздела…" style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: C.ink }} />
           </div>
         </div>
       </div>
@@ -1171,7 +1171,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
             <div style={{ flex: 1, paddingBottom: 4 }}>
               <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 12 }}>03 · БАЗА ТЕХНИК · ПРОГРАММЫ ШКОЛЫ</div>
               <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 60, lineHeight: 0.9, letterSpacing: '0.04em', color: C.ink, fontWeight: 400, textTransform: 'uppercase' }}>База техник</h1>
-              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 15, color: C.muted, marginTop: 14, maxWidth: 540, lineHeight: 1.55 }}>
+              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: C.muted, marginTop: 14, maxWidth: 540, lineHeight: 1.55 }}>
                 Полное собрание программ Дайто-рю — от ученических кю до старших данов. Каждый раздел открывается отдельно.
               </div>
             </div>
@@ -1211,7 +1211,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: isMobile ? 22 : 28, color: C.hairline2, lineHeight: 1 }}>四 五 六 …</span>
           <div>
             <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: isMobile ? 12 : 13, letterSpacing: '0.16em', color: C.ink2, textTransform: 'uppercase', fontWeight: 500 }}>Ёнкаджо · Гокаджо · Роккаджо</div>
-            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 13, color: C.muted, marginTop: 3 }}>Старшие даны — программа разрабатывается</div>
+            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: C.muted, marginTop: 3 }}>Старшие даны — программа разрабатывается</div>
           </div>
         </div>
         <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase', flexShrink: 0 }}>2026 — 2028</span>
@@ -1264,7 +1264,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
       <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: compact ? 38 : 52, color: C.ink, letterSpacing: '0.03em', lineHeight: 1, marginBottom: 4 }}>
         {curLv?.label?.toUpperCase() || '—'}
       </div>
-      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 13, color: C.muted, marginBottom: compact ? 12 : 16 }}>
+      <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: C.muted, marginBottom: compact ? 12 : 16 }}>
         {curLv?.program === 'ikkajo' ? 'Иккаджо · Татиай' : curLv?.label || ''}
       </div>
       <div style={{ height: 1, background: C.border, marginBottom: compact ? 10 : 14 }} />
@@ -1351,19 +1351,19 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
           {/* info */}
           <div>
             <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', color: C.gold, fontSize: 13 }}>04</span>
+              <span style={{ fontFamily: "'Cormorant Garamond', serif", color: C.gold, fontSize: 13 }}>04</span>
               Студент додзё
             </div>
             <h2 style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 44, color: C.ink, letterSpacing: '0.04em', fontWeight: 400, lineHeight: 0.92, textTransform: 'uppercase', marginBottom: 12 }}>
               {(usr.name || 'Студент').toUpperCase()}
             </h2>
-            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 15, color: C.muted, marginBottom: 18 }}>
+            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: C.muted, marginBottom: 18 }}>
               {usr.email || ''}{usr.city ? ` · ${usr.city}` : ''}
             </div>
             <svg viewBox="0 0 260 18" style={{ width: 260, height: 18, opacity: 0.25, display: 'block', marginBottom: 18 }}>
               <path d="M0,9 Q65,4 130,9 Q195,14 260,9" stroke={C.ink2} strokeWidth="1" fill="none" strokeLinecap="round" />
             </svg>
-            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, lineHeight: 1.75, color: C.ink2, maxWidth: 520, margin: 0, fontStyle: usr.experience ? 'normal' : 'italic' }}>
+            <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, lineHeight: 1.75, color: C.ink2, maxWidth: 520, margin: 0 }}>
               {usr.experience || 'Профиль студента. Расскажите о вашем опыте айкидо и целях.'}
             </p>
           </div>
@@ -1389,7 +1389,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
               <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 24, color: C.ink, fontWeight: 400, textTransform: 'uppercase', lineHeight: 0.95 }}>
                 {(usr.name || 'Студент').toUpperCase()}
               </div>
-              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 13, color: C.muted, marginTop: 4 }}>{usr.email}</div>
+              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: C.muted, marginTop: 4 }}>{usr.email}</div>
             </div>
           </div>
           <div style={{ marginBottom: 20 }}>{renderLevelCard(true)}</div>
@@ -1450,7 +1450,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
             <div style={{ padding: '24px 18px', color: C.muted, fontSize: 13, background: C.surface, border: `1px solid ${C.border}`, borderTop: 'none', fontFamily: "var(--font-mono), monospace" }}>Загрузка…</div>
           )}
           {!examsLoading && grouped.length === 0 && (
-            <div style={{ padding: '24px 18px', color: C.muted, fontSize: 13, background: C.surface, border: `1px solid ${C.border}`, borderTop: 'none', fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic' }}>Экзаменов пока нет</div>
+            <div style={{ padding: '24px 18px', color: C.muted, fontSize: 13, background: C.surface, border: `1px solid ${C.border}`, borderTop: 'none', fontFamily: "'Cormorant Garamond', serif" }}>Экзаменов пока нет</div>
           )}
           {!examsLoading && grouped.length > 0 && (
             <>
@@ -1478,7 +1478,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
                         <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 24, color: C.accent, opacity: 0.7, minWidth: 26, textAlign: 'center' }}>{kanjiShort}</span>
                         <div style={{ flex: 1 }}>
                           <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, letterSpacing: '0.04em', color: C.ink, fontWeight: 500 }}>{lv?.label?.toUpperCase()}</div>
-                          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 13, color: C.muted, marginTop: 1 }}>
+                          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: C.muted, marginTop: 1 }}>
                             {bestAttempt?.comment || ''}{bestAttempt?.date ? ` · ${bestAttempt.date}` : ''}
                           </div>
                         </div>
@@ -1494,7 +1494,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
                         <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, color: C.ink, letterSpacing: '0.04em', fontWeight: 500 }}>{lv?.label?.toUpperCase()}</span>
                       </div>
                       <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.06em' }}>{bestAttempt?.date || '—'}</span>
-                      <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 15, color: C.ink2 }}>{bestAttempt?.comment || '—'}</span>
+                      <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: C.ink2 }}>{bestAttempt?.comment || '—'}</span>
                       <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: statusColor, padding: '4px 10px', border: `1px solid ${statusColor}`, textAlign: 'center', fontWeight: 600 }}>{statusLabel}</span>
                     </div>
                   );
@@ -1512,7 +1512,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
             <div style={{ padding: '24px 18px', color: C.muted, fontSize: 13, background: C.surface, fontFamily: "var(--font-mono), monospace" }}>Загрузка…</div>
           )}
           {!paysLoading && userPays.filter(p => !HIDDEN_MONTH_IDS.includes(p.reference)).length === 0 && (
-            <div style={{ padding: '24px 18px', color: C.muted, fontSize: 13, background: C.surface, fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic' }}>Оплат пока нет</div>
+            <div style={{ padding: '24px 18px', color: C.muted, fontSize: 13, background: C.surface, fontFamily: "'Cormorant Garamond', serif" }}>Оплат пока нет</div>
           )}
           {!paysLoading && userPays.filter(p => !HIDDEN_MONTH_IDS.includes(p.reference)).map(p => (
             <div key={p.id} style={{ display: 'grid', gridTemplateColumns: isMobile ? 'auto 1fr auto' : '90px 1fr 100px', padding: '13px 18px', background: C.surface, borderBottom: `1px solid ${C.border}`, alignItems: 'center', gap: 8 }}>

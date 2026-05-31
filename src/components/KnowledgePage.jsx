@@ -122,8 +122,7 @@ export default function KnowledgePage({ nav }) {
           </h1>
           <p style={{
             fontFamily: F.serif,
-            fontStyle: 'italic',
-            fontWeight: 300,
+                        fontWeight: 300,
             fontSize: isMobile ? 14 : 18,
             color: C.muted,
             marginTop: isMobile ? 10 : 22,
@@ -154,8 +153,7 @@ export default function KnowledgePage({ nav }) {
                 background: 'transparent',
                 fontFamily: F.serif,
                 fontSize: isMobile ? 16 : 17,
-                fontStyle: 'italic',
-                color: C.ink,
+                                color: C.ink,
                 outline: 'none',
                 boxSizing: 'border-box',
               }}
@@ -246,7 +244,7 @@ export default function KnowledgePage({ nav }) {
           <div style={{
             padding: isMobile ? '52px 20px 40px' : '64px 0',
             textAlign: 'center',
-            color: C.muted, fontFamily: F.serif, fontStyle: 'italic',
+            color: C.muted, fontFamily: F.serif,
             fontSize: 15, lineHeight: 1.6,
           }}>
             Материалы скоро появятся
@@ -258,7 +256,7 @@ export default function KnowledgePage({ nav }) {
           <div style={{
             padding: isMobile ? '44px 20px 40px' : '48px 0',
             textAlign: 'center',
-            color: C.muted, fontFamily: F.serif, fontStyle: 'italic',
+            color: C.muted, fontFamily: F.serif,
             fontSize: 15, lineHeight: 1.6,
           }}>
             {query ? 'Ничего не найдено' : 'В этой категории пока нет материалов'}
@@ -304,7 +302,7 @@ export default function KnowledgePage({ nav }) {
                 }}>{item.title}</div>
                 {item.subtitle && (
                   <div style={{
-                    fontFamily: F.serif, fontStyle: 'italic', fontWeight: 300,
+                    fontFamily: F.serif, fontWeight: 300,
                     fontSize: 13,
                     color: C.muted, lineHeight: 1.4, marginTop: 3,
                   }}>{item.subtitle}</div>

@@ -220,7 +220,7 @@ export default function AuthPage({ onSuccess }) {
             <div style={{ borderLeft:'2px solid rgba(183,56,40,0.3)', paddingLeft: 16 }}>
               <div style={{
                 fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
-                fontSize: 15, fontStyle:'italic',
+                fontSize: 15,
                 color:'rgba(237,229,211,0.55)', lineHeight: 1.9,
                 marginBottom: 12,
               }}>
@@ -365,7 +365,7 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
       {/* Subtitle */}
       <p style={{
         fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
-        fontSize: 15, fontStyle:'italic',
+        fontSize: 15,
         color: C.muted, lineHeight: 1.75, marginBottom: 28,
       }}>
         Войдите, чтобы продолжить обучение, или зарегистрируйтесь, указав ваш текущий уровень кю.
@@ -395,7 +395,7 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
               fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
               fontSize:11, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase',
             }}>Пароль</label>
-            <button style={{ background:'none', border:'none', fontSize:11, color:C.accent, cursor:'pointer', padding:'12px 0', fontStyle:'italic', minHeight:44, display:'flex', alignItems:'center' }}>забыли?</button>
+            <button style={{ background:'none', border:'none', fontSize:11, color:C.accent, cursor:'pointer', padding:'12px 0', minHeight:44, display:'flex', alignItems:'center' }}>забыли?</button>
           </div>
           <Input value={password} onChange={setPassword} placeholder="••••••••" type="password" error={!!errors.password}/>
           {errors.password && <div style={{ fontSize:13, color:C.red }}>{errors.password}</div>}
@@ -434,7 +434,7 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
             }}>Регистрация закрыта</div>
             <div style={{
               fontFamily: "'Cormorant Garamond', serif",
-              fontStyle: 'italic', fontSize: 13, color: C.muted, lineHeight: 1.6,
+              fontSize: 13, color: C.muted, lineHeight: 1.6,
             }}>Набор новых учеников временно приостановлен. Следите за анонсами.</div>
           </div>
         ) : (
@@ -663,7 +663,7 @@ function RegisterForm({ onSuccess, onLogin }) {
               fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
               fontSize:36, color:C.ink, marginBottom:6, letterSpacing:'0.03em', fontWeight:400, lineHeight:1.1,
             }}>Создайте аккаунт</div>
-            <p style={{ fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif", fontSize:15, fontStyle:'italic', color:C.muted, lineHeight:1.7 }}>Основные данные для входа в систему</p>
+            <p style={{ fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif", fontSize:15, color:C.muted, lineHeight:1.7 }}>Основные данные для входа в систему</p>
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:16 }}>
             <Field label="ФИО" error={errors.name}>
@@ -708,7 +708,7 @@ function RegisterForm({ onSuccess, onLogin }) {
               fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
               fontSize:36, color:C.ink, marginBottom:6, letterSpacing:'0.03em', fontWeight:400, lineHeight:1.1,
             }}>Расскажите о себе</div>
-            <p style={{ fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif", fontSize:15, fontStyle:'italic', color:C.muted, lineHeight:1.7 }}>Эта информация поможет сэнсэю узнать вас лучше</p>
+            <p style={{ fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif", fontSize:15, color:C.muted, lineHeight:1.7 }}>Эта информация поможет сэнсэю узнать вас лучше</p>
           </div>
           <div style={{ display:'flex', flexDirection:'column', gap:18 }}>
 

@@ -103,7 +103,7 @@ export default function Sidebar({ activeTab, onTabClick, user = {}, onLogout }) 
               {LEVEL_SHORT[user.level] || curLv.label}
             </div>
             {curLv.program && (
-              <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 11, color: '#7a6c52', marginTop: 2 }}>
+              <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 11, color: '#7a6c52', marginTop: 2 }}>
                 {DB_SECTIONS.find(d => d.id === curLv.program)?.label}
               </div>
             )}
