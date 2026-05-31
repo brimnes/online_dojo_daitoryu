@@ -66,7 +66,7 @@ export default function KnowledgePage({ nav }) {
           }}>‹</button>
           <span style={{
             fontFamily: F.mono,
-            fontSize: 10, letterSpacing: '0.18em', color: C.muted,
+            fontSize: 11, letterSpacing: '0.18em', color: C.muted,
             flex: 1, textTransform: 'uppercase', fontWeight: 400,
           }}>Архив · 智</span>
         </header>
@@ -88,7 +88,7 @@ export default function KnowledgePage({ nav }) {
               onClick={nav.dashboard}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
-                fontFamily: F.mono, fontSize: 10, letterSpacing: '0.18em',
+                fontFamily: F.mono, fontSize: 11, letterSpacing: '0.18em',
                 color: C.muted, textTransform: 'uppercase', padding: 0,
               }}>
               ← На главную
@@ -103,7 +103,7 @@ export default function KnowledgePage({ nav }) {
           marginBottom: isMobile ? 0 : 40,
         }}>
           <div style={{
-            fontFamily: F.mono, fontSize: 10, letterSpacing: '0.22em',
+            fontFamily: F.mono, fontSize: 11, letterSpacing: '0.22em',
             color: C.muted, textTransform: 'uppercase',
             marginBottom: isMobile ? 10 : 20,
           }}>
@@ -204,7 +204,7 @@ export default function KnowledgePage({ nav }) {
                       background: isActive ? C.ink : 'transparent',
                       color: isActive ? C.bg : C.muted,
                       fontFamily: F.mono,
-                      fontSize: 10,
+                      fontSize: 11,
                       letterSpacing: '0.15em',
                       textTransform: 'uppercase',
                       cursor: 'pointer',
@@ -234,7 +234,7 @@ export default function KnowledgePage({ nav }) {
         {loading && (
           <div style={{
             padding: isMobile ? '56px 20px' : '48px 0', textAlign: 'center',
-            color: C.muted, fontFamily: F.mono, fontSize: 10,
+            color: C.muted, fontFamily: F.mono, fontSize: 11,
             letterSpacing: '0.2em', textTransform: 'uppercase',
           }}>
             Загрузка
@@ -285,7 +285,7 @@ export default function KnowledgePage({ nav }) {
 
               {/* Index number */}
               <div style={{
-                fontFamily: F.mono, fontSize: 10, letterSpacing: '0.15em',
+                fontFamily: F.mono, fontSize: 11, letterSpacing: '0.15em',
                 color: C.muted, minWidth: isMobile ? 24 : 36,
                 textTransform: 'uppercase', flexShrink: 0,
               }}>
@@ -314,7 +314,7 @@ export default function KnowledgePage({ nav }) {
               {/* Tag label — desktop only */}
               {item.tag && !isMobile && (
                 <span style={{
-                  fontFamily: F.mono, fontSize: 9, letterSpacing: '0.2em',
+                  fontFamily: F.mono, fontSize: 11, letterSpacing: '0.2em',
                   color: C.muted, textTransform: 'uppercase', flexShrink: 0,
                 }}>
                   {item.tag}
@@ -324,7 +324,7 @@ export default function KnowledgePage({ nav }) {
               {/* Video badge */}
               {item.video_id && (
                 <span style={{
-                  fontFamily: F.mono, fontSize: 9, letterSpacing: '0.2em',
+                  fontFamily: F.mono, fontSize: 11, letterSpacing: '0.2em',
                   color: C.muted, textTransform: 'uppercase', flexShrink: 0,
                 }}>
                   Видео

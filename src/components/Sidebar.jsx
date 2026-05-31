@@ -65,10 +65,10 @@ export default function Sidebar({ activeTab, onTabClick, user = {}, onLogout }) 
       <div style={{ padding: '32px 28px 24px', display: 'flex', alignItems: 'center', gap: 12, position: 'relative', flexShrink: 0 }}>
         <TakedaMon size={28} color='#b8923a' />
         <div>
-          <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 10, letterSpacing: '0.22em', color: '#ede5d3', fontWeight: 600 }}>
+          <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.22em', color: '#ede5d3', fontWeight: 600 }}>
             ONLINE DAITO-RYU
           </div>
-          <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 10, color: '#b8923a', letterSpacing: '0.18em', marginTop: 3, opacity: 0.75 }}>
+          <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 11, color: '#b8923a', letterSpacing: '0.18em', marginTop: 3, opacity: 0.75 }}>
             合気柔術
           </div>
         </div>
@@ -90,13 +90,13 @@ export default function Sidebar({ activeTab, onTabClick, user = {}, onLogout }) 
           </div>
           <div style={{ minWidth: 0 }}>
             <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, fontWeight: 500, color: '#ede5d3', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.name}</div>
-            <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: '#7a6c52', letterSpacing: '0.06em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.email}</div>
+            <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: '#7a6c52', letterSpacing: '0.06em', overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{user.email}</div>
           </div>
         </div>
         {curLv && (
           <div style={{ background: 'rgba(0,0,0,0.25)', border: '1px solid #1f1a16', padding: '12px 14px' }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline', marginBottom: 4 }}>
-              <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 9, letterSpacing: '0.18em', color: '#7a6c52', textTransform: 'uppercase' }}>текущий уровень</span>
+              <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, letterSpacing: '0.18em', color: '#7a6c52', textTransform: 'uppercase' }}>текущий уровень</span>
               <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 12, color: '#b8923a' }}>{LEVEL_KANJI[user.level] || ''}</span>
             </div>
             <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 16, letterSpacing: '0.05em', color: '#ede5d3', fontWeight: 500 }}>
@@ -127,7 +127,7 @@ export default function Sidebar({ activeTab, onTabClick, user = {}, onLogout }) 
                 borderLeft: `2px solid ${isA ? C.accent : 'transparent'}`,
                 cursor: 'pointer',
               }}>
-              <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: isA ? C.accent : '#7a6c52', letterSpacing: '0.06em' }}>{num}</span>
+              <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: isA ? C.accent : '#7a6c52', letterSpacing: '0.06em' }}>{num}</span>
               <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, color: isA ? '#ede5d3' : '#c2b59c', fontWeight: isA ? 600 : 400, letterSpacing: '0.02em' }}>{label}</span>
               <span style={{ marginLeft: 'auto', fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 12, color: isA ? '#b8923a' : '#7a6c52', opacity: 0.8 }}>{kanji}</span>
             </button>

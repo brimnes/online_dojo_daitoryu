@@ -64,7 +64,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
   if (loading) return (
     <div style={{
       minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center',
-      color: C.muted, fontFamily: F.mono, fontSize: 10,
+      color: C.muted, fontFamily: F.mono, fontSize: 11,
       letterSpacing: '0.2em', textTransform: 'uppercase',
     }}>
       Загрузка
@@ -82,7 +82,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
       <button
         onClick={nav.back}
         style={{
-          fontFamily: F.mono, fontSize: 10, letterSpacing: '0.2em',
+          fontFamily: F.mono, fontSize: 11, letterSpacing: '0.2em',
           color: C.accent, background: 'none', border: 'none',
           cursor: 'pointer', textTransform: 'uppercase',
         }}>
@@ -108,7 +108,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
             display: 'flex', alignItems: 'center', minWidth: 36, minHeight: 44,
           }}>‹</button>
           <span style={{
-            fontFamily: F.mono, fontSize: 10, letterSpacing: '0.18em',
+            fontFamily: F.mono, fontSize: 11, letterSpacing: '0.18em',
             color: C.muted, flex: 1, textTransform: 'uppercase',
           }}>
             Архив
@@ -128,7 +128,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
               onClick={nav.back}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
-                fontFamily: F.mono, fontSize: 10, letterSpacing: '0.18em',
+                fontFamily: F.mono, fontSize: 11, letterSpacing: '0.18em',
                 color: C.muted, textTransform: 'uppercase', padding: 0,
               }}>
               ← Архив
@@ -193,7 +193,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
             marginBottom: 16, flexWrap: 'wrap', gap: 8,
           }}>
             <div style={{
-              fontFamily: F.mono, fontSize: 9,
+              fontFamily: F.mono, fontSize: 11,
               letterSpacing: '0.22em', color: C.muted, textTransform: 'uppercase',
             }}>
               ОБСУЖДЕНИЕ · {itemComments.length}
@@ -236,7 +236,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
                         }}>{c.author}</span>
                         {c.role === 'sensei' && (
                           <span style={{
-                            fontFamily: F.mono, fontSize: 9, color: C.accent,
+                            fontFamily: F.mono, fontSize: 11, color: C.accent,
                             letterSpacing: '0.18em', textTransform: 'uppercase',
                             padding: '1px 7px', border: `1px solid ${C.accent}`,
                           }}>СЭНСЭЙ</span>
@@ -272,7 +272,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, flexWrap: 'wrap' }}>
                           <span style={{ fontFamily: F.mono, fontSize: 13, color: C.ink, fontWeight: 500 }}>{r.author}</span>
-                          <span style={{ fontFamily: F.mono, fontSize: 9, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', padding: '1px 7px', border: `1px solid ${C.accent}` }}>СЭНСЭЙ</span>
+                          <span style={{ fontFamily: F.mono, fontSize: 11, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', padding: '1px 7px', border: `1px solid ${C.accent}` }}>СЭНСЭЙ</span>
                           <span style={{ marginLeft: 'auto', fontFamily: F.mono, fontSize: isMobile ? 9 : 10, color: C.muted }}>{r.date}</span>
                         </div>
                         <div style={{ fontFamily: F.mono, fontSize: 17, color: C.ink2, lineHeight: 1.6 }}>{r.text}</div>
@@ -334,7 +334,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
               onClick={nav.back}
               style={{
                 background: 'none', border: 'none', cursor: 'pointer',
-                fontFamily: F.mono, fontSize: 10, letterSpacing: '0.18em',
+                fontFamily: F.mono, fontSize: 11, letterSpacing: '0.18em',
                 color: C.muted, textTransform: 'uppercase', padding: 0,
               }}>
               ← Назад к архиву

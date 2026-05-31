@@ -71,7 +71,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, init
               {TABS.find(t => t.id === tab)?.label}
             </span>
             {curLv && (
-              <span style={{ fontFamily: "var(--font-mono), monospace", padding: '3px 8px', background: C.surface2, border: `1px solid ${C.border}`, color: C.muted, fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              <span style={{ fontFamily: "var(--font-mono), monospace", padding: '3px 8px', background: C.surface2, border: `1px solid ${C.border}`, color: C.muted, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                 {curLv.label}
               </span>
             )}
@@ -85,7 +85,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, init
               {TABS.find(t => t.id === tab)?.label}
             </span>
             {curLv && (
-              <span style={{ fontFamily: "var(--font-mono), monospace", padding: '3px 9px', background: C.surface2, border: `1px solid ${C.border}`, color: C.muted, fontSize: 9, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              <span style={{ fontFamily: "var(--font-mono), monospace", padding: '3px 9px', background: C.surface2, border: `1px solid ${C.border}`, color: C.muted, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                 {curLv.label}
               </span>
             )}
@@ -208,7 +208,7 @@ function MonthPurchaseModal({ month, product, onClose, isMobile }) {
         {/* top label */}
         <div style={{
           fontFamily: "var(--font-mono),'JetBrains Mono',monospace",
-          fontSize: 9, letterSpacing: '0.22em', color: sideMuted,
+          fontSize: 11, letterSpacing: '0.22em', color: sideMuted,
           textTransform: 'uppercase', marginBottom: isMobile ? 12 : 20,
         }}>
           МЕСЯЦ {String(month.sort_order || '').padStart(2, '0')} · ДАЙТО-РЮ
@@ -247,7 +247,7 @@ function MonthPurchaseModal({ month, product, onClose, isMobile }) {
           <div style={{ position: 'relative' }}>
             <div style={{
               fontFamily: "var(--font-mono),'JetBrains Mono',monospace",
-              fontSize: 9, letterSpacing: '0.22em', color: sideMuted,
+              fontSize: 11, letterSpacing: '0.22em', color: sideMuted,
               textTransform: 'uppercase', marginBottom: 6,
             }}>ЦЕНА</div>
             <div style={{
@@ -270,7 +270,7 @@ function MonthPurchaseModal({ month, product, onClose, isMobile }) {
         }}>
           <span style={{
             fontFamily: "var(--font-mono),'JetBrains Mono',monospace",
-            fontSize: 9, letterSpacing: '0.22em', color: C.muted, textTransform: 'uppercase',
+            fontSize: 11, letterSpacing: '0.22em', color: C.muted, textTransform: 'uppercase',
           }}>ПРИОБРЕТЕНИЕ МЕСЯЦА</span>
           <button onClick={onClose} style={{
             background: 'none', border: 'none', cursor: 'pointer',
@@ -338,7 +338,7 @@ function MonthPurchaseModal({ month, product, onClose, isMobile }) {
           {/* Lessons description */}
           {month.modal_lessons_desc && (
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 9, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', marginBottom: 10 }}>УРОКИ МЕСЯЦА</div>
+              <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', marginBottom: 10 }}>УРОКИ МЕСЯЦА</div>
               <div style={{ fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif", fontSize: 16, color: C.ink2, lineHeight: 1.6 }}>{month.modal_lessons_desc}</div>
             </div>
           )}
@@ -346,7 +346,7 @@ function MonthPurchaseModal({ month, product, onClose, isMobile }) {
           {/* Results */}
           {results.length > 0 && (
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 9, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', marginBottom: 10 }}>РЕЗУЛЬТАТ</div>
+              <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', marginBottom: 10 }}>РЕЗУЛЬТАТ</div>
               {results.map((r, i) => (
                 <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 6 }}>
                   <span style={{ color: C.accent, fontSize: 12, marginTop: 3, flexShrink: 0 }}>—</span>
@@ -358,7 +358,7 @@ function MonthPurchaseModal({ month, product, onClose, isMobile }) {
 
           {/* Access format */}
           <div style={{ marginBottom: 24 }}>
-            <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 9, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', marginBottom: 10 }}>ФОРМАТ ДОСТУПА</div>
+            <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', marginBottom: 10 }}>ФОРМАТ ДОСТУПА</div>
             {accessItems.map((a, i) => (
               <div key={i} style={{ display: 'flex', gap: 10, marginBottom: 6 }}>
                 <span style={{ color: C.accent, fontSize: 12, marginTop: 3, flexShrink: 0 }}>—</span>
@@ -370,7 +370,7 @@ function MonthPurchaseModal({ month, product, onClose, isMobile }) {
           {/* Extras */}
           {month.modal_extras && (
             <div style={{ marginBottom: 24 }}>
-              <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 9, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', marginBottom: 10 }}>ДОПОЛНИТЕЛЬНО</div>
+              <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', marginBottom: 10 }}>ДОПОЛНИТЕЛЬНО</div>
               <div style={{ fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif", fontSize: 16, color: C.ink2, lineHeight: 1.6 }}>{month.modal_extras}</div>
             </div>
           )}
@@ -408,7 +408,7 @@ function MonthPurchaseModal({ month, product, onClose, isMobile }) {
           {buyError && <div style={{ fontSize: 11, color: '#a03030', textAlign: 'center' }}>{buyError}</div>}
           <div style={{
             fontFamily: "var(--font-mono),'JetBrains Mono',monospace",
-            fontSize: 9, letterSpacing: '0.18em', color: C.muted,
+            fontSize: 11, letterSpacing: '0.18em', color: C.muted,
             textTransform: 'uppercase', textAlign: 'center',
           }}>БЕЗОПАСНАЯ ОПЛАТА · СБП · КАРТА · БАНК</div>
         </div>
@@ -449,10 +449,10 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
       {/* ── Top strip — минимальный mono ── */}
       {!isMobile && (
         <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 40, paddingBottom: 16, borderBottom: `1px solid ${C.border}`, flexWrap: 'wrap', gap: 12 }}>
-          <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+          <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
             02 · Учебный год · июнь–декабрь
           </span>
-          <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+          <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
             {openedCount} / {(months ?? []).length} открыто
           </span>
         </div>
@@ -475,11 +475,11 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
         {/* Lesson counter */}
         {watchedCount > 0 && (
           <div style={{ textAlign: 'right', flexShrink: 0 }}>
-            <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, letterSpacing: '0.2em', color: C.muted, marginBottom: 8, textTransform: 'uppercase' }}>Прогресс</div>
+            <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, letterSpacing: '0.2em', color: C.muted, marginBottom: 8, textTransform: 'uppercase' }}>Прогресс</div>
             <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: isMobile ? 48 : 64, letterSpacing: '0.01em', color: C.accent, lineHeight: 0.9, fontWeight: 300 }}>
               {watchedCount}
             </div>
-            <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 9, letterSpacing: '0.2em', color: C.muted, marginTop: 8, textTransform: 'uppercase' }}>уроков просмотрено</div>
+            <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, letterSpacing: '0.2em', color: C.muted, marginTop: 8, textTransform: 'uppercase' }}>уроков просмотрено</div>
           </div>
         )}
       </div>
@@ -573,10 +573,10 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
 
       {/* Number row */}
       <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', marginBottom: 6, marginTop: m.current ? 4 : 0 }}>
-        <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 9, letterSpacing: '0.22em', color: m.current ? C.accent : C.muted, fontWeight: 600 }}>
+        <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, letterSpacing: '0.22em', color: m.current ? C.accent : C.muted, fontWeight: 600 }}>
           {m.sort_order ? `${String(m.sort_order).padStart(2,'0')} / 12` : '– / 12'}
         </span>
-        {m.current && <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 8, letterSpacing: '0.28em', color: C.accent, padding: '2px 7px', border: `1px solid ${C.accent}` }}>ТЕКУЩИЙ</span>}
+        {m.current && <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, letterSpacing: '0.28em', color: C.accent, padding: '2px 7px', border: `1px solid ${C.accent}` }}>ТЕКУЩИЙ</span>}
         {locked && !accessLoading && <span style={{ fontSize: 11, color: C.muted }}>🔒</span>}
       </div>
 
@@ -609,26 +609,26 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
         ) : hasAccess && hasProg ? (
           <>
             <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-              <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 9, color: C.muted, letterSpacing: '0.1em' }}>{watchedCount} / {(lessons ?? []).length} уроков</span>
-              <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 9, color: C.accent, letterSpacing: '0.1em', fontWeight: 600 }}>{pct}%</span>
+              <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, color: C.muted, letterSpacing: '0.1em' }}>{watchedCount} / {(lessons ?? []).length} уроков</span>
+              <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, color: C.accent, letterSpacing: '0.1em', fontWeight: 600 }}>{pct}%</span>
             </div>
             <div style={{ height: 2, background: C.border, overflow: 'hidden', marginBottom: 8 }}>
               <div style={{ height: '100%', width: `${pct}%`, background: C.accent, transition: 'width 0.4s ease' }} />
             </div>
-            <button onClick={() => nav.month(m.id)} style={{ background: 'none', border: 'none', padding: '6px 0', fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 10, color: C.accent, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer', minHeight: 32 }}>
+            <button onClick={() => nav.month(m.id)} style={{ background: 'none', border: 'none', padding: '6px 0', fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 13, color: C.accent, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer', minHeight: 32 }}>
               Продолжить →
             </button>
           </>
         ) : hasAccess ? (
-          <button onClick={() => nav.month(m.id)} style={{ background: 'none', border: 'none', padding: '6px 0', fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 10, color: C.accent, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer', minHeight: 32 }}>
+          <button onClick={() => nav.month(m.id)} style={{ background: 'none', border: 'none', padding: '6px 0', fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 13, color: C.accent, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer', minHeight: 32 }}>
             Открыть уроки →
           </button>
         ) : product ? (
-          <button onClick={onBuyClick} style={{ background: 'none', border: 'none', padding: '6px 0', fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 10, color: C.gold, letterSpacing: '0.16em', textTransform: 'uppercase', cursor: 'pointer', minHeight: 32 }}>
+          <button onClick={onBuyClick} style={{ background: 'none', border: 'none', padding: '6px 0', fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 13, color: C.gold, letterSpacing: '0.16em', textTransform: 'uppercase', cursor: 'pointer', minHeight: 32 }}>
             Что входит →
           </button>
         ) : (
-          <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 9, color: C.muted, letterSpacing: '0.12em' }}>недоступно</span>
+          <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, color: C.muted, letterSpacing: '0.12em' }}>недоступно</span>
         )}
       </div>
     </div>
@@ -664,7 +664,7 @@ function TabKnowledge({ nav, isMobile }) {
         <div style={{ marginBottom: 20 }}>
           <div style={{
             fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-            fontSize: 10, letterSpacing: '0.2em', color: C.muted,
+            fontSize: 11, letterSpacing: '0.2em', color: C.muted,
             textTransform: 'uppercase', marginBottom: 10,
           }}>
             01 · Архив · Открыто для всех
@@ -689,7 +689,7 @@ function TabKnowledge({ nav, isMobile }) {
                 color: isA ? C.onAccent : C.muted,
                 border: `1px solid ${isA ? C.ink : C.border}`,
                 fontFamily: "var(--font-mono), monospace",
-                fontSize: 10, letterSpacing: '0.1em', textTransform: 'uppercase',
+                fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase',
                 cursor: 'pointer', whiteSpace: 'nowrap',
               }}>
                 {cat.label}
@@ -700,7 +700,7 @@ function TabKnowledge({ nav, isMobile }) {
 
         {/* Loading */}
         {loading && (
-          <div style={{ color: C.muted, fontFamily: "var(--font-mono), monospace", fontSize: 10, letterSpacing: '0.2em', textTransform: 'uppercase', padding: '24px 0' }}>
+          <div style={{ color: C.muted, fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', padding: '24px 0' }}>
             Загрузка
           </div>
         )}
@@ -766,10 +766,10 @@ function TabKnowledge({ nav, isMobile }) {
         borderBottom: `1px solid ${C.border}`, background: 'transparent',
         display: 'flex', alignItems: 'center', justifyContent: 'space-between',
       }}>
-        <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
+        <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase' }}>
           01 · Архив
         </span>
-        <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 10, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
+        <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase' }}>
           Открыто для всех
         </span>
       </div>
@@ -790,7 +790,7 @@ function TabKnowledge({ nav, isMobile }) {
             <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 19, color: C.ink2, lineHeight: 1.6 }}>
               «Сначала путь — потом техника. Сначала смысл — потом форма.»
             </div>
-            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.2em', marginTop: 14, textTransform: 'uppercase' }}>
+            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.2em', marginTop: 14, textTransform: 'uppercase' }}>
               — Такэда Сокаку
             </div>
           </div>
@@ -812,7 +812,7 @@ function TabKnowledge({ nav, isMobile }) {
                 color: isA ? C.onAccent : C.ink2,
                 border: `1px solid ${isA ? C.ink : C.border}`,
                 fontFamily: "var(--font-mono), monospace",
-                fontSize: 10, letterSpacing: '0.16em', textTransform: 'uppercase',
+                fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase',
                 cursor: 'pointer',
               }}>
                 {cat.label}
@@ -848,7 +848,7 @@ function TabKnowledge({ nav, isMobile }) {
                     <div style={{ width: 64, height: 64, background: C.bg2, border: `1px solid ${C.border}`, position: 'relative', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                       <span style={{ fontFamily: "var(--font-noto), 'Noto Serif JP', serif", fontSize: 28, color: C.accent, opacity: 0.85 }}>{kanji}</span>
                       {item.video_id && (
-                        <span style={{ position: 'absolute', bottom: 2, right: 4, fontFamily: "var(--font-mono), monospace", fontSize: 8, color: C.muted }}>▷</span>
+                        <span style={{ position: 'absolute', bottom: 2, right: 4, fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted }}>▷</span>
                       )}
                     </div>
                     <div>
@@ -857,7 +857,7 @@ function TabKnowledge({ nav, isMobile }) {
                     </div>
                     <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 6 }}>
                       {tagLabel && (
-                        <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', padding: '2px 8px', border: `1px solid ${C.accent}` }}>
+                        <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', padding: '2px 8px', border: `1px solid ${C.accent}` }}>
                           {tagLabel}
                         </span>
                       )}
@@ -985,7 +985,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
             <circle cx="50" cy="50" r="38" fill="none" stroke={v.kanjiRing} strokeWidth="0.2" />
           </svg>
           <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 120, lineHeight: 0.85, color: v.kanjiColor, fontWeight: 300, position: 'relative', zIndex: 1 }}>{sec.kanji}</div>
-          <div style={{ position: 'absolute', top: 12, left: 14, fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.2em' }}>
+          <div style={{ position: 'absolute', top: 12, left: 14, fontFamily: "var(--font-mono), monospace", fontSize: 11, color: v.muted, letterSpacing: '0.2em' }}>
             {sec.num} / {String(allSecs.length).padStart(2, '0')}
           </div>
           {sec.nameJa && (
@@ -1001,9 +1001,9 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
         {/* middle content */}
         <div style={{ padding: '26px 28px', display: 'flex', flexDirection: 'column', gap: 12 }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
-            <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.2em', color: v.muted, textTransform: 'uppercase' }}>{sec.programLabel}</span>
+            <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.2em', color: v.muted, textTransform: 'uppercase' }}>{sec.programLabel}</span>
             <span style={{ width: 20, height: 1, background: v.hairline, flexShrink: 0 }} />
-            <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 10, letterSpacing: '0.18em', color: isOpen ? C.goldLight : v.ink2, fontWeight: 600 }}>{sec.program}</span>
+            <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.18em', color: isOpen ? C.goldLight : v.ink2, fontWeight: 600 }}>{sec.program}</span>
           </div>
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 14 }}>
             <h2 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 44, lineHeight: 0.95, letterSpacing: '0.04em', color: v.ink, fontWeight: 500, textTransform: 'uppercase' }}>{sec.label}</h2>
@@ -1018,7 +1018,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
               { label: 'Срок',     val: sec.duration },
             ].map((s, i, arr) => (
               <div key={s.label} style={{ flex: 1, paddingLeft: i === 0 ? 0 : 14, paddingRight: 14, borderLeft: i > 0 ? `1px solid ${v.hairline}` : 'none' }}>
-                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.16em', color: v.muted, textTransform: 'uppercase', marginBottom: 3 }}>{s.label}</div>
+                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.16em', color: v.muted, textTransform: 'uppercase', marginBottom: 3 }}>{s.label}</div>
                 <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 17, fontWeight: 500, color: v.ink }}>{s.val}</div>
               </div>
             ))}
@@ -1028,14 +1028,14 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
         {/* right CTA panel */}
         <div style={{ padding: '24px 22px 20px', borderLeft: `1px solid ${v.hairline}`, display: 'flex', flexDirection: 'column', justifyContent: 'space-between', background: v.rightBg }}>
           <div>
-            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '5px 10px', color: v.tagFg, border: `1px solid ${v.tagBorder}`, fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 600 }}>
+            <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '5px 10px', color: v.tagFg, border: `1px solid ${v.tagBorder}`, fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 600 }}>
               <span style={{ width: 5, height: 5, borderRadius: '50%', background: v.tagFg, flexShrink: 0 }} />
               {isOpen ? 'Открыт' : isSoon ? 'Скоро' : isLocked ? 'Нет доступа' : 'К покупке'}
             </div>
 
             {isOpen && (
               <div style={{ marginTop: 22 }}>
-                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 6 }}>Прогресс</div>
+                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 6 }}>Прогресс</div>
                 <div style={{ width: '100%', height: 2, background: 'rgba(184,146,58,0.15)' }}>
                   <div style={{ height: 2, width: '36%', background: C.accent }} />
                 </div>
@@ -1045,7 +1045,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
 
             {sec.accessState === 'purchase' && (
               <div style={{ marginTop: 22 }}>
-                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 5 }}>Стоимость</div>
+                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 5 }}>Стоимость</div>
                 <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 28, color: v.ink, fontWeight: 500 }}>{sec.price}</div>
                 <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: v.muted, marginTop: 3 }}>навсегда · без подписки</div>
               </div>
@@ -1053,7 +1053,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
 
             {isSoon && (
               <div style={{ marginTop: 22 }}>
-                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 5 }}>Релиз</div>
+                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 5 }}>Релиз</div>
                 <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 16, color: v.ink, fontWeight: 500, textTransform: 'uppercase' }}>осень 2026</div>
                 <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: v.muted, marginTop: 3 }}>программа разрабатывается</div>
               </div>
@@ -1090,8 +1090,8 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           </div>
           <div style={{ flex: 1, padding: '12px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.18em', color: v.muted }}>{sec.num} / {String(allSecs.length).padStart(2, '0')}</span>
-              {sec.nameJa && <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 10, color: v.muted }}>· {sec.nameJa}</span>}
+              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.18em', color: v.muted }}>{sec.num} / {String(allSecs.length).padStart(2, '0')}</span>
+              {sec.nameJa && <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 11, color: v.muted }}>· {sec.nameJa}</span>}
             </div>
             <h3 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 26, letterSpacing: '0.04em', color: v.ink, fontWeight: 500, lineHeight: 0.95, textTransform: 'uppercase' }}>{sec.label}</h3>
             {sec.nameRomaji && (
@@ -1100,7 +1100,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           </div>
         </div>
         <div style={{ padding: '14px 16px 16px' }}>
-          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', color: v.tagFg, border: `1px solid ${v.tagBorder}`, fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 10 }}>
+          <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', color: v.tagFg, border: `1px solid ${v.tagBorder}`, fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 10 }}>
             <span style={{ width: 4, height: 4, borderRadius: '50%', background: v.tagFg }} />
             {isOpen ? 'Открыт' : isSoon ? 'Скоро' : isLocked ? 'Нет доступа' : 'К покупке'}
           </div>
@@ -1112,20 +1112,20 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
               { label: 'Мес.',   val: (sec.duration || '').replace(/\D/g, '') },
             ].map((s, i) => (
               <div key={s.label} style={{ flex: 1, paddingLeft: i === 0 ? 0 : 12, borderLeft: i > 0 ? `1px solid ${v.hairline}` : 'none' }}>
-                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 2 }}>{s.label}</div>
+                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: v.muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 2 }}>{s.label}</div>
                 <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 16, color: v.ink, fontWeight: 500 }}>{s.val}</div>
               </div>
             ))}
           </div>
           {sec.accessState === 'purchase' && (
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
-              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Стоимость</span>
+              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Стоимость</span>
               <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 22, color: v.ink, fontWeight: 500 }}>{sec.price}</span>
             </div>
           )}
           {isSoon && (
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
-              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Релиз</span>
+              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Релиз</span>
               <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 13, color: v.ink, fontWeight: 500, textTransform: 'uppercase' }}>осень 2026</span>
             </div>
           )}
@@ -1153,7 +1153,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.18em', color: C.ink, fontWeight: 600 }}>БАЗА ТЕХНИК</span>
         </div>
         <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-          <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.12em' }}>
+          <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.12em' }}>
             {openCount} / {allSecs.length} РАЗДЕЛОВ ДОСТУПНО
           </span>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: C.bg, border: `1px solid ${C.border}`, padding: '7px 12px', width: isMobile ? '100%' : 256 }}>
@@ -1169,18 +1169,18 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 24, marginBottom: 16 }}>
             <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 160, lineHeight: 0.85, color: C.accent, opacity: 0.1, flexShrink: 0, marginLeft: -8, marginBottom: -8 }}>技</div>
             <div style={{ flex: 1, paddingBottom: 4 }}>
-              <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 12 }}>03 · БАЗА ТЕХНИК · ПРОГРАММЫ ШКОЛЫ</div>
+              <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 12 }}>03 · БАЗА ТЕХНИК · ПРОГРАММЫ ШКОЛЫ</div>
               <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 60, lineHeight: 0.9, letterSpacing: '0.04em', color: C.ink, fontWeight: 400, textTransform: 'uppercase' }}>База техник</h1>
               <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 16, color: C.muted, marginTop: 14, maxWidth: 540, lineHeight: 1.55 }}>
                 Полное собрание программ Дайто-рю — от ученических кю до старших данов. Каждый раздел открывается отдельно.
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, paddingBottom: 8, flexShrink: 0 }}>
-              <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 10, color: C.muted, letterSpacing: '0.22em' }}>進度</span>
+              <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 11, color: C.muted, letterSpacing: '0.22em' }}>進度</span>
               <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 42, color: C.accent, lineHeight: 1, fontWeight: 500 }}>
                 — <span style={{ fontSize: 21, color: C.ink2 }}>/ {totalTechs}</span>
               </div>
-              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.18em', color: C.muted, textTransform: 'uppercase' }}>техник всего</span>
+              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.18em', color: C.muted, textTransform: 'uppercase' }}>техник всего</span>
             </div>
           </div>
           <svg viewBox="0 0 800 20" style={{ width: '100%', height: 20, opacity: 0.22, display: 'block', marginBottom: 32 }}>
@@ -1194,7 +1194,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, marginBottom: 20 }}>
           <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 80, lineHeight: 0.85, color: C.accent, opacity: 0.13, flexShrink: 0 }}>技</span>
           <div style={{ paddingBottom: 4 }}>
-            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.22em', color: C.muted, textTransform: 'uppercase', marginBottom: 8 }}>03 · БАЗА ТЕХНИК</div>
+            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.22em', color: C.muted, textTransform: 'uppercase', marginBottom: 8 }}>03 · БАЗА ТЕХНИК</div>
             <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 30, color: C.ink, fontWeight: 400, textTransform: 'uppercase', lineHeight: 0.95 }}>База<br />техник</h1>
           </div>
         </div>
@@ -1214,7 +1214,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
             <div style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 12, color: C.muted, marginTop: 3 }}>Старшие даны — программа разрабатывается</div>
           </div>
         </div>
-        <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase', flexShrink: 0 }}>2026 — 2028</span>
+        <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase', flexShrink: 0 }}>2026 — 2028</span>
       </div>
     </div>
   );
@@ -1260,7 +1260,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
   const renderLevelCard = (compact) => (
     <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: compact ? '16px' : '22px', position: 'relative', overflow: 'hidden', width: '100%', boxSizing: 'border-box' }}>
       <div style={{ position: 'absolute', top: compact ? 8 : 12, right: compact ? 10 : 14, fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: compact ? 48 : 56, color: C.goldSoft, opacity: 0.45, lineHeight: 1 }}>{curKanji}</div>
-      <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: compact ? 6 : 8 }}>Текущий уровень</div>
+      <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: compact ? 6 : 8 }}>Текущий уровень</div>
       <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: compact ? 38 : 52, color: C.ink, letterSpacing: '0.03em', lineHeight: 1, marginBottom: 4 }}>
         {curLv?.label?.toUpperCase() || '—'}
       </div>
@@ -1268,7 +1268,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
         {curLv?.program === 'ikkajo' ? 'Иккаджо · Татиай' : curLv?.label || ''}
       </div>
       <div style={{ height: 1, background: C.border, marginBottom: compact ? 10 : 14 }} />
-      <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: compact ? 8 : 10 }}>Путь к Сёдан</div>
+      <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: compact ? 8 : 10 }}>Путь к Сёдан</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginBottom: 6 }}>
         {TRACK.map((id, i) => {
           const filled = i <= curIdx;
@@ -1281,7 +1281,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
           );
         })}
       </div>
-      <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.1em' }}>
+      <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.1em' }}>
         <span>6 КЮ</span><span>СЁДАН</span>
       </div>
     </div>
@@ -1306,10 +1306,10 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
           <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
             <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 11, color: C.muted }}>個人</span>
             <span style={{ color: C.hairline2, fontSize: 12 }}>/</span>
-            <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, letterSpacing: '0.14em', color: C.muted, textTransform: 'uppercase' }}>Профиль</span>
+            <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.14em', color: C.muted, textTransform: 'uppercase' }}>Профиль</span>
           </div>
           {joinedStr && (
-            <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.1em', textTransform: 'uppercase', flexShrink: 0 }}>
+            <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.1em', textTransform: 'uppercase', flexShrink: 0 }}>
               С {joinedStr}
             </span>
           )}
@@ -1329,7 +1329,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
             <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.18em', color: C.ink, fontWeight: 600 }}>ЛИЧНЫЙ КАБИНЕТ</span>
           </div>
           {joinedStr && (
-            <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+            <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
               В ШКОЛЕ С {joinedStr}
             </span>
           )}
@@ -1345,12 +1345,12 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
             <div style={{ position: 'relative', zIndex: 1, width: 56, height: 56, borderRadius: '50%', border: `1px solid rgba(200,169,74,0.4)`, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 24, color: C.goldLight }}>
               {(usr.name || '?')[0].toUpperCase()}
             </div>
-            <div style={{ position: 'relative', zIndex: 1, fontFamily: "var(--font-mono), monospace", fontSize: 9, color: 'rgba(200,169,74,0.45)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Портрет студента</div>
+            <div style={{ position: 'relative', zIndex: 1, fontFamily: "var(--font-mono), monospace", fontSize: 11, color: 'rgba(200,169,74,0.45)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Портрет студента</div>
           </div>
 
           {/* info */}
           <div>
-            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
+            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
               <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', color: C.gold, fontSize: 12 }}>04</span>
               Студент додзё
             </div>
@@ -1381,7 +1381,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
               <div style={{ width: 64, height: 64, borderRadius: '50%', background: C.ink, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 22, color: C.goldLight }}>
                 {(usr.name || '?')[0].toUpperCase()}
               </div>
-              <span style={{ position: 'absolute', bottom: -4, right: -4, width: 22, height: 22, borderRadius: '50%', background: C.accent, color: '#fff', fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 10, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+              <span style={{ position: 'absolute', bottom: -4, right: -4, width: 22, height: 22, borderRadius: '50%', background: C.accent, color: '#fff', fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {curKanji}
               </span>
             </div>
@@ -1423,13 +1423,13 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
             { label: 'Имя сэнсэя',               value: usr.senseiName || 'Станислав Копин', show: true },
           ].filter(r => r.show).map(row => (
             <div key={row.label} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '200px 1fr', padding: '14px 18px', borderBottom: `1px solid ${C.border}`, alignItems: 'start', gap: isMobile ? 2 : 0 }}>
-              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{row.label}</span>
+              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{row.label}</span>
               <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 14, color: C.ink }}>{row.value}</span>
             </div>
           ))}
           {usr.experience && (
             <div style={{ padding: '18px' }}>
-              <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 12 }}>Об опыте</div>
+              <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 12 }}>Об опыте</div>
               <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: C.ink2, lineHeight: 1.85, borderLeft: `2px solid ${C.goldBorder}`, paddingLeft: 14, margin: 0 }}>{usr.experience}</p>
             </div>
           )}
@@ -1455,7 +1455,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
           {!examsLoading && grouped.length > 0 && (
             <>
               {!isMobile && (
-                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase', padding: '16px 0 12px' }}>
+                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase', padding: '16px 0 12px' }}>
                   ИСТОРИЯ ЭКЗАМЕНОВ
                 </div>
               )}
@@ -1482,7 +1482,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
                             {bestAttempt?.comment || ''}{bestAttempt?.date ? ` · ${bestAttempt.date}` : ''}
                           </div>
                         </div>
-                        <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.16em', textTransform: 'uppercase', color: statusColor, padding: '3px 8px', border: `1px solid ${statusColor}`, fontWeight: 600, flexShrink: 0 }}>{statusLabel}</span>
+                        <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: statusColor, padding: '3px 8px', border: `1px solid ${statusColor}`, fontWeight: 600, flexShrink: 0 }}>{statusLabel}</span>
                       </div>
                     );
                   }
@@ -1495,7 +1495,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
                       </div>
                       <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.06em' }}>{bestAttempt?.date || '—'}</span>
                       <span style={{ fontFamily: "'Cormorant Garamond', serif", fontStyle: 'italic', fontSize: 14, color: C.ink2 }}>{bestAttempt?.comment || '—'}</span>
-                      <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, letterSpacing: '0.18em', textTransform: 'uppercase', color: statusColor, padding: '4px 10px', border: `1px solid ${statusColor}`, textAlign: 'center', fontWeight: 600 }}>{statusLabel}</span>
+                      <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: statusColor, padding: '4px 10px', border: `1px solid ${statusColor}`, textAlign: 'center', fontWeight: 600 }}>{statusLabel}</span>
                     </div>
                   );
                 })}
@@ -1516,7 +1516,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
           )}
           {!paysLoading && userPays.filter(p => !HIDDEN_MONTH_IDS.includes(p.reference)).map(p => (
             <div key={p.id} style={{ display: 'grid', gridTemplateColumns: isMobile ? 'auto 1fr auto' : '90px 1fr 100px', padding: '13px 18px', background: C.surface, borderBottom: `1px solid ${C.border}`, alignItems: 'center', gap: 8 }}>
-              <span style={{ color: C.muted, fontFamily: "var(--font-mono), monospace", fontSize: 10, whiteSpace: 'nowrap' }}>{p.date}</span>
+              <span style={{ color: C.muted, fontFamily: "var(--font-mono), monospace", fontSize: 11, whiteSpace: 'nowrap' }}>{p.date}</span>
               <span style={{ color: C.ink, fontSize: 13, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{p.desc}</span>
               <span style={{ color: C.ink, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, textAlign: 'right', whiteSpace: 'nowrap' }}>{p.amount}</span>
             </div>
@@ -1577,7 +1577,7 @@ function TabMyAccess({ userAccess, loading, isMobile }) {
     <div style={{ border: `1px solid ${C.border}`, borderTop: 'none' }}>
       {/* Months */}
       <div style={{ padding: '12px 16px', background: C.surface2, borderBottom: `1px solid ${C.border}` }}>
-        <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Месяцы обучения</div>
+        <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Месяцы обучения</div>
       </div>
       {ALL_MONTHS.filter(m => !HIDDEN_MONTH_IDS.includes(m)).map(m => {
         const has = hasMonthAccess(ua, m);
@@ -1591,13 +1591,13 @@ function TabMyAccess({ userAccess, loading, isMobile }) {
 
       {/* Ikkajo */}
       <div style={{ padding: '12px 16px', background: C.surface2, borderBottom: `1px solid ${C.border}`, borderTop: `1px solid ${C.border}`, marginTop: 8 }}>
-        <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Иккаджо</div>
+        <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Иккаджо</div>
       </div>
       {fullIkkajo ? (
         <div style={{ ...rowStyle }}>
           {tick(true)}
           <span style={{ color: C.dark }}>Весь Иккаджо</span>
-          <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.accent, background: `${C.accent}10`, border: `1px solid ${C.accent}30`, padding: '2px 8px', marginLeft: 'auto', letterSpacing: '0.1em', textTransform: 'uppercase' }}>полный доступ</span>
+          <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.accent, background: `${C.accent}10`, border: `1px solid ${C.accent}30`, padding: '2px 8px', marginLeft: 'auto', letterSpacing: '0.1em', textTransform: 'uppercase' }}>полный доступ</span>
         </div>
       ) : (
         IKKAJO_SECTIONS.map(s => {
@@ -1754,14 +1754,14 @@ function TabUnlockAccess({ userAccess, isMobile }) {
         <div style={sectionStyle}>
           <div style={headerStyle}>
             <span style={labelStyle}>Весь Иккаджо</span>
-            <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.gold, marginLeft: 12, background: `${C.gold}15`, border: `1px solid ${C.goldBorder}`, padding: '2px 10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Выгодно</span>
+            <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.gold, marginLeft: 12, background: `${C.gold}15`, border: `1px solid ${C.goldBorder}`, padding: '2px 10px', letterSpacing: '0.1em', textTransform: 'uppercase' }}>Выгодно</span>
           </div>
           <div style={{ padding: '18px', background: hasFull ? `${C.success}10` : C.surface2, border: `1px solid ${hasFull ? C.success + '40' : C.goldBorder}` }}>
             <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 20, fontWeight: 400, color: C.ink, marginBottom: 8, letterSpacing: '0.04em' }}>{ikkajoFull.title}</div>
             <div style={{ fontSize: 12, color: C.muted, lineHeight: 1.6, marginBottom: 12 }}>{ikkajoFull.description}</div>
             <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, marginBottom: 4 }}>
               {IKKAJO_SECTIONS.map(s => (
-                <span key={s} style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, background: C.surface2, border: `1px solid ${C.border}`, padding: '3px 10px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
+                <span key={s} style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, background: C.surface2, border: `1px solid ${C.border}`, padding: '3px 10px', letterSpacing: '0.08em', textTransform: 'uppercase' }}>
                   {IKKAJO_SECTION_LABELS[s]}
                 </span>
               ))}

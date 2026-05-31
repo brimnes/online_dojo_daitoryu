@@ -139,7 +139,7 @@ export function Eyebrow({ children, color = C.muted, diamond = false, style }) {
   return (
     <div style={{
       fontFamily: 'var(--font-mono), "JetBrains Mono", monospace',
-      fontSize: 10,
+      fontSize: 11,
       letterSpacing: '0.18em',
       textTransform: 'uppercase',
       color,

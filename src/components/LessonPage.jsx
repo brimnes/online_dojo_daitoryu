@@ -125,7 +125,7 @@ export default function LessonPage({
             <span style={{ color: C.border }}>/</span>
             <span style={{
               fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-              fontSize: 10, color: C.muted, letterSpacing: '0.12em',
+              fontSize: 11, color: C.muted, letterSpacing: '0.12em',
             }}>УРОК {lessonNum} / {totalLessons}</span>
             <span style={{
               marginLeft: 'auto',
@@ -152,7 +152,7 @@ export default function LessonPage({
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 8,
                 fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                fontSize: 9, letterSpacing: '0.24em', color: C.muted,
+                fontSize: 11, letterSpacing: '0.24em', color: C.muted,
                 textTransform: 'uppercase', marginBottom: isMobile ? 8 : 12,
               }}>
                 <span style={{ color: C.accent, fontWeight: 600 }}>{lessonNum}</span>
@@ -235,7 +235,7 @@ export default function LessonPage({
                 <div style={{ padding: isMobile ? '20px 18px' : 0, marginBottom: isMobile ? 0 : 32 }}>
                   <div style={{
                     fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                    fontSize: 9, letterSpacing: '0.22em', color: C.muted,
+                    fontSize: 11, letterSpacing: '0.22em', color: C.muted,
                     textTransform: 'uppercase', marginBottom: 14,
                   }}>ОПИСАНИЕ</div>
                   <p style={{
@@ -255,7 +255,7 @@ export default function LessonPage({
                 }}>
                   <div style={{
                     fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                    fontSize: 9, letterSpacing: '0.22em', color: C.muted, textTransform: 'uppercase',
+                    fontSize: 11, letterSpacing: '0.22em', color: C.muted, textTransform: 'uppercase',
                   }}>
                     ОБСУЖДЕНИЕ · {lessonComments.length}
                   </div>
@@ -296,7 +296,7 @@ export default function LessonPage({
                               {c.role === 'sensei' && (
                                 <span style={{
                                   fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                                  fontSize: 9, color: C.accent, letterSpacing: '0.18em',
+                                  fontSize: 11, color: C.accent, letterSpacing: '0.18em',
                                   textTransform: 'uppercase', padding: '1px 7px',
                                   border: `1px solid ${C.accent}`,
                                 }}>СЭНСЭЙ</span>
@@ -332,7 +332,7 @@ export default function LessonPage({
                             <div style={{ flex: 1, minWidth: 0 }}>
                               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, flexWrap: 'wrap' }}>
                                 <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, color: C.ink, fontWeight: 500 }}>{r.author}</span>
-                                <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 9, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', padding: '1px 7px', border: `1px solid ${C.accent}` }}>СЭНСЭЙ</span>
+                                <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', padding: '1px 7px', border: `1px solid ${C.accent}` }}>СЭНСЭЙ</span>
                                 <span style={{ marginLeft: 'auto', fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: isMobile ? 9 : 10, color: C.muted }}>{r.date}</span>
                               </div>
                               <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: isMobile ? 13 : 14, color: C.ink2, lineHeight: 1.55 }}>{r.text}</div>
@@ -394,14 +394,14 @@ export default function LessonPage({
                   {prevLesson ? (
                     <div onClick={() => nav.lesson(monthId, prevLesson.id)}
                       style={{ background: C.surface, padding: '14px 14px', cursor: 'pointer' }}>
-                      <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 9, color: C.muted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>← ПРЕДЫДУЩИЙ</div>
+                      <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: C.muted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>← ПРЕДЫДУЩИЙ</div>
                       <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, color: C.ink, fontWeight: 500, lineHeight: 1.3 }}>{prevLesson.title}</div>
                     </div>
                   ) : <div style={{ background: C.surface }} />}
                   {nextLesson ? (
                     <div onClick={() => nav.lesson(monthId, nextLesson.id)}
                       style={{ background: C.surface, padding: '14px 14px', cursor: 'pointer', textAlign: 'right' }}>
-                      <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 9, color: C.muted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>СЛЕДУЮЩИЙ →</div>
+                      <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: C.muted, letterSpacing: '0.1em', textTransform: 'uppercase', marginBottom: 4 }}>СЛЕДУЮЩИЙ →</div>
                       <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, color: C.ink, fontWeight: 500, lineHeight: 1.3 }}>{nextLesson.title}</div>
                     </div>
                   ) : <div style={{ background: C.surface }} />}
@@ -422,7 +422,7 @@ export default function LessonPage({
             }}>
               <div style={{
                 fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                fontSize: 9, letterSpacing: '0.22em', color: C.muted,
+                fontSize: 11, letterSpacing: '0.22em', color: C.muted,
                 textTransform: 'uppercase', marginBottom: 16,
               }}>УРОКИ · {monthLabel}</div>
 

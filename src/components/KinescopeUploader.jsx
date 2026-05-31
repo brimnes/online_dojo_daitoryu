@@ -242,11 +242,11 @@ export default function KinescopeUploader({
             border: `1px solid ${cfg.color}33`, padding: '2px 8px' }}>
             {cfg.label}
           </span>
-          <span style={{ fontSize: 10, color: C.muted, fontFamily: 'monospace' }}>
+          <span style={{ fontSize: 11, color: C.muted, fontFamily: 'monospace' }}>
             {currentVideoId.slice(0, 8)}…
           </span>
           {isPolling && (
-            <span style={{ fontSize: 10, color: C.gold, display: 'flex', alignItems: 'center', gap: 4 }}>
+            <span style={{ fontSize: 11, color: C.gold, display: 'flex', alignItems: 'center', gap: 4 }}>
               <span style={{
                 display: 'inline-block', width: 8, height: 8, borderRadius: '50%',
                 background: C.gold, opacity: 0.8,

@@ -105,7 +105,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout }) {
               <div style={{
                 display: 'flex', alignItems: 'center', gap: 8,
                 fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                fontSize: 9, letterSpacing: '0.24em', color: C.muted,
+                fontSize: 11, letterSpacing: '0.24em', color: C.muted,
                 textTransform: 'uppercase', marginBottom: isMobile ? 8 : 14,
               }}>
                 <span style={{ color: C.accent, fontWeight: 600 }}>03</span>
@@ -288,7 +288,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout }) {
                       }}>Раздел недоступен</div>
                       <div style={{
                         fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                        fontSize: 10, color: C.muted, letterSpacing: '0.1em', textTransform: 'uppercase',
+                        fontSize: 11, color: C.muted, letterSpacing: '0.1em', textTransform: 'uppercase',
                       }}>Приобретите доступ к разделу «{sec.nameRu}»</div>
                     </div>
                   )}
@@ -345,7 +345,7 @@ function TechCard({ tech, index, videoCount, onClick, isMobile }) {
       {!isMobile && videoCount > 0 && (
         <span style={{
           fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-          fontSize: 10, color: C.accent, letterSpacing: '0.06em', flexShrink: 0,
+          fontSize: 11, color: C.accent, letterSpacing: '0.06em', flexShrink: 0,
         }}>{videoCount} видео</span>
       )}
       {/* Arrow */}

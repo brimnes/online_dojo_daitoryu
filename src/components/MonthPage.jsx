@@ -139,12 +139,12 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
               <div style={{ display: 'flex', alignItems: 'center', gap: 8, marginBottom: isMobile ? 10 : 12 }}>
                 <span style={{
                   fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                  fontSize: 10, color: C.accent, letterSpacing: '0.06em', fontWeight: 600,
+                  fontSize: 11, color: C.accent, letterSpacing: '0.06em', fontWeight: 600,
                 }}>{monthNum} / 12</span>
                 <span style={{ width: 1, height: 10, background: C.border, display: 'inline-block', flexShrink: 0 }} />
                 <span style={{
                   fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                  fontSize: 10, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase',
+                  fontSize: 11, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase',
                 }}>Учебный модуль{!isMobile ? ' · 2026' : ''}</span>
               </div>
 
@@ -171,7 +171,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
             <div style={{ minWidth: 240, padding: '16px 20px', background: C.surface, border: `1px solid ${C.border}`, flexShrink: 0 }}>
               <div style={{
                 fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                fontSize: 9, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 6,
+                fontSize: 11, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 6,
               }}>прогресс месяца</div>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 6, marginBottom: 8 }}>
                 <span style={{
@@ -202,7 +202,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
                 <span style={{
                   fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                  fontSize: 10, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase',
+                  fontSize: 11, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase',
                 }}>прогресс</span>
                 <span style={{
                   fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
@@ -304,11 +304,11 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
             background: 'rgba(255,255,255,0.1)', border: '1.5px solid rgba(255,255,255,0.25)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1,
           }}>
-            <span style={{ color: '#fff', fontSize: 8, marginLeft: 1 }}>▶</span>
+            <span style={{ color: '#fff', fontSize: 11, marginLeft: 1 }}>▶</span>
           </div>
           {watched && (
             <div style={{ position: 'absolute', top: 4, right: 4, background: `${C.success}CC`, borderRadius: '50%', width: 16, height: 16, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
-              <span style={{ color: '#fff', fontSize: 8 }}>✓</span>
+              <span style={{ color: '#fff', fontSize: 11 }}>✓</span>
             </div>
           )}
         </div>
@@ -330,7 +330,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
             cursor: 'pointer', transition: 'all 0.15s',
             WebkitTapHighlightColor: 'transparent',
           }}>
-          {watched && <span style={{ color: '#fff', fontSize: 9 }}>✓</span>}
+          {watched && <span style={{ color: '#fff', fontSize: 11 }}>✓</span>}
         </button>
       </div>
     );
@@ -370,7 +370,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
             cursor: 'pointer', transition: 'all 0.15s', flexShrink: 0,
             WebkitTapHighlightColor: 'transparent',
           }}>
-          {watched && <span style={{ color: '#fff', fontSize: 10, lineHeight: 1 }}>✓</span>}
+          {watched && <span style={{ color: '#fff', fontSize: 11, lineHeight: 1 }}>✓</span>}
         </button>
       </div>
 
@@ -404,7 +404,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
         {/* Watched badge */}
         {watched && (
           <div style={{ position: 'absolute', top: 8, right: 8, background: 'rgba(77,106,74,0.85)', padding: '2px 6px', zIndex: 1 }}>
-            <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 8, color: '#fff', letterSpacing: '0.08em' }}>ПРОСМОТРЕНО</span>
+            <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: '#fff', letterSpacing: '0.08em' }}>ПРОСМОТРЕНО</span>
           </div>
         )}
         {/* Duration */}
@@ -420,7 +420,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
       <div style={{ marginTop: 14, paddingTop: 12, borderTop: `1px solid ${C.hairline2}` }}>
         <span style={{
           fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-          fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
+          fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase',
           color: isCurrent ? C.accent : hover ? C.accent : C.muted,
           transition: 'color 0.15s',
         }}>

@@ -45,11 +45,11 @@ function Field({ label, hint, error, children }) {
       <div style={{ display:'flex', alignItems:'baseline', justifyContent:'space-between' }}>
         <label style={{
           fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
-          fontSize:10, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase',
+          fontSize:11, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase',
         }}>{label}</label>
         {hint && <span style={{
           fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
-          fontSize:9, color:C.border, letterSpacing:'0.06em',
+          fontSize:11, color:C.border, letterSpacing:'0.06em',
         }}>{hint}</span>}
       </div>
       {children}
@@ -206,7 +206,7 @@ export default function AuthPage({ onSuccess }) {
               <TakedaMon size={22} color="rgba(183,56,40,0.6)" />
               <div style={{
                 fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
-                fontSize: 9, letterSpacing:'0.18em',
+                fontSize: 11, letterSpacing:'0.18em',
                 color:'rgba(183,56,40,0.5)', textTransform:'uppercase',
               }}>Sensei Portrait · Dojo</div>
             </div>
@@ -228,7 +228,7 @@ export default function AuthPage({ onSuccess }) {
               </div>
               <div style={{
                 fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
-                fontSize: 9, color:'rgba(183,56,40,0.45)',
+                fontSize: 11, color:'rgba(183,56,40,0.45)',
                 letterSpacing: '0.14em', textTransform: 'uppercase',
               }}>— Сэнсэй Станислав Копин</div>
             </div>
@@ -254,7 +254,7 @@ export default function AuthPage({ onSuccess }) {
           <TakedaMon size={14} color={C.accent} />
           <div style={{
             fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
-            fontSize: 9, letterSpacing: '0.18em',
+            fontSize: 11, letterSpacing: '0.18em',
             color: C.accent, textTransform: 'uppercase',
           }}>Online Daito-ryu Dojo</div>
         </div>
@@ -281,7 +281,7 @@ export default function AuthPage({ onSuccess }) {
         }}>
           <div style={{
             fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
-            fontSize: 9, color: C.border, letterSpacing: '0.1em',
+            fontSize: 11, color: C.border, letterSpacing: '0.1em',
           }}>v 1.9 · 2026</div>
           <div style={{
             fontFamily:"'Noto Serif JP', var(--font-noto), serif",
@@ -346,12 +346,12 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
       }}>
         <span style={{
           fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
-          fontSize:10, color:C.accent, letterSpacing:'0.06em',
+          fontSize:11, color:C.accent, letterSpacing:'0.06em',
         }}>01</span>
         <div style={{ width:20, height:1, background:C.border }} />
         <span style={{
           fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
-          fontSize:10, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase',
+          fontSize:11, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase',
         }}>Вход в доджо</span>
       </div>
 
@@ -382,7 +382,7 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
         <div style={{ display:'flex', flexDirection:'column', gap:5 }}>
           <label style={{
             fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
-            fontSize:10, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase',
+            fontSize:11, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase',
           }}>Email</label>
           <Input value={email} onChange={setEmail} placeholder="ivan@dojo.ru" type="email" error={!!errors.email}/>
           {errors.email && <div style={{ fontSize:12, color:C.red }}>{errors.email}</div>}
@@ -393,7 +393,7 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
           <div style={{ display:'flex', justifyContent:'space-between', alignItems:'baseline' }}>
             <label style={{
               fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
-              fontSize:10, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase',
+              fontSize:11, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase',
             }}>Пароль</label>
             <button style={{ background:'none', border:'none', fontSize:11, color:C.accent, cursor:'pointer', padding:'12px 0', fontStyle:'italic', minHeight:44, display:'flex', alignItems:'center' }}>забыли?</button>
           </div>
@@ -429,7 +429,7 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
             }}>門</div>
             <div style={{
               fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-              fontSize: 10, color: C.muted, letterSpacing: '0.14em',
+              fontSize: 11, color: C.muted, letterSpacing: '0.14em',
               textTransform: 'uppercase', marginBottom: 6,
             }}>Регистрация закрыта</div>
             <div style={{
@@ -443,7 +443,7 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
               <div style={{ flex:1, height:1, background:C.border }} />
               <span style={{
                 fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
-                fontSize:9, color:C.border, letterSpacing:'0.1em', textTransform:'uppercase',
+                fontSize:11, color:C.border, letterSpacing:'0.1em', textTransform:'uppercase',
               }}>или</span>
               <div style={{ flex:1, height:1, background:C.border }} />
             </div>
@@ -641,7 +641,7 @@ function RegisterForm({ onSuccess, onLogin }) {
                 color: step >= i ? '#f1ece0' : C.muted,
                 transition:'all 0.2s',
               }}>{step > i ? '✓' : s.kanji}</div>
-              <div style={{ fontFamily:"var(--font-mono), monospace", fontSize:9, color: step===i ? C.ink : C.muted, letterSpacing:'0.1em', whiteSpace:'nowrap', fontWeight: step===i ? 600 : 400, textTransform:'uppercase' }}>{s.label}</div>
+              <div style={{ fontFamily:"var(--font-mono), monospace", fontSize:11, color: step===i ? C.ink : C.muted, letterSpacing:'0.1em', whiteSpace:'nowrap', fontWeight: step===i ? 600 : 400, textTransform:'uppercase' }}>{s.label}</div>
             </div>
             {i < STEPS.length-1 && (
               <div style={{ flex:1, height:1, background: step > i ? C.green : C.border, margin:'0 8px', marginBottom:20, transition:'background 0.2s' }}/>
@@ -655,9 +655,9 @@ function RegisterForm({ onSuccess, onLogin }) {
         <div className="auth-anim">
           <div style={{ marginBottom:24 }}>
             <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
-              <span style={{ fontFamily:"var(--font-mono), 'JetBrains Mono', monospace", fontSize:10, color:C.accent, letterSpacing:'0.06em' }}>02</span>
+              <span style={{ fontFamily:"var(--font-mono), 'JetBrains Mono', monospace", fontSize:11, color:C.accent, letterSpacing:'0.06em' }}>02</span>
               <div style={{ width:20, height:1, background:C.border }} />
-              <span style={{ fontFamily:"var(--font-mono), 'JetBrains Mono', monospace", fontSize:10, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase' }}>Регистрация</span>
+              <span style={{ fontFamily:"var(--font-mono), 'JetBrains Mono', monospace", fontSize:11, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase' }}>Регистрация</span>
             </div>
             <div style={{
               fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
@@ -700,9 +700,9 @@ function RegisterForm({ onSuccess, onLogin }) {
         <div className="auth-anim">
           <div style={{ marginBottom:24 }}>
             <div style={{ display:'flex', alignItems:'center', gap:8, marginBottom:12 }}>
-              <span style={{ fontFamily:"var(--font-mono), 'JetBrains Mono', monospace", fontSize:10, color:C.accent, letterSpacing:'0.06em' }}>02</span>
+              <span style={{ fontFamily:"var(--font-mono), 'JetBrains Mono', monospace", fontSize:11, color:C.accent, letterSpacing:'0.06em' }}>02</span>
               <div style={{ width:20, height:1, background:C.border }} />
-              <span style={{ fontFamily:"var(--font-mono), 'JetBrains Mono', monospace", fontSize:10, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase' }}>Регистрация</span>
+              <span style={{ fontFamily:"var(--font-mono), 'JetBrains Mono', monospace", fontSize:11, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase' }}>Регистрация</span>
             </div>
             <div style={{
               fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
@@ -784,7 +784,7 @@ function RegisterForm({ onSuccess, onLogin }) {
 
           {/* Сводка анкеты */}
           <div style={{ background:C.surface2, border:`1px solid ${C.border}`, padding:'16px 20px', textAlign:'left', marginBottom:28 }}>
-            <div style={{ fontFamily:"var(--font-mono), monospace", fontSize:9, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase', marginBottom:12 }}>Ваши данные</div>
+            <div style={{ fontFamily:"var(--font-mono), monospace", fontSize:11, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase', marginBottom:12 }}>Ваши данные</div>
             <div style={{ display:'flex', flexDirection:'column', gap:8 }}>
               {[
                 { label:'ФИО',       value: name },

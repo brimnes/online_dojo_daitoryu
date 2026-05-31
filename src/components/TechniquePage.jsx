@@ -101,14 +101,14 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
               padding: '10px 14px', background: 'none', border: 'none',
               borderBottom: `2px solid ${cat === c.id ? c.color : 'transparent'}`,
               color: cat === c.id ? c.color : C.muted,
-              fontSize: 10, display: 'flex', alignItems: 'center', gap: 5,
+              fontSize: 11, display: 'flex', alignItems: 'center', gap: 5,
               whiteSpace: 'nowrap', cursor: 'pointer', fontWeight: cat === c.id ? 600 : 400,
               marginBottom: -1, fontFamily: "var(--font-mono), monospace",
               letterSpacing: '0.12em', textTransform: 'uppercase',
             }}>
-            <span style={{ fontSize: 9 }}>{c.icon}</span>{c.label}
+            <span style={{ fontSize: 11 }}>{c.icon}</span>{c.label}
             <span style={{
-              marginLeft: 3, fontSize: 9, background: C.bg2,
+              marginLeft: 3, fontSize: 11, background: C.bg2,
               padding: '1px 5px', color: C.muted, borderRadius: 2,
               fontFamily: "var(--font-mono), monospace",
             }}>{(byC[c.id] || []).length}</span>
@@ -136,22 +136,22 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     background: active ? curCat.color : C.ink,
                   }}>
-                    <span style={{ color: '#fff', fontSize: 9 }}>▶</span>
+                    <span style={{ color: '#fff', fontSize: 11 }}>▶</span>
                   </div>
                   <div style={{ flex: 1, minWidth: 0 }}>
                     <div style={{ fontSize: 13, color: C.ink, fontWeight: active ? 600 : 400 }}>{v.title}</div>
-                    <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, marginTop: 2 }}>
+                    <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, marginTop: 2 }}>
                       Сэнсэй Копин · {v.duration}
                     </div>
                   </div>
                   {active && (
                     <span style={{
-                      fontFamily: "var(--font-mono), monospace", fontSize: 9,
+                      fontFamily: "var(--font-mono), monospace", fontSize: 11,
                       background: C.accent, color: '#fff', padding: '2px 6px',
                       letterSpacing: '0.1em', flexShrink: 0,
                     }}>ИГРАЕТ</span>
                   )}
-                  <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, flexShrink: 0 }}>{v.duration}</div>
+                  <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, flexShrink: 0 }}>{v.duration}</div>
                 </div>
               );
             })
@@ -192,8 +192,8 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
           }}>{kyu.kanji}</div>
 
           {/* mini breadcrumb */}
-          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 12, fontSize: 9, flexWrap: 'wrap' }}>
-            <span style={{ color: C.accent, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", letterSpacing: '0.1em', fontSize: 10 }}>ИККАДЖО</span>
+          <div style={{ display: 'flex', alignItems: 'center', gap: 5, marginBottom: 12, fontSize: 11, flexWrap: 'wrap' }}>
+            <span style={{ color: C.accent, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", letterSpacing: '0.1em', fontSize: 11 }}>ИККАДЖО</span>
             <span style={{ color: C.hairline2 }}>/</span>
             <span style={{ color: C.muted, fontFamily: "var(--font-mono), monospace", letterSpacing: '0.08em' }}>{kyu.label.toUpperCase()}</span>
             <span style={{ color: C.hairline2 }}>/</span>
@@ -206,7 +206,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
             border: `1px solid ${C.border}`, background: C.bg, marginBottom: 14,
           }}>
             <span style={{ width: 8, height: 8, borderRadius: '50%', background: belt.color, border: `1.5px solid ${belt.border}`, display: 'inline-block', flexShrink: 0 }} />
-            <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.16em', color: C.muted, textTransform: 'uppercase' }}>{belt.label.toUpperCase()}</span>
+            <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.16em', color: C.muted, textTransform: 'uppercase' }}>{belt.label.toUpperCase()}</span>
           </div>
 
           {/* title */}
@@ -225,7 +225,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
           <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 6 }}>
             {[section.nameRu, kyu.label, `ТЕХНИКА ${techNum} / ${totalTechs}`].map(tag => (
               <span key={tag} style={{
-                fontFamily: "var(--font-mono), monospace", fontSize: 9,
+                fontFamily: "var(--font-mono), monospace", fontSize: 11,
                 letterSpacing: '0.12em', textTransform: 'uppercase',
                 color: C.muted, border: `1px solid ${C.border}`, padding: '3px 8px', background: C.bg,
               }}>{tag}</span>
@@ -246,13 +246,13 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
               <div style={{ width: 48, height: 48, borderRadius: '50%', background: C.accent, display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative' }}>
                 <span style={{ color: '#fff', fontSize: 16, marginLeft: 3 }}>▶</span>
               </div>
-              <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: '#555', letterSpacing: '0.18em', textTransform: 'uppercase' }}>KINESCOPE</div>
+              <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: '#555', letterSpacing: '0.18em', textTransform: 'uppercase' }}>KINESCOPE</div>
             </div>
           )}
           {vid && (
             <div style={{ padding: '10px 0', borderBottom: `1px solid ${C.border}`, marginBottom: 0 }}>
               <div style={{ fontSize: 13, color: C.ink, fontWeight: 500 }}>{vid.title}</div>
-              <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, marginTop: 2 }}>00:00 / {vid.duration}</div>
+              <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, marginTop: 2 }}>00:00 / {vid.duration}</div>
             </div>
           )}
           <VideoBlock />
@@ -267,7 +267,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
           <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 8 }}>
             <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 36, color: C.ink, fontWeight: 400, lineHeight: 1 }}>{techNum}</span>
             <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 18, color: C.muted }}>/ {totalTechs}</span>
-            <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.accent, marginLeft: 6 }}>{progressPct}%</span>
+            <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.accent, marginLeft: 6 }}>{progressPct}%</span>
           </div>
           <div style={{ width: '100%', height: 2, background: C.bg2 }}>
             <div style={{ height: 2, width: `${progressPct}%`, background: C.accent }} />
@@ -282,7 +282,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
             </div>
             {content.principles.map((p, i) => (
               <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
-                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, minWidth: 20, flexShrink: 0 }}>{String(i + 1).padStart(2, '0')}</div>
+                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, minWidth: 20, flexShrink: 0 }}>{String(i + 1).padStart(2, '0')}</div>
                 <div style={{ fontSize: 17, color: C.ink2, lineHeight: 1.7 }}>{p}</div>
               </div>
             ))}
@@ -293,7 +293,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
         {content.mistakes?.length > 0 && (
           <div style={{ margin: '12px 16px 0', background: C.surface, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.accent}`, padding: '18px 16px' }}>
             <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ color: C.accent, fontSize: 10 }}>✕</span>ТИПИЧНЫЕ ОШИБКИ
+              <span style={{ color: C.accent, fontSize: 11 }}>✕</span>ТИПИЧНЫЕ ОШИБКИ
             </div>
             {content.mistakes.map((m, i) => (
               <div key={i} style={{ marginBottom: 12 }}>
@@ -344,9 +344,9 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
               fontSize: 11, letterSpacing: '0.12em',
             }}>← ИККАДЖО</button>
             <span style={{ color: C.hairline2 }}>/</span>
-            <span style={{ color: C.muted, fontFamily: "var(--font-mono), monospace", fontSize: 10, letterSpacing: '0.1em' }}>{kyu.label.toUpperCase()}</span>
+            <span style={{ color: C.muted, fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.1em' }}>{kyu.label.toUpperCase()}</span>
             <span style={{ color: C.hairline2 }}>/</span>
-            <span style={{ color: C.muted, fontFamily: "var(--font-mono), monospace", fontSize: 10, letterSpacing: '0.1em' }}>{section.nameRu.toUpperCase()}</span>
+            <span style={{ color: C.muted, fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.1em' }}>{section.nameRu.toUpperCase()}</span>
             <span style={{ color: C.hairline2 }}>/</span>
             <span style={{ color: C.ink, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.1em' }}>{tech.nameRu.toUpperCase()}</span>
           </div>
@@ -375,12 +375,12 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
               padding: '6px 16px', border: `1px solid ${C.border}`, background: C.bg, marginBottom: 22,
             }}>
               <span style={{ width: 9, height: 9, borderRadius: '50%', background: belt.color, border: `1.5px solid ${belt.border}`, display: 'inline-block', flexShrink: 0 }} />
-              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase' }}>{belt.label.toUpperCase()}</span>
+              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase' }}>{belt.label.toUpperCase()}</span>
               <span style={{ width: 20, height: 1, background: C.border, flexShrink: 0 }} />
               <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 12, color: C.muted }}>{kyuKanji}</span>
-              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.16em', color: C.muted, textTransform: 'uppercase' }}>{kyu.label.toUpperCase()}</span>
+              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.16em', color: C.muted, textTransform: 'uppercase' }}>{kyu.label.toUpperCase()}</span>
               <span style={{ width: 20, height: 1, background: C.border, flexShrink: 0 }} />
-              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase' }}>{section.nameRu.toUpperCase()}</span>
+              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase' }}>{section.nameRu.toUpperCase()}</span>
             </div>
 
             {/* Big title */}
@@ -405,7 +405,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
                 `~ ${totalMins} МИНУТ`,
               ].filter(Boolean).map(tag => (
                 <span key={tag} style={{
-                  fontFamily: "var(--font-mono), monospace", fontSize: 9,
+                  fontFamily: "var(--font-mono), monospace", fontSize: 11,
                   letterSpacing: '0.14em', textTransform: 'uppercase',
                   color: C.muted, border: `1px solid ${C.border}`,
                   padding: '4px 10px', background: C.bg,
@@ -453,7 +453,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
                   }}>
                     <span style={{ color: '#fff', fontSize: 20, marginLeft: 5 }}>▶</span>
                   </div>
-                  <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: '#555', letterSpacing: '0.2em', textTransform: 'uppercase' }}>KINESCOPE</div>
+                  <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: '#555', letterSpacing: '0.2em', textTransform: 'uppercase' }}>KINESCOPE</div>
                 </div>
               )}
               <VideoBlock />
@@ -506,13 +506,13 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
                         background: C.surface,
                       }}>
                         <span style={{
-                          fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted,
+                          fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted,
                           minWidth: 20, letterSpacing: '0.1em',
                         }}>{String(idx).padStart(2, '0')}</span>
                         <div style={{ flex: 1, minWidth: 0 }}>
                           <div style={{ fontSize: 16, color: C.ink, fontWeight: 500 }}>{t.nameRu}</div>
                         </div>
-                        <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted, letterSpacing: '0.1em', flexShrink: 0 }}>{kyu.label.toUpperCase()}</span>
+                        <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.1em', flexShrink: 0 }}>{kyu.label.toUpperCase()}</span>
                         <span style={{ color: C.muted, fontSize: 13, flexShrink: 0 }}>→</span>
                       </div>
                     );
@@ -526,7 +526,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
           {content.principles?.length > 0 && (
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: '22px 24px', marginTop: 20, marginBottom: 12 }}>
               <div style={{
-                fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted,
+                fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted,
                 letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 18,
                 display: 'flex', alignItems: 'center', gap: 8,
               }}>
@@ -535,7 +535,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
               </div>
               {content.principles.map((p, i) => (
                 <div key={i} style={{ display: 'flex', gap: 14, marginBottom: 12 }}>
-                  <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: C.muted, minWidth: 22, flexShrink: 0 }}>{String(i + 1).padStart(2, '0')}</div>
+                  <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, minWidth: 22, flexShrink: 0 }}>{String(i + 1).padStart(2, '0')}</div>
                   <div style={{ fontSize: 17, color: C.ink2, lineHeight: 1.7 }}>{p}</div>
                 </div>
               ))}
@@ -546,7 +546,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
           {content.mistakes?.length > 0 && (
             <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.accent}`, padding: '22px 24px', marginBottom: 12 }}>
               <div style={{
-                fontFamily: "var(--font-mono), monospace", fontSize: 9, color: C.muted,
+                fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted,
                 letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 18,
                 display: 'flex', alignItems: 'center', gap: 8,
               }}>
