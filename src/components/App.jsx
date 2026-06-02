@@ -169,6 +169,7 @@ export default function App({ initialUser = null }) {
     dashboard:     (tab)                => { navStackRef.current = []; setRoute({ page: 'dashboard', tab: tab || 'months' }); },
     // Вперёд: пушим текущий маршрут в стек
     ikkajo:        ()                   => navigate({ page: 'ikkajo' }),
+    setIkkajoKyu:  (kyu)               => setRoute(r => ({ ...r, kyu })),
     technique:     (kyu, section, tech) => navigate({ page: 'technique', kyu, section, tech }),
     month:         (monthId)            => navigate({ page: 'month', monthId }),
     lesson:        (monthId, lessonId)  => navigate({ page: 'lesson', monthId, lessonId }),
@@ -217,7 +218,7 @@ export default function App({ initialUser = null }) {
         <Dashboard nav={nav} watched={watched} user={user} onLogout={handleLogout} initialTab={route.tab} />
       )}
       {route.page === 'ikkajo' && (
-        <IkkajoPage nav={nav} user={user} onLogout={handleLogout} />
+        <IkkajoPage nav={nav} user={user} onLogout={handleLogout} initialKyu={route.kyu} />
       )}
       {route.page === 'technique' && (
         <TechniquePage

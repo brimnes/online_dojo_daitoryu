@@ -20,9 +20,14 @@ const SECTION_KANJI = {
   torifune:      '鳥船',
 };
 
-export default function IkkajoPage({ nav, user = {}, onLogout }) {
+export default function IkkajoPage({ nav, user = {}, onLogout, initialKyu }) {
   const isMobile = useIsMobile();
-  const [activeKyu, setActiveKyu] = useState('6kyu');
+  const [activeKyu, setActiveKyu] = useState(initialKyu || '6kyu');
+
+  const switchKyu = (id) => {
+    setActiveKyu(id);
+    nav.setIkkajoKyu?.(id);
+  };
   const cur = KYU_DATA.find(k => k.id === activeKyu);
   const { videos } = useTechniques();
   const { rows: userAccess, loading: accessLoading } = useUserAccessRows();
@@ -177,7 +182,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout }) {
               const active = activeKyu === k.id;
               const b = BELT[k.belt] || {};
               return (
-                <button key={k.id} onClick={() => setActiveKyu(k.id)}
+                <button key={k.id} onClick={() => switchKyu(k.id)}
                   style={{
                     display: 'flex', alignItems: 'center', justifyContent: 'center',
                     gap: isMobile ? 6 : 10,
