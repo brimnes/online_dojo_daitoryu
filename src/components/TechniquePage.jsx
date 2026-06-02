@@ -102,7 +102,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
     if (availableCats.length === 0) return null;
     return (
     <>
-      <div style={{ display: 'flex', background: C.surface, border: `1px solid ${C.border}`, overflowX: 'auto', borderTop: 'none' }}>
+      <div style={{ display: 'flex', background: C.surface, border: `1px solid ${C.border}`, overflowX: 'auto', overflowY: 'hidden', borderTop: 'none' }}>
         {availableCats.map(c => (
           <button key={c.id} onClick={() => { setCat(c.id); setVid(null); }}
             style={{
