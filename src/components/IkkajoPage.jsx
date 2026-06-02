@@ -6,6 +6,8 @@ import { useIsMobile } from '@/lib/mobile';
 import { BELT, KYU_DATA, FLAT_INDEX } from '@/data/techniques';
 import { useTechniques, useUserAccessRows, hasIkkajoSectionAccess } from '@/lib/db';
 import { IKKAJO_SECTION_KEYS as IKKAJO_SECTIONS } from '@/lib/ikkajoSections';
+import { hasIkkajoFullAccess } from '@/lib/access';
+import { useProducts } from '@/lib/useProducts';
 import Sidebar from '@/components/Sidebar';
 import { MobileBottomNav } from '@/components/BottomNav';
 
@@ -31,6 +33,31 @@ export default function IkkajoPage({ nav, user = {}, onLogout, initialKyu }) {
   const cur = KYU_DATA.find(k => k.id === activeKyu);
   const { videos } = useTechniques();
   const { rows: userAccess, loading: accessLoading } = useUserAccessRows();
+  const { products } = useProducts();
+  const [modal,     setModal]     = useState(null); // { product } | null
+  const [buying,    setBuying]    = useState(false);
+  const [buyError,  setBuyError]  = useState('');
+
+  const ikkajoFullProduct   = products?.find(p => p.reference === 'ikkajo');
+  const sectionProductFor   = (sectionKey) => products?.find(p => p.type === 'section' && p.reference === sectionKey);
+  const hasFull             = hasIkkajoFullAccess(userAccess);
+
+  const handleBuy = async (product) => {
+    if (!product || buying) return;
+    setBuying(true);
+    setBuyError('');
+    try {
+      const res  = await fetch('/api/yookassa/create-payment', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: product.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setBuyError(data.error || 'Ошибка при создании платежа'); return; }
+      if (data.payment_id) { try { sessionStorage.setItem('yk_pending_pid', data.payment_id); } catch {} }
+      window.location.href = data.confirmation_url;
+    } catch { setBuyError('Ошибка соединения'); }
+    finally { setBuying(false); }
+  };
 
   const videoCountByTech = useMemo(() => {
     const map = {};
@@ -149,6 +176,30 @@ export default function IkkajoPage({ nav, user = {}, onLogout, initialKyu }) {
               </div>
             )}
           </div>
+
+          {/* Купить весь Иккаджо — если нет полного доступа и продукт найден */}
+          {!hasFull && ikkajoFullProduct && (
+            <div style={{
+              display: 'flex', alignItems: 'center', justifyContent: 'space-between',
+              flexWrap: 'wrap', gap: 12,
+              padding: isMobile ? '14px 0 4px' : '16px 0 4px',
+            }}>
+              <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: C.muted, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
+                Полный доступ · все разделы · {ikkajoFullProduct.price?.toLocaleString('ru-RU')} ₽
+              </div>
+              <button
+                onClick={() => setModal({ product: ikkajoFullProduct })}
+                style={{
+                  padding: '9px 22px', minHeight: 40, border: `1px solid ${C.ink}`,
+                  background: C.ink, color: '#ede5d3', cursor: 'pointer',
+                  fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+                  fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase',
+                  transition: 'opacity 0.15s', flexShrink: 0,
+                }}>
+                Купить весь Иккаджо
+              </button>
+            </div>
+          )}
 
           {/* Sumi brush stroke divider — desktop only */}
           {!isMobile && (
@@ -294,7 +345,25 @@ export default function IkkajoPage({ nav, user = {}, onLogout, initialKyu }) {
                       <div style={{
                         fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
                         fontSize: 11, color: C.muted, letterSpacing: '0.1em', textTransform: 'uppercase',
+                        marginBottom: 16,
                       }}>Приобретите доступ к разделу «{sec.nameRu}»</div>
+                      {(() => {
+                        const sp = sectionProductFor(sectionKey);
+                        if (!sp) return null;
+                        return (
+                          <button
+                            onClick={() => setModal({ product: sp })}
+                            style={{
+                              padding: '9px 22px', minHeight: 40,
+                              border: `1px solid ${C.ink}`,
+                              background: 'transparent', color: C.ink, cursor: 'pointer',
+                              fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+                              fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase',
+                            }}>
+                            Купить раздел — {sp.price?.toLocaleString('ru-RU')} ₽
+                          </button>
+                        );
+                      })()}
                     </div>
                   )}
                 </div>
@@ -304,6 +373,17 @@ export default function IkkajoPage({ nav, user = {}, onLogout, initialKyu }) {
         </div>
       </div>
       {isMobile && <MobileBottomNav nav={nav} active="database" isAdmin={user?.role === 'admin'} />}
+
+      {/* ── Purchase modal ── */}
+      {modal && (
+        <IkkajoPurchaseModal
+          product={modal.product}
+          buying={buying}
+          error={buyError}
+          onBuy={() => handleBuy(modal.product)}
+          onClose={() => { setModal(null); setBuyError(''); }}
+        />
+      )}
     </div>
   );
 }
@@ -452,6 +532,93 @@ function SearchBar({ onSelect, userAccess = [], accessLoading = false }) {
           }
         </div>
       )}
+    </div>
+  );
+}
+
+// ── IkkajoPurchaseModal ───────────────────────────────────────────
+function IkkajoPurchaseModal({ product, buying, error, onBuy, onClose }) {
+  if (!product) return null;
+  const isFullIkkajo = product.reference === 'ikkajo';
+  return (
+    <div
+      onClick={onClose}
+      style={{
+        position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)',
+        display: 'flex', alignItems: 'center', justifyContent: 'center',
+        zIndex: 400, padding: 20,
+      }}>
+      <div
+        onClick={e => e.stopPropagation()}
+        style={{
+          background: '#f5f3ee', border: `1px solid ${C.border}`,
+          padding: '40px 36px', width: '100%', maxWidth: 360,
+          textAlign: 'center', boxShadow: '0 12px 48px rgba(0,0,0,0.14)',
+        }}>
+        {/* Каnji */}
+        <div style={{
+          fontFamily: "'Noto Serif JP', var(--font-noto), serif",
+          fontSize: 52, color: C.accent, lineHeight: 1, marginBottom: 16, opacity: 0.85,
+        }}>{isFullIkkajo ? '一教' : '技'}</div>
+
+        {/* Название */}
+        <div style={{
+          fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+          fontSize: 22, fontWeight: 500, color: C.ink, marginBottom: 4, letterSpacing: '0.03em',
+        }}>{product.title}</div>
+
+        {product.description && (
+          <div style={{
+            fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+            fontSize: 15, color: C.muted, marginBottom: 16, lineHeight: 1.5,
+          }}>{product.description}</div>
+        )}
+
+        {/* Цена */}
+        <div style={{
+          fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+          fontSize: 40, fontWeight: 300, color: C.ink, marginBottom: 6, lineHeight: 1,
+        }}>{product.price?.toLocaleString('ru-RU')} ₽</div>
+
+        <div style={{
+          fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+          fontSize: 11, color: C.muted, marginBottom: 24, letterSpacing: '0.12em',
+        }}>РАЗОВАЯ ОПЛАТА · ПОСТОЯННЫЙ ДОСТУП</div>
+
+        {/* Кнопка оплаты */}
+        <button
+          disabled={buying}
+          onClick={onBuy}
+          style={{
+            width: '100%', padding: '13px', minHeight: 48,
+            background: buying ? C.muted : C.ink, color: '#ede5d3',
+            border: 'none', cursor: buying ? 'default' : 'pointer',
+            fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+            fontSize: 13, letterSpacing: '0.12em', textTransform: 'uppercase',
+            marginBottom: 8, transition: 'background 0.15s',
+          }}>
+          {buying ? 'Переход к оплате…' : 'Перейти к оплате'}
+        </button>
+
+        {error && (
+          <div style={{
+            fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+            fontSize: 11, color: '#a03030', marginBottom: 8,
+          }}>{error}</div>
+        )}
+
+        <button
+          onClick={onClose}
+          style={{
+            width: '100%', padding: '10px', minHeight: 44,
+            background: 'none', border: 'none', color: C.muted,
+            cursor: 'pointer', fontSize: 13,
+            fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+            letterSpacing: '0.08em',
+          }}>
+          Отмена
+        </button>
+      </div>
     </div>
   );
 }
