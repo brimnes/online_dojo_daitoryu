@@ -156,13 +156,15 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
                 lineHeight: 1, fontWeight: 400, marginTop: isMobile ? 8 : 12,
               }}>{month?.label}</div>
 
-              {/* Subtitle */}
-              <div style={{
-                fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                fontSize: isMobile ? 17 : 20,
-                color: C.muted, marginTop: isMobile ? 8 : 8,
-                maxWidth: 540, lineHeight: 1.55,
-              }}>{month?.description}</div>
+              {/* Subtitle — desktop only; mobile shows it separately below */}
+              {!isMobile && (
+                <div style={{
+                  fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                  fontSize: 20,
+                  color: C.muted, marginTop: 8,
+                  maxWidth: 540, lineHeight: 1.55,
+                }}>{month?.description}</div>
+              )}
             </div>
           </div>
 
@@ -314,9 +316,9 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
         </div>
 
         {/* Text */}
-        <div style={{ flex: 1, minWidth: 0 }}>
-          <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 15, fontWeight: 500, color: C.ink, lineHeight: 1.35 }}>{lesson.title}</div>
-          <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 18, color: C.accent, marginTop: 2 }}>{lesson.subtitle}</div>
+        <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
+          <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 15, fontWeight: 500, color: C.ink, lineHeight: 1.35, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lesson.title}</div>
+          <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 18, color: C.accent, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lesson.subtitle}</div>
         </div>
 
         {/* Check circle */}
