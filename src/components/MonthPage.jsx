@@ -243,6 +243,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
           gridTemplateColumns: isMobile ? '1fr' : 'repeat(3, 1fr)',
           gap: 1,
           background: C.border,
+          minWidth: 0, overflow: 'hidden',
         }}>
           {safelessons.map((lesson) => (
             <LessonCard
@@ -279,7 +280,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
           background: C.surface, padding: '14px 14px',
           display: 'flex', gap: 12, alignItems: 'center', minHeight: 80,
           borderLeft: isCurrent ? `2px solid ${C.accent}` : '2px solid transparent',
-          cursor: 'pointer',
+          cursor: 'pointer', minWidth: 0, overflow: 'hidden',
         }}>
         {/* Number */}
         <span style={{
