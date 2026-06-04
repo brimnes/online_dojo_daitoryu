@@ -278,7 +278,7 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
         onClick={onOpen}
         style={{
           background: C.surface, padding: '14px 14px',
-          display: 'flex', gap: 12, alignItems: 'center', minHeight: 80,
+          display: 'flex', gap: 12, alignItems: 'center', minHeight: 88,
           borderLeft: isCurrent ? `2px solid ${C.accent}` : '2px solid transparent',
           cursor: 'pointer', minWidth: 0, overflow: 'hidden',
         }}>
@@ -318,8 +318,8 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
 
         {/* Text */}
         <div style={{ flex: 1, minWidth: 0, overflow: 'hidden' }}>
-          <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 15, fontWeight: 500, color: C.ink, lineHeight: 1.35, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lesson.title}</div>
-          <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 18, color: C.accent, marginTop: 2, overflow: 'hidden', textOverflow: 'ellipsis', whiteSpace: 'nowrap' }}>{lesson.subtitle}</div>
+          <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, fontWeight: 500, color: C.ink, lineHeight: 1.35 }}>{lesson.title}</div>
+          <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 17, color: C.accent, marginTop: 3, lineHeight: 1.3 }}>{lesson.subtitle}</div>
         </div>
 
         {/* Check circle */}
