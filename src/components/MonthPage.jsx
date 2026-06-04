@@ -69,7 +69,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
       )}
 
       {/* ── Page content ── */}
-      <div style={{ flex: 1, background: C.bg, minHeight: '100vh', paddingLeft: isMobile ? 0 : 260 }}>
+      <div style={{ flex: 1, background: C.bg, minHeight: '100vh', paddingLeft: isMobile ? 0 : 260, minWidth: 0, overflowX: isMobile ? 'hidden' : 'visible' }}>
 
       {/* ── Mobile sticky header ── */}
       {isMobile && (
@@ -118,13 +118,13 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
         </div>
       )}
 
-      <div className={isMobile ? 'page-has-bottom-nav' : ''} style={{ padding: isMobile ? '20px 18px 24px' : '48px 48px 60px' }}>
+      <div className={isMobile ? 'page-has-bottom-nav' : ''} style={{ padding: isMobile ? '20px 18px 24px' : '48px 48px 60px', overflowX: isMobile ? 'hidden' : 'visible' }}>
 
         {/* ── Hero ── */}
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: isMobile ? 14 : 32, marginBottom: isMobile ? 12 : 24 }}>
 
           {/* Left block: kanji watermark + eyebrow + title + subtitle */}
-          <div style={{ display: 'flex', alignItems: 'flex-end', gap: isMobile ? 14 : 32, flex: 1, minWidth: 0 }}>
+          <div style={{ display: 'flex', alignItems: 'flex-end', gap: isMobile ? 14 : 32, flex: 1, minWidth: 0, overflow: 'hidden' }}>
             {/* Large kanji watermark */}
             <span style={{
               fontFamily: "'Noto Serif JP', var(--font-noto), serif",
