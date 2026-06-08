@@ -322,7 +322,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout, initialKyu }) {
                           tech={tech}
                           index={i}
                           isMobile={isMobile}
-                          videoCount={videoCountByTech[tech.name] || 0}
+                          videoCount={videoCountByTech[`${sectionKey}_${tech.name}`] || 0}
                           onClick={() => nav.technique(cur, sec, tech)}
                         />
                       ))}

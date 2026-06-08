@@ -37,9 +37,10 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
   const canAccess = !accessLoading && (!isIkkajoSection || hasIkkajoSectionAccess(userAccess, sectionKey));
   console.log(`[TechniquePage] section=${sectionKey} isIkkajo=${isIkkajoSection} canAccess=${canAccess} loading=${accessLoading} rows=`, userAccess);
 
+  const techDbId = `${section.id.toLowerCase()}_${tech.name}`;
   const content = loading
     ? { description: '', principles: [], senseiQuote: '', mistakes: [], videos: {} }
-    : getTechContent(tech.name);
+    : getTechContent(techDbId);
 
   const byC         = content.videos || {};
   const availableCats = VIDEO_CATS.filter(c => (byC[c.id] || []).length > 0);

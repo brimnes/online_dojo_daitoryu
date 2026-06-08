@@ -2252,23 +2252,24 @@ function SectionIkkajo({showToast,isMobile}){
 
   const KYU_ORDER = ['6kyu','5kyu','4kyu','3kyu','2kyu','1kyu'];
 
-  // Строим полный список из статических данных KYU_DATA (дедупликация по tech.name).
-  // Для каждой техники ищем запись в БД — если есть, используем её данные.
-  // Существующие данные из БД не трогаются.
+  // Строим полный список из статических данных KYU_DATA.
+  // ID техники = sectionId_TechName, чтобы одноимённые техники из разных
+  // разделов (напр. Uraotoshi/Tachiai и Uraotoshi/Hanzahandachi) были раздельными.
   const allStaticTechs = useMemo(() => {
     const seen = new Set();
     const list = [];
     KYU_DATA.forEach(kyu => {
       kyu.sections.forEach(section => {
         section.techniques.forEach(tech => {
-          if (!seen.has(tech.name)) {
-            seen.add(tech.name);
-            const dbRec = techniques.find(t => t.id === tech.name);
+          const compositeId = `${section.id.toLowerCase()}_${tech.name}`;
+          if (!seen.has(compositeId)) {
+            seen.add(compositeId);
+            const dbRec = techniques.find(t => t.id === compositeId);
             list.push({
-              id:          tech.name,
+              id:          compositeId,
               name_ru:     dbRec?.name_ru || tech.nameRu,
               kyu:         dbRec?.kyu     || kyu.id,
-              section:     section.id,   // всегда lowercase из статики
+              section:     section.id,
               section_ru:  section.nameRu,
               _hasDb:      !!dbRec,
             });
