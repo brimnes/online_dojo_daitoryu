@@ -47,6 +47,12 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
   const curV        = byC[cat] || [];
   const curCat      = VIDEO_CATS.find(c => c.id === cat);
 
+  // Сброс при смене техники — чтобы не оставался старый видеоплеер
+  useEffect(() => {
+    setCat('overview');
+    setVid(null);
+  }, [techDbId]); // eslint-disable-line react-hooks/exhaustive-deps
+
   // Auto-select first available category + video when content loads or cat becomes empty
   useEffect(() => {
     if (availableCats.length > 0 && (byC[cat] || []).length === 0) {
