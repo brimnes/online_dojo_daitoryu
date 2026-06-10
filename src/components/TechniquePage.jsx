@@ -343,15 +343,21 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
           position: 'sticky', top: 0, zIndex: 10,
         }}>
           <div style={{ display: 'flex', alignItems: 'center', gap: 8, fontSize: 11 }}>
-            <button onClick={onBack} style={{
+            <button onClick={() => nav.ikkajo()} style={{
               background: 'none', border: 'none', color: C.accent, cursor: 'pointer', padding: 0,
               fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
               fontSize: 11, letterSpacing: '0.12em',
             }}>← ИККАДЖО</button>
             <span style={{ color: C.hairline2 }}>/</span>
-            <span style={{ color: C.muted, fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.1em' }}>{kyu.label.toUpperCase()}</span>
+            <button onClick={() => nav.ikkajo(kyu.id)} style={{
+              background: 'none', border: 'none', color: C.muted, cursor: 'pointer', padding: 0,
+              fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.1em',
+            }}>{kyu.label.toUpperCase()}</button>
             <span style={{ color: C.hairline2 }}>/</span>
-            <span style={{ color: C.muted, fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.1em' }}>{section.nameRu.toUpperCase()}</span>
+            <button onClick={() => nav.ikkajo(kyu.id)} style={{
+              background: 'none', border: 'none', color: C.muted, cursor: 'pointer', padding: 0,
+              fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.1em',
+            }}>{section.nameRu.toUpperCase()}</button>
             <span style={{ color: C.hairline2 }}>/</span>
             <span style={{ color: C.ink, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.1em' }}>{tech.nameRu.toUpperCase()}</span>
           </div>

@@ -168,7 +168,7 @@ export default function App({ initialUser = null }) {
     // Корень: очищаем стек; tab — опциональный начальный таб ('months'|'knowledge'|'database'|'profile')
     dashboard:     (tab)                => { navStackRef.current = []; setRoute({ page: 'dashboard', tab: tab || 'months' }); },
     // Вперёд: пушим текущий маршрут в стек
-    ikkajo:        ()                   => navigate({ page: 'ikkajo' }),
+    ikkajo:        (kyuId)              => navigate({ page: 'ikkajo', kyu: kyuId }),
     setIkkajoKyu:  (kyu)               => setRoute(r => ({ ...r, kyu })),
     technique:     (kyu, section, tech) => navigate({ page: 'technique', kyu, section, tech }),
     month:         (monthId)            => navigate({ page: 'month', monthId }),
