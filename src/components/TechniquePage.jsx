@@ -228,16 +228,6 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
             <p style={{ fontSize: 18, color: C.ink2, lineHeight: 1.7, marginBottom: 12 }}>{content.description}</p>
           )}
 
-          {/* tags */}
-          <div style={{ display: 'flex', flexWrap: 'wrap', gap: 5, marginTop: 6 }}>
-            {[section.nameRu, kyu.label, `ТЕХНИКА ${techNum} / ${totalTechs}`].map(tag => (
-              <span key={tag} style={{
-                fontFamily: "var(--font-mono), monospace", fontSize: 11,
-                letterSpacing: '0.12em', textTransform: 'uppercase',
-                color: C.muted, border: `1px solid ${C.border}`, padding: '3px 8px', background: C.bg,
-              }}>{tag}</span>
-            ))}
-          </div>
         </div>
 
         {/* Player + video tabs — only when there are videos */}
@@ -404,23 +394,6 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
               <p style={{ fontSize: 18, color: C.ink2, lineHeight: 1.75, maxWidth: 640, marginBottom: 20 }}>{content.description}</p>
             )}
 
-            {/* Tags row */}
-            <div style={{ display: 'flex', flexWrap: 'wrap', gap: 6, alignItems: 'center' }}>
-              {[
-                section.nameRu,
-                section.subtitle || section.name,
-                `КОНТРОЛЬ`,
-                `ТЕХНИКА ${techNum} / ${totalTechs}`,
-                `~ ${totalMins} МИНУТ`,
-              ].filter(Boolean).map(tag => (
-                <span key={tag} style={{
-                  fontFamily: "var(--font-mono), monospace", fontSize: 11,
-                  letterSpacing: '0.14em', textTransform: 'uppercase',
-                  color: C.muted, border: `1px solid ${C.border}`,
-                  padding: '4px 10px', background: C.bg,
-                }}>{tag}</span>
-              ))}
-            </div>
           </div>
         </div>
 
