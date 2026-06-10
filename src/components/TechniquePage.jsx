@@ -484,11 +484,16 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
                   {related.map((t, i) => {
                     const idx = (section.techniques || []).findIndex(st => st.name === t.name) + 1;
                     return (
-                      <div key={t.name} style={{
-                        display: 'flex', alignItems: 'center', gap: 12, padding: '12px 18px',
-                        borderBottom: i < related.length - 1 ? `1px solid ${C.border}` : 'none',
-                        background: C.surface,
-                      }}>
+                      <div key={t.name}
+                        onClick={() => nav.technique(kyu, section, t)}
+                        style={{
+                          display: 'flex', alignItems: 'center', gap: 12, padding: '12px 18px',
+                          borderBottom: i < related.length - 1 ? `1px solid ${C.border}` : 'none',
+                          background: C.surface, cursor: 'pointer', transition: 'background 0.12s',
+                        }}
+                        onMouseEnter={e => e.currentTarget.style.background = C.bg}
+                        onMouseLeave={e => e.currentTarget.style.background = C.surface}
+                      >
                         <span style={{
                           fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted,
                           minWidth: 20, letterSpacing: '0.1em',
@@ -497,7 +502,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
                           <div style={{ fontSize: 15, color: C.ink, fontWeight: 500 }}>{t.nameRu}</div>
                         </div>
                         <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.1em', flexShrink: 0 }}>{kyu.label.toUpperCase()}</span>
-                        <span style={{ color: C.muted, fontSize: 13, flexShrink: 0 }}>→</span>
+                        <span style={{ color: C.accent, fontSize: 13, flexShrink: 0 }}>→</span>
                       </div>
                     );
                   })}
