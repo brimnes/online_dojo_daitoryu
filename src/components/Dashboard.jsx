@@ -1592,9 +1592,14 @@ function TabMyAccess({ userAccess, loading, isMobile }) {
 // ── Вкладка: Купить доступ ───────────────────────────────────────────────────
 function TabUnlockAccess({ userAccess, isMobile }) {
   const { products, loading } = useProducts();
+  const { months } = useMonths();
   const [buyingId, setBuyingId] = useState(null); // id продукта в процессе оплаты
   const [buyError, setBuyError] = useState('');
   const ua = userAccess || [];
+
+  // Индекс month.description по id месяца (совпадает с product.reference)
+  const monthDescByRef = {};
+  (months ?? []).forEach(m => { monthDescByRef[m.id] = m.description; });
 
   const handleBuy = async (product) => {
     setBuyingId(product.id);
@@ -1687,7 +1692,7 @@ function TabUnlockAccess({ userAccess, isMobile }) {
             return (
               <div key={p.id} style={{ padding: '14px', background: has ? `${C.success}10` : C.surface2, border: `1px solid ${has ? C.success + '40' : C.border}` }}>
                 <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 15, fontWeight: 500, color: C.ink, marginBottom: 4 }}>{p.title}</div>
-                <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.5, minHeight: 32 }}>{p.description}</div>
+                <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.5, minHeight: 32 }}>{monthDescByRef[p.reference] || p.description}</div>
                 <CardBtn product={p} hasAccess={has} />
               </div>
             );
