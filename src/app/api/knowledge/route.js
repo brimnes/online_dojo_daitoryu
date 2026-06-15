@@ -47,19 +47,19 @@ export async function POST(request) {
 
   try {
     const body = await request.json();
-    const item = await prisma.knowledgeItem.create({
-      data: {
-        title:         body.title || 'Новая статья',
-        subtitle:      body.subtitle      || '',
-        content:       body.content       || '',
-        sortOrder:     body.sort_order    ?? 0,
-        isPublished:   body.is_published  ?? false,
-        tag:           body.tag           || null,
-        videoProvider: body.video_provider || null,
-        videoId:       body.video_id       || null,
-        videoStatus:   body.video_status   || 'none',
-      },
-    });
+    const data = {
+      title:         body.title || 'Новая статья',
+      subtitle:      body.subtitle      || '',
+      content:       body.content       || '',
+      sortOrder:     body.sort_order    ?? 0,
+      isPublished:   body.is_published  ?? false,
+      tag:           body.tag           || null,
+      videoProvider: body.video_provider || null,
+      videoId:       body.video_id       || null,
+      videoStatus:   body.video_status   || 'none',
+    };
+    if (body.id) data.id = body.id;
+    const item = await prisma.knowledgeItem.create({ data });
     return NextResponse.json({ ok: true, item: toSnake(item) }, { status: 201 });
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 500 });

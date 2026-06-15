@@ -732,10 +732,11 @@ export function useKnowledge({ adminMode = false } = {}) {
         video_status:   item.video_status   || 'none',
       };
 
-      if (item.id) {
+      if (item.id && !item._isNew) {
         const { item: updated } = await api(`/api/knowledge/${item.id}`, { method: 'PUT', body });
         setItems(prev => prev.map(i => i.id === item.id ? updated : i));
       } else {
+        if (item.id) body.id = item.id;
         const { item: created } = await api('/api/knowledge', { method: 'POST', body });
         setItems(prev => [...prev, created]);
       }

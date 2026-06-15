@@ -2756,12 +2756,16 @@ function SectionKnowledge({showToast,isMobile}){
   const [editId,  setEditId]  = useState(null);
   const [draft,   setDraft]   = useState({});
 
-  const startEdit = (item) => { setEditId(item.id||'new'); setDraft({...item}); };
-  const startNew  = ()     => { setEditId('new'); setDraft({title:'',subtitle:'',content:'',is_published:false,sort_order:items.length}); };
+  const startEdit = (item) => { setEditId(item.id); setDraft({...item}); };
+  const startNew  = ()     => {
+    const newId = crypto.randomUUID();
+    setEditId(newId);
+    setDraft({id: newId, _isNew: true, title:'', subtitle:'', content:'', is_published:false, sort_order:items.length});
+  };
 
   const doSave = async () => {
     const {ok,error} = await saveItem(draft);
-    if(ok){ setEditId(null); showToast('Сохранено'); reload(); }
+    if(ok){ setDraft(d=>({...d,_isNew:false})); setEditId(null); showToast('Сохранено'); reload(); }
     else showToast('Ошибка: '+error);
   };
   const doDelete = async (id) => {
@@ -2791,7 +2795,7 @@ function SectionKnowledge({showToast,isMobile}){
             <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,paddingBottom:14,borderBottom:`1px solid ${C.hairline}`}}>
               <span style={{fontFamily:F.kanji,fontSize:15,color:C.accent,opacity:0.85}}>智</span>
               <span style={{fontFamily:F.serif,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>
-                {editId==='new'?'НОВЫЙ МАТЕРИАЛ':'РЕДАКТИРОВАНИЕ'}
+                {items.some(i=>i.id===editId)?'РЕДАКТИРОВАНИЕ':'НОВЫЙ МАТЕРИАЛ'}
               </span>
             </div>
             <div style={{display:'flex',flexDirection:'column',gap:12,marginBottom:16}}>
@@ -2822,31 +2826,23 @@ function SectionKnowledge({showToast,isMobile}){
             {/* Kinescope video */}
             <div style={{marginBottom:18}}>
               <Label>Видео (Kinescope)</Label>
-              {editId && editId!=='new' ? (
-                <KinescopeUploader
-                  knowledgeItemId={draft.id}
-                  currentVideoId={draft.video_id}
-                  currentStatus={draft.video_status}
-                  onComplete={({videoId,status})=>{
-                    setDraft(d=>({...d,video_id:videoId,video_status:status,video_provider:'kinescope'}));
-                    showToast('Видео загружено');
-                  }}
-                />
-              ) : (
-                <div style={{padding:'10px 14px',background:C.bg,border:`1px solid ${C.hairline}`,fontFamily:F.serif,fontSize:13,color:C.muted}}>
-                  Сначала сохраните материал, затем загрузите видео
-                </div>
-              )}
+              <KinescopeUploader
+                knowledgeItemId={draft.id}
+                currentVideoId={draft.video_id}
+                currentStatus={draft.video_status}
+                onComplete={({videoId,status})=>{
+                  setDraft(d=>({...d,video_id:videoId,video_status:status,video_provider:'kinescope'}));
+                  showToast('Видео загружено');
+                }}
+              />
             </div>
 
             {/* Картинки и файлы */}
-            {editId && editId !== 'new' && (
-              <KnowledgeAttachmentsEditor
-                itemId={draft.id}
-                onInsert={url => setDraft(d => ({ ...d, content: (d.content || '') + `\n![](${url})` }))}
-                showToast={showToast}
-              />
-            )}
+            <KnowledgeAttachmentsEditor
+              itemId={draft.id}
+              onInsert={url => setDraft(d => ({ ...d, content: (d.content || '') + `\n![](${url})` }))}
+              showToast={showToast}
+            />
 
             <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
               <Btn2 kind="accent" size="sm" onClick={doSave} disabled={saving}>{saving?'…':'Сохранить'}</Btn2>
