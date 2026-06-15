@@ -2839,6 +2839,15 @@ function SectionKnowledge({showToast,isMobile}){
               )}
             </div>
 
+            {/* Картинки и файлы */}
+            {editId && editId !== 'new' && (
+              <KnowledgeAttachmentsEditor
+                itemId={draft.id}
+                onInsert={url => setDraft(d => ({ ...d, content: (d.content || '') + `\n![](${url})` }))}
+                showToast={showToast}
+              />
+            )}
+
             <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
               <Btn2 kind="accent" size="sm" onClick={doSave} disabled={saving}>{saving?'…':'Сохранить'}</Btn2>
               <Btn2 kind="quiet"  size="sm" onClick={()=>setEditId(null)}>Отмена</Btn2>
@@ -3091,6 +3100,110 @@ function SectionComments({showToast,isMobile}){
         </div>
 
       </div>
+    </div>
+  );
+}
+
+// ── Загрузчик картинок и файлов для статей базы знаний ───────────────────────
+function KnowledgeAttachmentsEditor({ itemId, onInsert, showToast }) {
+  const [attachments, setAttachments] = useState([]);
+  const [uploading,   setUploading]   = useState(false);
+  const fileRef = useRef(null);
+
+  useEffect(() => {
+    fetch(`/api/knowledge/${itemId}/attachments`)
+      .then(r => r.ok ? r.json() : [])
+      .then(setAttachments)
+      .catch(() => {});
+  }, [itemId]);
+
+  const handleUpload = async (e) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('folder', 'knowledge');
+      const upRes = await fetch('/api/upload', { method: 'POST', body: fd });
+      if (!upRes.ok) { const err = await upRes.json(); showToast('Ошибка: ' + (err.error || upRes.status)); return; }
+      const { url, key, name, size, content_type } = await upRes.json();
+      const attRes = await fetch(`/api/knowledge/${itemId}/attachments`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ url, s3_key: key, name, size, content_type }),
+      });
+      if (!attRes.ok) { showToast('Ошибка сохранения вложения'); return; }
+      const { attachment } = await attRes.json();
+      setAttachments(prev => [...prev, attachment]);
+      showToast('Файл загружен');
+    } catch (err) {
+      showToast('Ошибка: ' + err.message);
+    } finally {
+      setUploading(false);
+      if (fileRef.current) fileRef.current.value = '';
+    }
+  };
+
+  const handleDelete = async (att) => {
+    if (!confirm('Удалить «' + att.name + '»?')) return;
+    const res = await fetch(`/api/knowledge/${itemId}/attachments?attach_id=${att.id}`, { method: 'DELETE' });
+    if (res.ok) setAttachments(prev => prev.filter(a => a.id !== att.id));
+    else showToast('Ошибка удаления');
+  };
+
+  const fmtSize = (b) => b ? (b < 1024*1024 ? Math.round(b/1024)+'КБ' : (b/1024/1024).toFixed(1)+'МБ') : '';
+
+  return (
+    <div style={{marginBottom:18}}>
+      <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:8}}>
+        <Label>Картинки и файлы</Label>
+        <div style={{display:'flex',gap:6}}>
+          <input ref={fileRef} type="file" accept="image/*,.pdf,.doc,.docx" style={{display:'none'}} onChange={handleUpload}/>
+          <Btn2 kind="quiet" size="sm" onClick={()=>fileRef.current?.click()} disabled={uploading}>
+            {uploading ? 'Загрузка…' : '+ Загрузить файл'}
+          </Btn2>
+        </div>
+      </div>
+
+      {attachments.length === 0 && (
+        <div style={{padding:'10px 14px',background:C.bg,border:`1px solid ${C.hairline}`,fontFamily:F.mono,fontSize:12,color:C.muted}}>
+          Нет вложений. Загрузите картинку или файл.
+        </div>
+      )}
+
+      {attachments.length > 0 && (
+        <div style={{display:'flex',flexWrap:'wrap',gap:8}}>
+          {attachments.map(att => (
+            <div key={att.id} style={{
+              border:`1px solid ${C.hairline}`,background:C.bg,padding:8,
+              display:'flex',flexDirection:'column',gap:6,
+              width: att.type==='image' ? 120 : 'auto', minWidth:120, maxWidth:200,
+            }}>
+              {att.type === 'image' ? (
+                <img src={att.url} alt={att.name} style={{width:'100%',height:80,objectFit:'cover',display:'block',background:'#eee'}}/>
+              ) : (
+                <div style={{height:80,display:'flex',alignItems:'center',justifyContent:'center',background:C.surface2,fontSize:28}}>📄</div>
+              )}
+              <div style={{fontFamily:F.mono,fontSize:11,color:C.ink,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}} title={att.name}>{att.name}</div>
+              <div style={{fontFamily:F.mono,fontSize:10,color:C.muted}}>{fmtSize(att.size)}</div>
+              <div style={{display:'flex',gap:4}}>
+                {att.type === 'image' && (
+                  <button onClick={() => onInsert(att.url)} style={{flex:1,padding:'3px 6px',fontSize:10,fontFamily:F.mono,background:C.accent,color:'#fff',border:'none',cursor:'pointer'}}>
+                    В текст
+                  </button>
+                )}
+                <button onClick={() => navigator.clipboard?.writeText(att.url).then(()=>showToast('URL скопирован'))} style={{flex:1,padding:'3px 6px',fontSize:10,fontFamily:F.mono,background:C.surface2,color:C.ink,border:`1px solid ${C.hairline}`,cursor:'pointer'}}>
+                  URL
+                </button>
+                <button onClick={() => handleDelete(att)} style={{padding:'3px 6px',fontSize:10,fontFamily:F.mono,background:'transparent',color:C.danger,border:`1px solid ${C.danger}`,cursor:'pointer'}}>
+                  ✕
+                </button>
+              </div>
+            </div>
+          ))}
+        </div>
+      )}
     </div>
   );
 }

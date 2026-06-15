@@ -5,6 +5,7 @@ import { C, F } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
 import KinescopePlayer from '@/components/KinescopePlayer';
 import { MobileBottomNav } from '@/components/BottomNav';
+import ReactMarkdown from 'react-markdown';
 
 export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
   const isMobile = useIsMobile();
@@ -172,17 +173,65 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
           </div>
         )}
 
-        {/* Content — читаемый serif, без рамок */}
+        {/* Content — Markdown с поддержкой картинок */}
         {item.content && (
-          <div style={{
-            fontFamily: F.serif,
-            fontSize: isMobile ? 18 : 19,
-            fontWeight: 400,
-            lineHeight: 1.75,
-            color: C.ink2,
-            whiteSpace: 'pre-wrap',
-          }}>
-            {item.content}
+          <div style={{ fontFamily: F.serif, fontSize: isMobile ? 18 : 19, fontWeight: 400, lineHeight: 1.75, color: C.ink2 }}>
+            <ReactMarkdown
+              components={{
+                p:      ({children}) => <p style={{marginBottom:'1em'}}>{children}</p>,
+                h1:     ({children}) => <h1 style={{fontFamily:F.serif,fontSize:isMobile?28:36,color:C.ink,margin:'1.4em 0 0.5em',fontWeight:400}}>{children}</h1>,
+                h2:     ({children}) => <h2 style={{fontFamily:F.serif,fontSize:isMobile?22:28,color:C.ink,margin:'1.2em 0 0.4em',fontWeight:400}}>{children}</h2>,
+                h3:     ({children}) => <h3 style={{fontFamily:F.mono,fontSize:13,letterSpacing:'0.12em',color:C.muted,textTransform:'uppercase',margin:'1em 0 0.3em'}}>{children}</h3>,
+                strong: ({children}) => <strong style={{color:C.ink,fontWeight:600}}>{children}</strong>,
+                em:     ({children}) => <em style={{fontStyle:'italic'}}>{children}</em>,
+                ul:     ({children}) => <ul style={{paddingLeft:24,marginBottom:'1em'}}>{children}</ul>,
+                ol:     ({children}) => <ol style={{paddingLeft:24,marginBottom:'1em'}}>{children}</ol>,
+                li:     ({children}) => <li style={{marginBottom:'0.3em'}}>{children}</li>,
+                blockquote: ({children}) => (
+                  <blockquote style={{borderLeft:`3px solid ${C.accent}`,paddingLeft:16,margin:'1em 0',color:C.muted,fontStyle:'italic'}}>
+                    {children}
+                  </blockquote>
+                ),
+                img: ({src, alt}) => (
+                  <span style={{display:'block',margin:'1.5em 0'}}>
+                    <img src={src} alt={alt||''} style={{maxWidth:'100%',height:'auto',display:'block'}}/>
+                    {alt && <span style={{display:'block',marginTop:6,fontFamily:F.mono,fontSize:11,color:C.muted,letterSpacing:'0.08em'}}>{alt}</span>}
+                  </span>
+                ),
+                a: ({href, children}) => (
+                  <a href={href} target="_blank" rel="noopener noreferrer" style={{color:C.accent,textDecoration:'underline'}}>
+                    {children}
+                  </a>
+                ),
+                hr: () => <hr style={{border:'none',borderTop:`1px solid ${C.border}`,margin:'2em 0'}}/>,
+              }}
+            >
+              {item.content}
+            </ReactMarkdown>
+          </div>
+        )}
+
+        {/* Файловые вложения — галерея под текстом */}
+        {(item.attachments || []).filter(a => a.type === 'file').length > 0 && (
+          <div style={{marginTop:32}}>
+            <div style={{fontFamily:F.mono,fontSize:11,letterSpacing:'0.18em',color:C.muted,textTransform:'uppercase',marginBottom:12}}>
+              МАТЕРИАЛЫ
+            </div>
+            <div style={{display:'flex',flexDirection:'column',gap:8}}>
+              {(item.attachments||[]).filter(a=>a.type==='file').map(att => (
+                <a key={att.id} href={att.url} target="_blank" rel="noopener noreferrer"
+                  style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',border:`1px solid ${C.border}`,background:C.surface,textDecoration:'none',color:C.ink}}>
+                  <span style={{fontSize:20}}>📄</span>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{att.name}</div>
+                    {att.size && <div style={{fontFamily:F.mono,fontSize:11,color:C.muted,marginTop:2}}>
+                      {att.size < 1024*1024 ? Math.round(att.size/1024)+'КБ' : (att.size/1024/1024).toFixed(1)+'МБ'}
+                    </div>}
+                  </div>
+                  <span style={{fontFamily:F.mono,fontSize:11,color:C.accent}}>↓</span>
+                </a>
+              ))}
+            </div>
           </div>
         )}
 

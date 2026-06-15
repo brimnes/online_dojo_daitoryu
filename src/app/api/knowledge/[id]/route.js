@@ -14,6 +14,10 @@ function toSnake(k) {
     tag: k.tag ?? null,
     video_provider: k.videoProvider, video_id: k.videoId, video_status: k.videoStatus,
     created_at: k.createdAt, updated_at: k.updatedAt,
+    attachments: (k.attachments ?? []).map(a => ({
+      id: a.id, type: a.type, url: a.url, s3_key: a.s3Key,
+      name: a.name, size: a.size, content_type: a.contentType, sort_order: a.sortOrder,
+    })),
   };
 }
 
@@ -24,6 +28,7 @@ export async function GET(request, { params }) {
   try {
     const item = await prisma.knowledgeItem.findFirst({
       where: { id: params.id, isPublished: true },
+      include: { attachments: { orderBy: { sortOrder: 'asc' } } },
     });
     if (!item) return NextResponse.json({ error: 'Not found' }, { status: 404 });
     return NextResponse.json(toSnake(item));

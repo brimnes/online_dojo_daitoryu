@@ -381,9 +381,33 @@ model KnowledgeItem {
   createdAt     DateTime @default(now()) @map("created_at")
   updatedAt     DateTime @updatedAt      @map("updated_at")
 
-  comments KnowledgeComment[]
+  comments    KnowledgeComment[]
+  attachments KnowledgeAttachment[]
 
   @@map("knowledge_items")
+}
+
+
+// ────────────────────────────────────────────────────────────
+// knowledge_attachments
+// Картинки и файлы, прикреплённые к статье базы знаний.
+// type: image | file
+// ────────────────────────────────────────────────────────────
+model KnowledgeAttachment {
+  id              Int      @id @default(autoincrement())
+  knowledgeItemId String   @map("knowledge_item_id") @db.Uuid
+  type            String   @default("image")  // image | file
+  url             String
+  s3Key           String   @map("s3_key")
+  name            String
+  size            Int?
+  contentType     String?  @map("content_type")
+  sortOrder       Int      @default(0) @map("sort_order")
+  createdAt       DateTime @default(now()) @map("created_at")
+
+  knowledgeItem KnowledgeItem @relation(fields: [knowledgeItemId], references: [id], onDelete: Cascade)
+
+  @@map("knowledge_attachments")
 }
 
 
