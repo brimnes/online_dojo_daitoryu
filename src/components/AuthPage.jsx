@@ -224,7 +224,7 @@ export default function AuthPage({ onSuccess }) {
                 color:'rgba(237,229,211,0.55)', lineHeight: 1.9,
                 marginBottom: 12,
               }}>
-                «Айки — это не сила. Это согласие с движением партнёра. Тысячи повторений — и тело само находит путь.»
+                «Техника — это форма. Принцип — это то, что делает её живой.»
               </div>
               <div style={{
                 fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
@@ -340,21 +340,6 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
 
   return (
     <div>
-      {/* Eyebrow */}
-      <div style={{
-        display:'flex', alignItems:'center', gap:8, marginBottom:14,
-      }}>
-        <span style={{
-          fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
-          fontSize:11, color:C.accent, letterSpacing:'0.06em',
-        }}>01</span>
-        <div style={{ width:20, height:1, background:C.border }} />
-        <span style={{
-          fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
-          fontSize:11, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase',
-        }}>Вход в доджо</span>
-      </div>
-
       {/* Heading */}
       <div style={{
         fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
@@ -368,7 +353,7 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
         fontSize: 15,
         color: C.muted, lineHeight: 1.75, marginBottom: 28,
       }}>
-        Войдите, чтобы продолжить обучение, или зарегистрируйтесь, указав ваш текущий уровень кю.
+        Чтобы продолжить обучение или знакомство со школой Дайто-рю Айкидзюдзюцу, пожалуйста, войдите или зарегистрируйтесь.
       </p>
 
       {serverErr && (
