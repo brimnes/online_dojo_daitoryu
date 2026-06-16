@@ -514,29 +514,60 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
   );
 }
 
+function getMonthVisuals(state) {
+  switch (state) {
+    case 'open': return {
+      surface: '#0f0d0a', grad: 'linear-gradient(155deg, #18130d 0%, #0f0c08 60%, #0a0805 100%)',
+      ink: '#ede5d3', ink2: '#c2b59c', muted: '#7a6c52', hairline: 'rgba(184,146,58,0.18)',
+      kanjiColor: C.accent, badgeFg: C.goldLight, badgeBorder: 'rgba(184,146,58,0.45)',
+      borderTop: `2px solid ${C.accent}`,
+      ctaBg: C.accent, ctaColor: C.onAccent, ctaBorder: C.accent,
+      shadow: '0 24px 60px -24px rgba(0,0,0,0.55)',
+    };
+    case 'purchase': return {
+      surface: C.surface, grad: `linear-gradient(155deg, ${C.surface2} 0%, ${C.surface} 60%, ${C.bg2} 100%)`,
+      ink: C.ink, ink2: C.ink2, muted: C.muted, hairline: C.border,
+      kanjiColor: C.gold, badgeFg: C.gold, badgeBorder: C.goldBorder,
+      borderTop: `2px solid ${C.gold}`,
+      ctaBg: C.gold, ctaColor: '#fff', ctaBorder: C.gold,
+      shadow: 'none',
+    };
+    default: return { // soon
+      surface: C.bg2, grad: C.bg2,
+      ink: C.ink2, ink2: C.muted, muted: C.muted, hairline: C.hairline2,
+      kanjiColor: C.hairline2, badgeFg: C.muted, badgeBorder: C.hairline2,
+      borderTop: `1px dashed ${C.hairline2}`,
+      ctaBg: 'transparent', ctaColor: C.muted, ctaBorder: C.hairline2,
+      shadow: 'none',
+    };
+  }
+}
+
 function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product, isMobile, onBuyClick }) {
   const { lessons } = useLessons(m.id);
 
   const watchedCount = (lessons ?? []).filter(l => watched[l.id]).length;
   const hasProg      = (lessons ?? []).length > 0 && watchedCount > 0;
   const hasAccess    = !accessLoading && hasMonthAccess(userAccess ?? [], m.id);
-  const locked       = !hasAccess && !accessLoading;
   const pct          = (lessons ?? []).length ? Math.round((watchedCount / (lessons ?? []).length) * 100) : 0;
 
-  const cardBg     = locked ? C.bg2 : m.current ? `linear-gradient(155deg,${C.surface2} 0%,${C.surface} 60%,${C.bg2} 100%)` : C.surface;
-  const cardBorder = m.current ? `1px solid ${C.accent}` : locked ? `1px dashed ${C.hairline2}` : `1px solid ${C.border}`;
-  const cardShadow = m.current ? `0 1px 0 ${C.accent} inset,0 30px 60px -28px ${C.accent}55,0 12px 32px -10px rgba(0,0,0,0.15)` : locked ? 'none' : C.shadow;
-  const kanjiClr   = locked ? C.hairline2 : m.current ? C.accent : C.goldSoft;
+  const state    = accessLoading ? null : hasAccess ? 'open' : product ? 'purchase' : 'soon';
+  const v        = getMonthVisuals(state);
+  const isOpen   = state === 'open';
+  const isBuy    = state === 'purchase';
+  const isSoon   = state === 'soon';
+  const badgeLabel = isOpen ? 'Доступен' : isBuy ? 'Доступен к покупке' : 'Скоро';
 
   return (
     <div style={{
       position: 'relative',
-      padding: isMobile ? '14px 12px' : '20px 18px',
-      height: isMobile ? 'auto' : 220,
-      minHeight: isMobile ? 160 : 220,
-      background: cardBg, border: cardBorder, boxShadow: cardShadow,
+      padding: isMobile ? '14px 12px' : '18px 18px 16px',
+      height: isMobile ? 'auto' : 240,
+      minHeight: isMobile ? 168 : 240,
+      background: v.surface, backgroundImage: v.grad,
+      border: `1px solid ${v.hairline}`, borderTop: v.borderTop,
+      boxShadow: v.shadow,
       display: 'flex', flexDirection: 'column',
-      opacity: locked ? 0.65 : 1,
       overflow: 'hidden',
     }}>
 
@@ -545,29 +576,38 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
         position: 'absolute', top: -8, right: 6,
         fontFamily: "'Noto Serif JP',var(--font-noto),serif",
         fontSize: isMobile ? 60 : 90,
-        color: kanjiClr,
-        opacity: locked ? 0.35 : m.current ? 0.18 : 0.15,
+        color: v.kanjiColor,
+        opacity: isOpen ? 0.22 : isBuy ? 0.16 : 0.3,
         lineHeight: 1, pointerEvents: 'none', userSelect: 'none',
       }}>{m.kanji}</div>
 
-      {/* Current month indicator */}
-      {m.current && <div style={{ position: 'absolute', top: 10, left: 10, width: 6, height: 6, background: C.accent, transform: 'rotate(45deg)' }} />}
-
       {/* Number row */}
-      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', marginBottom: 6, marginTop: m.current ? 4 : 0 }}>
-        <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, letterSpacing: '0.22em', color: m.current ? C.accent : C.muted, fontWeight: 600 }}>
+      <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', position: 'relative', marginBottom: 10 }}>
+        <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, letterSpacing: '0.22em', color: v.muted, fontWeight: 600 }}>
           {m.sort_order ? `${String(m.sort_order).padStart(2,'0')} / 12` : '– / 12'}
         </span>
-        {m.current && <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, letterSpacing: '0.28em', color: C.accent, padding: '2px 7px', border: `1px solid ${C.accent}` }}>ТЕКУЩИЙ</span>}
-        {locked && !accessLoading && <span style={{ fontSize: 11, color: C.muted }}>🔒</span>}
       </div>
+
+      {/* Status badge */}
+      {!accessLoading && (
+        <div style={{
+          display: 'inline-flex', alignItems: 'center', gap: 6, alignSelf: 'flex-start',
+          padding: '4px 9px', marginBottom: 10, position: 'relative',
+          color: v.badgeFg, border: `1px solid ${v.badgeBorder}`,
+          fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 10,
+          letterSpacing: '0.14em', textTransform: 'uppercase', fontWeight: 600,
+        }}>
+          <span style={{ width: 4, height: 4, borderRadius: '50%', background: v.badgeFg, flexShrink: 0 }} />
+          {badgeLabel}
+        </div>
+      )}
 
       {/* Month name */}
       <div style={{
         fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif",
-        fontSize: isMobile ? 24 : 30,
+        fontSize: isMobile ? 24 : 28,
         letterSpacing: '0.06em', textTransform: 'uppercase',
-        color: locked ? C.muted : C.ink,
+        color: v.ink,
         position: 'relative', fontWeight: 500, lineHeight: 0.95,
         marginBottom: 8,
       }}>{m.label}</div>
@@ -577,7 +617,7 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
         <div style={{
           fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif",
           fontSize: isMobile ? 14 : 15,
-          color: locked ? C.muted : C.ink2,
+          color: v.ink2,
           position: 'relative', lineHeight: 1.4,
           display: '-webkit-box', WebkitLineClamp: 2,
           WebkitBoxOrient: 'vertical', overflow: 'hidden',
@@ -588,29 +628,39 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
       <div style={{ marginTop: 'auto', paddingTop: 10, position: 'relative' }}>
         {accessLoading ? (
           <div style={{ height: 10, background: C.border, width: '55%', opacity: 0.4 }} />
-        ) : hasAccess && hasProg ? (
+        ) : (
           <>
-            <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
-              <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, color: C.muted, letterSpacing: '0.1em' }}>{watchedCount} / {(lessons ?? []).length} уроков</span>
-              <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, color: C.accent, letterSpacing: '0.1em', fontWeight: 600 }}>{pct}%</span>
-            </div>
-            <div style={{ height: 2, background: C.border, overflow: 'hidden', marginBottom: 8 }}>
-              <div style={{ height: '100%', width: `${pct}%`, background: C.accent, transition: 'width 0.4s ease' }} />
-            </div>
-            <button onClick={() => nav.month(m.id)} style={{ background: 'none', border: 'none', padding: '6px 0', fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 13, color: C.accent, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer', minHeight: 32 }}>
-              Продолжить →
+            {isOpen && hasProg && (
+              <div style={{ marginBottom: 8 }}>
+                <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: 6 }}>
+                  <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, color: v.muted, letterSpacing: '0.1em' }}>{watchedCount} / {(lessons ?? []).length} уроков</span>
+                  <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, color: C.accent, letterSpacing: '0.1em', fontWeight: 600 }}>{pct}%</span>
+                </div>
+                <div style={{ height: 2, background: 'rgba(184,146,58,0.15)', overflow: 'hidden' }}>
+                  <div style={{ height: '100%', width: `${pct}%`, background: C.accent, transition: 'width 0.4s ease' }} />
+                </div>
+              </div>
+            )}
+            {isBuy && (
+              <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
+                <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, color: v.muted, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Стоимость</span>
+                <span style={{ fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif", fontSize: 18, color: v.ink, fontWeight: 500 }}>{product.price?.toLocaleString()} ₽</span>
+              </div>
+            )}
+            <button
+              onClick={() => { if (isOpen) nav.month(m.id); else if (isBuy) onBuyClick(); }}
+              disabled={isSoon}
+              style={{
+                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                width: '100%', minHeight: 38, padding: '9px 14px',
+                background: v.ctaBg, color: v.ctaColor, border: `1px solid ${v.ctaBorder}`,
+                fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, fontWeight: 600,
+                letterSpacing: '0.14em', textTransform: 'uppercase',
+                cursor: isSoon ? 'default' : 'pointer', opacity: isSoon ? 0.7 : 1,
+              }}>
+              {isOpen ? (hasProg ? 'Продолжить →' : 'Открыть уроки →') : isBuy ? 'Подробнее →' : 'Скоро'}
             </button>
           </>
-        ) : hasAccess ? (
-          <button onClick={() => nav.month(m.id)} style={{ background: 'none', border: 'none', padding: '6px 0', fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 13, color: C.accent, letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer', minHeight: 32 }}>
-            Открыть уроки →
-          </button>
-        ) : product ? (
-          <button onClick={onBuyClick} style={{ background: 'none', border: 'none', padding: '6px 0', fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 13, color: C.gold, letterSpacing: '0.16em', textTransform: 'uppercase', cursor: 'pointer', minHeight: 32 }}>
-            Что входит →
-          </button>
-        ) : (
-          <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, color: C.muted, letterSpacing: '0.12em' }}>недоступно</span>
         )}
       </div>
     </div>
