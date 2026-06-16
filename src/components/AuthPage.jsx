@@ -281,7 +281,7 @@ export default function AuthPage({ onSuccess }) {
           <div style={{
             fontFamily:"'Noto Serif JP', var(--font-noto), serif",
             fontSize: 13, color: C.border, letterSpacing: '0.3em',
-          }}>合気術</div>
+          }}>大東流合気柔術</div>
         </div>
       </div>
     </div>
