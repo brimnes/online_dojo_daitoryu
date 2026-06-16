@@ -516,7 +516,7 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
 
 function getMonthVisuals(state) {
   switch (state) {
-    case 'open': return {
+    case 'bought': return {
       surface: '#0f0d0a', grad: 'linear-gradient(155deg, #18130d 0%, #0f0c08 60%, #0a0805 100%)',
       ink: '#ede5d3', ink2: '#c2b59c', muted: '#7a6c52', hairline: 'rgba(184,146,58,0.18)',
       kanjiColor: C.accent, badgeFg: C.goldLight, badgeBorder: 'rgba(184,146,58,0.45)',
@@ -532,7 +532,7 @@ function getMonthVisuals(state) {
       ctaBg: C.gold, ctaColor: '#fff', ctaBorder: C.gold,
       shadow: 'none',
     };
-    default: return { // soon
+    default: return { // closed
       surface: C.bg2, grad: C.bg2,
       ink: C.ink2, ink2: C.muted, muted: C.muted, hairline: C.hairline2,
       kanjiColor: C.hairline2, badgeFg: C.muted, badgeBorder: C.hairline2,
@@ -551,12 +551,13 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
   const hasAccess    = !accessLoading && hasMonthAccess(userAccess ?? [], m.id);
   const pct          = (lessons ?? []).length ? Math.round((watchedCount / (lessons ?? []).length) * 100) : 0;
 
-  const state    = accessLoading ? null : hasAccess ? 'open' : product ? 'purchase' : 'soon';
+  // Месяц.is_open — управляется админом отдельно от доступа конкретного пользователя
+  const state    = accessLoading ? null : hasAccess ? 'bought' : m.is_open ? 'purchase' : 'closed';
   const v        = getMonthVisuals(state);
-  const isOpen   = state === 'open';
+  const isOpen   = state === 'bought';
   const isBuy    = state === 'purchase';
-  const isSoon   = state === 'soon';
-  const badgeLabel = isOpen ? 'Доступен' : isBuy ? 'Доступен к покупке' : 'Скоро';
+  const isClosed = state === 'closed';
+  const badgeLabel = isOpen ? 'Куплен' : isBuy ? 'Доступен к покупке' : 'Закрыт';
 
   return (
     <div style={{
@@ -641,25 +642,29 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
                 </div>
               </div>
             )}
-            {isBuy && (
+            {isBuy && product && (
               <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 8 }}>
                 <span style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, color: v.muted, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Стоимость</span>
                 <span style={{ fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif", fontSize: 18, color: v.ink, fontWeight: 500 }}>{product.price?.toLocaleString()} ₽</span>
               </div>
             )}
-            <button
-              onClick={() => { if (isOpen) nav.month(m.id); else if (isBuy) onBuyClick(); }}
-              disabled={isSoon}
-              style={{
-                display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
-                width: '100%', minHeight: 38, padding: '9px 14px',
-                background: v.ctaBg, color: v.ctaColor, border: `1px solid ${v.ctaBorder}`,
-                fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, fontWeight: 600,
-                letterSpacing: '0.14em', textTransform: 'uppercase',
-                cursor: isSoon ? 'default' : 'pointer', opacity: isSoon ? 0.7 : 1,
-              }}>
-              {isOpen ? (hasProg ? 'Продолжить →' : 'Открыть уроки →') : isBuy ? 'Подробнее →' : 'Скоро'}
-            </button>
+            {isClosed ? (
+              <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, color: v.muted, letterSpacing: '0.12em', textAlign: 'center', padding: '9px 0' }}>
+                Покупка пока недоступна
+              </div>
+            ) : (
+              <button
+                onClick={() => { if (isOpen) nav.month(m.id); else onBuyClick(); }}
+                style={{
+                  display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 6,
+                  width: '100%', minHeight: 38, padding: '9px 14px',
+                  background: v.ctaBg, color: v.ctaColor, border: `1px solid ${v.ctaBorder}`,
+                  fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, fontWeight: 600,
+                  letterSpacing: '0.14em', textTransform: 'uppercase', cursor: 'pointer',
+                }}>
+                {isOpen ? (hasProg ? 'Продолжить →' : 'Открыть →') : 'Купить →'}
+              </button>
+            )}
           </>
         )}
       </div>
