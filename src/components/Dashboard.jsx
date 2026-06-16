@@ -903,7 +903,15 @@ function TabKnowledge({ nav, isMobile }) {
 // ── Вкладка: База техник ──────────────────────────────────────────
 function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
   const [search, setSearch] = useState('');
+  const [ikkajoChoiceOpen, setIkkajoChoiceOpen] = useState(false);
   const ua = userAccess ?? [];
+  const { products: allProducts } = useProducts();
+
+  // Доступ к Иккаджо считается «есть», если куплен весь раздел ИЛИ
+  // хотя бы один из 4 подразделов (татиай/идори/усиродори/хандза-хандати)
+  const hasFullIkkajo     = ua.some(a => a.type === 'section' && a.reference === 'ikkajo');
+  const hasAnyIkkajoSect  = IKKAJO_SECTIONS.some(k => ua.some(a => a.type === 'section' && a.reference === k));
+  const hasAnyIkkajoAccess = hasFullIkkajo || hasAnyIkkajoSect;
 
   // ── Реальные данные по техникам Иккаджо (вместо хардкода) ──────────
   const { techniques: dbTechs, videos: dbVideos } = useTechniques();
@@ -927,12 +935,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
 
   function getAccessState(sec) {
     const avail = hasLevel(user?.level || '6kyu', sec.requiredLevel);
-    const hasFullIkkajo = ua.some(a => a.type === 'section' && a.reference === 'ikkajo');
-    const hasAnyIkkajoSection = sec.id === 'ikkajo' &&
-      IKKAJO_SECTIONS.some(k => ua.some(a => a.type === 'section' && a.reference === k));
-    const bought = sec.id === 'ikkajo'
-      ? hasFullIkkajo || hasAnyIkkajoSection
-      : ua.some(a => a.type === 'section' && a.reference === sec.id);
+    const bought = sec.id === 'ikkajo' ? hasAnyIkkajoAccess : ua.some(a => a.type === 'section' && a.reference === sec.id);
     if (bought) return 'open';
     if (SECTION_EXTRA[sec.id]?.soon) return 'soon';
     if (!avail) return 'locked';
@@ -989,11 +992,31 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
     : allSecs;
 
   function handleCta(sec) {
-    if (sec.accessState === 'open'     && sec.id === 'ikkajo') nav.ikkajo();
+    if (sec.id === 'ikkajo') {
+      if (hasAnyIkkajoAccess) nav.ikkajo();
+      else if (sec.accessState === 'purchase') setIkkajoChoiceOpen(true);
+      return;
+    }
     if (sec.accessState === 'purchase') setModal(sec);
   }
 
+  const statusBadgeLabel = (sec) => {
+    if (sec.id === 'ikkajo') {
+      if (hasFullIkkajo) return 'Куплен';
+      if (hasAnyIkkajoAccess) return 'Частично открыт';
+    }
+    if (sec.accessState === 'open')     return 'Открыт';
+    if (sec.accessState === 'soon')     return 'Скоро';
+    if (sec.accessState === 'locked')   return 'Нет доступа';
+    return sec.id === 'ikkajo' ? 'Доступно к покупке' : 'К покупке';
+  };
+
   const ctaLabel = (sec) => {
+    if (sec.id === 'ikkajo') {
+      if (hasAnyIkkajoAccess) return 'Перейти';
+      if (sec.accessState === 'locked') return '🔒 Нет доступа';
+      if (sec.accessState === 'purchase') return 'Выбрать раздел';
+    }
     if (sec.accessState === 'open')     return 'Открыть';
     if (sec.accessState === 'soon')     return 'Скоро';
     if (sec.accessState === 'locked')   return '🔒 Нет доступа';
@@ -1070,7 +1093,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           <div>
             <div style={{ display: 'inline-flex', alignItems: 'center', gap: 7, padding: '5px 10px', color: v.tagFg, border: `1px solid ${v.tagBorder}`, fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase', fontWeight: 600 }}>
               <span style={{ width: 5, height: 5, borderRadius: '50%', background: v.tagFg, flexShrink: 0 }} />
-              {isOpen ? 'Открыт' : isSoon ? 'Скоро' : isLocked ? 'Нет доступа' : 'К покупке'}
+              {statusBadgeLabel(sec)}
             </div>
 
             {isOpen && (
@@ -1142,7 +1165,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
         <div style={{ padding: '14px 16px 16px' }}>
           <div style={{ display: 'inline-flex', alignItems: 'center', gap: 6, padding: '4px 10px', color: v.tagFg, border: `1px solid ${v.tagBorder}`, fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', fontWeight: 600, marginBottom: 10 }}>
             <span style={{ width: 4, height: 4, borderRadius: '50%', background: v.tagFg }} />
-            {isOpen ? 'Открыт' : isSoon ? 'Скоро' : isLocked ? 'Нет доступа' : 'К покупке'}
+            {statusBadgeLabel(sec)}
           </div>
           <p style={{ margin: '0 0 12px', fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, color: v.ink2, lineHeight: 1.55 }}>{sec.desc}</p>
           <div style={{ display: 'flex', padding: '10px 0', borderTop: `1px solid ${v.hairline}`, borderBottom: `1px solid ${v.hairline}`, marginBottom: 14 }}>
@@ -1255,6 +1278,131 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           </div>
         </div>
         <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase', flexShrink: 0 }}>2026 — 2028</span>
+      </div>
+
+      {/* ── Выбор покупки Иккаджо (раздел / весь сразу) ── */}
+      {ikkajoChoiceOpen && (
+        <IkkajoChoiceModal
+          products={allProducts}
+          onClose={() => setIkkajoChoiceOpen(false)}
+          isMobile={isMobile}
+        />
+      )}
+    </div>
+  );
+}
+
+// ── Модалка выбора покупки Иккаджо (отдельный раздел / весь сразу) ──
+function IkkajoChoiceModal({ products, onClose, isMobile }) {
+  const [buyingId, setBuyingId] = useState(null);
+  const [error,    setError]    = useState('');
+
+  const sectionProducts = IKKAJO_SECTIONS
+    .map(key => (products ?? []).find(p => p.type === 'section' && p.reference === key))
+    .filter(Boolean);
+  const fullProduct = (products ?? []).find(p => p.type === 'section' && p.reference === 'ikkajo');
+
+  const handleBuy = async (product) => {
+    if (!product || buyingId) return;
+    setBuyingId(product.id);
+    setError('');
+    try {
+      const res = await fetch('/api/yookassa/create-payment', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ product_id: product.id }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'Ошибка при создании платежа'); setBuyingId(null); return; }
+      if (data.payment_id) { try { sessionStorage.setItem('yk_pending_pid', data.payment_id); } catch {} }
+      window.location.href = data.confirmation_url;
+    } catch {
+      setError('Ошибка соединения');
+      setBuyingId(null);
+    }
+  };
+
+  return (
+    <div onClick={onClose} style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.45)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 400, padding: 20 }}>
+      <div onClick={e => e.stopPropagation()} style={{
+        background: C.surface, border: `1px solid ${C.border}`,
+        width: '100%', maxWidth: 560, maxHeight: '90vh', overflowY: 'auto',
+        boxShadow: '0 24px 80px rgba(0,0,0,0.28)',
+      }}>
+        {/* Header */}
+        <div style={{ padding: isMobile ? '24px 20px 16px' : '32px 36px 20px', borderBottom: `1px solid ${C.border}`, position: 'relative' }}>
+          <button onClick={onClose} style={{ position: 'absolute', top: isMobile ? 16 : 24, right: isMobile ? 16 : 24, background: 'none', border: 'none', color: C.muted, fontSize: 20, cursor: 'pointer', lineHeight: 1, padding: 4, minWidth: 32, minHeight: 32 }}>✕</button>
+          <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 13, color: C.accent, letterSpacing: '0.18em', marginBottom: 8 }}>一教</div>
+          <div style={{ fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif", fontSize: isMobile ? 30 : 38, color: C.ink, fontWeight: 500, letterSpacing: '0.03em', lineHeight: 1, marginBottom: 10 }}>Иккаджо</div>
+          <div style={{ fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif", fontSize: 15, color: C.muted, lineHeight: 1.55, maxWidth: 440 }}>
+            Иккаджо — базовый раздел Дайто-рю Айкидзюдзюцу, включающий ключевые формы работы из разных положений и ситуаций.
+          </div>
+        </div>
+
+        {/* Sections list */}
+        <div style={{ padding: isMobile ? '16px 20px 20px' : '20px 36px 28px' }}>
+          <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, color: C.muted, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 12 }}>
+            Купить раздел отдельно
+          </div>
+          <div style={{ display: 'flex', flexDirection: 'column', gap: 1, background: C.border, marginBottom: 24 }}>
+            {sectionProducts.map(p => {
+              const isBuying = buyingId === p.id;
+              return (
+                <div key={p.reference} style={{
+                  display: 'flex', alignItems: 'center', gap: 14, flexWrap: isMobile ? 'wrap' : 'nowrap',
+                  padding: isMobile ? '14px 14px' : '16px 18px', background: C.surface,
+                }}>
+                  <div style={{ flex: 1, minWidth: 0 }}>
+                    <div style={{ fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif", fontSize: 18, color: C.ink, fontWeight: 500 }}>{IKKAJO_SECTION_LABELS[p.reference] || p.title}</div>
+                    {p.description && <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 12, color: C.muted, marginTop: 2 }}>{p.description}</div>}
+                  </div>
+                  <div style={{ fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif", fontSize: 17, color: C.ink, fontWeight: 500, flexShrink: 0 }}>{p.price?.toLocaleString('ru-RU')} ₽</div>
+                  <button
+                    onClick={() => handleBuy(p)} disabled={!!buyingId}
+                    style={{
+                      flexShrink: 0, padding: '9px 18px', minHeight: 38,
+                      background: isBuying ? C.muted : 'transparent', color: isBuying ? '#fff' : C.ink,
+                      border: `1px solid ${C.ink}`, cursor: buyingId ? 'default' : 'pointer',
+                      fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11,
+                      letterSpacing: '0.12em', textTransform: 'uppercase',
+                    }}>
+                    {isBuying ? '…' : 'Купить'}
+                  </button>
+                </div>
+              );
+            })}
+          </div>
+
+          {/* Купить весь Иккаджо */}
+          {fullProduct && (
+            <div style={{ background: '#15120e', padding: isMobile ? '20px 18px' : '24px 28px', position: 'relative', overflow: 'hidden' }}>
+              <div style={{ position: 'absolute', top: -10, right: -6, fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 90, color: '#b8923a', opacity: 0.12, lineHeight: 1, pointerEvents: 'none', userSelect: 'none' }}>一</div>
+              <div style={{ position: 'relative' }}>
+                <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, color: '#b8923a', letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 10 }}>Купить весь раздел Иккаджо</div>
+                <div style={{ fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif", fontSize: 14, color: '#c2b59c', lineHeight: 1.6, marginBottom: 16 }}>
+                  Включает: {IKKAJO_SECTIONS.map(k => IKKAJO_SECTION_LABELS[k]).join(', ')}
+                </div>
+                <div style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: 12 }}>
+                  <div style={{ fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif", fontSize: 28, color: '#ede5d3', fontWeight: 500 }}>{fullProduct.price?.toLocaleString('ru-RU')} ₽</div>
+                  <button
+                    onClick={() => handleBuy(fullProduct)} disabled={!!buyingId}
+                    style={{
+                      padding: '12px 24px', minHeight: 44,
+                      background: buyingId === fullProduct.id ? '#7a6c52' : '#b8923a', color: '#15120e',
+                      border: 'none', cursor: buyingId ? 'default' : 'pointer',
+                      fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 12, fontWeight: 600,
+                      letterSpacing: '0.14em', textTransform: 'uppercase',
+                    }}>
+                    {buyingId === fullProduct.id ? 'Переход к оплате…' : 'Купить весь Иккаджо'}
+                  </button>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {error && (
+            <div style={{ marginTop: 16, fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 12, color: '#a03030' }}>{error}</div>
+          )}
+        </div>
       </div>
     </div>
   );
