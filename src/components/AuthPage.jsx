@@ -7,7 +7,7 @@ import TakedaMon from '@/components/TakedaMon';
 
 // ─── Временный запрет регистрации ─────────────────────────────
 // Поставь false чтобы снова открыть регистрацию
-const REGISTRATION_CLOSED = true;
+const REGISTRATION_CLOSED = false;
 
 // ─── Цветовая палитра ──────────────────────────────────────────
 const C = {
