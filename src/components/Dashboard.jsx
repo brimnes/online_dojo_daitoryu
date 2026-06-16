@@ -5,12 +5,17 @@ import { C, hasLevel, levelIndex } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
 import { LEVELS, SELF_LEVELS } from '@/data/users';
 import { DB_SECTIONS } from '@/data/techniques';
-import { useMonths, useLessons, useUserAccessRows, hasMonthAccess, useKnowledge, useUserExams, useUserPayments } from '@/lib/db';
+import { useMonths, useLessons, useUserAccessRows, hasMonthAccess, useKnowledge, useUserExams, useUserPayments, useTechniques } from '@/lib/db';
 import TakedaMon from '@/components/TakedaMon';
 import Sidebar from '@/components/Sidebar';
 import { MobileBottomNav } from '@/components/BottomNav';
 import { hasIkkajoFullAccess, hasIkkajoSectionAccess, IKKAJO_SECTIONS, IKKAJO_SECTION_LABELS, getAccessibleIkkajoSections } from '@/lib/access';
+import { IKKAJO_SECTION_KEYS } from '@/lib/ikkajoSections';
 import { useProducts } from '@/lib/useProducts';
+
+// Срок программы пока не хранится в БД — единственный явный источник здесь.
+// TODO: перенести в Product.durationMonths + админку, когда появится экран управления Product.
+const PROGRAM_DURATION_MONTHS = { ikkajo: 12, nikkajo: 8, sankajo: 8 };
 
 const TABS = [
   { id: 'knowledge', label: 'База знаний',    num: '01', kanji: '智' },
@@ -900,10 +905,24 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
   const [search, setSearch] = useState('');
   const ua = userAccess ?? [];
 
+  // ── Реальные данные по техникам Иккаджо (вместо хардкода) ──────────
+  const { techniques: dbTechs, videos: dbVideos } = useTechniques();
+  const ikkajoTechs   = (dbTechs ?? []).filter(t => IKKAJO_SECTION_KEYS.includes(t.section));
+  const ikkajoTechIds = new Set(ikkajoTechs.map(t => t.id));
+  const ikkajoVideoCount = (dbVideos ?? []).filter(v => v.video_id && ikkajoTechIds.has(v.technique_id)).length;
+
+  const REAL_STATS = {
+    ikkajo: {
+      techniques: ikkajoTechs.length,
+      lessons:    ikkajoVideoCount,
+      sections:   IKKAJO_SECTION_KEYS.length,
+    },
+  };
+
   const SECTION_EXTRA = {
-    ikkajo:  { nameRomaji: 'Ikkajō',  nameJa: '一教', programLabel: 'Программа ученических степеней', program: '6 кю → 1 кю',   lessons: 89, sections: 7, duration: '12 мес.' },
-    nikkajo: { nameRomaji: 'Nikajō',  nameJa: '二教', programLabel: 'Программа дан, ступень II',       program: '1 дан → 2 дан', lessons: 64, sections: 6, duration: '8 мес.',  soon: true },
-    sankajo: { nameRomaji: 'Sankajō', nameJa: '三教', programLabel: 'Программа дан, ступень III',      program: '2 дан → 3 дан', lessons: 56, sections: 5, duration: '8 мес.',  soon: true },
+    ikkajo:  { nameRomaji: 'Ikkajō',  nameJa: '一教', programLabel: 'Программа ученических степеней', program: '6 кю → 1 кю',   duration: `${PROGRAM_DURATION_MONTHS.ikkajo} мес.` },
+    nikkajo: { nameRomaji: 'Nikajō',  nameJa: '二教', programLabel: 'Программа дан, ступень II',       program: '1 дан → 2 дан', lessons: 64, sections: 6, duration: `${PROGRAM_DURATION_MONTHS.nikkajo} мес.`,  soon: true },
+    sankajo: { nameRomaji: 'Sankajō', nameJa: '三教', programLabel: 'Программа дан, ступень III',      program: '2 дан → 3 дан', lessons: 56, sections: 5, duration: `${PROGRAM_DURATION_MONTHS.sankajo} мес.`,  soon: true },
   };
 
   function getAccessState(sec) {
@@ -954,7 +973,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
   }
 
   const allSecs = (DB_SECTIONS ?? []).map((sec, i) => ({
-    ...sec, ...(SECTION_EXTRA[sec.id] || {}),
+    ...sec, ...(SECTION_EXTRA[sec.id] || {}), ...(REAL_STATS[sec.id] || {}),
     num: String(i + 1).padStart(2, '0'),
     accessState: getAccessState(sec),
   }));
