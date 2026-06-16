@@ -1088,6 +1088,7 @@ function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLe
   const [editLevel, setEditLevel] = useState(user.raw?.level || '');
   const [saving, setSaving] = useState(false);
   const { rows: accessRows, loading: accessLoading, reload: reloadAccess } = useAdminUserAccess(user.id);
+  const { months: grantMonths } = useMonths();
   const [grantType, setGrantType] = useState('month');
   const [grantRef, setGrantRef] = useState('');
   const [granting, setGranting] = useState(false);
@@ -1296,7 +1297,10 @@ function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLe
                   {grantType === 'section' ? (
                     <Select value={grantRef} onChange={setGrantRef} options={[{value:'',label:'— выберите —'}, ...IKKAJO_SECTION_OPTIONS]}/>
                   ) : (
-                    <Input value={grantRef} onChange={setGrantRef} placeholder="june, july, august…"/>
+                    <Select value={grantRef} onChange={setGrantRef} options={[
+                      {value:'',label:'— выберите —'},
+                      ...(grantMonths ?? []).map(m => ({ value: m.id, label: `${m.label} (${m.id})` })),
+                    ]}/>
                   )}
                 </div>
                 <Btn2 kind="accent" size="sm" disabled={!grantRef || granting} onClick={handleGrant}>
