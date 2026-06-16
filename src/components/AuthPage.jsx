@@ -158,7 +158,7 @@ export default function AuthPage({ onSuccess }) {
             fontFamily:"'Noto Serif JP',serif", fontSize: 360,
             color:'rgba(200,168,74,0.035)', lineHeight:1,
             pointerEvents:'none', userSelect:'none',
-          }}>合</div>
+          }}>大東流合気柔術</div>
 
           {/* KanjiRail — вертикальный текст справа */}
           <div style={{
@@ -204,11 +204,6 @@ export default function AuthPage({ onSuccess }) {
           <div style={{ position: 'relative', zIndex: 3, padding: '36px 40px 0', flex: 1, display: 'flex', flexDirection: 'column' }}>
             <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom: 'auto' }}>
               <TakedaMon size={22} color="rgba(183,56,40,0.6)" />
-              <div style={{
-                fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
-                fontSize: 11, letterSpacing:'0.18em',
-                color:'rgba(183,56,40,0.5)', textTransform:'uppercase',
-              }}>Sensei Portrait · Dojo</div>
             </div>
           </div>
 
