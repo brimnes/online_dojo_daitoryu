@@ -140,9 +140,9 @@ export const TECHNIQUE_CONTENT = {
 };
 
 export const DB_SECTIONS = [
-  { id:'ikkajo',  label:'Иккаджо',  kanji:'一', sublabel:'Программа 6–1 кю',       desc:'Программа ученических степеней от 6 кю до 1 кю.', price:'2 900 ₽', requiredLevel:'6kyu', techniques:30 },
-  { id:'nikkajo', label:'Никаджо',  kanji:'二', sublabel:'Программа 1 дан → 2 дан', desc:'Техники болевого контроля запястья. Подготовка ко второму дану.',            price:'2 900 ₽', requiredLevel:'1dan',  techniques:28 },
-  { id:'sankajo', label:'Санкаджо', kanji:'三', sublabel:'Программа 2 дан → 3 дан', desc:'Техники скручивания. Подготовка к третьему дану.',                           price:'2 900 ₽', requiredLevel:'2dan',  techniques:25 },
+  { id:'ikkajo',  label:'Иккаджо',  kanji:'一', sublabel:'Программа 6–1 кю',       desc:'Программа ученических степеней от 6 кю до 1 кю.', price:'от 3 000 ₽', requiredLevel:'6kyu', techniques:30 },
+  { id:'nikkajo', label:'Никаджо',  kanji:'二', sublabel:'Программа 1 дан → 2 дан', desc:'Скоро выпуск',                                                               price:'2 900 ₽',    requiredLevel:'1dan',  techniques:28 },
+  { id:'sankajo', label:'Санкаджо', kanji:'三', sublabel:'Программа 2 дан → 3 дан', desc:'Скоро выпуск',                                                               price:'2 900 ₽',    requiredLevel:'2dan',  techniques:25 },
 ];
 
 // Единый пул видео — ключ: латинское имя техники

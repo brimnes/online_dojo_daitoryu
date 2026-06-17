@@ -902,9 +902,9 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
   };
 
   const SECTION_EXTRA = {
-    ikkajo:  { nameRomaji: 'Ikkajō',  nameJa: '一教', programLabel: 'Программа ученических степеней', program: '6 кю → 1 кю',   duration: `${PROGRAM_DURATION_MONTHS.ikkajo} мес.` },
-    nikkajo: { nameRomaji: 'Nikajō',  nameJa: '二教', programLabel: 'Программа дан, ступень II',       program: '1 дан → 2 дан', lessons: 64, sections: 6, duration: `${PROGRAM_DURATION_MONTHS.nikkajo} мес.`,  soon: true },
-    sankajo: { nameRomaji: 'Sankajō', nameJa: '三教', programLabel: 'Программа дан, ступень III',      program: '2 дан → 3 дан', lessons: 56, sections: 5, duration: `${PROGRAM_DURATION_MONTHS.sankajo} мес.`,  soon: true },
+    ikkajo:  { nameRomaji: 'Ikkajō',  nameJa: '一教', programLabel: 'Программа ученических степеней', program: '6 кю → 1 кю'   },
+    nikkajo: { nameRomaji: 'Nikajō',  nameJa: '二教', programLabel: 'Программа дан, ступень II',       program: '1 дан → 2 дан', soon: true },
+    sankajo: { nameRomaji: 'Sankajō', nameJa: '三教', programLabel: 'Программа дан, ступень III',      program: '2 дан → 3 дан', soon: true },
   };
 
   function getAccessState(sec) {
@@ -1022,9 +1022,6 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
             <circle cx="50" cy="50" r="38" fill="none" stroke={v.kanjiRing} strokeWidth="0.2" />
           </svg>
           <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 120, lineHeight: 0.85, color: v.kanjiColor, fontWeight: 300, position: 'relative', zIndex: 1 }}>{sec.kanji}</div>
-          <div style={{ position: 'absolute', top: 12, left: 14, fontFamily: "var(--font-mono), monospace", fontSize: 11, color: v.muted, letterSpacing: '0.2em' }}>
-            {sec.num} / {String(allSecs.length).padStart(2, '0')}
-          </div>
           {sec.nameJa && (
             <div style={{ position: 'absolute', bottom: 10, left: 14, fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 13, color: v.muted, letterSpacing: '0.25em' }}>{sec.nameJa}</div>
           )}
@@ -1049,10 +1046,9 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           <p style={{ margin: 0, fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 15, color: v.ink2, lineHeight: 1.65, maxWidth: 480 }}>{sec.desc}</p>
           <div style={{ display: 'flex', borderTop: `1px solid ${v.hairline}`, paddingTop: 12, marginTop: 4 }}>
             {[
-              { label: 'Техник',   val: sec.techniques },
-              { label: 'Видео',    val: sec.lessons },
-              { label: 'Разделов', val: sec.sections },
-              { label: 'Срок',     val: sec.duration },
+              { label: 'Техник',   val: isSoon ? '—' : sec.techniques },
+              { label: 'Видео',    val: isSoon ? '—' : sec.lessons },
+              { label: 'Разделов', val: isSoon ? '—' : sec.sections },
             ].map((s, i, arr) => (
               <div key={s.label} style={{ flex: 1, paddingLeft: i === 0 ? 0 : 14, paddingRight: 14, borderLeft: i > 0 ? `1px solid ${v.hairline}` : 'none' }}>
                 <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.16em', color: v.muted, textTransform: 'uppercase', marginBottom: 3 }}>{s.label}</div>
@@ -1090,9 +1086,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
 
             {isSoon && (
               <div style={{ marginTop: 22 }}>
-                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase', marginBottom: 5 }}>Релиз</div>
-                <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, color: v.ink, fontWeight: 500, textTransform: 'uppercase' }}>осень 2026</div>
-                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: v.muted, marginTop: 3 }}>программа разрабатывается</div>
+                <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: v.muted }}>программа разрабатывается</div>
               </div>
             )}
           </div>
@@ -1127,8 +1121,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           </div>
           <div style={{ flex: 1, padding: '12px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.18em', color: v.muted }}>{sec.num} / {String(allSecs.length).padStart(2, '0')}</span>
-              {sec.nameJa && <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 11, color: v.muted }}>· {sec.nameJa}</span>}
+              {sec.nameJa && <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 11, color: v.muted }}>{sec.nameJa}</span>}
             </div>
             <h3 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 24, letterSpacing: '0.04em', color: v.ink, fontWeight: 500, lineHeight: 0.95, textTransform: 'uppercase' }}>{sec.label}</h3>
             {sec.nameRomaji && (
@@ -1144,9 +1137,9 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           <p style={{ margin: '0 0 12px', fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, color: v.ink2, lineHeight: 1.55 }}>{sec.desc}</p>
           <div style={{ display: 'flex', padding: '10px 0', borderTop: `1px solid ${v.hairline}`, borderBottom: `1px solid ${v.hairline}`, marginBottom: 14 }}>
             {[
-              { label: 'Техник', val: sec.techniques },
-              { label: 'Видео',  val: sec.lessons },
-              { label: 'Мес.',   val: (sec.duration || '').replace(/\D/g, '') },
+              { label: 'Техник',   val: isSoon ? '—' : sec.techniques },
+              { label: 'Видео',    val: isSoon ? '—' : sec.lessons },
+              { label: 'Разделов', val: isSoon ? '—' : sec.sections },
             ].map((s, i) => (
               <div key={s.label} style={{ flex: 1, paddingLeft: i === 0 ? 0 : 12, borderLeft: i > 0 ? `1px solid ${v.hairline}` : 'none' }}>
                 <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: v.muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 2 }}>{s.label}</div>
@@ -1158,12 +1151,6 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
             <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
               <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Стоимость</span>
               <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 24, color: v.ink, fontWeight: 500 }}>{sec.price}</span>
-            </div>
-          )}
-          {isSoon && (
-            <div style={{ display: 'flex', alignItems: 'baseline', justifyContent: 'space-between', marginBottom: 12 }}>
-              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: v.muted, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Релиз</span>
-              <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 13, color: v.ink, fontWeight: 500, textTransform: 'uppercase' }}>осень 2026</span>
             </div>
           )}
           <button onClick={() => handleCta(sec)} disabled={isSoon || isLocked} style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', gap: 8, width: '100%', minHeight: 48, padding: '13px 16px', background: v.ctaBg, color: v.ctaColor, border: `1px solid ${v.ctaBorder}`, fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, fontWeight: 600, letterSpacing: '0.16em', textTransform: 'uppercase', cursor: (isSoon || isLocked) ? 'default' : 'pointer', opacity: (isSoon || isLocked) ? 0.65 : 1 }}>
@@ -1206,10 +1193,10 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 24, marginBottom: 16 }}>
             <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 160, lineHeight: 0.85, color: C.accent, opacity: 0.1, flexShrink: 0, marginLeft: -8, marginBottom: -8 }}>技</div>
             <div style={{ flex: 1, paddingBottom: 4 }}>
-              <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 12 }}>03 · БАЗА ТЕХНИК · ПРОГРАММЫ ШКОЛЫ</div>
+              <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 12 }}>БАЗА ТЕХНИК · ПРОГРАММЫ ШКОЛЫ</div>
               <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 60, lineHeight: 0.9, letterSpacing: '0.04em', color: C.ink, fontWeight: 400, textTransform: 'uppercase' }}>База техник</h1>
-              <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, color: C.muted, marginTop: 14, maxWidth: 540, lineHeight: 1.55 }}>
-                Полное собрание программ Дайто-рю — от ученических кю до старших данов. Каждый раздел открывается отдельно.
+              <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 17, color: C.muted, marginTop: 14, maxWidth: 540, lineHeight: 1.55 }}>
+                Полное собрание программ Дайто-рю — от ученических до старших данов. Каждый раздел открывается отдельно.
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, paddingBottom: 8, flexShrink: 0 }}>
@@ -1231,7 +1218,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, marginBottom: 20 }}>
           <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 80, lineHeight: 0.85, color: C.accent, opacity: 0.13, flexShrink: 0 }}>技</span>
           <div style={{ paddingBottom: 4 }}>
-            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.22em', color: C.muted, textTransform: 'uppercase', marginBottom: 8 }}>03 · БАЗА ТЕХНИК</div>
+            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.22em', color: C.muted, textTransform: 'uppercase', marginBottom: 8 }}>БАЗА ТЕХНИК</div>
             <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 36, color: C.ink, fontWeight: 400, textTransform: 'uppercase', lineHeight: 0.95 }}>База<br />техник</h1>
           </div>
         </div>
@@ -1248,10 +1235,9 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: isMobile ? 22 : 28, color: C.hairline2, lineHeight: 1 }}>四 五 六 …</span>
           <div>
             <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: isMobile ? 12 : 13, letterSpacing: '0.16em', color: C.ink2, textTransform: 'uppercase', fontWeight: 500 }}>Ёнкаджо · Гокаджо · Роккаджо</div>
-            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: C.muted, marginTop: 3 }}>Старшие даны — программа разрабатывается</div>
+            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: C.muted, marginTop: 3 }}>Программа разрабатывается.</div>
           </div>
         </div>
-        <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase', flexShrink: 0 }}>2026 — 2028</span>
       </div>
 
       {/* ── Выбор покупки Иккаджо (раздел / весь сразу) ── */}
