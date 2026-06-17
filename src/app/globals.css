@@ -31,6 +31,23 @@ button, a, [role="button"] {
 ::-webkit-scrollbar-track { background: #e6e0d2; }
 ::-webkit-scrollbar-thumb { background: #bab09a; border-radius: 2px; }
 
+/* ─── Landscape phone: compact navigation ───────────────────── */
+@media (max-height: 500px) and (max-width: 1024px) {
+  .mobile-bottom-nav-item {
+    min-height: 44px;
+    padding: 5px 4px 6px;
+    gap: 2px;
+  }
+  .has-bottom-nav, .page-has-bottom-nav {
+    padding-bottom: calc(72px + env(safe-area-inset-bottom, 0px)) !important;
+  }
+  /* Shrink bottom nav icons in landscape */
+  .mobile-bottom-nav-item svg {
+    width: 18px;
+    height: 18px;
+  }
+}
+
 /* ─── Shared animations ──────────────────────────────────────── */
 @keyframes fadeUp {
   from { opacity: 0; transform: translateY(6px); }

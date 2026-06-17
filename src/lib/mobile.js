@@ -10,7 +10,12 @@ export function useIsMobile() {
   const [isMobile, setIsMobile] = useState(false);
 
   useEffect(() => {
-    const check = () => setIsMobile(window.innerWidth <= 768);
+    const check = () => {
+      const w = window.innerWidth;
+      const h = window.innerHeight;
+      // Mobile: narrow viewport OR landscape phone (short height, medium width)
+      setIsMobile(w <= 768 || (h < 500 && w <= 1024));
+    };
     check();
     window.addEventListener('resize', check);
     return () => window.removeEventListener('resize', check);
