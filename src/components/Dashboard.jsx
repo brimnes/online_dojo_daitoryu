@@ -900,7 +900,6 @@ function TabKnowledge({ nav, isMobile }) {
 
 // ── Вкладка: База техник ──────────────────────────────────────────
 function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
-  const [search, setSearch] = useState('');
   const [ikkajoChoiceOpen, setIkkajoChoiceOpen] = useState(false);
   const ua = userAccess ?? [];
   const { products: allProducts } = useProducts();
@@ -982,12 +981,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
   const openCount  = allSecs.filter(s => s.accessState === 'open').length;
   const totalTechs = allSecs.reduce((sum, s) => sum + (s.techniques || 0), 0);
 
-  const filtered = search.trim()
-    ? allSecs.filter(s =>
-        s.label.toLowerCase().includes(search.toLowerCase()) ||
-        s.desc.toLowerCase().includes(search.toLowerCase()) ||
-        (s.nameRomaji || '').toLowerCase().includes(search.toLowerCase()))
-    : allSecs;
+  const filtered = allSecs;
 
   function handleCta(sec) {
     if (sec.id === 'ikkajo') {
@@ -1200,15 +1194,9 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           <span style={{ color: C.hairline2, fontSize: 13 }}>/</span>
           <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.18em', color: C.ink, fontWeight: 600 }}>БАЗА ТЕХНИК</span>
         </div>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 14, flexWrap: 'wrap' }}>
-          <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.12em' }}>
-            {openCount} / {allSecs.length} РАЗДЕЛОВ ДОСТУПНО
-          </span>
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8, background: C.bg, border: `1px solid ${C.border}`, padding: '7px 12px', width: isMobile ? '100%' : 256 }}>
-            <span style={{ color: C.muted, fontSize: 13, flexShrink: 0 }}>⌕</span>
-            <input value={search} onChange={e => setSearch(e.target.value)} placeholder="Поиск техники или раздела…" style={{ flex: 1, background: 'none', border: 'none', outline: 'none', fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: C.ink }} />
-          </div>
-        </div>
+        <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.12em' }}>
+          {openCount} / {allSecs.length} РАЗДЕЛОВ ДОСТУПНО
+        </span>
       </div>
 
       {/* ── Desktop hero ── */}
