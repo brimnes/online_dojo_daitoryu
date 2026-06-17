@@ -442,10 +442,10 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 24, marginBottom: 16 }}>
             <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 160, lineHeight: 0.85, color: C.accent, opacity: 0.1, flexShrink: 0, marginLeft: -8, marginBottom: -8 }}>月</div>
             <div style={{ flex: 1, paddingBottom: 4 }}>
-              <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 12 }}>02 · МЕСЯЦЫ 2026 · ИЮНЬ–ДЕКАБРЬ</div>
+              <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 12 }}>МЕСЯЦЫ 2026 · ИЮНЬ–ДЕКАБРЬ</div>
               <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 60, lineHeight: 0.9, letterSpacing: '0.04em', color: C.ink, fontWeight: 400, textTransform: 'uppercase' }}>Месяцы Дайто-рю</h1>
-              <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, color: C.muted, marginTop: 14, maxWidth: 540, lineHeight: 1.55 }}>
-                Программа от Введения через Иккаджо к экзамену 3 кю. 1 990 ₽ за месяц.
+              <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 17, color: C.muted, marginTop: 14, maxWidth: 540, lineHeight: 1.55 }}>
+                Ежемесячный онлайн-журнал Daito-Ryu Aiki Jujutsu. В каждом выпуске разбираются вариации техник и их практическое применение, рассматриваются исторические материалы и исследования, а также темы, связанные с боевой подготовкой, развитием навыков и более глубоким пониманием традиции Дайто-рю.
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, paddingBottom: 8, flexShrink: 0 }}>
@@ -466,7 +466,7 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
       {isMobile && (
         <div style={{ marginBottom: 20 }}>
           <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', marginBottom: 10 }}>
-            02 · Месяцы 2026
+            МЕСЯЦЫ 2026
           </div>
           <h1 style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 48, letterSpacing: '0.01em', color: C.ink, lineHeight: 0.95, fontWeight: 300, margin: 0, textTransform: 'uppercase' }}>
             Месяцы<br />Дайто-рю
