@@ -1,6 +1,6 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { C, hasLevel, levelIndex } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
 import { LEVELS, SELF_LEVELS } from '@/data/users';
@@ -26,7 +26,7 @@ const TABS = [
 
 // BOTTOM_TABS removed — replaced by MobileBottomNav component
 
-export default function Dashboard({ nav, watched, user: userProp, onLogout, initialTab }) {
+export default function Dashboard({ nav, watched, user: userProp, onLogout, onUserUpdate, initialTab }) {
   const [tab, setTab]     = useState(initialTab || 'months');
   const [modal, setModal] = useState(null);
 
@@ -106,7 +106,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, init
             {tab === 'knowledge' && <TabKnowledge nav={nav} isMobile={isMobile} />}
             {tab === 'months'    && <TabMonths   nav={nav} watched={watched} user={u} userAccess={userAccess} accessLoading={accessLoading} isMobile={isMobile} />}
             {tab === 'database'  && <TabDatabase nav={nav} setModal={setModal} user={u} userAccess={userAccess} isMobile={isMobile} />}
-            {tab === 'profile'  && <TabProfile user={u} userAccess={userAccess} accessLoading={accessLoading} isMobile={isMobile} onLogout={onLogout} />}
+            {tab === 'profile'  && <TabProfile user={u} userAccess={userAccess} accessLoading={accessLoading} isMobile={isMobile} onLogout={onLogout} onUserUpdate={onUserUpdate} />}
           </div>
         </div>
       </main>
@@ -1371,11 +1371,60 @@ function IkkajoChoiceModal({ products, onClose, isMobile }) {
 // ── Вкладка: Профиль ──────────────────────────────────────────────
 // userAccess и accessLoading приходят из Dashboard (единственный useUserAccessRows).
 // Это исключает двойной fetch и гарантирует единый источник данных по всему Dashboard.
-function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) {
+function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout, onUserUpdate }) {
   const [sub, setSub] = useState('exams');
   const { exams: userExams, loading: examsLoading }   = useUserExams();
   const { payments: userPays, loading: paysLoading }  = useUserPayments();
   const usr   = u || {};
+
+  // ── Edit profile state ──────────────────────────────────────
+  const [editingInfo,    setEditingInfo]    = useState(false);
+  const [infoDraft,      setInfoDraft]      = useState({});
+  const [infoSaving,     setInfoSaving]     = useState(false);
+  const [infoError,      setInfoError]      = useState('');
+  const [avatarLoading,  setAvatarLoading]  = useState(false);
+  const fileInputRef = useRef(null);
+
+  const startEdit = () => {
+    setInfoDraft({ name: usr.name || '', senseiName: usr.senseiName || '', experience: usr.experience || '', level: usr.level || '6kyu' });
+    setInfoError('');
+    setEditingInfo(true);
+  };
+  const cancelEdit = () => { setEditingInfo(false); setInfoError(''); };
+
+  const saveInfo = async () => {
+    setInfoSaving(true); setInfoError('');
+    try {
+      const res  = await fetch('/api/user/profile', { method: 'PATCH', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(infoDraft) });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Ошибка сохранения');
+      onUserUpdate?.(data.user);
+      setEditingInfo(false);
+    } catch (e) { setInfoError(e.message); }
+    finally { setInfoSaving(false); }
+  };
+
+  const handleAvatarFile = async (file) => {
+    if (!file) return;
+    setAvatarLoading(true);
+    try {
+      const fd = new FormData(); fd.append('file', file);
+      const res  = await fetch('/api/user/avatar', { method: 'POST', body: fd });
+      const data = await res.json();
+      if (!res.ok) throw new Error(data.error || 'Ошибка загрузки');
+      onUserUpdate?.({ ...usr, avatarUrl: data.avatarUrl });
+    } catch (e) { alert(e.message); }
+    finally { setAvatarLoading(false); }
+  };
+
+  const handleAvatarDelete = async () => {
+    if (!usr.avatarUrl) return;
+    setAvatarLoading(true);
+    try {
+      await fetch('/api/user/avatar', { method: 'DELETE' });
+      onUserUpdate?.({ ...usr, avatarUrl: null });
+    } finally { setAvatarLoading(false); }
+  };
   const curLv = LEVELS.find(l => l.id === usr.level);
   const selfLvLabel = SELF_LEVELS.find(l => l.id === usr.selfLevel)?.label;
 
@@ -1478,7 +1527,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
           </div>
           {joinedStr && (
             <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-              В ШКОЛЕ С {joinedStr}
+              В ОНЛАЙН-ШКОЛЕ С {joinedStr}
             </span>
           )}
         </div>
@@ -1487,19 +1536,36 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
       {/* ── Desktop hero: 3-col grid ── */}
       {!isMobile && (
         <div style={{ display: 'grid', gridTemplateColumns: '200px 1fr 260px', gap: 28, marginBottom: 36 }}>
-          {/* portrait placeholder */}
-          <div style={{ background: C.ink, minHeight: 240, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, position: 'relative', overflow: 'hidden' }}>
-            <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(45deg, #1a1510 0, #1a1510 2px, #0f0c08 2px, #0f0c08 10px)', opacity: 0.7 }} />
-            <div style={{ position: 'relative', zIndex: 1, width: 56, height: 56, borderRadius: '50%', border: `1px solid rgba(200,169,74,0.4)`, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 24, color: C.goldLight }}>
-              {(usr.name || '?')[0].toUpperCase()}
+          {/* portrait */}
+          <div style={{ background: C.ink, minHeight: 240, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 10, position: 'relative', overflow: 'hidden', cursor: 'pointer' }}
+               onClick={() => fileInputRef.current?.click()}>
+            {usr.avatarUrl ? (
+              <img src={usr.avatarUrl} alt="avatar" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', opacity: avatarLoading ? 0.4 : 1, transition: 'opacity 0.2s' }} />
+            ) : (
+              <>
+                <div style={{ position: 'absolute', inset: 0, background: 'repeating-linear-gradient(45deg, #1a1510 0, #1a1510 2px, #0f0c08 2px, #0f0c08 10px)', opacity: 0.7 }} />
+                <div style={{ position: 'relative', zIndex: 1, width: 56, height: 56, borderRadius: '50%', border: `1px solid rgba(200,169,74,0.4)`, background: 'rgba(0,0,0,0.4)', display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 24, color: C.goldLight }}>
+                  {(usr.name || '?')[0].toUpperCase()}
+                </div>
+              </>
+            )}
+            <div style={{ position: 'absolute', bottom: 8, left: 0, right: 0, display: 'flex', justifyContent: 'center', gap: 6, zIndex: 2 }}>
+              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: 'rgba(200,169,74,0.6)', letterSpacing: '0.18em', textTransform: 'uppercase', background: 'rgba(0,0,0,0.5)', padding: '3px 8px' }}>
+                {avatarLoading ? '…' : usr.avatarUrl ? 'Изменить фото' : '+ Фото'}
+              </span>
+              {usr.avatarUrl && !avatarLoading && (
+                <span onClick={e => { e.stopPropagation(); handleAvatarDelete(); }}
+                  style={{ fontFamily: "var(--font-mono), monospace", fontSize: 10, color: 'rgba(220,80,80,0.8)', letterSpacing: '0.18em', textTransform: 'uppercase', background: 'rgba(0,0,0,0.5)', padding: '3px 8px', cursor: 'pointer' }}>
+                  Удалить
+                </span>
+              )}
             </div>
-            <div style={{ position: 'relative', zIndex: 1, fontFamily: "var(--font-mono), monospace", fontSize: 11, color: 'rgba(200,169,74,0.45)', letterSpacing: '0.2em', textTransform: 'uppercase' }}>Портрет студента</div>
+            <input ref={fileInputRef} type="file" accept="image/jpeg,image/png,image/webp" style={{ display: 'none' }} onChange={e => handleAvatarFile(e.target.files?.[0])} />
           </div>
 
           {/* info */}
           <div>
-            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 10 }}>
-              <span style={{ fontFamily: "'Cormorant Garamond', serif", color: C.gold, fontSize: 13 }}>04</span>
+            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 14 }}>
               Студент додзё
             </div>
             <h2 style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 44, color: C.ink, letterSpacing: '0.04em', fontWeight: 400, lineHeight: 0.92, textTransform: 'uppercase', marginBottom: 12 }}>
@@ -1525,9 +1591,12 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
       {isMobile && (
         <>
           <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginBottom: 16 }}>
-            <div style={{ position: 'relative', flexShrink: 0 }}>
-              <div style={{ width: 64, height: 64, borderRadius: '50%', background: C.ink, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 24, color: C.goldLight }}>
-                {(usr.name || '?')[0].toUpperCase()}
+            <div style={{ position: 'relative', flexShrink: 0 }} onClick={() => fileInputRef.current?.click()}>
+              <div style={{ width: 64, height: 64, borderRadius: '50%', background: C.ink, border: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 24, color: C.goldLight, overflow: 'hidden', cursor: 'pointer' }}>
+                {usr.avatarUrl
+                  ? <img src={usr.avatarUrl} alt="avatar" style={{ width: '100%', height: '100%', objectFit: 'cover', opacity: avatarLoading ? 0.4 : 1 }} />
+                  : (usr.name || '?')[0].toUpperCase()
+                }
               </div>
               <span style={{ position: 'absolute', bottom: -4, right: -4, width: 22, height: 22, borderRadius: '50%', background: C.accent, color: '#fff', fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 11, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
                 {curKanji}
@@ -1565,28 +1634,72 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
       {/* ── Info tab ── */}
       {sub === 'info' && (
         <div style={{ border: `1px solid ${C.border}`, borderTop: 'none', background: C.surface }}>
-          {[
-            { label: 'Уровень (подтверждён)',     value: curLv?.label,    show: !!curLv },
-            { label: 'Уровень (при регистрации)', value: selfLvLabel,     show: !!selfLvLabel && selfLvLabel !== curLv?.label },
-            { label: 'Имя сэнсэя',               value: usr.senseiName || 'Станислав Копин', show: true },
-          ].filter(r => r.show).map(row => (
-            <div key={row.label} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '200px 1fr', padding: '14px 18px', borderBottom: `1px solid ${C.border}`, alignItems: 'start', gap: isMobile ? 2 : 0 }}>
-              <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{row.label}</span>
-              <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: C.ink }}>{row.value}</span>
+          {editingInfo ? (
+            /* ── Edit form ── */
+            <div style={{ padding: '20px 18px', display: 'flex', flexDirection: 'column', gap: 14 }}>
+              {[
+                { key: 'name',       label: 'Имя',     type: 'input'  },
+                { key: 'senseiName', label: 'Сенсей',  type: 'input'  },
+              ].map(({ key, label }) => (
+                <div key={key}>
+                  <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 5 }}>{label}</div>
+                  <input value={infoDraft[key] || ''} onChange={e => setInfoDraft(p => ({ ...p, [key]: e.target.value }))}
+                    style={{ width: '100%', background: C.bg, border: `1px solid ${C.border}`, padding: '8px 10px', fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, color: C.ink, outline: 'none', boxSizing: 'border-box' }} />
+                </div>
+              ))}
+              <div>
+                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 5 }}>Уровень</div>
+                <select value={infoDraft.level || '6kyu'} onChange={e => setInfoDraft(p => ({ ...p, level: e.target.value }))}
+                  style={{ width: '100%', background: C.bg, border: `1px solid ${C.border}`, padding: '8px 10px', fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, color: C.ink, outline: 'none' }}>
+                  {LEVELS.map(l => <option key={l.id} value={l.id}>{l.label}</option>)}
+                </select>
+              </div>
+              <div>
+                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 5 }}>О себе</div>
+                <textarea value={infoDraft.experience || ''} onChange={e => setInfoDraft(p => ({ ...p, experience: e.target.value }))}
+                  rows={4} style={{ width: '100%', background: C.bg, border: `1px solid ${C.border}`, padding: '8px 10px', fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, color: C.ink, outline: 'none', resize: 'vertical', boxSizing: 'border-box' }} />
+              </div>
+              {infoError && <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.danger }}>{infoError}</div>}
+              <div style={{ display: 'flex', gap: 8 }}>
+                <button onClick={saveInfo} disabled={infoSaving} style={{ padding: '10px 20px', background: C.accent, color: '#fff', border: 'none', cursor: infoSaving ? 'default' : 'pointer', fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase', opacity: infoSaving ? 0.6 : 1 }}>
+                  {infoSaving ? '…' : 'Сохранить'}
+                </button>
+                <button onClick={cancelEdit} style={{ padding: '10px 20px', background: 'none', color: C.muted, border: `1px solid ${C.border}`, cursor: 'pointer', fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+                  Отмена
+                </button>
+              </div>
             </div>
-          ))}
-          {usr.experience && (
-            <div style={{ padding: '18px' }}>
-              <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 12 }}>Об опыте</div>
-              <p style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: C.ink2, lineHeight: 1.85, borderLeft: `2px solid ${C.goldBorder}`, paddingLeft: 14, margin: 0 }}>{usr.experience}</p>
-            </div>
-          )}
-          {isMobile && (
-            <div style={{ padding: '14px 16px', borderTop: `1px solid ${C.border}` }}>
-              <button onClick={onLogout} style={{ width: '100%', padding: '10px', background: 'none', border: `1px solid ${C.border}`, color: C.muted, fontSize: 13, cursor: 'pointer', minHeight: 44, fontFamily: "var(--font-mono), monospace", letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                Выйти из аккаунта
-              </button>
-            </div>
+          ) : (
+            /* ── Read mode ── */
+            <>
+              {[
+                { label: 'Имя',                       value: usr.name,                              show: true },
+                { label: 'Уровень',                   value: curLv?.label,                          show: !!curLv },
+                { label: 'Уровень (при регистрации)', value: selfLvLabel,                           show: !!selfLvLabel && selfLvLabel !== curLv?.label },
+                { label: 'Сенсей',                    value: usr.senseiName || 'Станислав Копин',   show: true },
+              ].filter(r => r.show).map(row => (
+                <div key={row.label} style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : '200px 1fr', padding: '14px 18px', borderBottom: `1px solid ${C.border}`, alignItems: 'start', gap: isMobile ? 2 : 0 }}>
+                  <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.12em', textTransform: 'uppercase' }}>{row.label}</span>
+                  <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, color: C.ink }}>{row.value}</span>
+                </div>
+              ))}
+              {usr.experience && (
+                <div style={{ padding: '18px', borderBottom: `1px solid ${C.border}` }}>
+                  <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: 12 }}>О себе</div>
+                  <p style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, color: C.ink2, lineHeight: 1.85, borderLeft: `2px solid ${C.goldBorder}`, paddingLeft: 14, margin: 0 }}>{usr.experience}</p>
+                </div>
+              )}
+              <div style={{ padding: '14px 18px', display: 'flex', gap: 8, flexWrap: 'wrap' }}>
+                <button onClick={startEdit} style={{ padding: '9px 18px', background: 'none', color: C.ink, border: `1px solid ${C.border}`, cursor: 'pointer', fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+                  Редактировать
+                </button>
+                {isMobile && (
+                  <button onClick={onLogout} style={{ padding: '9px 18px', background: 'none', border: `1px solid ${C.border}`, color: C.muted, fontSize: 11, cursor: 'pointer', fontFamily: "var(--font-mono), monospace", letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                    Выйти
+                  </button>
+                )}
+              </div>
+            </>
           )}
         </div>
       )}
@@ -1598,7 +1711,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
             <div style={{ padding: '24px 18px', color: C.muted, fontSize: 13, background: C.surface, border: `1px solid ${C.border}`, borderTop: 'none', fontFamily: "var(--font-mono), monospace" }}>Загрузка…</div>
           )}
           {!examsLoading && grouped.length === 0 && (
-            <div style={{ padding: '24px 18px', color: C.muted, fontSize: 13, background: C.surface, border: `1px solid ${C.border}`, borderTop: 'none', fontFamily: "'Cormorant Garamond', serif" }}>Экзаменов пока нет</div>
+            <div style={{ padding: '24px 18px', color: C.muted, fontSize: 15, background: C.surface, border: `1px solid ${C.border}`, borderTop: 'none', fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif" }}>Экзаменов пока нет</div>
           )}
           {!examsLoading && grouped.length > 0 && (
             <>
@@ -1626,7 +1739,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
                         <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 24, color: C.accent, opacity: 0.7, minWidth: 26, textAlign: 'center' }}>{kanjiShort}</span>
                         <div style={{ flex: 1 }}>
                           <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, letterSpacing: '0.04em', color: C.ink, fontWeight: 500 }}>{lv?.label?.toUpperCase()}</div>
-                          <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: C.muted, marginTop: 1 }}>
+                          <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 13, color: C.muted, marginTop: 1 }}>
                             {bestAttempt?.comment || ''}{bestAttempt?.date ? ` · ${bestAttempt.date}` : ''}
                           </div>
                         </div>
@@ -1642,7 +1755,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout }) 
                         <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, color: C.ink, letterSpacing: '0.04em', fontWeight: 500 }}>{lv?.label?.toUpperCase()}</span>
                       </div>
                       <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.06em' }}>{bestAttempt?.date || '—'}</span>
-                      <span style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: C.ink2 }}>{bestAttempt?.comment || '—'}</span>
+                      <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, color: C.ink2 }}>{bestAttempt?.comment || '—'}</span>
                       <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.18em', textTransform: 'uppercase', color: statusColor, padding: '4px 10px', border: `1px solid ${statusColor}`, textAlign: 'center', fontWeight: 600 }}>{statusLabel}</span>
                     </div>
                   );

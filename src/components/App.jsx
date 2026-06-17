@@ -215,7 +215,7 @@ export default function App({ initialUser = null }) {
   return (
     <>
       {route.page === 'dashboard' && (
-        <Dashboard nav={nav} watched={watched} user={user} onLogout={handleLogout} initialTab={route.tab} />
+        <Dashboard nav={nav} watched={watched} user={user} onLogout={handleLogout} initialTab={route.tab} onUserUpdate={setCurrentUser} />
       )}
       {route.page === 'ikkajo' && (
         <IkkajoPage nav={nav} user={user} onLogout={handleLogout} initialKyu={route.kyu} />

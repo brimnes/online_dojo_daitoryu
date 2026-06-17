@@ -48,6 +48,7 @@ model User {
   selfLevel    String   @default("none") @map("self_level")
   senseiName   String   @default("")     @map("sensei_name")
   experience   String   @default("")
+  avatarUrl    String?                   @map("avatar_url")
 
   joinedAt     DateTime @default(now()) @map("joined_at")
   updatedAt    DateTime @updatedAt      @map("updated_at")

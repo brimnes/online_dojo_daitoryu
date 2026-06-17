@@ -96,7 +96,7 @@ export function getTokenPayload(request) {
 const USER_SELECT = {
   id: true, email: true, name: true, role: true,
   level: true, status: true, selfLevel: true,
-  senseiName: true, experience: true, joinedAt: true,
+  senseiName: true, experience: true, avatarUrl: true, joinedAt: true,
 };
 
 /**
