@@ -1461,8 +1461,18 @@ function TabProfile({ user: u, nav, userAccess, accessLoading, isMobile, onLogou
   const LEVEL_KANJI_SHORT = { '6kyu':'六', '5kyu':'五', '4kyu':'四', '3kyu':'三', '2kyu':'二', '1kyu':'一', '1dan':'初', '2dan':'二', '3dan':'三' };
   const curKanji = LEVEL_KANJI_SHORT[usr.level] || '';
 
-  // Progress track
-  const TRACK = ['6kyu','5kyu','4kyu','3kyu','2kyu','1kyu','1dan'];
+  // Progress track — выбирается по текущему уровню
+  const TRACKS = {
+    kyu:  { ids: ['6kyu','5kyu','4kyu','3kyu','2kyu','1kyu','1dan'], startLabel: '6 КЮ', endLabel: 'СЁДАН',  goalLabel: 'Сёдан'  },
+    dan1: { ids: ['1dan','2dan'],                                     startLabel: 'СЁДАН', endLabel: 'НИДАН',  goalLabel: 'Нидан'  },
+    dan2: { ids: ['2dan','3dan'],                                     startLabel: 'НИДАН', endLabel: 'САНДАН', goalLabel: 'Сандан' },
+    dan3: { ids: ['3dan'],                                            startLabel: 'САНДАН',endLabel: '4 ДАН',  goalLabel: '4 дан'  },
+  };
+  const trackKey = ['6kyu','5kyu','4kyu','3kyu','2kyu','1kyu'].includes(usr.level) ? 'kyu'
+    : usr.level === '1dan' ? 'dan1'
+    : usr.level === '2dan' ? 'dan2'
+    : 'dan3';
+  const { ids: TRACK, startLabel: trackStart, endLabel: trackEnd, goalLabel } = TRACKS[trackKey];
   const curIdx = TRACK.indexOf(usr.level);
 
   // Level card (reused on desktop and mobile)
@@ -1477,21 +1487,20 @@ function TabProfile({ user: u, nav, userAccess, accessLoading, isMobile, onLogou
         {curLv?.program === 'ikkajo' ? 'Иккаджо · Татиай' : curLv?.label || ''}
       </div>
       <div style={{ height: 1, background: C.border, marginBottom: compact ? 10 : 14 }} />
-      <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: compact ? 8 : 10 }}>Путь к Сёдан</div>
+      <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase', marginBottom: compact ? 8 : 10 }}>Путь к {goalLabel}</div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 3, marginBottom: 6 }}>
         {TRACK.map((id, i) => {
           const filled = i <= curIdx;
           const isCur  = i === curIdx;
           return (
             <div key={id} style={{ flex: 1, minWidth: 0, height: 4, background: filled ? C.accent : C.bg2, position: 'relative' }}>
-              {/* marker: centered on the segment, not sticking out right */}
               {isCur && <div style={{ position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)', width: 10, height: 10, borderRadius: '50%', background: C.accent, zIndex: 1 }} />}
             </div>
           );
         })}
       </div>
       <div style={{ display: 'flex', justifyContent: 'space-between', fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.1em' }}>
-        <span>6 КЮ</span><span>СЁДАН</span>
+        <span>{trackStart}</span><span>{trackEnd}</span>
       </div>
     </div>
   );
