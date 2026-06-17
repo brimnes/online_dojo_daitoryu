@@ -106,7 +106,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, onUs
             {tab === 'knowledge' && <TabKnowledge nav={nav} isMobile={isMobile} />}
             {tab === 'months'    && <TabMonths   nav={nav} watched={watched} user={u} userAccess={userAccess} accessLoading={accessLoading} isMobile={isMobile} />}
             {tab === 'database'  && <TabDatabase nav={nav} setModal={setModal} user={u} userAccess={userAccess} isMobile={isMobile} />}
-            {tab === 'profile'  && <TabProfile user={u} userAccess={userAccess} accessLoading={accessLoading} isMobile={isMobile} onLogout={onLogout} onUserUpdate={onUserUpdate} />}
+            {tab === 'profile'  && <TabProfile user={u} nav={nav} userAccess={userAccess} accessLoading={accessLoading} isMobile={isMobile} onLogout={onLogout} onUserUpdate={onUserUpdate} />}
           </div>
         </div>
       </main>
@@ -1371,7 +1371,7 @@ function IkkajoChoiceModal({ products, onClose, isMobile }) {
 // ── Вкладка: Профиль ──────────────────────────────────────────────
 // userAccess и accessLoading приходят из Dashboard (единственный useUserAccessRows).
 // Это исключает двойной fetch и гарантирует единый источник данных по всему Dashboard.
-function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout, onUserUpdate }) {
+function TabProfile({ user: u, nav, userAccess, accessLoading, isMobile, onLogout, onUserUpdate }) {
   const [sub, setSub] = useState('exams');
   const { exams: userExams, loading: examsLoading }   = useUserExams();
   const { payments: userPays, loading: paysLoading }  = useUserPayments();
@@ -1787,7 +1787,7 @@ function TabProfile({ user: u, userAccess, accessLoading, isMobile, onLogout, on
 
       {/* ── MyAccess tab ── */}
       {sub === 'access' && (
-        <TabMyAccess userAccess={userAccess} loading={accessLoading} isMobile={isMobile} />
+        <TabMyAccess userAccess={userAccess} loading={accessLoading} isMobile={isMobile} nav={nav} onGoToUnlock={() => setSub('unlock')} />
       )}
 
       {/* ── UnlockAccess tab ── */}
@@ -1808,7 +1808,7 @@ const ALL_MONTHS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct',
 // Месяцы скрытые из публичного списка (sortOrder < 6 — январь–май)
 const HIDDEN_MONTH_IDS = ['jan', 'feb', 'mar', 'apr', 'may'];
 
-function TabMyAccess({ userAccess, loading, isMobile }) {
+function TabMyAccess({ userAccess, loading, isMobile, nav, onGoToUnlock }) {
   if (loading) return (
     <div style={{ border: `1px solid ${C.border}`, borderTop: 'none', padding: '24px 16px', background: C.white, color: C.muted, fontSize: 13 }}>
       Загрузка…
@@ -1818,18 +1818,7 @@ function TabMyAccess({ userAccess, loading, isMobile }) {
   const ua = userAccess || [];
   const fullIkkajo = hasIkkajoFullAccess(ua);
 
-  // ── DEBUG: лог для диагностики фантомных доступов ──────────────
-  // Убрать после подтверждения что phantom-access исчезли.
-  const displayedAccess = {
-    months:   ALL_MONTHS.filter(m => hasMonthAccess(ua, m)),
-    sections: IKKAJO_SECTIONS.filter(s => hasIkkajoSectionAccess(ua, s)),
-    fullIkkajo,
-  };
-  console.log('[TabMyAccess] accessRows (raw):', JSON.stringify(ua));
-  console.log('[TabMyAccess] displayedAccess:', JSON.stringify(displayedAccess));
-  // ────────────────────────────────────────────────────────────────
-
-  const rowStyle = { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderBottom: `1px solid ${C.border}`, fontSize: 13, background: C.surface };
+  const rowBase = { display: 'flex', alignItems: 'center', gap: 10, padding: '10px 16px', borderBottom: `1px solid ${C.border}`, fontSize: 13, background: C.surface };
   const tick = (has) => (
     <span style={{ fontSize: 13, color: has ? '#2d7a4a' : '#ccc', flexShrink: 0 }}>{has ? '✓' : '✗'}</span>
   );
@@ -1843,9 +1832,12 @@ function TabMyAccess({ userAccess, loading, isMobile }) {
       {ALL_MONTHS.filter(m => !HIDDEN_MONTH_IDS.includes(m)).map(m => {
         const has = hasMonthAccess(ua, m);
         return (
-          <div key={m} style={{ ...rowStyle, opacity: has ? 1 : 0.45 }}>
+          <div key={m}
+            onClick={() => has && nav?.month(m)}
+            style={{ ...rowBase, opacity: has ? 1 : 0.45, cursor: has ? 'pointer' : 'default' }}>
             {tick(has)}
-            <span style={{ color: has ? C.dark : C.muted }}>{MONTH_LABELS[m]}</span>
+            <span style={{ color: has ? C.ink : C.muted, flex: 1 }}>{MONTH_LABELS[m]}</span>
+            {has && <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.1em' }}>→</span>}
           </div>
         );
       })}
@@ -1855,7 +1847,7 @@ function TabMyAccess({ userAccess, loading, isMobile }) {
         <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Иккаджо</div>
       </div>
       {fullIkkajo ? (
-        <div style={{ ...rowStyle }}>
+        <div style={{ ...rowBase }}>
           {tick(true)}
           <span style={{ color: C.dark }}>Весь Иккаджо</span>
           <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.accent, background: `${C.accent}10`, border: `1px solid ${C.accent}30`, padding: '2px 8px', marginLeft: 'auto', letterSpacing: '0.1em', textTransform: 'uppercase' }}>полный доступ</span>
@@ -1864,7 +1856,7 @@ function TabMyAccess({ userAccess, loading, isMobile }) {
         IKKAJO_SECTIONS.map(s => {
           const has = hasIkkajoSectionAccess(ua, s);
           return (
-            <div key={s} style={{ ...rowStyle, opacity: has ? 1 : 0.45 }}>
+            <div key={s} style={{ ...rowBase, opacity: has ? 1 : 0.45 }}>
               {tick(has)}
               <span style={{ color: has ? C.dark : C.muted }}>{IKKAJO_SECTION_LABELS[s] || s}</span>
             </div>
@@ -1875,7 +1867,7 @@ function TabMyAccess({ userAccess, loading, isMobile }) {
       {ua.length === 0 && (
         <div style={{ padding: '20px 16px', textAlign: 'center', color: C.muted, fontSize: 13, borderTop: `1px solid ${C.border}` }}>
           Нет активных доступов.{' '}
-          <button onClick={() => {}} style={{ color: C.gold, background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, textDecoration: 'underline' }}>
+          <button onClick={onGoToUnlock} style={{ color: C.gold, background: 'none', border: 'none', cursor: 'pointer', fontSize: 13, textDecoration: 'underline' }}>
             Перейти к покупке →
           </button>
         </div>
@@ -1934,6 +1926,9 @@ function TabUnlockAccess({ userAccess, isMobile }) {
     <div style={{ border: `1px solid ${C.border}`, borderTop: 'none', padding: '24px 16px', background: C.surface, color: C.muted, fontSize: 13 }}>Загрузка…</div>
   );
 
+  // Индекс is_open по id месяца (reference совпадает с month.id)
+  const monthOpenById = Object.fromEntries((months ?? []).map(m => [m.id, m.is_open]));
+
   const monthProducts   = products.filter(p => p.type === 'month' && !HIDDEN_MONTH_IDS.includes(p.reference));
   const sectionProducts = products.filter(p => p.type === 'section' && p.reference !== 'ikkajo');
   const ikkajoFull      = products.find(p => p.reference === 'ikkajo');
@@ -1980,12 +1975,15 @@ function TabUnlockAccess({ userAccess, isMobile }) {
         </div>
         <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(auto-fill, minmax(180px, 1fr))', gap: 8 }}>
           {monthProducts.map(p => {
-            const has = hasMonthAccess(ua, p.reference);
+            const has    = hasMonthAccess(ua, p.reference);
+            const isOpen = monthOpenById[p.reference] ?? false;
             return (
-              <div key={p.id} style={{ padding: '14px', background: has ? `${C.success}10` : C.surface2, border: `1px solid ${has ? C.success + '40' : C.border}` }}>
-                <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 15, fontWeight: 500, color: C.ink, marginBottom: 4 }}>{p.title}</div>
-                <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.5, minHeight: 32 }}>{p.description}</div>
-                <CardBtn product={p} hasAccess={has} />
+              <div key={p.id} style={{ padding: '14px', background: has ? `${C.success}10` : C.surface2, border: `1px solid ${has ? C.success + '40' : C.border}`, opacity: (!has && !isOpen) ? 0.5 : 1 }}>
+                <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, fontWeight: 500, color: C.ink, marginBottom: 4 }}>{p.title}</div>
+                {!has && !isOpen
+                  ? <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, marginTop: 10, letterSpacing: '0.1em' }}>ЗАКРЫТ</div>
+                  : <CardBtn product={p} hasAccess={has} />
+                }
               </div>
             );
           })}
