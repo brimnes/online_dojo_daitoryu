@@ -73,7 +73,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout, initialKyu }) {
 
       {/* ── Sidebar (desktop only) ── */}
       {!isMobile && (
-        <Sidebar activeTab="database" onTabClick={() => nav.dashboard()} user={user} onLogout={onLogout} />
+        <Sidebar activeTab="database" onTabClick={id => nav.dashboard(id)} user={user} onLogout={onLogout} />
       )}
 
       {/* ── Page content ── */}

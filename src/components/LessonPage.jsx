@@ -82,7 +82,7 @@ export default function LessonPage({
 
       {/* ── Dark sidebar (desktop only) ── */}
       {!isMobile && (
-        <Sidebar activeTab="months" onTabClick={() => nav.dashboard()} user={user} onLogout={onLogout} />
+        <Sidebar activeTab="months" onTabClick={id => nav.dashboard(id)} user={user} onLogout={onLogout} />
       )}
 
       {/* ── Page content ── */}

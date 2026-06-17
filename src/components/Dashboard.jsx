@@ -1871,18 +1871,22 @@ function TabMyAccess({ userAccess, loading, isMobile, nav, onGoToUnlock }) {
         <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Иккаджо</div>
       </div>
       {fullIkkajo ? (
-        <div style={{ ...rowBase }}>
+        <div onClick={() => nav?.ikkajo()} style={{ ...rowBase, cursor: 'pointer' }}>
           {tick(true)}
           <span style={{ color: C.dark }}>Весь Иккаджо</span>
           <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.accent, background: `${C.accent}10`, border: `1px solid ${C.accent}30`, padding: '2px 8px', marginLeft: 'auto', letterSpacing: '0.1em', textTransform: 'uppercase' }}>полный доступ</span>
+          <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.1em', marginLeft: 4 }}>→</span>
         </div>
       ) : (
         IKKAJO_SECTIONS.map(s => {
           const has = hasIkkajoSectionAccess(ua, s);
           return (
-            <div key={s} style={{ ...rowBase, opacity: has ? 1 : 0.45 }}>
+            <div key={s}
+              onClick={() => has && nav?.ikkajo()}
+              style={{ ...rowBase, opacity: has ? 1 : 0.45, cursor: has ? 'pointer' : 'default' }}>
               {tick(has)}
-              <span style={{ color: has ? C.dark : C.muted }}>{IKKAJO_SECTION_LABELS[s] || s}</span>
+              <span style={{ color: has ? C.dark : C.muted, flex: 1 }}>{IKKAJO_SECTION_LABELS[s] || s}</span>
+              {has && <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.1em' }}>→</span>}
             </div>
           );
         })
