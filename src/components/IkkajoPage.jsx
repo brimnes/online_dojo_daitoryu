@@ -1,6 +1,7 @@
 'use client';
 
 import { useState, useMemo, useRef, useEffect } from 'react';
+import GlobalSearch from '@/components/GlobalSearch';
 import { C } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
 import { BELT, KYU_DATA, FLAT_INDEX } from '@/data/techniques';
@@ -112,10 +113,12 @@ export default function IkkajoPage({ nav, user = {}, onLogout, initialKyu }) {
               fontSize: 13, letterSpacing: '0.18em', color: C.ink, fontWeight: 600,
             }}>ИККАДЖО</span>
             <div style={{ marginLeft: 'auto' }}>
-              <SearchBar
+              <GlobalSearch
                 userAccess={userAccess}
                 accessLoading={accessLoading}
                 onSelect={({ kyu, section, tech }) => nav.technique(kyu, section, tech)}
+                placeholder="Поиск техники, кю или раздела…"
+                maxWidth={380}
               />
             </div>
           </div>
@@ -210,16 +213,6 @@ export default function IkkajoPage({ nav, user = {}, onLogout, initialKyu }) {
             </div>
           )}
 
-          {/* Mobile search */}
-          {isMobile && (
-            <div style={{ marginBottom: 16 }}>
-              <SearchBar
-                userAccess={userAccess}
-                accessLoading={accessLoading}
-                onSelect={({ kyu, section, tech }) => nav.technique(kyu, section, tech)}
-              />
-            </div>
-          )}
 
           {/* ── Kyu tabs ── */}
           <div style={{
@@ -442,99 +435,6 @@ function TechCard({ tech, index, videoCount, onClick, isMobile }) {
   );
 }
 
-// ── Search bar ────────────────────────────────────────────────────
-function SearchBar({ onSelect, userAccess = [], accessLoading = false }) {
-  const [q, setQ] = useState('');
-  const [open, setOpen] = useState(false);
-  const ref = useRef(null);
-
-  const results = useMemo(() => {
-    if (q.trim().length < 2) return [];
-    const lq = q.toLowerCase();
-    return FLAT_INDEX.filter(({ tech, section }) =>
-      tech.name.toLowerCase().includes(lq) ||
-      tech.nameRu.toLowerCase().includes(lq) ||
-      section.nameRu.toLowerCase().includes(lq)
-    ).slice(0, 7);
-  }, [q]);
-
-  useEffect(() => {
-    const fn = e => { if (ref.current && !ref.current.contains(e.target)) setOpen(false); };
-    document.addEventListener('mousedown', fn);
-    return () => document.removeEventListener('mousedown', fn);
-  }, []);
-
-  return (
-    <div ref={ref} style={{ position: 'relative', width: '100%', maxWidth: 380 }}>
-      <div style={{
-        display: 'flex', alignItems: 'center', gap: 10,
-        background: C.bg, border: `1px solid ${C.border}`,
-        padding: '8px 14px', height: 44,
-      }}>
-        <span style={{ color: C.muted, fontSize: 15 }}>⌕</span>
-        <input
-          value={q}
-          onChange={e => { setQ(e.target.value); setOpen(true); }}
-          onFocus={() => setOpen(true)}
-          placeholder="Поиск техники, кю или раздела…"
-          style={{
-            flex: 1, border: 'none', outline: 'none', background: 'transparent',
-            fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-            fontSize: 15, color: C.ink,
-          }}
-        />
-        {q && (
-          <button onClick={() => { setQ(''); setOpen(false); }}
-            style={{ background: 'none', border: 'none', color: C.muted, cursor: 'pointer', fontSize: 15 }}>
-            ✕
-          </button>
-        )}
-      </div>
-      {open && q.length >= 2 && (
-        <div style={{
-          position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0,
-          background: C.surface, border: `1px solid ${C.border}`,
-          boxShadow: '0 4px 20px rgba(0,0,0,0.08)', zIndex: 200,
-          maxHeight: 300, overflowY: 'auto',
-        }}>
-          {results.length === 0
-            ? <div style={{
-                padding: '12px 16px',
-                fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                color: C.muted, fontSize: 15,
-              }}>Ничего не найдено</div>
-            : results.map(({ kyu, section, tech }) => {
-                const b = BELT[kyu.belt] || {};
-                return (
-                  <div key={`${kyu.id}-${tech.id}`}
-                    onClick={() => {
-                      const sk = section.id?.toLowerCase();
-                      const blocked = !accessLoading && IKKAJO_SECTIONS.includes(sk) && !hasIkkajoSectionAccess(userAccess, sk);
-                      if (blocked) { alert(`Раздел «${section.nameRu}» недоступен`); return; }
-                      onSelect({ kyu, section, tech }); setQ(''); setOpen(false);
-                    }}
-                    style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '12px 16px', cursor: 'pointer', borderBottom: `1px solid ${C.hairline2}` }}
-                    onMouseEnter={e => e.currentTarget.style.background = C.bg}
-                    onMouseLeave={e => e.currentTarget.style.background = C.surface}>
-                    <span style={{ width: 8, height: 8, borderRadius: '50%', background: b.color, border: `2px solid ${b.border}`, flexShrink: 0 }} />
-                    <div style={{ flex: 1 }}>
-                      <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 15, color: C.ink, fontWeight: 500 }}>
-                        {tech.nameRu}{' '}
-                        <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: C.muted, fontWeight: 400, fontSize: 15, letterSpacing: '0.03em' }}>{tech.name}</span>
-                      </div>
-                      <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: C.muted, letterSpacing: '0.04em' }}>
-                        {kyu.label} · {section.nameRu}
-                      </div>
-                    </div>
-                  </div>
-                );
-              })
-          }
-        </div>
-      )}
-    </div>
-  );
-}
 
 // ── IkkajoPurchaseModal ───────────────────────────────────────────
 function IkkajoPurchaseModal({ product, buying, error, onBuy, onClose }) {

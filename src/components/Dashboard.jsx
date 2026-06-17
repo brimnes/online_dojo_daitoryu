@@ -8,6 +8,7 @@ import { DB_SECTIONS } from '@/data/techniques';
 import { useMonths, useLessons, useUserAccessRows, hasMonthAccess, useKnowledge, useUserExams, useUserPayments, useTechniques } from '@/lib/db';
 import TakedaMon from '@/components/TakedaMon';
 import Sidebar from '@/components/Sidebar';
+import GlobalSearch from '@/components/GlobalSearch';
 import { MobileBottomNav } from '@/components/BottomNav';
 import { hasIkkajoFullAccess, hasIkkajoSectionAccess, IKKAJO_SECTIONS, IKKAJO_SECTION_LABELS, getAccessibleIkkajoSections } from '@/lib/access';
 import { IKKAJO_SECTION_KEYS } from '@/lib/ikkajoSections';
@@ -61,36 +62,48 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, onUs
         {/* Mobile top header */}
         {isMobile && (
           <header style={{
-            display: 'flex',
-            alignItems: 'center',
-            padding: `max(12px, env(safe-area-inset-top)) 16px 12px`,
-            background: C.surface,
-            borderBottom: `1px solid ${C.border}`,
-            position: 'sticky',
-            top: 0,
-            zIndex: 50,
-            gap: 10,
+            background: C.surface, borderBottom: `1px solid ${C.border}`,
+            position: 'sticky', top: 0, zIndex: 50,
           }}>
-            <TakedaMon size={26} color={C.accent} />
-            <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, letterSpacing: '0.06em', color: C.ink, flex: 1 }}>
-              {TABS.find(t => t.id === tab)?.label}
-            </span>
-            {curLv && (
-              <span style={{ fontFamily: "var(--font-mono), monospace", padding: '3px 8px', background: C.surface2, border: `1px solid ${C.border}`, color: C.muted, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
-                {curLv.label}
+            <div style={{ display: 'flex', alignItems: 'center', padding: `max(12px, env(safe-area-inset-top)) 16px 12px`, gap: 10 }}>
+              <TakedaMon size={26} color={C.accent} />
+              <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, letterSpacing: '0.06em', color: C.ink, flex: 1 }}>
+                {TABS.find(t => t.id === tab)?.label}
               </span>
-            )}
+              {curLv && (
+                <span style={{ fontFamily: "var(--font-mono), monospace", padding: '3px 8px', background: C.surface2, border: `1px solid ${C.border}`, color: C.muted, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                  {curLv.label}
+                </span>
+              )}
+            </div>
+            <div style={{ padding: '0 16px 10px' }}>
+              <GlobalSearch
+                userAccess={userAccess}
+                accessLoading={accessLoading}
+                onSelect={({ kyu, section, tech }) => nav.technique(kyu, section, tech)}
+                placeholder="Поиск техники…"
+                maxWidth={9999}
+              />
+            </div>
           </header>
         )}
 
         {/* Desktop header */}
         {!isMobile && (
-          <header style={{ display: 'flex', alignItems: 'center', padding: '14px 36px', background: C.surface, borderBottom: `1px solid ${C.border}`, position: 'sticky', top: 0, zIndex: 10 }}>
-            <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, letterSpacing: '0.06em', color: C.ink, flex: 1 }}>
+          <header style={{ display: 'flex', alignItems: 'center', gap: 16, padding: '14px 36px', background: C.surface, borderBottom: `1px solid ${C.border}`, position: 'sticky', top: 0, zIndex: 10 }}>
+            <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, letterSpacing: '0.06em', color: C.ink }}>
               {TABS.find(t => t.id === tab)?.label}
             </span>
+            <div style={{ flex: 1 }} />
+            <GlobalSearch
+              userAccess={userAccess}
+              accessLoading={accessLoading}
+              onSelect={({ kyu, section, tech }) => nav.technique(kyu, section, tech)}
+              placeholder="Поиск техники…"
+              maxWidth={280}
+            />
             {curLv && (
-              <span style={{ fontFamily: "var(--font-mono), monospace", padding: '3px 9px', background: C.surface2, border: `1px solid ${C.border}`, color: C.muted, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+              <span style={{ fontFamily: "var(--font-mono), monospace", padding: '3px 9px', background: C.surface2, border: `1px solid ${C.border}`, color: C.muted, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase', flexShrink: 0 }}>
                 {curLv.label}
               </span>
             )}
