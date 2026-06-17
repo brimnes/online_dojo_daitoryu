@@ -14,7 +14,7 @@ import { hashPassword, createToken, setAuthCookie } from '@/lib/auth-server.js';
 
 // ─── Временный запрет регистрации ────────────────────────────────
 // Поставь false чтобы снова открыть регистрацию
-const REGISTRATION_CLOSED = false;
+const REGISTRATION_CLOSED = true;
 
 export async function POST(request) {
   if (REGISTRATION_CLOSED) {
