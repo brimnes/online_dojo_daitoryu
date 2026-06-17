@@ -33,7 +33,7 @@ export const TECHNIQUE_CONTENT = {
     senseiQuote: 'Курумадаоси буквально означает «переворот колеса». Вы не опрокидываете человека — вы становитесь осью его падения.',
   },
   'Gyakuudedori': {
-    description: 'Гьякудэдори — работа с захватом руки снаружи. Принцип движения отличается от прямого захвата за счёт другого угла воздействия.',
+    description: 'Гьякуудэдори — работа с захватом руки снаружи. Принцип движения отличается от прямого захвата за счёт другого угла воздействия.',
     principles: [
       'Обратный захват требует смещения на 45° от линии атаки.',
       'Управляйте локтевым суставом, не только запястьем.',
@@ -43,7 +43,7 @@ export const TECHNIQUE_CONTENT = {
       { title: 'Задержка входа', desc: 'Вход после захвата вместо одновременного — теряется момент.' },
       { title: 'Игнорирование локтя', desc: 'Работа только с запястьем без контроля локтя — неполная фиксация.' },
     ],
-    senseiQuote: 'В Гьякудэдори важно понять: обратный захват меняет всё. Угол, движение, точку воздействия. Изучите это досконально.',
+    senseiQuote: 'В Гьякуудэдори важно понять: обратный захват меняет всё. Угол, движение, точку воздействия. Изучите это досконально.',
   },
   'Koshiguruma': {
     description: 'Косигурума — бросок через бедро с круговым движением. Использует бёдра как ось вращения.',
@@ -168,11 +168,11 @@ export const TECHNIQUE_VIDEOS = {
     { id:'ku6', title:'Курумадаоси — Вариации',         duration:'3:30', category:'variations', videoUrl:'' },
   ],
   'Gyakuudedori': [
-    { id:'gy1', title:'Гьякудэдори — Общий вид',       duration:'3:30', category:'overview',   videoUrl:'' },
-    { id:'gy2', title:'Гьякудэдори — Разбор захвата',  duration:'3:10', category:'overview',   videoUrl:'' },
-    { id:'gy3', title:'Гьякудэдори — Детальный разбор',duration:'3:00', category:'details',    videoUrl:'' },
-    { id:'gy4', title:'Гьякудэдори — Ошибки',          duration:'2:15', category:'mistakes',   videoUrl:'' },
-    { id:'gy5', title:'Гьякудэдори — Вариации',        duration:'3:40', category:'variations', videoUrl:'' },
+    { id:'gy1', title:'Гьякуудэдори — Общий вид',       duration:'3:30', category:'overview',   videoUrl:'' },
+    { id:'gy2', title:'Гьякуудэдори — Разбор захвата',  duration:'3:10', category:'overview',   videoUrl:'' },
+    { id:'gy3', title:'Гьякуудэдори — Детальный разбор',duration:'3:00', category:'details',    videoUrl:'' },
+    { id:'gy4', title:'Гьякуудэдори — Ошибки',          duration:'2:15', category:'mistakes',   videoUrl:'' },
+    { id:'gy5', title:'Гьякуудэдори — Вариации',        duration:'3:40', category:'variations', videoUrl:'' },
   ],
   'Koshiguruma': [
     { id:'ko1', title:'Косигурума — Общий вид',    duration:'4:05', category:'overview',   videoUrl:'' },
@@ -309,7 +309,7 @@ export const KYU_DATA = [
       techniques:[
         {id:'6-1',name:'Ippondori',    nameRu:'Иппондори'},
         {id:'6-2',name:'Kurumadaoshi', nameRu:'Курумадаоси'},
-        {id:'6-3',name:'Gyakuudedori', nameRu:'Гьякудэдори'},
+        {id:'6-3',name:'Gyakuudedori', nameRu:'Гьякуудэдори'},
       ]
     }]
   },
@@ -320,7 +320,7 @@ export const KYU_DATA = [
       techniques:[
         {id:'5-1',name:'Ippondori',    nameRu:'Иппондори'},
         {id:'5-2',name:'Kurumadaoshi', nameRu:'Курумадаоси'},
-        {id:'5-3',name:'Gyakuudedori', nameRu:'Гьякудэдори'},
+        {id:'5-3',name:'Gyakuudedori', nameRu:'Гьякуудэдори'},
         {id:'5-4',name:'Koshiguruma',  nameRu:'Косигурума'},
         {id:'5-5',name:'Karaminage',   nameRu:'Караминагэ'},
       ]
@@ -334,7 +334,7 @@ export const KYU_DATA = [
       techniques:[
         {id:'4-1',name:'Ippondori',    nameRu:'Иппондори'},
         {id:'4-2',name:'Kurumadaoshi', nameRu:'Курумадаоси'},
-        {id:'4-3',name:'Gyakuudedori', nameRu:'Гьякудэдори'},
+        {id:'4-3',name:'Gyakuudedori', nameRu:'Гьякуудэдори'},
         {id:'4-4',name:'Koshiguruma',  nameRu:'Косигурума'},
         {id:'4-5',name:'Karaminage',   nameRu:'Караминагэ'},
         {id:'4-6',name:'Uraotoshi',    nameRu:'Ураотоси'},
@@ -354,7 +354,7 @@ export const KYU_DATA = [
         techniques:[
           {id:'3-t1',name:'Ippondori',    nameRu:'Иппондори'},
           {id:'3-t2',name:'Kurumadaoshi', nameRu:'Курумадаоси'},
-          {id:'3-t3',name:'Gyakuudedori', nameRu:'Гьякудэдори'},
+          {id:'3-t3',name:'Gyakuudedori', nameRu:'Гьякуудэдори'},
           {id:'3-t4',name:'Koshiguruma',  nameRu:'Косигурума'},
           {id:'3-t5',name:'Karaminage',   nameRu:'Караминагэ'},
           {id:'3-t6',name:'Uraotoshi',    nameRu:'Ураотоси'},
@@ -390,7 +390,7 @@ export const KYU_DATA = [
         techniques:[
           {id:'2-t1',name:'Ippondori',    nameRu:'Иппондори'},
           {id:'2-t2',name:'Kurumadaoshi', nameRu:'Курумадаоси'},
-          {id:'2-t3',name:'Gyakuudedori', nameRu:'Гьякудэдори'},
+          {id:'2-t3',name:'Gyakuudedori', nameRu:'Гьякуудэдори'},
           {id:'2-t4',name:'Koshiguruma',  nameRu:'Косигурума'},
           {id:'2-t5',name:'Karaminage',   nameRu:'Караминагэ'},
           {id:'2-t6',name:'Uraotoshi',    nameRu:'Ураотоси'},
@@ -436,7 +436,7 @@ export const KYU_DATA = [
         techniques:[
           {id:'1-t1',name:'Ippondori',    nameRu:'Иппондори'},
           {id:'1-t2',name:'Kurumadaoshi', nameRu:'Курумадаоси'},
-          {id:'1-t3',name:'Gyakuudedori', nameRu:'Гьякудэдори'},
+          {id:'1-t3',name:'Gyakuudedori', nameRu:'Гьякуудэдори'},
           {id:'1-t4',name:'Koshiguruma',  nameRu:'Косигурума'},
           {id:'1-t5',name:'Karaminage',   nameRu:'Караминагэ'},
           {id:'1-t6',name:'Uraotoshi',    nameRu:'Ураотоси'},
