@@ -32,9 +32,15 @@ export const metadata = {
     capable:           true,
     statusBarStyle:    'black-translucent',
     title:             'Online Dojo',
+    startupImage:      '/icons/icon-512.png',
   },
   other: {
-    'mobile-web-app-capable': 'yes',
+    'mobile-web-app-capable':            'yes',
+    'apple-mobile-web-app-capable':      'yes',
+    'apple-mobile-web-app-status-bar-style': 'black-translucent',
+    'apple-mobile-web-app-title':        'Online Dojo',
+    'msapplication-TileColor':           '#e6e0d2',
+    'msapplication-TileImage':           '/icons/icon-192.png',
   },
 };
 
@@ -51,7 +57,10 @@ export default function RootLayout({ children }) {
   return (
     <html lang="ru" className={`${cormorant.variable} ${jetbrainsMono.variable} ${notoSerifJP.variable}`}>
       <head>
-        <link rel="apple-touch-icon" href="/icons/icon-192.png" />
+        {/* iOS home screen icon — Safari uses the largest apple-touch-icon it finds */}
+        <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192.png" />
+        <link rel="apple-touch-icon" sizes="192x192" href="/icons/icon-192.png" />
+        <link rel="apple-touch-icon" sizes="512x512" href="/icons/icon-512.png" />
         <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
         <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
       </head>
