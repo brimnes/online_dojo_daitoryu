@@ -1895,25 +1895,13 @@ function MonthEditForm({mDraft,setMDraft,mSaving,onSave,onCancel,desktop}){
       <div style={{fontFamily:F.mono,fontSize:11,letterSpacing:'0.16em',color:C.accent,textTransform:'uppercase',marginBottom:4}}>КОНТЕНТ МЕСЯЦА</div>
 
       {/* Basic info row */}
-      <div style={{display:'grid',gridTemplateColumns:desktop?'1fr 1fr 80px':'1fr',gap:10}}>
+      {desktop && (
         <div>
-          <div style={labelStyle}>Подзаголовок карточки</div>
-          <input value={mDraft.subtitle||''} onChange={e=>setMDraft(p=>({...p,subtitle:e.target.value}))}
-            placeholder="Фундаментальная подготовка." style={fieldStyle}/>
+          <div style={labelStyle}>Кандзи</div>
+          <input value={mDraft.kanji||''} onChange={e=>setMDraft(p=>({...p,kanji:e.target.value}))}
+            placeholder="六" style={{...fieldStyle,fontFamily:F.kanji,fontSize:24,textAlign:'center',width:80}}/>
         </div>
-        <div>
-          <div style={labelStyle}>Описание (карточка)</div>
-          <input value={mDraft.description||''} onChange={e=>setMDraft(p=>({...p,description:e.target.value}))}
-            placeholder="Работа корпуса, устойчивость." style={fieldStyle}/>
-        </div>
-        {desktop && (
-          <div>
-            <div style={labelStyle}>Кандзи</div>
-            <input value={mDraft.kanji||''} onChange={e=>setMDraft(p=>({...p,kanji:e.target.value}))}
-              placeholder="六" style={{...fieldStyle,fontFamily:F.kanji,fontSize:24,textAlign:'center'}}/>
-          </div>
-        )}
-      </div>
+      )}
 
       {/* Modal theme */}
       <div>
@@ -1939,14 +1927,6 @@ function MonthEditForm({mDraft,setMDraft,mSaving,onSave,onCancel,desktop}){
         {(!mDraft.modal_topics||mDraft.modal_topics.length===0)&&(
           <div style={{fontFamily:F.serif,fontSize:13,color:C.muted,padding:'6px 0'}}>Нет пунктов — нажмите + ПУНКТ</div>
         )}
-      </div>
-
-      {/* Lessons desc */}
-      <div>
-        <div style={labelStyle}>Описание уроков</div>
-        <textarea value={mDraft.modal_lessons_desc||''} onChange={e=>setMDraft(p=>({...p,modal_lessons_desc:e.target.value}))}
-          rows={2} placeholder="Видеоуроки с подробными объяснениями, демонстрацией и практическими заданиями."
-          style={{...fieldStyle,resize:'vertical'}}/>
       </div>
 
       {/* Results list */}
@@ -2008,14 +1988,11 @@ function SectionMonths({showToast,isMobile}){
 
   const startEditMonth = () => {
     setMDraft({
-      description:        activeM?.description        || '',
-      subtitle:           activeM?.subtitle           || '',
-      kanji:              activeM?.kanji              || '',
-      modal_theme:        activeM?.modal_theme        || '',
-      modal_topics:       parseList(activeM?.modal_topics),
-      modal_lessons_desc: activeM?.modal_lessons_desc || '',
-      modal_results:      parseList(activeM?.modal_results),
-      modal_extras:       activeM?.modal_extras       || '',
+      kanji:         activeM?.kanji              || '',
+      modal_theme:   activeM?.modal_theme        || '',
+      modal_topics:  parseList(activeM?.modal_topics),
+      modal_results: parseList(activeM?.modal_results),
+      modal_extras:  activeM?.modal_extras       || '',
     });
     setEditingMonth(true);
   };

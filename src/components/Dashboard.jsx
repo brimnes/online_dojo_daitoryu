@@ -227,14 +227,6 @@ function MonthPurchaseModal({ month, product, onClose, isMobile }) {
           fontWeight: 400, position: 'relative', marginBottom: 16,
         }}>{month.label}</div>
 
-        {/* subtitle */}
-        {(month.subtitle || month.description) && (
-          <div style={{
-            fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif",
-            fontSize: 15, color: sideMuted, lineHeight: 1.55, position: 'relative',
-            marginBottom: 16,
-          }}>{month.subtitle || month.description}</div>
-        )}
 
         {/* modal theme teaser */}
         {month.modal_theme && (
@@ -340,13 +332,6 @@ function MonthPurchaseModal({ month, product, onClose, isMobile }) {
             </div>
           )}
 
-          {/* Lessons description */}
-          {month.modal_lessons_desc && (
-            <div style={{ marginBottom: 24 }}>
-              <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 11, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', marginBottom: 10 }}>УРОКИ МЕСЯЦА</div>
-              <div style={{ fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif", fontSize: 15, color: C.ink2, lineHeight: 1.6 }}>{month.modal_lessons_desc}</div>
-            </div>
-          )}
 
           {/* Results */}
           {results.length > 0 && (
@@ -618,17 +603,6 @@ function MonthCard({ month: m, nav, watched, userAccess, accessLoading, product,
         marginBottom: 8,
       }}>{m.label}</div>
 
-      {/* Subtitle — clamped to 2 lines */}
-      {(m.subtitle || m.description) && (
-        <div style={{
-          fontFamily: "var(--font-cormorant),'Cormorant Garamond',serif",
-          fontSize: isMobile ? 14 : 15,
-          color: v.ink2,
-          position: 'relative', lineHeight: 1.4,
-          display: '-webkit-box', WebkitLineClamp: 2,
-          WebkitBoxOrient: 'vertical', overflow: 'hidden',
-        }}>{m.subtitle || m.description}</div>
-      )}
 
       {/* Bottom CTA */}
       <div style={{ marginTop: 'auto', paddingTop: 10, position: 'relative' }}>
@@ -1819,9 +1793,6 @@ function TabUnlockAccess({ userAccess, isMobile }) {
   const [buyError, setBuyError] = useState('');
   const ua = userAccess || [];
 
-  // Индекс month.description по id месяца (совпадает с product.reference)
-  const monthDescByRef = {};
-  (months ?? []).forEach(m => { monthDescByRef[m.id] = m.description; });
 
   const handleBuy = async (product) => {
     setBuyingId(product.id);
@@ -1914,7 +1885,7 @@ function TabUnlockAccess({ userAccess, isMobile }) {
             return (
               <div key={p.id} style={{ padding: '14px', background: has ? `${C.success}10` : C.surface2, border: `1px solid ${has ? C.success + '40' : C.border}` }}>
                 <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 15, fontWeight: 500, color: C.ink, marginBottom: 4 }}>{p.title}</div>
-                <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.5, minHeight: 32 }}>{monthDescByRef[p.reference] || p.description}</div>
+                <div style={{ fontSize: 11, color: C.muted, lineHeight: 1.5, minHeight: 32 }}>{p.description}</div>
                 <CardBtn product={p} hasAccess={has} />
               </div>
             );
