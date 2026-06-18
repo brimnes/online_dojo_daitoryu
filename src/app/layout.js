@@ -55,7 +55,7 @@ export const viewport = {
 
 export default function RootLayout({ children }) {
   return (
-    <html lang="ru" className={`${cormorant.variable} ${jetbrainsMono.variable} ${notoSerifJP.variable}`}>
+    <html lang="ru" className={`${cormorant.variable} ${jetbrainsMono.variable} ${notoSerifJP.variable}`} style={{ background: '#e6e0d2' }}>
       <head>
         {/* iOS home screen icon — Safari uses the largest apple-touch-icon it finds */}
         <link rel="apple-touch-icon" sizes="180x180" href="/icons/icon-192.png" />
@@ -64,7 +64,7 @@ export default function RootLayout({ children }) {
         <link rel="icon" type="image/png" sizes="192x192" href="/icons/icon-192.png" />
         <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
       </head>
-      <body>
+      <body style={{ background: '#e6e0d2' }}>
         {children}
       </body>
     </html>

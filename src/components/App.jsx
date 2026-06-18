@@ -209,7 +209,7 @@ export default function App({ initialUser = null }) {
   // Пока не прочитали localStorage — показываем фон без контента.
   // useEffect восстановит маршрут до первого paint (очень быстро).
   if (!mounted) {
-    return <div style={{ minHeight: '100vh', background: '#f5f3ee' }} />;
+    return <div style={{ minHeight: '100vh', background: '#e6e0d2' }} />;
   }
 
   return (
