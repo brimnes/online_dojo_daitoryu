@@ -199,14 +199,6 @@ export default function LessonPage({
               <div style={{ display: 'flex', alignItems: 'center', gap: isMobile ? 12 : 24 }}>
               </div>
               <div style={{ display: 'flex', gap: 8 }}>
-                {/* Конспект / download */}
-                <button style={{
-                  background: 'none', border: `1px solid ${C.border}`,
-                  padding: '9px 16px', minHeight: 44,
-                  fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                  fontSize: 11, letterSpacing: '0.1em', color: C.muted,
-                  cursor: 'pointer', textTransform: 'uppercase',
-                }}>↓ Конспект</button>
                 {/* Watched button */}
                 <button
                   onClick={() => toggleWatched(lessonId)}
