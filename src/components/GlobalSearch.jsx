@@ -5,6 +5,7 @@ import { C } from '@/lib/utils';
 import { BELT, FLAT_INDEX } from '@/data/techniques';
 import { hasIkkajoSectionAccess, hasMonthAccess } from '@/lib/db';
 import { IKKAJO_SECTION_KEYS as IKKAJO_SECTIONS } from '@/lib/ikkajoSections';
+import { useIsMobile } from '@/lib/mobile';
 
 function LockIcon() {
   return (
@@ -38,9 +39,19 @@ export default function GlobalSearch({
   months        = [],
   knowledgeItems = [],
 }) {
-  const [q, setQ]       = useState('');
-  const [open, setOpen] = useState(false);
-  const ref             = useRef(null);
+  const [q, setQ]             = useState('');
+  const [open, setOpen]       = useState(false);
+  const [dropTop, setDropTop] = useState(0);
+  const ref                   = useRef(null);
+  const isMobile              = useIsMobile();
+
+  // На мобайле дропдаун fixed — вычисляем top от нижнего края контейнера
+  useEffect(() => {
+    if (isMobile && open && ref.current) {
+      const r = ref.current.getBoundingClientRect();
+      setDropTop(r.bottom + 4);
+    }
+  }, [isMobile, open]);
 
   const platformWide = months.length > 0 || knowledgeItems.length > 0;
 
@@ -143,7 +154,15 @@ export default function GlobalSearch({
 
       {/* ── Dropdown ─────────────────────────────────────────────── */}
       {open && q.length >= 2 && (
-        <div style={{
+        <div style={isMobile ? {
+          position: 'fixed', top: dropTop, left: 8, right: 8,
+          background: C.surface, border: `1px solid ${C.border}`,
+          boxShadow: '0 8px 32px rgba(0,0,0,0.18)', zIndex: 400,
+          maxHeight: `calc(100dvh - ${dropTop}px - 88px - env(safe-area-inset-bottom, 0px))`,
+          overflowY: 'auto', borderRadius: 2,
+          // скрываем скроллбар — iOS и так не показывает, Firefox/Android скроем явно
+          scrollbarWidth: 'none', msOverflowStyle: 'none',
+        } : {
           position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0,
           background: C.surface, border: `1px solid ${C.border}`,
           boxShadow: '0 8px 32px rgba(0,0,0,0.12)', zIndex: 300,
