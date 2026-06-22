@@ -1257,16 +1257,6 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
         {filtered.map(sec => isMobile ? renderMobileCard(sec) : renderCard(sec))}
       </div>
 
-      {/* ── Future strip ── */}
-      <div style={{ marginTop: isMobile ? 20 : 28, padding: isMobile ? '18px 16px' : '22px 28px', border: `1px dashed ${C.hairline2}`, display: 'flex', alignItems: 'center', justifyContent: 'space-between', gap: 16, background: 'transparent', flexWrap: isMobile ? 'wrap' : 'nowrap' }}>
-        <div style={{ display: 'flex', alignItems: 'center', gap: 16 }}>
-          <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: isMobile ? 22 : 28, color: C.hairline2, lineHeight: 1 }}>四 五 六 …</span>
-          <div>
-            <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: isMobile ? 12 : 13, letterSpacing: '0.16em', color: C.ink2, textTransform: 'uppercase', fontWeight: 500 }}>Ёнкаджо · Гокаджо · Роккаджо</div>
-            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 13, color: C.muted, marginTop: 3 }}>Программа разрабатывается.</div>
-          </div>
-        </div>
-      </div>
 
       {/* ── Выбор покупки Иккаджо (раздел / весь сразу) ── */}
       {ikkajoChoiceOpen && (
