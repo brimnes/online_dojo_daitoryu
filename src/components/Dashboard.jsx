@@ -5,7 +5,7 @@ import { C, hasLevel, levelIndex } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
 import { LEVELS, SELF_LEVELS } from '@/data/users';
 import { DB_SECTIONS } from '@/data/techniques';
-import { useMonths, useLessons, useUserAccessRows, hasMonthAccess, useKnowledge, useUserExams, useUserPayments, useTechniques } from '@/lib/db';
+import { useMonths, useLessons, useUserAccessRows, hasMonthAccess, useKnowledge, useMonthsWithLessons, useUserExams, useUserPayments, useTechniques } from '@/lib/db';
 import TakedaMon from '@/components/TakedaMon';
 import Sidebar from '@/components/Sidebar';
 import GlobalSearch from '@/components/GlobalSearch';
@@ -47,6 +47,8 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, onUs
   const curLv = LEVELS.find(l => l.id === u.level);
   const isAdmin = u.role === 'admin';
   const { rows: userAccess, loading: accessLoading } = useUserAccessRows();
+  const { months: searchMonths }                    = useMonthsWithLessons();
+  const { items: searchKnowledge }                  = useKnowledge();
 
   return (
     <div style={{ display: 'flex', minHeight: '100vh' }}>
@@ -91,8 +93,15 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, onUs
               <GlobalSearch
                 userAccess={userAccess}
                 accessLoading={accessLoading}
-                onSelect={({ kyu, section, tech }) => nav.technique(kyu, section, tech)}
-                placeholder="Поиск техники…"
+                months={searchMonths}
+                knowledgeItems={searchKnowledge}
+                onSelect={r => {
+                  if (r.type === 'technique') nav.technique(r.kyu, r.section, r.tech);
+                  else if (r.type === 'month')     nav.month(r.month.id);
+                  else if (r.type === 'lesson')    nav.lesson(r.month.id, r.lesson.id);
+                  else if (r.type === 'knowledge') nav.knowledgeItem(r.item.id);
+                }}
+                placeholder="Поиск по платформе…"
                 maxWidth={9999}
               />
             </div>
@@ -109,8 +118,15 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, onUs
             <GlobalSearch
               userAccess={userAccess}
               accessLoading={accessLoading}
-              onSelect={({ kyu, section, tech }) => nav.technique(kyu, section, tech)}
-              placeholder="Поиск техники…"
+              months={searchMonths}
+              knowledgeItems={searchKnowledge}
+              onSelect={r => {
+                if (r.type === 'technique') nav.technique(r.kyu, r.section, r.tech);
+                else if (r.type === 'month')     nav.month(r.month.id);
+                else if (r.type === 'lesson')    nav.lesson(r.month.id, r.lesson.id);
+                else if (r.type === 'knowledge') nav.knowledgeItem(r.item.id);
+              }}
+              placeholder="Поиск по платформе…"
               maxWidth={280}
             />
             {curLv && (
