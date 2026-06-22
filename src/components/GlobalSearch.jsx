@@ -50,7 +50,7 @@ export default function GlobalSearch({
     const out = [];
 
     // ── Техники ──────────────────────────────────────────────────
-    const techLimit = platformWide ? 3 : 8;
+    const techLimit = platformWide ? 6 : 20;
     const techs = FLAT_INDEX.filter(({ tech, section }) =>
       tech.name.toLowerCase().includes(lq) ||
       tech.nameRu.toLowerCase().includes(lq) ||
@@ -91,7 +91,7 @@ export default function GlobalSearch({
       }
     }
 
-    return out.slice(0, 10);
+    return out;
   }, [q, userAccess, accessLoading, months, knowledgeItems, platformWide]);
 
   useEffect(() => {
@@ -147,7 +147,7 @@ export default function GlobalSearch({
           position: 'absolute', top: 'calc(100% + 4px)', left: 0, right: 0,
           background: C.surface, border: `1px solid ${C.border}`,
           boxShadow: '0 8px 32px rgba(0,0,0,0.12)', zIndex: 300,
-          maxHeight: 380, overflowY: 'auto',
+          maxHeight: '70vh', overflowY: 'auto',
         }}>
           {results.length === 0
             ? <div style={{ padding: '12px 16px', fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", color: C.muted, fontSize: 15 }}>
