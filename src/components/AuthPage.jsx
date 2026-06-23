@@ -1,9 +1,10 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useRef } from 'react';
 import { useIsMobile } from '@/lib/mobile';
 import { SELF_LEVELS } from '@/data/users';
 import TakedaMon from '@/components/TakedaMon';
+import LandingContent from '@/components/LandingContent';
 
 // ─── Временный запрет регистрации ─────────────────────────────
 // Поставь false чтобы снова открыть регистрацию
@@ -131,15 +132,22 @@ export default function AuthPage({ onSuccess }) {
   const [mode, setMode] = useState('login'); // 'login' | 'register' | 'set-password'
   const [resetUserId, setResetUserId] = useState(null);
   const isMobile = useIsMobile();
+  const heroRef = useRef(null);
 
   const handleResetRequired = (userId) => {
     setResetUserId(userId);
     setMode('set-password');
   };
 
+  const goToForm = (targetMode = 'login') => {
+    setMode(targetMode);
+    heroRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+  };
+
   return (
-    <div style={{
-      minHeight:'100vh', background:C.bg,
+    <div>
+    <div ref={heroRef} style={{
+      minHeight:'100dvh', background:C.bg,
       display:'flex', alignItems:'stretch',
       fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     }}>
@@ -235,7 +243,6 @@ export default function AuthPage({ onSuccess }) {
       <div style={{
         flex: 1, display: 'flex', flexDirection: 'column',
         background: C.bg,
-        overflowY: 'auto',
         position: 'relative',
       }}>
 
@@ -278,12 +285,27 @@ export default function AuthPage({ onSuccess }) {
             fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
             fontSize: 11, color: C.border, letterSpacing: '0.1em',
           }}>v 1.9 · 2026</div>
-          <div style={{
-            fontFamily:"'Noto Serif JP', var(--font-noto), serif",
-            fontSize: 13, color: C.border, letterSpacing: '0.3em',
-          }}>大東流合気柔術</div>
+          <button
+            onClick={() => window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })}
+            style={{
+              background: 'none', border: 'none', cursor: 'pointer',
+              fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+              fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase',
+              display: 'flex', alignItems: 'center', gap: 6, padding: '8px 4px',
+              minHeight: 44,
+            }}
+          >
+            Узнать больше ↓
+          </button>
         </div>
       </div>
+    </div>
+
+    <LandingContent
+      isMobile={isMobile}
+      onLogin={() => goToForm('login')}
+      onRegister={() => goToForm('register')}
+    />
     </div>
   );
 }
