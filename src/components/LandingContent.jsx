@@ -1,57 +1,30 @@
 'use client';
 
-// ─── КОНФИГ — редактируй здесь ────────────────────────────────
-const STATS = [
-  { value: '80+',  label: 'техник\nв базе' },
-  { value: '60+',  label: 'видеоуроков\nпо Иккаджо' },
-  { value: '12',   label: 'тематических\nвыпусков в год' },
-  { value: '20+',  label: 'лет опыта\nавтора' },
-];
+import React from 'react';
 
-const UPDATES = [
-  { type: 'МЕСЯЦ',   title: 'Июнь 2026',                desc: 'Атэми — вспомогательные удары. Работа с уязвимыми точками.' },
-  { type: 'ИККАДЖО', title: 'Катадори — дополнен',       desc: 'Новые видео с детальным разбором позиции рук и ног.' },
-  { type: 'ТЕХНИКА', title: 'Курумадаоси',               desc: 'Видеоразбор с тремя вариантами исполнения.' },
-  { type: 'СТАТЬЯ',  title: 'История линии Конда',       desc: 'Прямая передача традиции от Такеды Сокаку: исследование.' },
-];
-
-// ─── ЦВЕТА (тёмная тема для секций) ───────────────────────────
+// ─── ЦВЕТА ────────────────────────────────────────────────────
 const DARK = {
-  bg:      '#0d0b08',
-  bg2:     '#13110e',
-  panel:   '#1a1710',
-  border:  'rgba(255,255,255,0.07)',
-  text:    '#d8cebc',
-  muted:   'rgba(216,206,188,0.45)',
-  accent:  '#b73828',
-  gold:    '#b8923a',
+  bg:     '#0d0b08',
+  bg2:    '#13110e',
+  panel:  '#1a1710',
+  border: 'rgba(255,255,255,0.07)',
+  text:   '#d8cebc',
+  muted:  'rgba(216,206,188,0.45)',
+  accent: '#b73828',
+  gold:   '#b8923a',
 };
 
 const LIGHT = {
-  bg:     '#e6e0d2',
-  surface:'#f1ece0',
-  border: '#bab09a',
-  ink:    '#15120e',
-  ink2:   '#3a342b',
-  muted:  '#6f6452',
-  accent: '#9e2f1f',
+  bg:      '#e6e0d2',
+  surface: '#f1ece0',
+  border:  '#bab09a',
+  ink:     '#15120e',
+  ink2:    '#3a342b',
+  muted:   '#6f6452',
+  accent:  '#9e2f1f',
 };
 
-// ─── Общая обёртка секции ─────────────────────────────────────
-function Section({ id, dark = false, children, style = {} }) {
-  return (
-    <section id={id} style={{
-      background: dark ? DARK.bg : LIGHT.bg,
-      padding: '80px 24px',
-      ...style,
-    }}>
-      <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-        {children}
-      </div>
-    </section>
-  );
-}
-
+// ─── Общие элементы ───────────────────────────────────────────
 function Overline({ children, dark = false }) {
   return (
     <div style={{
@@ -81,8 +54,38 @@ function Body({ children, dark = false, style = {} }) {
       fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
       fontSize: 18, lineHeight: 1.85,
       color: dark ? DARK.text : LIGHT.ink2,
+      margin: 0,
       ...style,
     }}>{children}</p>
+  );
+}
+
+// ─── CTA-кнопки (вставляются внутри страницы) ─────────────────
+function CtaButtons({ isMobile, onLogin, onRegister, dark = false }) {
+  return (
+    <div style={{
+      display: 'flex', gap: 12,
+      flexDirection: isMobile ? 'column' : 'row',
+      alignItems: isMobile ? 'stretch' : 'center',
+    }}>
+      <button onClick={onRegister} style={{
+        padding: '14px 36px',
+        background: dark ? DARK.accent : LIGHT.accent,
+        color: '#f1ece0', border: 'none',
+        fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+        fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase',
+        cursor: 'pointer', minHeight: 48,
+      }}>Зарегистрироваться бесплатно</button>
+      <button onClick={onLogin} style={{
+        padding: '14px 36px',
+        background: 'transparent',
+        color: dark ? DARK.text : LIGHT.ink,
+        border: `1px solid ${dark ? DARK.border : LIGHT.border}`,
+        fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+        fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase',
+        cursor: 'pointer', minHeight: 48,
+      }}>Войти</button>
+    </div>
   );
 }
 
@@ -99,7 +102,7 @@ function PlatformPreview({ type }) {
   if (type === 'knowledge') return (
     <div style={base}>
       <div style={{ fontSize: 10, color: DARK.accent, letterSpacing: '0.2em', marginBottom: 16 }}>БАЗА ЗНАНИЙ</div>
-      {['История школы Дайто-рю', 'Терминология: базовые понятия', 'Этикет додзё', 'Принципы айки', 'Словарь японских терминов', 'Биография Такеды Сокаку'].map((t, i) => (
+      {['История школы Дайто-рю', 'Биографии мастеров', 'Терминология и принципы', 'Этикет додзё', 'Редкие исторические тексты', 'Интервью и исследования'].map((t, i) => (
         <div key={i} style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', padding: '10px 0', borderBottom: `1px solid ${DARK.border}`, color: DARK.text, fontSize: 13 }}>
           <span>✦ {t}</span>
           <span style={{ color: DARK.muted, fontSize: 10 }}>→</span>
@@ -126,7 +129,7 @@ function PlatformPreview({ type }) {
             <span style={{ fontSize: 13, color: DARK.text }}>{item.name}</span>
           </div>
         ))}
-        <div style={{ marginTop: 12, fontSize: 10, color: DARK.muted }}>80+ техник · от 6 кю до старших уровней</div>
+        <div style={{ marginTop: 12, fontSize: 10, color: DARK.muted }}>от 6 кю до 1 дана и старших уровней</div>
       </div>
     );
   }
@@ -166,8 +169,8 @@ function PlatformPreview({ type }) {
         </div>
       </div>
       {[
-        { label: 'Путь к Сёдан', value: 15, total: 100 },
-        { label: 'Иккаджо', value: 60, total: 100 },
+        { label: 'Путь к Сёдан', value: 15 },
+        { label: 'Иккаджо', value: 60 },
       ].map((p, i) => (
         <div key={i} style={{ marginBottom: 10 }}>
           <div style={{ fontSize: 10, color: DARK.muted, marginBottom: 4 }}>{p.label}</div>
@@ -176,17 +179,17 @@ function PlatformPreview({ type }) {
           </div>
         </div>
       ))}
-      <div style={{ marginTop: 14, fontSize: 10, color: DARK.muted }}>Доступные материалы · История обучения</div>
+      <div style={{ marginTop: 14, fontSize: 10, color: DARK.muted }}>Приобретённые материалы · История обучения</div>
     </div>
   );
 
   return null;
 }
 
-// ─── СЕКЦИЯ 1: ЧТО ТАКОЕ PLATFORM ─────────────────────────────
-function WhatIsSection() {
+// ─── СЕКЦИЯ 1: ПЕРВЫЙ ЭКРАН ЛЕНДИНГА ─────────────────────────
+function WhatIsSection({ isMobile, onLogin, onRegister }) {
   return (
-    <section id="what-is" style={{ background: DARK.bg, padding: '100px 24px', position: 'relative', overflow: 'hidden' }}>
+    <section id="what-is" style={{ background: DARK.bg, padding: isMobile ? '72px 24px 80px' : '100px 60px 110px', position: 'relative', overflow: 'hidden' }}>
       {/* Декоративный кандзи */}
       <div style={{
         position: 'absolute', right: -40, top: '50%', transform: 'translateY(-50%)',
@@ -195,48 +198,76 @@ function WhatIsSection() {
         pointerEvents: 'none', userSelect: 'none',
       }}>道</div>
 
-      <div style={{ maxWidth: 760, margin: '0 auto', position: 'relative' }}>
-        <Overline dark>Цифровое додзё</Overline>
-        <SectionTitle dark style={{ marginBottom: 32 }}>
-          Цифровое додзё<br />Дайто-рю Айкидзюдзюцу
-        </SectionTitle>
-        <Body dark style={{ marginBottom: 20 }}>
-          ONLINE DAITO-RYU DOJO объединяет базу знаний, архив материалов, экзаменационные программы, исторические исследования, видеоразборы техник и ежемесячные тематические выпуски.
+      <div style={{ maxWidth: 800, position: 'relative' }}>
+        {/* Логотип-заголовок */}
+        <div style={{
+          fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+          fontSize: isMobile ? 13 : 15, letterSpacing: '0.22em', textTransform: 'uppercase',
+          color: DARK.accent, marginBottom: 20,
+        }}>Online Daito-ryu Dojo</div>
+
+        <div style={{
+          fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+          fontSize: isMobile ? 'clamp(34px, 8vw, 56px)' : 'clamp(40px, 5vw, 68px)',
+          fontWeight: 400, lineHeight: 1.1, letterSpacing: '0.02em',
+          color: '#f1ece0', marginBottom: 20,
+        }}>
+          Добро пожаловать<br />в мир Дайто-рю<br />Айкидзюдзюцу.
+        </div>
+
+        <div style={{
+          width: 48, height: 1, background: `rgba(183,56,40,0.5)`, marginBottom: 28,
+        }} />
+
+        <Body dark style={{ marginBottom: 16 }}>
+          Крупнейшая русскоязычная платформа, посвящённая изучению, исследованию и сохранению традиции Дайто-рю Айкидзюдзюцу.
         </Body>
-        <Body dark>
-          Платформа создана как для учеников Дайто-рю, так и для представителей других боевых искусств, исследователей японской традиции и всех, кто хочет глубже познакомиться с миром Дайто-рю Айкидзюдзюцу.
+        <Body dark style={{ marginBottom: 40 }}>
+          Техники, история, принципы, архивные материалы, редкие документы, ежемесячные тематические выпуски и подробные экзаменационные программы — всё в едином пространстве, доступном из любой точки мира.
         </Body>
+
+        <CtaButtons isMobile={isMobile} onLogin={onLogin} onRegister={onRegister} dark />
+
+        {/* Строка доверия */}
+        <div style={{
+          marginTop: 36,
+          fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+          fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase',
+          color: DARK.muted,
+        }}>
+          Бесплатная регистрация&nbsp;•&nbsp;Открытая база знаний&nbsp;•&nbsp;Доступ из любой точки мира
+        </div>
       </div>
     </section>
   );
 }
 
 // ─── СЕКЦИЯ 2: ЧТО ВНУТРИ ─────────────────────────────────────
-function WhatsInsideSection({ isMobile }) {
+function WhatsInsideSection({ isMobile, onLogin, onRegister }) {
   const sections = [
     {
       overline: 'База знаний',
       title: 'История, принципы\nи традиция школы',
-      bullets: ['История школы и линии передачи', 'Терминология и принципы айки', 'Этикет додзё и японской культуры', 'Исследовательские материалы', 'Открытый архив для всех зарегистрированных'],
+      text: 'База знаний содержит всё необходимое для знакомства с Дайто-рю Айкидзюдзюцу и более глубокого понимания традиции.\n\nЗдесь собраны история школы, биографии мастеров, терминология, принципы и этикет, справочная информация, программа обучения, интервью, полезные статьи, редкие тексты, видеоматериалы и другие материалы, связанные с Дайто-рю.',
       preview: 'knowledge',
     },
     {
       overline: 'База техник',
-      title: 'Экзаменационные\nпрограммы',
-      bullets: ['Подробные видеоразборы', 'Пошаговые объяснения техник', 'Вариации исполнения', 'Типичные ошибки', 'Система от 6 кю до старших уровней'],
+      title: 'Экзаменационная\nпрограмма',
+      text: 'База техник содержит подробные видеоразборы и пошаговые объяснения экзаменационной программы Дайто-рю Айкидзюдзюцу от 6 кю до 1 дана, а также материалы более высокого уровня для подготовленных учеников (2–3 дан).\n\nКаждая техника сопровождается детальным объяснением, разбором нюансов исполнения, типичных ошибок и возможных вариаций.',
       preview: 'techniques',
       flip: true,
     },
     {
       overline: 'Месяцы Дайто-рю',
-      title: 'Ежемесячный\nобразовательный журнал',
-      bullets: ['~10 уникальных материалов в выпуске', 'Техника и самооборона', 'История и архивные документы', 'Физическая подготовка и Будо-рэнсю', 'Исследования редких материалов'],
+      title: 'Ежемесячные\nтематические выпуски',
+      text: '«Месяцы Дайто-рю» — это ежемесячные тематические выпуски, посвящённые различным аспектам Дайто-рю Айкидзюдзюцу.\n\nКаждый выпуск включает материалы по технике и её практическому применению, самообороне, физической подготовке, истории школы, архивным документам, исследованиям, теоретическим и историческим подкастам, а также другим темам, связанным с традицией Дайто-рю.',
       preview: 'months',
     },
     {
       overline: 'Личный кабинет',
-      title: 'Личный прогресс\nи подготовка к аттестациям',
-      bullets: ['Отслеживание уровня подготовки', 'Учёт приобретённых материалов', 'Личный прогресс и история обучения', 'Подготовка к аттестациям'],
+      title: 'История обучения\nи личный прогресс',
+      text: 'Личный кабинет позволяет отслеживать приобретённые материалы, историю обучения и личный прогресс в рамках платформы.',
       preview: 'profile',
       flip: true,
     },
@@ -245,7 +276,7 @@ function WhatsInsideSection({ isMobile }) {
   return (
     <section style={{ background: LIGHT.bg, padding: '100px 24px' }}>
       <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 64 }}>
+        <div style={{ textAlign: 'center', marginBottom: 72 }}>
           <Overline>Содержание платформы</Overline>
           <SectionTitle style={{ maxWidth: 600, margin: '0 auto' }}>
             Что находится внутри
@@ -254,34 +285,58 @@ function WhatsInsideSection({ isMobile }) {
 
         <div style={{ display: 'flex', flexDirection: 'column', gap: 80 }}>
           {sections.map((s, i) => (
-            <div key={i} style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
-              gap: isMobile ? 32 : 60,
-              alignItems: 'center',
-            }}>
-              {/* Mockup — на мобайле всегда сверху */}
-              <div style={{ order: isMobile ? 0 : (s.flip ? 1 : 0) }}>
-                <PlatformPreview type={s.preview} />
-              </div>
+            <React.Fragment key={i}>
+              {/* CTA-вставка между 2 и 3 блоком */}
+              {i === 2 && (
+                <div key="mid-cta" style={{
+                  borderTop: `1px solid ${LIGHT.border}`,
+                  borderBottom: `1px solid ${LIGHT.border}`,
+                  padding: '40px 0',
+                  display: 'flex',
+                  flexDirection: isMobile ? 'column' : 'row',
+                  alignItems: isMobile ? 'flex-start' : 'center',
+                  justifyContent: 'space-between',
+                  gap: 24,
+                }}>
+                  <div>
+                    <div style={{
+                      fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                      fontSize: isMobile ? 22 : 26, fontWeight: 400,
+                      color: LIGHT.ink, lineHeight: 1.3, marginBottom: 6,
+                    }}>Присоединяйтесь к платформе</div>
+                    <div style={{
+                      fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+                      fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase',
+                      color: LIGHT.muted,
+                    }}>Бесплатная регистрация</div>
+                  </div>
+                  <CtaButtons isMobile={isMobile} onLogin={onLogin} onRegister={onRegister} />
+                </div>
+              )}
 
-              {/* Text */}
-              <div style={{ order: isMobile ? 1 : (s.flip ? 0 : 1) }}>
-                <Overline>{s.overline}</Overline>
-                <SectionTitle style={{ marginBottom: 24, whiteSpace: 'pre-line' }}>{s.title}</SectionTitle>
-                <ul style={{ listStyle: 'none', padding: 0, display: 'flex', flexDirection: 'column', gap: 10 }}>
-                  {s.bullets.map((b, j) => (
-                    <li key={j} style={{ display: 'flex', alignItems: 'flex-start', gap: 10 }}>
-                      <span style={{ color: LIGHT.accent, marginTop: 2, flexShrink: 0 }}>—</span>
-                      <span style={{
-                        fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                        fontSize: 17, lineHeight: 1.6, color: LIGHT.ink2,
-                      }}>{b}</span>
-                    </li>
+              <div style={{
+                display: 'grid',
+                gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+                gap: isMobile ? 32 : 60,
+                alignItems: 'center',
+              }}>
+                {/* Mockup */}
+                <div style={{ order: isMobile ? 0 : (s.flip ? 1 : 0) }}>
+                  <PlatformPreview type={s.preview} />
+                </div>
+
+                {/* Text */}
+                <div style={{ order: isMobile ? 1 : (s.flip ? 0 : 1) }}>
+                  <Overline>{s.overline}</Overline>
+                  <SectionTitle style={{ marginBottom: 24, whiteSpace: 'pre-line' }}>{s.title}</SectionTitle>
+                  {s.text.split('\n\n').map((para, j) => (
+                    <Body key={j} style={{ marginBottom: j < s.text.split('\n\n').length - 1 ? 16 : 0 }}>
+                      {para}
+                    </Body>
                   ))}
-                </ul>
+                </div>
               </div>
-            </div>
+            </React.Fragment>
           ))}
         </div>
       </div>
@@ -292,12 +347,12 @@ function WhatsInsideSection({ isMobile }) {
 // ─── СЕКЦИЯ 3: ПОЧЕМУ ЭТА ПЛАТФОРМА ──────────────────────────
 function WhySection({ isMobile }) {
   const items = [
-    { kanji: '一', text: 'Материалы создаются официальным представителем линии Конда' },
-    { kanji: '二', text: 'Системная программа от ученических степеней до старших уровней' },
-    { kanji: '三', text: 'Сочетание техники, истории, философии и традиции' },
-    { kanji: '四', text: 'Регулярное пополнение — новые материалы каждый месяц' },
-    { kanji: '五', text: 'Доступ из любой точки мира в любое удобное время' },
-    { kanji: '六', text: 'Можно изучать Дайто-рю даже без постоянного доступа к додзё' },
+    { kanji: '一', text: 'Подробный разбор экзаменационной программы Дайто-рю Айкидзюдзюцу.' },
+    { kanji: '二', text: 'Материалы подготовлены официальным представителем линии Кацуюки Кондо.' },
+    { kanji: '三', text: 'Система подготовки от начальных ступеней до чёрного пояса и выше.' },
+    { kanji: '四', text: 'Сочетание техники, истории, философии и традиции.' },
+    { kanji: '五', text: 'Регулярное пополнение платформы новыми материалами.' },
+    { kanji: '六', text: 'Доступ к материалам из любой точки мира.' },
   ];
 
   return (
@@ -318,7 +373,7 @@ function WhySection({ isMobile }) {
         <div style={{
           display: 'grid',
           gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr 1fr',
-          gap: isMobile ? 20 : 24,
+          gap: isMobile ? 16 : 24,
         }}>
           {items.map((item, i) => (
             <div key={i} style={{
@@ -392,54 +447,14 @@ function ForWhomSection({ isMobile }) {
   );
 }
 
-// ─── СЕКЦИЯ 5: ЦИФРЫ ──────────────────────────────────────────
-function StatsSection({ isMobile }) {
-  return (
-    <section style={{ background: DARK.bg2, padding: '80px 24px' }}>
-      <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-        <div style={{ textAlign: 'center', marginBottom: 56 }}>
-          <Overline dark>Платформа в цифрах</Overline>
-        </div>
-
-        <div style={{
-          display: 'grid',
-          gridTemplateColumns: isMobile ? '1fr 1fr' : '1fr 1fr 1fr 1fr',
-          gap: isMobile ? 16 : 1,
-          border: `1px solid ${DARK.border}`,
-        }}>
-          {STATS.map((s, i) => (
-            <div key={i} style={{
-              padding: isMobile ? '28px 16px' : '48px 32px',
-              textAlign: 'center',
-              borderRight: (!isMobile && i < STATS.length - 1) ? `1px solid ${DARK.border}` : 'none',
-              borderBottom: (isMobile && i < 2) ? `1px solid ${DARK.border}` : 'none',
-            }}>
-              <div style={{
-                fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                fontSize: isMobile ? 48 : 60, fontWeight: 400,
-                color: DARK.accent, lineHeight: 1, marginBottom: 12,
-              }}>{s.value}</div>
-              <div style={{
-                fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase',
-                color: DARK.muted, lineHeight: 1.6, whiteSpace: 'pre-line',
-              }}>{s.label}</div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── СЕКЦИЯ 6: ОБ АВТОРЕ ─────────────────────────────────────
+// ─── СЕКЦИЯ 5: ОБ АВТОРЕ ─────────────────────────────────────
 function AuthorSection({ isMobile }) {
   const credentials = [
     '5 дан Дайто-рю Айкидзюдзюцу',
-    'Официальный представитель линии Конда в России',
+    'Официальный представитель линии Кацуюки Кондо в России',
     'Сооснователь Федерации Дайто-рю России',
     'Автор книги «Таинственный мир Дайто-рю Айкидзюдзюцу»',
-    'Более 20 лет практики боевых искусств',
+    'Многолетний опыт изучения и преподавания японских боевых искусств',
     'Регулярное обучение и стажировки в Японии',
   ];
 
@@ -467,7 +482,6 @@ function AuthorSection({ isMobile }) {
                 style={{ width: '100%', height: '100%', objectFit: 'cover', objectPosition: 'center 10%', display: 'block' }}
                 onError={e => { e.currentTarget.style.display = 'none'; }}
               />
-              {/* Градиент снизу */}
               <div style={{
                 position: 'absolute', bottom: 0, left: 0, right: 0, height: 80,
                 background: `linear-gradient(to top, ${DARK.bg}, transparent)`,
@@ -481,8 +495,8 @@ function AuthorSection({ isMobile }) {
             <SectionTitle dark style={{ marginBottom: 8 }}>Станислав Копин</SectionTitle>
             <div style={{
               fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-              fontSize: 11, letterSpacing: '0.14em', color: DARK.gold, marginBottom: 28,
-            }}>СЭНСЭЙ · ОСНОВАТЕЛЬ ПЛАТФОРМЫ</div>
+              fontSize: 11, letterSpacing: '0.14em', color: DARK.gold, marginBottom: 28, textTransform: 'uppercase',
+            }}>Основатель платформы Online Daito-ryu Dojo</div>
 
             <div style={{ display: 'flex', flexDirection: 'column', gap: 10, marginBottom: 32 }}>
               {credentials.map((c, i) => (
@@ -512,52 +526,10 @@ function AuthorSection({ isMobile }) {
   );
 }
 
-// ─── СЕКЦИЯ 7: ПОСЛЕДНИЕ ОБНОВЛЕНИЯ ──────────────────────────
-function UpdatesSection({ isMobile }) {
-  return (
-    <section style={{ background: LIGHT.bg, padding: '100px 24px' }}>
-      <div style={{ maxWidth: 1080, margin: '0 auto' }}>
-        <div style={{ marginBottom: 48 }}>
-          <Overline>Последние обновления</Overline>
-          <SectionTitle>Платформа регулярно пополняется</SectionTitle>
-        </div>
-
-        <div style={{ display: 'flex', flexDirection: 'column' }}>
-          {UPDATES.map((u, i) => (
-            <div key={i} style={{
-              display: 'grid',
-              gridTemplateColumns: isMobile ? '1fr' : '120px 1fr',
-              gap: isMobile ? 6 : 32,
-              padding: '24px 0',
-              borderBottom: `1px solid ${LIGHT.border}`,
-            }}>
-              <div style={{
-                fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                fontSize: 10, letterSpacing: '0.14em', textTransform: 'uppercase',
-                color: LIGHT.accent, paddingTop: isMobile ? 0 : 3,
-              }}>{u.type}</div>
-              <div>
-                <div style={{
-                  fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                  fontSize: 20, color: LIGHT.ink, marginBottom: 6, fontWeight: 400,
-                }}>{u.title}</div>
-                <p style={{
-                  fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                  fontSize: 16, lineHeight: 1.65, color: LIGHT.muted, margin: 0,
-                }}>{u.desc}</p>
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── СЕКЦИЯ 8: ФИНАЛЬНЫЙ CTA ──────────────────────────────────
+// ─── СЕКЦИЯ 6: ФИНАЛЬНЫЙ CTA ──────────────────────────────────
 function FinalCtaSection({ isMobile, onLogin, onRegister }) {
   return (
-    <section style={{ background: DARK.bg, padding: '100px 24px', position: 'relative', overflow: 'hidden' }}>
+    <section style={{ background: DARK.bg2, padding: '100px 24px', position: 'relative', overflow: 'hidden' }}>
       <div style={{
         position: 'absolute', top: '50%', left: '50%', transform: 'translate(-50%, -50%)',
         fontFamily: "'Noto Serif JP', serif", fontSize: 400,
@@ -572,14 +544,14 @@ function FinalCtaSection({ isMobile, onLogin, onRegister }) {
         }}>大東流合気柔術</div>
 
         <SectionTitle dark style={{ marginBottom: 20 }}>
-          Присоединяйтесь к<br />ONLINE DAITO-RYU DOJO
+          Добро пожаловать<br />в таинственный мир Дайто-рю
         </SectionTitle>
 
         <p style={{
           fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
           fontSize: 18, lineHeight: 1.85, color: DARK.text, marginBottom: 48,
         }}>
-          Начните знакомство с миром Дайто-рю Айкидзюдзюцу уже сегодня.<br />
+          Начните знакомство с традицией Дайто-рю Айкидзюдзюцу уже сегодня.<br />
           Регистрация на платформе бесплатна.
         </p>
 
@@ -588,31 +560,32 @@ function FinalCtaSection({ isMobile, onLogin, onRegister }) {
           flexDirection: isMobile ? 'column' : 'row',
           alignItems: 'center',
         }}>
-          <button
-            onClick={onRegister}
-            style={{
-              padding: isMobile ? '16px 0' : '16px 44px',
-              width: isMobile ? '100%' : 'auto', maxWidth: isMobile ? 360 : 'none',
-              background: DARK.accent, color: '#f1ece0', border: 'none',
-              fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-              fontSize: 13, letterSpacing: '0.14em', textTransform: 'uppercase',
-              cursor: 'pointer', minHeight: 52,
-            }}>
-            Создать аккаунт
-          </button>
-          <button
-            onClick={onLogin}
-            style={{
-              padding: isMobile ? '16px 0' : '16px 44px',
-              width: isMobile ? '100%' : 'auto', maxWidth: isMobile ? 360 : 'none',
-              background: 'transparent', color: DARK.text,
-              border: `1px solid ${DARK.border}`,
-              fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-              fontSize: 13, letterSpacing: '0.14em', textTransform: 'uppercase',
-              cursor: 'pointer', minHeight: 52,
-            }}>
-            Войти
-          </button>
+          <button onClick={onRegister} style={{
+            padding: isMobile ? '16px 0' : '16px 44px',
+            width: isMobile ? '100%' : 'auto', maxWidth: isMobile ? 360 : 'none',
+            background: DARK.accent, color: '#f1ece0', border: 'none',
+            fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+            fontSize: 13, letterSpacing: '0.14em', textTransform: 'uppercase',
+            cursor: 'pointer', minHeight: 52,
+          }}>Зарегистрироваться бесплатно</button>
+          <button onClick={onLogin} style={{
+            padding: isMobile ? '16px 0' : '16px 44px',
+            width: isMobile ? '100%' : 'auto', maxWidth: isMobile ? 360 : 'none',
+            background: 'transparent', color: DARK.text,
+            border: `1px solid ${DARK.border}`,
+            fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+            fontSize: 13, letterSpacing: '0.14em', textTransform: 'uppercase',
+            cursor: 'pointer', minHeight: 52,
+          }}>Войти</button>
+        </div>
+
+        <div style={{
+          marginTop: 40,
+          fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+          fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase',
+          color: DARK.muted,
+        }}>
+          Бесплатная регистрация&nbsp;•&nbsp;Открытая база знаний&nbsp;•&nbsp;Доступ из любой точки мира
         </div>
       </div>
     </section>
@@ -623,13 +596,11 @@ function FinalCtaSection({ isMobile, onLogin, onRegister }) {
 export default function LandingContent({ isMobile, onLogin, onRegister }) {
   return (
     <>
-      <WhatIsSection />
-      <WhatsInsideSection isMobile={isMobile} />
+      <WhatIsSection isMobile={isMobile} onLogin={onLogin} onRegister={onRegister} />
+      <WhatsInsideSection isMobile={isMobile} onLogin={onLogin} onRegister={onRegister} />
       <WhySection isMobile={isMobile} />
       <ForWhomSection isMobile={isMobile} />
-      <StatsSection isMobile={isMobile} />
       <AuthorSection isMobile={isMobile} />
-      <UpdatesSection isMobile={isMobile} />
       <FinalCtaSection isMobile={isMobile} onLogin={onLogin} onRegister={onRegister} />
     </>
   );
