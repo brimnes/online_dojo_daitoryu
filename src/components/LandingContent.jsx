@@ -186,63 +186,7 @@ function PlatformPreview({ type }) {
   return null;
 }
 
-// ─── СЕКЦИЯ 1: ПЕРВЫЙ ЭКРАН ЛЕНДИНГА ─────────────────────────
-function WhatIsSection({ isMobile, onLogin, onRegister }) {
-  return (
-    <section id="what-is" style={{ background: DARK.bg, padding: isMobile ? '72px 24px 80px' : '100px 60px 110px', position: 'relative', overflow: 'hidden' }}>
-      {/* Декоративный кандзи */}
-      <div style={{
-        position: 'absolute', right: -40, top: '50%', transform: 'translateY(-50%)',
-        fontFamily: "'Noto Serif JP', serif", fontSize: 320,
-        color: 'rgba(183,56,40,0.04)', lineHeight: 1,
-        pointerEvents: 'none', userSelect: 'none',
-      }}>道</div>
-
-      <div style={{ maxWidth: 800, position: 'relative' }}>
-        {/* Логотип-заголовок */}
-        <div style={{
-          fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-          fontSize: isMobile ? 13 : 15, letterSpacing: '0.22em', textTransform: 'uppercase',
-          color: DARK.accent, marginBottom: 20,
-        }}>Online Daito-ryu Dojo</div>
-
-        <div style={{
-          fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-          fontSize: isMobile ? 'clamp(34px, 8vw, 56px)' : 'clamp(40px, 5vw, 68px)',
-          fontWeight: 400, lineHeight: 1.1, letterSpacing: '0.02em',
-          color: '#f1ece0', marginBottom: 20,
-        }}>
-          Добро пожаловать<br />в мир Дайто-рю<br />Айкидзюдзюцу.
-        </div>
-
-        <div style={{
-          width: 48, height: 1, background: `rgba(183,56,40,0.5)`, marginBottom: 28,
-        }} />
-
-        <Body dark style={{ marginBottom: 16 }}>
-          Крупнейшая русскоязычная платформа, посвящённая изучению, исследованию и сохранению традиции Дайто-рю Айкидзюдзюцу.
-        </Body>
-        <Body dark style={{ marginBottom: 40 }}>
-          Техники, история, принципы, архивные материалы, редкие документы, ежемесячные тематические выпуски и подробные экзаменационные программы — всё в едином пространстве, доступном из любой точки мира.
-        </Body>
-
-        <CtaButtons isMobile={isMobile} onLogin={onLogin} onRegister={onRegister} dark />
-
-        {/* Строка доверия */}
-        <div style={{
-          marginTop: 36,
-          fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-          fontSize: 11, letterSpacing: '0.12em', textTransform: 'uppercase',
-          color: DARK.muted,
-        }}>
-          Бесплатная регистрация&nbsp;•&nbsp;Открытая база знаний&nbsp;•&nbsp;Доступ из любой точки мира
-        </div>
-      </div>
-    </section>
-  );
-}
-
-// ─── СЕКЦИЯ 2: ЧТО ВНУТРИ ─────────────────────────────────────
+// ─── СЕКЦИЯ 1: ЧТО ВНУТРИ ─────────────────────────────────────
 function WhatsInsideSection({ isMobile, onLogin, onRegister }) {
   const sections = [
     {
@@ -596,7 +540,6 @@ function FinalCtaSection({ isMobile, onLogin, onRegister }) {
 export default function LandingContent({ isMobile, onLogin, onRegister }) {
   return (
     <>
-      <WhatIsSection isMobile={isMobile} onLogin={onLogin} onRegister={onRegister} />
       <WhatsInsideSection isMobile={isMobile} onLogin={onLogin} onRegister={onRegister} />
       <WhySection isMobile={isMobile} />
       <ForWhomSection isMobile={isMobile} />

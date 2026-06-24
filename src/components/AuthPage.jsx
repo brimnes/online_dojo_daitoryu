@@ -144,132 +144,142 @@ export default function AuthPage({ onSuccess }) {
     heroRef.current?.scrollIntoView({ behavior: 'smooth', block: 'start' });
   };
 
+  const features = ['Техники', 'История', 'Принципы', 'Архивные материалы', 'Экзаменационные программы', 'Ежемесячные тематические выпуски'];
+
   return (
     <div>
     <div ref={heroRef} style={{
-      minHeight:'100dvh', background:C.bg,
-      display:'flex', alignItems:'stretch',
-      fontFamily:"-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
+      minHeight: '100dvh', background: C.bg,
+      display: 'flex',
+      flexDirection: isMobile ? 'column' : 'row',
+      alignItems: 'stretch',
+      fontFamily: "-apple-system, BlinkMacSystemFont, 'Segoe UI', sans-serif",
     }}>
 
-      {/* ── Левая героическая панель (desktop only) ── */}
-      {!isMobile && (
+      {/* ── Левая часть: описание платформы ── */}
+      <div style={{
+        ...(isMobile
+          ? { width: '100%', minHeight: '46dvh', flexShrink: 0 }
+          : { flex: '0 0 58%' }),
+        background: `linear-gradient(170deg, #1a1710 0%, #0d0b08 60%, #161410 100%)`,
+        display: 'flex', flexDirection: 'column',
+        position: 'relative', overflow: 'hidden',
+      }}>
+        {/* Декоративный кандзи */}
         <div style={{
-          width: 460, flexShrink: 0,
-          background: `linear-gradient(170deg, #1a1710 0%, #0d0b08 55%, #161410 100%)`,
-          display: 'flex', flexDirection: 'column',
-          position: 'relative', overflow: 'hidden',
+          position: 'absolute', bottom: -40, right: -40,
+          fontFamily: "'Noto Serif JP', serif", fontSize: isMobile ? 200 : 340,
+          color: 'rgba(183,56,40,0.04)', lineHeight: 1,
+          pointerEvents: 'none', userSelect: 'none',
+        }}>道</div>
+
+        {/* Вертикальный кандзи-рельс */}
+        <div style={{
+          position: 'absolute', top: 48, right: 28,
+          writingMode: 'vertical-rl', textOrientation: 'upright',
+          fontFamily: "'Noto Serif JP', var(--font-noto), serif",
+          fontSize: 13, color: 'rgba(183,56,40,0.15)',
+          letterSpacing: '0.45em', lineHeight: 1.1,
+          pointerEvents: 'none', userSelect: 'none',
+        }}>大東流合気柔術</div>
+
+        {/* Контент */}
+        <div style={{
+          position: 'relative', zIndex: 3,
+          padding: isMobile ? '36px 28px 32px' : '56px 64px',
+          flex: 1, display: 'flex', flexDirection: 'column',
+          justifyContent: 'center',
         }}>
-          {/* Фоновый кандзи — декоративный */}
-          <div style={{
-            position:'absolute', bottom: -60, right: -30,
-            fontFamily:"'Noto Serif JP',serif", fontSize: 360,
-            color:'rgba(200,168,74,0.035)', lineHeight:1,
-            pointerEvents:'none', userSelect:'none',
-          }}>大東流合気柔術</div>
-
-          {/* KanjiRail — вертикальный текст справа */}
-          <div style={{
-            position:'absolute', top: 48, right: 28,
-            writingMode:'vertical-rl', textOrientation:'upright',
-            fontFamily:"'Noto Serif JP', var(--font-noto), serif",
-            fontSize: 13, color:'rgba(183,56,40,0.22)',
-            letterSpacing:'0.45em', lineHeight:1.1,
-            pointerEvents:'none', userSelect:'none',
-          }}>大東流合気柔術</div>
-
-          {/* Фото Станислава — нижняя половина, плавно растворяется */}
-          <div style={{
-            position: 'absolute', bottom: 0, left: 0, right: 0,
-            height: '52%',
-            overflow: 'hidden',
-          }}>
-            {/* Градиент-маска сверху (из тёмного в прозрачное) */}
+          {/* Оверлайн */}
+          <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: isMobile ? 20 : 32 }}>
+            <TakedaMon size={16} color="rgba(183,56,40,0.5)" />
             <div style={{
-              position: 'absolute', top: 0, left: 0, right: 0, height: 120,
-              background: 'linear-gradient(to bottom, #0d0b08, transparent)',
-              zIndex: 2, pointerEvents: 'none',
-            }} />
-            {/* Градиент-маска снизу (небольшое затемнение для цитаты) */}
-            <div style={{
-              position: 'absolute', bottom: 0, left: 0, right: 0, height: 140,
-              background: 'linear-gradient(to top, rgba(13,11,8,0.85), transparent)',
-              zIndex: 2, pointerEvents: 'none',
-            }} />
-            <img
-              src="/images/stas-hero.jpg"
-              alt="Станислав Копин"
-              style={{
-                width: '100%', height: '100%',
-                objectFit: 'cover', objectPosition: 'center 15%',
-                display: 'block',
-              }}
-              onError={e => { e.currentTarget.parentElement.style.display = 'none'; }}
-            />
+              fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+              fontSize: 11, letterSpacing: '0.2em', textTransform: 'uppercase',
+              color: 'rgba(183,56,40,0.65)',
+            }}>Online Daito-ryu Dojo</div>
           </div>
 
-          {/* Верхняя часть — логотип маленький */}
-          <div style={{ position: 'relative', zIndex: 3, padding: '36px 40px 0', flex: 1, display: 'flex', flexDirection: 'column' }}>
-            <div style={{ display:'flex', alignItems:'center', gap:10, marginBottom: 'auto' }}>
-              <TakedaMon size={22} color="rgba(183,56,40,0.6)" />
-            </div>
-          </div>
-
-          {/* Цитата внизу */}
+          {/* Заголовок */}
           <div style={{
-            position: 'relative', zIndex: 3,
-            padding: '0 40px 44px',
+            fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+            fontSize: isMobile ? 'clamp(26px, 6.5vw, 38px)' : 'clamp(34px, 3.8vw, 54px)',
+            fontWeight: 400, lineHeight: 1.1, letterSpacing: '0.02em',
+            color: '#ede8d8', marginBottom: 16,
           }}>
-            <div style={{ borderLeft:'2px solid rgba(183,56,40,0.3)', paddingLeft: 16 }}>
-              <div style={{
-                fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
-                fontSize: 15,
-                color:'rgba(237,229,211,0.55)', lineHeight: 1.9,
-                marginBottom: 12,
-              }}>
-                «Техника — это форма. Принцип — это то, что делает её живой.»
-              </div>
-              <div style={{
-                fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
-                fontSize: 11, color:'rgba(183,56,40,0.45)',
-                letterSpacing: '0.14em', textTransform: 'uppercase',
-              }}>— Сэнсэй Станислав Копин</div>
-            </div>
+            Добро пожаловать<br />в мир Дайто-рю<br />Айкидзюдзюцу
           </div>
+
+          {/* Разделитель */}
+          <div style={{ width: 40, height: 1, background: 'rgba(183,56,40,0.4)', marginBottom: 18 }} />
+
+          {/* Подзаголовок */}
+          <p style={{
+            fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+            fontSize: isMobile ? 15 : 17, lineHeight: 1.75,
+            color: 'rgba(216,206,188,0.6)', margin: 0,
+            marginBottom: isMobile ? 0 : 28,
+          }}>
+            Крупнейшая русскоязычная платформа по изучению, исследованию и сохранению традиции Дайто-рю.
+          </p>
+
+          {/* Список — только десктоп */}
+          {!isMobile && (
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 8 }}>
+              {features.map((f, i) => (
+                <div key={i} style={{ display: 'flex', alignItems: 'center', gap: 12 }}>
+                  <span style={{ color: 'rgba(183,56,40,0.4)', fontSize: 12, flexShrink: 0 }}>—</span>
+                  <span style={{
+                    fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                    fontSize: 16, color: 'rgba(216,206,188,0.5)', lineHeight: 1.5,
+                  }}>{f}</span>
+                </div>
+              ))}
+            </div>
+          )}
         </div>
-      )}
 
-      {/* ── Правая форма ── */}
+        {/* Кнопка прокрутки — только десктоп */}
+        {!isMobile && (
+          <div style={{ position: 'relative', zIndex: 3, padding: '0 64px 40px' }}>
+            <button
+              onClick={() => window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })}
+              style={{
+                background: 'none', border: 'none', cursor: 'pointer', padding: 0,
+                fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+                fontSize: 11, color: 'rgba(216,206,188,0.25)', letterSpacing: '0.14em', textTransform: 'uppercase',
+              }}
+            >Узнать больше ↓</button>
+          </div>
+        )}
+      </div>
+
+      {/* ── Правая часть: компактная форма входа ── */}
       <div style={{
         flex: 1, display: 'flex', flexDirection: 'column',
-        background: C.bg,
-        position: 'relative',
+        background: C.bg, position: 'relative',
       }}>
-
-        {/* Brand header — верхний левый угол */}
+        {/* Brand header */}
         <div style={{
           display: 'flex', alignItems: 'center', gap: 10,
-          padding: isMobile
-            ? 'max(20px, env(safe-area-inset-top)) 24px 0'
-            : '28px 60px 0',
+          padding: isMobile ? 'max(16px, env(safe-area-inset-top)) 24px 0' : '28px 48px 0',
         }}>
           <TakedaMon size={14} color={C.accent} />
           <div style={{
-            fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
-            fontSize: 11, letterSpacing: '0.18em',
-            color: C.accent, textTransform: 'uppercase',
+            fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+            fontSize: 11, letterSpacing: '0.18em', color: C.accent, textTransform: 'uppercase',
           }}>Online Daito-ryu Dojo</div>
         </div>
 
-        {/* Центральная зона с формой */}
+        {/* Форма — центрирована вертикально */}
         <div style={{
           flex: 1, display: 'flex', flexDirection: 'column',
           alignItems: 'center', justifyContent: 'center',
-          padding: isMobile ? '32px 24px 24px' : '40px 60px',
+          padding: isMobile ? '20px 24px 16px' : '32px 48px',
         }}>
-          <div style={{ width: '100%', maxWidth: 420 }}>
+          <div style={{ width: '100%', maxWidth: 380 }}>
             <div className="auth-anim" key={mode}>
-              {mode==='login'        && <LoginForm onSuccess={onSuccess} onRegister={()=>setMode('register')} onResetRequired={handleResetRequired}/>}
+              {mode==='login'        && <LoginForm compact onSuccess={onSuccess} onRegister={()=>setMode('register')} onResetRequired={handleResetRequired}/>}
               {mode==='register'     && <RegisterForm onSuccess={onSuccess} onLogin={()=>setMode('login')}/>}
               {mode==='set-password' && <SetPasswordForm userId={resetUserId} onSuccess={onSuccess} onBack={()=>setMode('login')}/>}
             </div>
@@ -279,24 +289,16 @@ export default function AuthPage({ onSuccess }) {
         {/* Footer */}
         <div style={{
           display: 'flex', justifyContent: 'space-between', alignItems: 'center',
-          padding: isMobile ? '0 24px max(16px, env(safe-area-inset-bottom))' : '0 60px 24px',
+          padding: isMobile ? '0 24px max(12px, env(safe-area-inset-bottom))' : '0 48px 24px',
         }}>
           <div style={{
-            fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
+            fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
             fontSize: 11, color: C.border, letterSpacing: '0.1em',
           }}>v 1.9 · 2026</div>
-          <button
-            onClick={() => window.scrollBy({ top: window.innerHeight, behavior: 'smooth' })}
-            style={{
-              background: 'none', border: 'none', cursor: 'pointer',
-              fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-              fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase',
-              display: 'flex', alignItems: 'center', gap: 6, padding: '8px 4px',
-              minHeight: 44,
-            }}
-          >
-            Узнать больше ↓
-          </button>
+          <div style={{
+            fontFamily: "'Noto Serif JP', var(--font-noto), serif",
+            fontSize: 13, color: C.border, letterSpacing: '0.3em',
+          }}>大東流合気柔術</div>
         </div>
       </div>
     </div>
@@ -311,7 +313,7 @@ export default function AuthPage({ onSuccess }) {
 }
 
 // ─── ФОРМА ВХОДА ───────────────────────────────────────────────
-function LoginForm({ onSuccess, onRegister, onResetRequired }) {
+function LoginForm({ onSuccess, onRegister, onResetRequired, compact = false }) {
   const [email,    setEmail]    = useState('');
   const [password, setPassword] = useState('');
   const [errors,   setErrors]   = useState({});
@@ -357,21 +359,27 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
 
   return (
     <div>
-      {/* Heading */}
-      <div style={{
-        fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
-        fontSize: 42, fontWeight: 400, color: C.ink,
-        marginBottom: 10, letterSpacing: '0.03em', lineHeight: 1.1,
-      }}>Добро пожаловать</div>
-
-      {/* Subtitle */}
-      <p style={{
-        fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
-        fontSize: 15,
-        color: C.muted, lineHeight: 1.75, marginBottom: 28,
-      }}>
-        Чтобы продолжить обучение или знакомство со школой Дайто-рю Айкидзюдзюцу, пожалуйста, войдите или зарегистрируйтесь.
-      </p>
+      {compact ? (
+        <div style={{
+          fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+          fontSize: 26, fontWeight: 400, color: C.ink,
+          marginBottom: 22, letterSpacing: '0.03em', lineHeight: 1.15,
+        }}>Войти в аккаунт</div>
+      ) : (
+        <>
+          <div style={{
+            fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
+            fontSize: 42, fontWeight: 400, color: C.ink,
+            marginBottom: 10, letterSpacing: '0.03em', lineHeight: 1.1,
+          }}>Добро пожаловать</div>
+          <p style={{
+            fontFamily:"var(--font-cormorant), 'Cormorant Garamond', serif",
+            fontSize: 15, color: C.muted, lineHeight: 1.75, marginBottom: 28,
+          }}>
+            Чтобы продолжить обучение или знакомство со школой Дайто-рю Айкидзюдзюцу, пожалуйста, войдите или зарегистрируйтесь.
+          </p>
+        </>
+      )}
 
       {serverErr && (
         <div style={{ padding:'12px 16px', background:C.redBg, border:`1px solid ${C.redBorder}`, fontSize:13, color:C.red, marginBottom:20, lineHeight:1.5 }}>
@@ -419,6 +427,23 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
 
         {/* Divider */}
         {REGISTRATION_CLOSED ? (
+          compact ? (
+            <div style={{
+              marginTop: 4,
+              paddingTop: 16, borderTop: `1px solid ${C.border}`,
+              textAlign: 'center',
+            }}>
+              <div style={{
+                fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+                fontSize: 10, color: C.muted, letterSpacing: '0.14em',
+                textTransform: 'uppercase', marginBottom: 5,
+              }}>Регистрация приостановлена</div>
+              <div style={{
+                fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                fontSize: 14, color: C.muted, lineHeight: 1.6,
+              }}>Следите за анонсами новых наборов.</div>
+            </div>
+          ) : (
           <div style={{
             padding: '14px 16px',
             background: '#faf6ee',
@@ -439,6 +464,7 @@ function LoginForm({ onSuccess, onRegister, onResetRequired }) {
               fontSize: 13, color: C.muted, lineHeight: 1.6,
             }}>Набор новых учеников временно приостановлен. Следите за анонсами.</div>
           </div>
+          )
         ) : (
           <>
             <div style={{ display:'flex', alignItems:'center', gap:12, margin:'4px 0' }}>
