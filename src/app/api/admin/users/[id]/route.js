@@ -10,9 +10,10 @@ export async function PATCH(request, { params }) {
   try {
     const body = await request.json();
     const data = {};
-    if (body.level  !== undefined) data.level  = body.level;
-    if (body.role   !== undefined) data.role   = body.role;
-    if (body.status !== undefined) data.status = body.status;
+    if (body.level         !== undefined) data.level        = body.level;
+    if (body.role          !== undefined) data.role         = body.role;
+    if (body.status        !== undefined) data.status       = body.status;
+    if (body.passwordReset === true)      data.passwordHash = 'RESET_REQUIRED';
 
     await prisma.user.update({ where: { id: params.id }, data });
     return NextResponse.json({ ok: true });

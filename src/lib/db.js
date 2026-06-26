@@ -81,7 +81,16 @@ export function useUsers() {
     }
   }, []);
 
-  return { users, loading, error, updateLevel, reload: load };
+  const resetPassword = useCallback(async (userId) => {
+    try {
+      await api(`/api/admin/users/${userId}`, { method: 'PATCH', body: { passwordReset: true } });
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }, []);
+
+  return { users, loading, error, updateLevel, resetPassword, reload: load };
 }
 
 // ─────────────────────────────────────────────────────────────

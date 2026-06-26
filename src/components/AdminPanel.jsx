@@ -862,7 +862,7 @@ function StatGrid({children,cols=4,isMobile}){
 // 1. ПОЛЬЗОВАТЕЛИ
 // ═══════════════════════════════════════════════════════════════
 function SectionUsers({showToast,isMobile}){
-  const {users,loading,updateLevel} = useUsers();
+  const {users,loading,updateLevel,resetPassword} = useUsers();
   const {payments} = useAccess();
   const { exams } = useExams();
   const [selected,  setSelected]  = useState(null);
@@ -1037,6 +1037,7 @@ function SectionUsers({showToast,isMobile}){
             onClose={() => setSelected(null)}
             showToast={showToast}
             updateLevel={updateLevel}
+            resetPassword={resetPassword}
             isMobile={isMobile}
           />
         )}
@@ -1083,10 +1084,11 @@ function SectionUsers({showToast,isMobile}){
 // ═══════════════════════════════════════════════════════════════
 // STUDENT CARD — 6 tabs
 // ═══════════════════════════════════════════════════════════════
-function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLevel, isMobile }) {
+function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLevel, resetPassword, isMobile }) {
   const [tab, setTab] = useState('basic');
   const [editLevel, setEditLevel] = useState(user.raw?.level || '');
   const [saving, setSaving] = useState(false);
+  const [resetting, setResetting] = useState(false);
   const { rows: accessRows, loading: accessLoading, reload: reloadAccess } = useAdminUserAccess(user.id);
   const { months: grantMonths } = useMonths();
   const [grantType, setGrantType] = useState('month');
@@ -1104,6 +1106,15 @@ function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLe
     if (ok) showToast('Уровень обновлён');
     else showToast('Ошибка: ' + error);
     // NOTE: no access granting — business rule
+  };
+
+  const handleResetPassword = async () => {
+    if (!confirm(`Сбросить пароль для ${user.name}? При следующем входе система попросит задать новый.`)) return;
+    setResetting(true);
+    const { ok, error } = await resetPassword(user.id);
+    setResetting(false);
+    if (ok) showToast(`Пароль сброшен — ${user.email} задаст новый при входе`);
+    else showToast('Ошибка: ' + error);
   };
 
   const handleGrant = async () => {
@@ -1182,6 +1193,20 @@ function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLe
                 <div style={{background:C.bg2, border:`1px solid ${C.hairline}`, padding:'12px 14px', fontFamily:F.serif, fontSize:13, color:C.ink2, lineHeight:1.7}}>{user.raw.experience}</div>
               </div>
             )}
+            <div style={{marginTop:8, paddingTop:16, borderTop:`1px solid ${C.hairline}`}}>
+              <div style={{fontFamily:F.mono, fontSize:11, color:C.muted, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:8}}>Сброс пароля</div>
+              <button onClick={handleResetPassword} disabled={resetting} style={{
+                padding:'9px 18px', background:'transparent',
+                border:`1px solid ${C.danger}`, color:C.danger,
+                fontFamily:F.mono, fontSize:11, letterSpacing:'0.12em', textTransform:'uppercase',
+                cursor: resetting ? 'default' : 'pointer', opacity: resetting ? 0.5 : 1,
+              }}>
+                {resetting ? '…' : 'Сбросить пароль'}
+              </button>
+              <div style={{fontFamily:F.serif, fontSize:12, color:C.muted, marginTop:6, lineHeight:1.5}}>
+                При следующем входе пользователь задаст новый пароль самостоятельно.
+              </div>
+            </div>
           </div>
         )}
 

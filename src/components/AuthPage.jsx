@@ -405,7 +405,9 @@ function LoginForm({ onSuccess, onRegister, onResetRequired, compact = false }) 
               fontFamily:"var(--font-mono), 'JetBrains Mono', monospace",
               fontSize:11, color:C.muted, letterSpacing:'0.14em', textTransform:'uppercase',
             }}>Пароль</label>
-            <button style={{ background:'none', border:'none', fontSize:11, color:C.accent, cursor:'pointer', padding:'12px 0', minHeight:44, display:'flex', alignItems:'center' }}>забыли?</button>
+            <button
+              onClick={() => alert('Напишите администратору — пароль будет сброшен, и вы зададите новый при следующем входе.')}
+              style={{ background:'none', border:'none', fontSize:11, color:C.accent, cursor:'pointer', padding:'12px 0', minHeight:44, display:'flex', alignItems:'center' }}>забыли?</button>
           </div>
           <Input value={password} onChange={setPassword} placeholder="••••••••" type="password" error={!!errors.password}/>
           {errors.password && <div style={{ fontSize:13, color:C.red }}>{errors.password}</div>}
