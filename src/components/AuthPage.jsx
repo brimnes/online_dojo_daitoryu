@@ -8,7 +8,7 @@ import LandingContent from '@/components/LandingContent';
 
 // ─── Временный запрет регистрации ─────────────────────────────
 // Поставь false чтобы снова открыть регистрацию
-const REGISTRATION_CLOSED = true;
+const REGISTRATION_CLOSED = false;
 
 // ─── Цветовая палитра ──────────────────────────────────────────
 const C = {

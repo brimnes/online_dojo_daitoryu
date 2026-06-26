@@ -116,8 +116,8 @@ function PlatformPreview({ type }) {
       { kyu: '6 КЮ', name: 'Иппондори' },
       { kyu: '6 КЮ', name: 'Курумадаоси' },
       { kyu: '6 КЮ', name: 'Гьякуудэдори' },
-      { kyu: '5 КЮ', name: 'Катадори' },
-      { kyu: '5 КЮ', name: 'Содэдори' },
+      { kyu: '5 КЮ', name: 'Косигурума' },
+      { kyu: '5 КЮ', name: 'Караминагэ' },
     ];
     return (
       <div style={base}>
@@ -297,6 +297,9 @@ function WhySection({ isMobile }) {
     { kanji: '四', text: 'Сочетание техники, истории, философии и традиции.' },
     { kanji: '五', text: 'Регулярное пополнение платформы новыми материалами.' },
     { kanji: '六', text: 'Доступ к материалам из любой точки мира.' },
+    { kanji: '七', text: 'Доступные цены на все разделы программы.' },
+    { kanji: '八', text: 'Пожизненный доступ ко всем приобретённым материалам.' },
+    { kanji: '九', text: 'Бесплатные материалы в открытом доступе — видео, статьи, файлы.' },
   ];
 
   return (
@@ -311,7 +314,7 @@ function WhySection({ isMobile }) {
       <div style={{ maxWidth: 1080, margin: '0 auto', position: 'relative' }}>
         <div style={{ textAlign: 'center', marginBottom: 60 }}>
           <Overline dark>Отличие</Overline>
-          <SectionTitle dark>Почему эта платформа отличается</SectionTitle>
+          <SectionTitle dark>Что делает<br />платформу особенной</SectionTitle>
         </div>
 
         <div style={{
