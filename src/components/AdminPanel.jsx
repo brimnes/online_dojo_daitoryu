@@ -862,15 +862,15 @@ function StatGrid({children,cols=4,isMobile}){
 // 1. ПОЛЬЗОВАТЕЛИ
 // ═══════════════════════════════════════════════════════════════
 function SectionUsers({showToast,isMobile}){
-  const {users,loading,updateLevel,resetPassword} = useUsers();
+  const {users,loading,updateLevel,resetPassword,deleteUser} = useUsers();
   const {payments} = useAccess();
   const { exams } = useExams();
   const [selected,  setSelected]  = useState(null);
   const [filter,    setFilter]    = useState('all');
   const [search,    setSearch]    = useState('');
 
-  // map real DB users → design shape
-  const mapped = users.map(u => {
+  // map real DB users → design shape (скрываем удалённых)
+  const mapped = users.filter(u => u.status !== 'deleted').map(u => {
     const upays = payments.filter(p=>p.userId===u.id);
     const accessLabel = upays.length ? upays.map(p=>p.desc||'—').join(' · ') : '—';
     const joinDate = u.joined_at
@@ -1038,6 +1038,7 @@ function SectionUsers({showToast,isMobile}){
             showToast={showToast}
             updateLevel={updateLevel}
             resetPassword={resetPassword}
+            deleteUser={deleteUser}
             isMobile={isMobile}
           />
         )}
@@ -1084,11 +1085,12 @@ function SectionUsers({showToast,isMobile}){
 // ═══════════════════════════════════════════════════════════════
 // STUDENT CARD — 6 tabs
 // ═══════════════════════════════════════════════════════════════
-function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLevel, resetPassword, isMobile }) {
+function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLevel, resetPassword, deleteUser, isMobile }) {
   const [tab, setTab] = useState('basic');
   const [editLevel, setEditLevel] = useState(user.raw?.level || '');
   const [saving, setSaving] = useState(false);
   const [resetting, setResetting] = useState(false);
+  const [deleting, setDeleting] = useState(false);
   const { rows: accessRows, loading: accessLoading, reload: reloadAccess } = useAdminUserAccess(user.id);
   const { months: grantMonths } = useMonths();
   const [grantType, setGrantType] = useState('month');
@@ -1114,6 +1116,15 @@ function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLe
     const { ok, error } = await resetPassword(user.id);
     setResetting(false);
     if (ok) showToast(`Пароль сброшен — ${user.email} задаст новый при входе`);
+    else showToast('Ошибка: ' + error);
+  };
+
+  const handleDelete = async () => {
+    if (!confirm(`Удалить ${user.name}? Пользователь потеряет доступ к платформе. Данные сохранятся, восстановление возможно.`)) return;
+    setDeleting(true);
+    const { ok, error } = await deleteUser(user.id);
+    setDeleting(false);
+    if (ok) { showToast(`${user.name} удалён`); onClose(); }
     else showToast('Ошибка: ' + error);
   };
 
@@ -1194,17 +1205,27 @@ function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLe
               </div>
             )}
             <div style={{marginTop:8, paddingTop:16, borderTop:`1px solid ${C.hairline}`}}>
-              <div style={{fontFamily:F.mono, fontSize:11, color:C.muted, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:8}}>Сброс пароля</div>
-              <button onClick={handleResetPassword} disabled={resetting} style={{
-                padding:'9px 18px', background:'transparent',
-                border:`1px solid ${C.danger}`, color:C.danger,
-                fontFamily:F.mono, fontSize:11, letterSpacing:'0.12em', textTransform:'uppercase',
-                cursor: resetting ? 'default' : 'pointer', opacity: resetting ? 0.5 : 1,
-              }}>
-                {resetting ? '…' : 'Сбросить пароль'}
-              </button>
+              <div style={{fontFamily:F.mono, fontSize:11, color:C.muted, letterSpacing:'0.12em', textTransform:'uppercase', marginBottom:8}}>Управление аккаунтом</div>
+              <div style={{display:'flex', gap:10, flexWrap:'wrap'}}>
+                <button onClick={handleResetPassword} disabled={resetting} style={{
+                  padding:'9px 18px', background:'transparent',
+                  border:`1px solid ${C.hairline}`, color:C.ink2,
+                  fontFamily:F.mono, fontSize:11, letterSpacing:'0.12em', textTransform:'uppercase',
+                  cursor: resetting ? 'default' : 'pointer', opacity: resetting ? 0.5 : 1,
+                }}>
+                  {resetting ? '…' : 'Сбросить пароль'}
+                </button>
+                <button onClick={handleDelete} disabled={deleting} style={{
+                  padding:'9px 18px', background:'transparent',
+                  border:`1px solid ${C.danger}`, color:C.danger,
+                  fontFamily:F.mono, fontSize:11, letterSpacing:'0.12em', textTransform:'uppercase',
+                  cursor: deleting ? 'default' : 'pointer', opacity: deleting ? 0.5 : 1,
+                }}>
+                  {deleting ? '…' : 'Удалить пользователя'}
+                </button>
+              </div>
               <div style={{fontFamily:F.serif, fontSize:12, color:C.muted, marginTop:6, lineHeight:1.5}}>
-                При следующем входе пользователь задаст новый пароль самостоятельно.
+                Удаление мягкое — данные сохраняются, пользователь теряет доступ.
               </div>
             </div>
           </div>

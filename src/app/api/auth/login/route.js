@@ -44,6 +44,13 @@ export async function POST(request) {
       );
     }
 
+    if (user.status === 'deleted') {
+      return NextResponse.json(
+        { error: 'Аккаунт удалён. Обратитесь к администратору.' },
+        { status: 403 }
+      );
+    }
+
     // 3. Пользователь импортирован из Supabase — нужен сброс пароля
     if (user.passwordHash === 'RESET_REQUIRED') {
       return NextResponse.json(

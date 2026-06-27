@@ -90,7 +90,17 @@ export function useUsers() {
     }
   }, []);
 
-  return { users, loading, error, updateLevel, resetPassword, reload: load };
+  const deleteUser = useCallback(async (userId) => {
+    try {
+      await api(`/api/admin/users/${userId}`, { method: 'PATCH', body: { status: 'deleted' } });
+      setUsers(prev => prev.filter(u => u.id !== userId));
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }, []);
+
+  return { users, loading, error, updateLevel, resetPassword, deleteUser, reload: load };
 }
 
 // ─────────────────────────────────────────────────────────────
