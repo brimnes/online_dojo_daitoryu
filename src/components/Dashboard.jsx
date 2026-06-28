@@ -1641,7 +1641,14 @@ function TabProfile({ user: u, nav, userAccess, accessLoading, isMobile, onLogou
       )}
 
       {/* ── Sub-tabs ── */}
-      <div className="chips-scroll" style={{ display: 'flex', borderBottom: `1px solid ${C.border}`, overflowX: 'auto', WebkitOverflowScrolling: 'touch' }}>
+      <div className="chips-scroll" style={{
+        display: 'flex', borderBottom: `1px solid ${C.border}`,
+        overflowX: 'hidden',
+        position: isMobile ? 'sticky' : undefined,
+        top: isMobile ? 'calc(max(12px, env(safe-area-inset-top)) + 85px)' : undefined,
+        zIndex: isMobile ? 9 : undefined,
+        background: C.bg,
+      }}>
         {SUB_TABS.map(t => (
           <button key={t.id} onClick={() => setSub(t.id)}
             style={{
