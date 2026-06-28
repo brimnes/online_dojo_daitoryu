@@ -236,9 +236,9 @@ function SumiStroke({ style }) {
 }
 
 // ── FilterChip2 ─────────────────────────────────────────────────
-function FilterChip2({ label, value, active, dot, onClick }) {
+function FilterChip2({ label, value, active, dot, onClick, disabled }) {
   return (
-    <div onClick={onClick} style={{display:'inline-flex',alignItems:'center',gap:8,padding:'8px 14px',minHeight:36,background:active?C.ink:C.surface,color:active?C.onAccent:C.ink2,border:`1px solid ${active?C.ink:C.hairline}`,fontFamily:F.mono,fontSize:13,fontWeight:500,letterSpacing:'0.04em',cursor:'pointer',flexShrink:0,whiteSpace:'nowrap'}}>
+    <div onClick={disabled ? undefined : onClick} style={{display:'inline-flex',alignItems:'center',gap:8,padding:'8px 14px',minHeight:36,background:active?C.ink:C.surface,color:active?C.onAccent:C.ink2,border:`1px solid ${active?C.ink:C.hairline}`,fontFamily:F.mono,fontSize:13,fontWeight:500,letterSpacing:'0.04em',cursor:disabled?'default':'pointer',flexShrink:0,whiteSpace:'nowrap',opacity:disabled?0.35:1}}>
       {dot && <span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:dot,flexShrink:0}}/>}
       <span>{label}</span>
       {value !== undefined && (
@@ -508,7 +508,7 @@ export default function AdminPanel({ onExit }) {
       {isMobile && (
         <>
           {/* Top bar */}
-          <div style={{position:'fixed',top:0,left:0,right:0,zIndex:200,background:C.side,borderBottom:`1px solid ${C.sideBorder}`,display:'flex',alignItems:'center',padding:'0 16px',height:52}}>
+          <div style={{position:'fixed',top:0,left:0,right:0,zIndex:200,background:C.side,borderBottom:`1px solid ${C.sideBorder}`,display:'flex',alignItems:'flex-end',paddingLeft:16,paddingRight:16,paddingTop:'env(safe-area-inset-top)',height:'calc(52px + env(safe-area-inset-top))'}}>
             <button onClick={()=>setDrawerOpen(true)}
               style={{background:'none',border:'none',fontSize:24,cursor:'pointer',color:C.sideMuted,padding:'8px',marginRight:8,lineHeight:1,minWidth:40,minHeight:40}}>
               ☰
@@ -542,7 +542,7 @@ export default function AdminPanel({ onExit }) {
       )}
 
       {/* ── Main content ────────────────────────────────────── */}
-      <main style={{flex:1,overflow:'auto',minWidth:0,paddingTop:isMobile?52:0,paddingLeft:isMobile?0:260,display:'flex',flexDirection:'column'}}>
+      <main style={{flex:1,overflow:'auto',minWidth:0,paddingTop:isMobile?'calc(52px + env(safe-area-inset-top))':0,paddingLeft:isMobile?0:260,display:'flex',flexDirection:'column'}}>
 
         {/* ── Admin top bar (desktop) ─────────────────────── */}
         {!isMobile && (
@@ -868,6 +868,8 @@ function SectionUsers({showToast,isMobile}){
   const [selected,  setSelected]  = useState(null);
   const [filter,    setFilter]    = useState('all');
   const [search,    setSearch]    = useState('');
+  const [page,      setPage]      = useState(0);
+  const PER_PAGE = 12;
 
   // map real DB users → design shape (скрываем удалённых)
   const mapped = users.filter(u => u.status !== 'deleted').map(u => {
@@ -909,6 +911,12 @@ function SectionUsers({showToast,isMobile}){
   const selUser  = mapped.find(u=>u.id===selected);
 
   const openUser = (u) => { setSelected(u.id); };
+
+  const list     = filtered.length ? filtered : mapped;
+  const maxPage  = Math.max(0, Math.ceil(list.length / PER_PAGE) - 1);
+  const pageList = list.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
+  const handleFilter = (f) => { setFilter(f); setPage(0); };
+  const handleSearch = (s) => { setSearch(s); setPage(0); };
 
   if (loading) return <Spinner/>;
 
@@ -1017,11 +1025,11 @@ function SectionUsers({showToast,isMobile}){
 
         {/* ── filter chips ─────────────────────────────────────── */}
         <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12,alignItems:'center'}}>
-          <FilterChip2 label="Все"      value={String(counts.all)}    active={filter==='all'}    onClick={()=>setFilter('all')}/>
-          <FilterChip2 label="Активные" value={String(counts.active)} active={filter==='active'} onClick={()=>setFilter('active')} dot={C.success}/>
-          <FilterChip2 label="Новые"    value={String(counts.new)}    active={filter==='new'}    onClick={()=>setFilter('new')}    dot={C.accent}/>
-          <FilterChip2 label="Пробные"  value={String(counts.trial)}  active={filter==='trial'}  onClick={()=>setFilter('trial')}  dot={C.goldSoft}/>
-          <FilterChip2 label="На паузе" value={String(counts.paused)} active={filter==='paused'} onClick={()=>setFilter('paused')} dot={C.muted}/>
+          <FilterChip2 label="Все"      value={String(counts.all)}    active={filter==='all'}    onClick={()=>handleFilter('all')}/>
+          <FilterChip2 label="Активные" value={String(counts.active)} active={filter==='active'} onClick={()=>handleFilter('active')} dot={C.success}/>
+          <FilterChip2 label="Новые"    value={String(counts.new)}    active={filter==='new'}    onClick={()=>handleFilter('new')}    dot={C.accent}/>
+          <FilterChip2 label="Пробные"  value={String(counts.trial)}  active={filter==='trial'}  onClick={()=>handleFilter('trial')}  dot={C.goldSoft}/>
+          <FilterChip2 label="На паузе" value={String(counts.paused)} active={filter==='paused'} onClick={()=>handleFilter('paused')} dot={C.muted}/>
           <div style={{flex:1}}/>
           <span style={{fontFamily:F.mono,fontSize:11,color:C.muted,letterSpacing:'0.12em'}}>СОРТИРОВКА:</span>
           <FilterChip2 label="По дате регистрации ↓"/>
@@ -1046,7 +1054,7 @@ function SectionUsers({showToast,isMobile}){
         {/* ── table / card list ──────────────────────────────────── */}
         {isMobile ? (
           <div style={{background:C.surface,border:`1px solid ${C.hairline}`}}>
-            {(filtered.length?filtered:mapped).slice(0,12).map((u,i,arr)=>(
+            {pageList.map((u,i,arr)=>(
               <div key={u.id} onClick={()=>openUser(u)}
                 style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',borderBottom:i===arr.length-1?'none':`1px solid ${C.hairline}`,cursor:'pointer',background:selected===u.id?C.surface2:'transparent',minHeight:64}}>
                 <AvatarCircle letter={u.letter} size={36}/>
@@ -1062,18 +1070,18 @@ function SectionUsers({showToast,isMobile}){
             ))}
           </div>
         ) : (
-          <HairlineTable2 columns={columns} rows={filtered.length?filtered:mapped} onRowClick={openUser}/>
+          <HairlineTable2 columns={columns} rows={pageList} onRowClick={openUser}/>
         )}
 
         {/* ── pagination footer ─────────────────────────────────── */}
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 4px',marginTop:4}}>
           <span style={{fontFamily:F.mono,fontSize:11,color:C.muted,letterSpacing:'0.12em',textTransform:'uppercase'}}>
-            Показано 1 — {Math.min(12,filtered.length||mapped.length)} из {mapped.length}
+            Показано {list.length === 0 ? 0 : page * PER_PAGE + 1}–{Math.min((page + 1) * PER_PAGE, list.length)} из {list.length}
           </span>
           <div style={{display:'flex',gap:4}}>
-            <FilterChip2 label="← Назад"/>
-            <FilterChip2 label="1" active/>
-            <FilterChip2 label="Вперёд →"/>
+            <FilterChip2 label="← Назад"  onClick={()=>setPage(p=>Math.max(0,p-1))}        active={false} disabled={page===0}/>
+            <FilterChip2 label={String(page+1)} active/>
+            <FilterChip2 label="Вперёд →" onClick={()=>setPage(p=>Math.min(maxPage,p+1))}  active={false} disabled={page>=maxPage}/>
           </div>
         </div>
 
