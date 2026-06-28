@@ -1643,7 +1643,7 @@ function TabProfile({ user: u, nav, userAccess, accessLoading, isMobile, onLogou
       {/* ── Sub-tabs ── */}
       <div className="chips-scroll" style={{
         display: 'flex', borderBottom: `1px solid ${C.border}`,
-        overflowX: 'hidden',
+        overflowX: 'auto', WebkitOverflowScrolling: 'touch',
         position: isMobile ? 'sticky' : undefined,
         top: isMobile ? 'calc(max(12px, env(safe-area-inset-top)) + 85px)' : undefined,
         zIndex: isMobile ? 9 : undefined,
