@@ -22,6 +22,132 @@ const KYU_KANJI = {
   '1dan': '初段', '2dan': '二段', '3dan': '三段',
 };
 
+// ── Блок комментариев к технике ──────────────────────────────────
+function TechniqueComments({ techniqueId }) {
+  const [comments, setComments] = useState([]);
+  const [text,     setText]     = useState('');
+  const [loading,  setLoading]  = useState(true);
+  const [sending,  setSending]  = useState(false);
+  const [error,    setError]    = useState('');
+
+  useEffect(() => {
+    fetch(`/api/comments/technique?technique_id=${techniqueId}`)
+      .then(r => r.json())
+      .then(data => { setComments(Array.isArray(data) ? data : []); setLoading(false); })
+      .catch(() => setLoading(false));
+  }, [techniqueId]);
+
+  const handleSubmit = async () => {
+    if (!text.trim()) return;
+    setSending(true); setError('');
+    try {
+      const res  = await fetch('/api/comments/technique', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ technique_id: techniqueId, text: text.trim() }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setError(data.error || 'Ошибка'); setSending(false); return; }
+      setComments(prev => [...prev, data]);
+      setText('');
+    } catch { setError('Ошибка соединения'); }
+    setSending(false);
+  };
+
+  return (
+    <div style={{ marginTop: 20, background: C.surface, border: `1px solid ${C.border}`, padding: '22px 24px' }}>
+      {/* Заголовок */}
+      <div style={{
+        fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted,
+        letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 20,
+        display: 'flex', alignItems: 'center', gap: 8,
+      }}>
+        <span style={{ color: C.accent, fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 13 }}>問</span>
+        ВОПРОСЫ И КОММЕНТАРИИ
+        {!loading && <span style={{ marginLeft: 'auto', fontSize: 11, color: C.muted }}>{comments.length}</span>}
+      </div>
+
+      {/* Список комментариев */}
+      {loading ? (
+        <div style={{ fontSize: 13, color: C.muted }}>Загрузка…</div>
+      ) : comments.length === 0 ? (
+        <div style={{ fontSize: 15, color: C.muted, lineHeight: 1.7, marginBottom: 20 }}>
+          Вопросов пока нет. Задайте первый — сэнсэй отвечает на вопросы по технике.
+        </div>
+      ) : (
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 24 }}>
+          {comments.map(c => (
+            <div key={c.id}>
+              {/* Сам комментарий */}
+              <div style={{ display: 'flex', gap: 12 }}>
+                <div style={{
+                  width: 34, height: 34, borderRadius: '50%', flexShrink: 0,
+                  background: C.bg2, border: `1px solid ${C.border}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                  fontSize: 15, color: C.ink,
+                }}>{c.avatar}</div>
+                <div style={{ flex: 1, minWidth: 0 }}>
+                  <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 5 }}>
+                    <span style={{ fontSize: 13, fontWeight: 600, color: C.ink }}>{c.author}</span>
+                    <span style={{ fontSize: 11, color: C.muted, fontFamily: "var(--font-mono), monospace" }}>{c.date}</span>
+                  </div>
+                  <div style={{ fontSize: 16, color: C.ink2, lineHeight: 1.7 }}>{c.text}</div>
+                </div>
+              </div>
+              {/* Ответы сэнсэя */}
+              {c.replies?.map(r => (
+                <div key={r.id} style={{ display: 'flex', gap: 12, marginTop: 12, marginLeft: 46, paddingLeft: 16, borderLeft: `2px solid ${C.goldBorder}` }}>
+                  <div style={{
+                    width: 28, height: 28, borderRadius: '50%', flexShrink: 0,
+                    background: C.light, border: `1px solid ${C.goldBorder}`,
+                    display: 'flex', alignItems: 'center', justifyContent: 'center',
+                    fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                    fontSize: 13, color: C.gold,
+                  }}>{r.avatar}</div>
+                  <div style={{ flex: 1 }}>
+                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
+                      <span style={{ fontSize: 13, fontWeight: 600, color: C.gold }}>{r.author}</span>
+                      <span style={{ fontSize: 11, color: C.muted, fontFamily: "var(--font-mono), monospace" }}>{r.date}</span>
+                    </div>
+                    <div style={{ fontSize: 16, color: C.ink2, lineHeight: 1.7 }}>{r.text}</div>
+                  </div>
+                </div>
+              ))}
+            </div>
+          ))}
+        </div>
+      )}
+
+      {/* Форма */}
+      <div style={{ borderTop: `1px solid ${C.border}`, paddingTop: 18 }}>
+        <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 10 }}>
+          Оставить вопрос
+        </div>
+        <textarea
+          value={text} onChange={e => setText(e.target.value)}
+          placeholder="Задайте вопрос по технике или оставьте комментарий…"
+          rows={3}
+          style={{
+            width: '100%', padding: '12px 14px', fontSize: 15, lineHeight: 1.65,
+            background: C.bg, border: `1px solid ${C.border}`, outline: 'none',
+            color: C.ink, resize: 'vertical', fontFamily: "-apple-system, sans-serif",
+            boxSizing: 'border-box',
+          }}
+        />
+        {error && <div style={{ fontSize: 13, color: C.accent, marginTop: 6 }}>{error}</div>}
+        <button onClick={handleSubmit} disabled={sending || !text.trim()} style={{
+          marginTop: 10, padding: '11px 28px',
+          background: sending || !text.trim() ? C.muted : C.ink,
+          color: C.onAccent, border: 'none', fontSize: 13, cursor: sending || !text.trim() ? 'default' : 'pointer',
+          fontFamily: "var(--font-mono), monospace", letterSpacing: '0.12em', textTransform: 'uppercase',
+        }}>
+          {sending ? 'Отправка…' : 'Отправить →'}
+        </button>
+      </div>
+    </div>
+  );
+}
+
 export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerId, user = {}, onLogout }) {
   const isMobile = useIsMobile();
   const belt = BELT[kyu.belt] || { color: '#ccc', border: '#aaa', label: '' };
@@ -324,6 +450,11 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
             </div>
           </div>
         )}
+        {/* Comments — mobile */}
+        <div style={{ margin: '12px 16px 0' }}>
+          <TechniqueComments techniqueId={techDbId} />
+        </div>
+
         <MobileBottomNav nav={nav || { dashboard: onBack }} active="database" isAdmin={user?.role === 'admin'} />
       </div>
     );
@@ -581,6 +712,9 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
               </div>
             </div>
           )}
+
+          {/* Comments — desktop */}
+          <TechniqueComments techniqueId={techDbId} />
         </div>
 
       </div>{/* end flex:1 */}
