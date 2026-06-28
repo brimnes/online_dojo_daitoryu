@@ -473,6 +473,112 @@ function AuthorSection({ isMobile }) {
   );
 }
 
+// ─── СЕКЦИЯ: УСТАНОВКА НА ТЕЛЕФОН ────────────────────────────
+function InstallSection({ isMobile }) {
+  const cards = [
+    {
+      os: 'iPhone / iPad',
+      icon: '◆',
+      iconColor: '#555',
+      steps: [
+        { icon: '⬆', text: 'Откройте сайт в Safari и нажмите кнопку «Поделиться» внизу экрана' },
+        { icon: '＋', text: 'Прокрутите вниз и выберите «На экран Домой»' },
+        { icon: '✓', text: 'Нажмите «Добавить» — иконка платформы появится на рабочем столе' },
+      ],
+      note: 'Работает только в Safari. В Chrome и других браузерах эта функция недоступна.',
+    },
+    {
+      os: 'Android',
+      icon: '◈',
+      iconColor: '#555',
+      steps: [
+        { icon: '⋮', text: 'Откройте сайт в Chrome и нажмите три точки в правом верхнем углу' },
+        { icon: '＋', text: 'Выберите «Добавить на главный экран»' },
+        { icon: '✓', text: 'Нажмите «Добавить» — иконка появится на рабочем столе' },
+      ],
+      note: 'Также может появиться всплывающий баннер «Установить приложение» — нажмите на него.',
+    },
+  ];
+
+  return (
+    <section style={{ background: LIGHT.bg, padding: '80px 24px', borderTop: `1px solid ${LIGHT.border}` }}>
+      <div style={{ maxWidth: 1080, margin: '0 auto' }}>
+        <div style={{ textAlign: 'center', marginBottom: 52 }}>
+          <Overline>Доступ</Overline>
+          <SectionTitle>Добавьте платформу<br />на рабочий стол телефона</SectionTitle>
+          <p style={{
+            fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+            fontSize: 18, color: LIGHT.muted, lineHeight: 1.75, marginTop: 14, marginBottom: 0,
+          }}>
+            Платформа работает как приложение — без установки из App Store или Google Play.
+          </p>
+        </div>
+
+        <div style={{
+          display: 'grid',
+          gridTemplateColumns: isMobile ? '1fr' : '1fr 1fr',
+          gap: isMobile ? 16 : 24,
+        }}>
+          {cards.map((card) => (
+            <div key={card.os} style={{
+              background: LIGHT.surface,
+              border: `1px solid ${LIGHT.border}`,
+              padding: isMobile ? '24px 20px' : '32px 28px',
+            }}>
+              {/* OS header */}
+              <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 24 }}>
+                <div style={{
+                  width: 36, height: 36,
+                  background: LIGHT.bg, border: `1px solid ${LIGHT.border}`,
+                  display: 'flex', alignItems: 'center', justifyContent: 'center',
+                  fontSize: 16, color: LIGHT.ink, flexShrink: 0,
+                }}>{card.icon}</div>
+                <div style={{
+                  fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+                  fontSize: 13, letterSpacing: '0.1em', color: LIGHT.ink, fontWeight: 600,
+                  textTransform: 'uppercase',
+                }}>{card.os}</div>
+              </div>
+
+              {/* Steps */}
+              <div style={{ display: 'flex', flexDirection: 'column', gap: 16, marginBottom: 20 }}>
+                {card.steps.map((step, i) => (
+                  <div key={i} style={{ display: 'flex', gap: 14, alignItems: 'flex-start' }}>
+                    <div style={{
+                      width: 28, height: 28, flexShrink: 0,
+                      background: LIGHT.accent, color: '#f1ece0',
+                      display: 'flex', alignItems: 'center', justifyContent: 'center',
+                      fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+                      fontSize: 11, fontWeight: 600,
+                    }}>{i + 1}</div>
+                    <div style={{ display: 'flex', gap: 10, alignItems: 'flex-start', flex: 1 }}>
+                      <span style={{
+                        fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+                        fontSize: 15, color: LIGHT.accent, flexShrink: 0, lineHeight: 1.4,
+                      }}>{step.icon}</span>
+                      <span style={{
+                        fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                        fontSize: 17, color: LIGHT.ink2, lineHeight: 1.65,
+                      }}>{step.text}</span>
+                    </div>
+                  </div>
+                ))}
+              </div>
+
+              {/* Note */}
+              <div style={{
+                borderTop: `1px solid ${LIGHT.border}`, paddingTop: 14,
+                fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
+                fontSize: 15, color: LIGHT.muted, lineHeight: 1.65, fontStyle: 'italic',
+              }}>{card.note}</div>
+            </div>
+          ))}
+        </div>
+      </div>
+    </section>
+  );
+}
+
 // ─── СЕКЦИЯ 6: ФИНАЛЬНЫЙ CTA ──────────────────────────────────
 function FinalCtaSection({ isMobile, onLogin, onRegister }) {
   return (
@@ -547,6 +653,7 @@ export default function LandingContent({ isMobile, onLogin, onRegister }) {
       <WhySection isMobile={isMobile} />
       <ForWhomSection isMobile={isMobile} />
       <AuthorSection isMobile={isMobile} />
+      <InstallSection isMobile={isMobile} />
       <FinalCtaSection isMobile={isMobile} onLogin={onLogin} onRegister={onRegister} />
     </>
   );
