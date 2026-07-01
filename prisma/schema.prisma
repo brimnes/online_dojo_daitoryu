@@ -60,7 +60,6 @@ model User {
   lessonProgress    LessonProgress[]
   comments          Comment[]
   knowledgeComments KnowledgeComment[]
-  pushSubscriptions PushSubscription[]
   payments          Payment[]
 
   @@map("users")
@@ -431,17 +430,4 @@ model KnowledgeComment {
   replies       KnowledgeComment[] @relation("KnowledgeCommentReplies")
 
   @@map("knowledge_comments")
-}
-
-model PushSubscription {
-  id        Int      @id @default(autoincrement())
-  userId    String   @map("user_id") @db.Uuid
-  endpoint  String   @unique
-  p256dh    String
-  auth      String
-  createdAt DateTime @default(now()) @map("created_at")
-
-  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
-
-  @@map("push_subscriptions")
 }
