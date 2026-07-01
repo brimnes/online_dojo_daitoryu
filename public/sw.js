@@ -9,35 +9,6 @@ const PRECACHE_URLS = [
   '/manifest.json',
 ];
 
-// ── Push notifications ───────────────────────────────────────────
-self.addEventListener('push', (event) => {
-  const data = event.data?.json() ?? {};
-  event.waitUntil(
-    self.registration.showNotification(data.title || 'Дайто-рю Додзё', {
-      body:  data.body  || '',
-      icon:  data.icon  || '/icons/icon-192x192.png',
-      badge: data.badge || '/icons/icon-192x192.png',
-      data:  { url: data.url || '/' },
-    })
-  );
-});
-
-self.addEventListener('notificationclick', (event) => {
-  event.notification.close();
-  const url = event.notification.data?.url || '/';
-  event.waitUntil(
-    clients.matchAll({ type: 'window', includeUncontrolled: true }).then((list) => {
-      for (const client of list) {
-        if (client.url.includes(self.location.origin) && 'focus' in client) {
-          client.navigate(url);
-          return client.focus();
-        }
-      }
-      return clients.openWindow(url);
-    })
-  );
-});
-
 // ── Install: precache app shell ──────────────────────────────────
 self.addEventListener('install', (event) => {
   event.waitUntil(

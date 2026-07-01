@@ -5,7 +5,7 @@ import { C, hasLevel, levelIndex } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
 import { LEVELS, SELF_LEVELS } from '@/data/users';
 import { DB_SECTIONS } from '@/data/techniques';
-import { useMonths, useLessons, useUserAccessRows, hasMonthAccess, useKnowledge, useMonthsWithLessons, useUserExams, useUserPayments, useTechniques, usePushNotifications } from '@/lib/db';
+import { useMonths, useLessons, useUserAccessRows, hasMonthAccess, useKnowledge, useMonthsWithLessons, useUserExams, useUserPayments, useTechniques } from '@/lib/db';
 import TakedaMon from '@/components/TakedaMon';
 import Sidebar from '@/components/Sidebar';
 import GlobalSearch from '@/components/GlobalSearch';
@@ -30,7 +30,6 @@ const TABS = [
 export default function Dashboard({ nav, watched, user: userProp, onLogout, onUserUpdate, initialTab }) {
   const [tab, setTab]     = useState(initialTab || 'months');
   const [modal, setModal] = useState(null);
-  const { state: pushState, subscribe: pushSubscribe } = usePushNotifications();
 
   // Sync tab when navigating back to dashboard with specific tab
   useEffect(() => {
@@ -76,23 +75,6 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, onUs
               {curLv && (
                 <span style={{ fontFamily: "var(--font-mono), monospace", padding: '3px 8px', background: C.surface2, border: `1px solid ${C.border}`, color: C.muted, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                   {curLv.label}
-                </span>
-              )}
-              {pushState === 'idle' && (
-                <button onClick={pushSubscribe} title="Включить уведомления"
-                  style={{ background: 'none', border: 'none', color: C.muted, cursor: 'pointer', padding: '4px 4px', lineHeight: 1, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                  </svg>
-                </button>
-              )}
-              {pushState === 'granted' && (
-                <span title="Уведомления включены" style={{ padding: '4px 4px', color: C.accent, display: 'flex', alignItems: 'center' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                    <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                  </svg>
                 </span>
               )}
               <button
