@@ -394,6 +394,7 @@ const SECTIONS = [
   {id:'knowledge', num:'05', label:'База знаний',     kanji:'智'},
   {id:'payments',  num:'06', label:'Платежи',         kanji:'銭'},
   {id:'comments',  num:'07', label:'Комментарии',     kanji:'声'},
+  {id:'push',      num:'08', label:'Уведомления',     kanji:'報'},
   // hidden (functional, not in nav)
   {id:'access',    num:'',   label:'Доступы',         kanji:'鍵', hidden:true},
 ];
@@ -577,6 +578,7 @@ export default function AdminPanel({ onExit }) {
           {section==='months'    && <SectionMonths    showToast={showToast} isMobile={isMobile}/>}
           {section==='ikkajo'    && <SectionIkkajo    showToast={showToast} isMobile={isMobile}/>}
           {section==='comments'  && <SectionComments  showToast={showToast} isMobile={isMobile}/>}
+          {section==='push'      && <SectionPush      showToast={showToast} isMobile={isMobile}/>}
         </div>
       </main>
 
@@ -3235,6 +3237,66 @@ function KnowledgeAttachmentsEditor({ itemId, onInsert, showToast }) {
           ))}
         </div>
       )}
+    </div>
+  );
+}
+
+function SectionPush({ showToast }) {
+  const [title,   setTitle]   = useState('');
+  const [body,    setBody]    = useState('');
+  const [url,     setUrl]     = useState('/');
+  const [sending, setSending] = useState(false);
+  const [result,  setResult]  = useState(null);
+
+  const handleSend = async () => {
+    if (!title.trim() || !body.trim()) return;
+    setSending(true); setResult(null);
+    try {
+      const res  = await fetch('/api/admin/push/send', {
+        method: 'POST', headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ title: title.trim(), body: body.trim(), url: url.trim() || '/' }),
+      });
+      const data = await res.json();
+      if (!res.ok) { setResult({ error: data.error || 'Ошибка' }); return; }
+      setResult({ sent: data.sent, failed: data.failed });
+      showToast(`Отправлено: ${data.sent}`);
+      setTitle(''); setBody(''); setUrl('/');
+    } catch (e) { setResult({ error: e.message }); }
+    finally { setSending(false); }
+  };
+
+  const inp = { background: C.surface, border: `1px solid ${C.border}`, color: C.ink, fontFamily: F.serif, fontSize: 15, padding: '10px 12px', outline: 'none', width: '100%', boxSizing: 'border-box' };
+
+  return (
+    <div>
+      <AdminSectionHead num="08" title="Push-уведомления" subtitle="Отправка всем подписанным пользователям" kanji="報" />
+      <div style={{ maxWidth: 560, display: 'flex', flexDirection: 'column', gap: 18 }}>
+        <div>
+          <div style={{ fontFamily: F.mono, fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 6 }}>Заголовок *</div>
+          <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Открылся новый урок!" style={inp} maxLength={80} />
+          <div style={{ fontFamily: F.mono, fontSize: 10, color: C.muted, marginTop: 4, textAlign: 'right' }}>{title.length}/80</div>
+        </div>
+        <div>
+          <div style={{ fontFamily: F.mono, fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 6 }}>Текст *</div>
+          <textarea value={body} onChange={e => setBody(e.target.value)} placeholder="Видео и материалы уже доступны в личном кабинете." rows={3} style={{ ...inp, resize: 'vertical' }} maxLength={200} />
+          <div style={{ fontFamily: F.mono, fontSize: 10, color: C.muted, marginTop: 4, textAlign: 'right' }}>{body.length}/200</div>
+        </div>
+        <div>
+          <div style={{ fontFamily: F.mono, fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 6 }}>Ссылка при нажатии</div>
+          <input value={url} onChange={e => setUrl(e.target.value)} placeholder="/" style={inp} />
+        </div>
+        {result && (
+          <div style={{ fontFamily: F.mono, fontSize: 13, padding: '12px 14px', background: result.error ? 'rgba(180,60,60,0.08)' : 'rgba(60,140,60,0.08)', border: `1px solid ${result.error ? C.danger : '#4a8a4a'}`, color: result.error ? C.danger : '#2a6a2a' }}>
+            {result.error ? `Ошибка: ${result.error}` : `✓ Отправлено: ${result.sent} · Ошибок: ${result.failed}`}
+          </div>
+        )}
+        <button onClick={handleSend} disabled={sending || !title.trim() || !body.trim()} style={{ padding: '13px 28px', alignSelf: 'flex-start', background: sending || !title.trim() || !body.trim() ? C.muted : C.accent, color: '#f1ece0', border: 'none', cursor: sending || !title.trim() || !body.trim() ? 'default' : 'pointer', fontFamily: F.mono, fontSize: 13, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+          {sending ? 'Отправка…' : 'Отправить всем →'}
+        </button>
+        <div style={{ fontFamily: F.serif, fontSize: 14, color: C.muted, lineHeight: 1.7, borderTop: `1px solid ${C.border}`, paddingTop: 16 }}>
+          Пользователь получит уведомление если нажал колокольчик в приложении. На iOS нужно добавить платформу на рабочий стол.
+        </div>
+      </div>
     </div>
   );
 }

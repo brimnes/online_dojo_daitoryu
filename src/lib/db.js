@@ -779,3 +779,46 @@ export function useKnowledge({ adminMode = false } = {}) {
 
   return { items, loading, saving, reload, saveItem, deleteItem };
 }
+
+export function usePushNotifications() {
+  const [state, setState] = useState('idle');
+
+  useEffect(() => {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
+      setState('unsupported'); return;
+    }
+    const p = Notification.permission;
+    if (p === 'granted') setState('granted');
+    else if (p === 'denied') setState('denied');
+  }, []);
+
+  const subscribe = useCallback(async () => {
+    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+    setState('loading');
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.subscribe({
+        userVisibleOnly: true,
+        applicationServerKey: process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY,
+      });
+      await api('/api/push/subscribe', { method: 'POST', body: sub.toJSON() });
+      setState('granted');
+    } catch {
+      setState(Notification.permission === 'denied' ? 'denied' : 'idle');
+    }
+  }, []);
+
+  const unsubscribe = useCallback(async () => {
+    try {
+      const reg = await navigator.serviceWorker.ready;
+      const sub = await reg.pushManager.getSubscription();
+      if (sub) {
+        await api('/api/push/subscribe', { method: 'DELETE', body: { endpoint: sub.endpoint } });
+        await sub.unsubscribe();
+      }
+      setState('idle');
+    } catch { }
+  }, []);
+
+  return { state, subscribe, unsubscribe };
+}
