@@ -1,7 +1,7 @@
 // Online Dojo — Service Worker
 // Кэширует shell приложения для работы оффлайн и быстрого старта
 
-const CACHE_NAME = 'online-dojo-v3'; // bump при каждом деплое
+const CACHE_NAME = 'online-dojo-v4'; // bump при каждом деплое
 
 // Ресурсы для предварительного кэширования (app shell)
 const PRECACHE_URLS = [
