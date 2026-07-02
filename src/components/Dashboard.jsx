@@ -31,6 +31,24 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, onUs
   const [tab, setTab]     = useState(initialTab || 'months');
   const [modal, setModal] = useState(null);
   const { state: pushState, subscribe: pushSubscribe } = usePushNotifications();
+  const [pushSheetVisible, setPushSheetVisible] = useState(false);
+
+  useEffect(() => {
+    if (pushState !== 'idle') return;
+    const dismissed = localStorage.getItem('push_sheet_dismissed');
+    if (dismissed) return;
+    const t = setTimeout(() => setPushSheetVisible(true), 2000);
+    return () => clearTimeout(t);
+  }, [pushState]);
+
+  useEffect(() => {
+    if (pushState === 'granted' || pushState === 'denied') setPushSheetVisible(false);
+  }, [pushState]);
+
+  const dismissPushSheet = () => {
+    setPushSheetVisible(false);
+    localStorage.setItem('push_sheet_dismissed', '1');
+  };
 
   // Sync tab when navigating back to dashboard with specific tab
   useEffect(() => {
@@ -76,21 +94,6 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, onUs
               {curLv && (
                 <span style={{ fontFamily: "var(--font-mono), monospace", padding: '3px 8px', background: C.surface2, border: `1px solid ${C.border}`, color: C.muted, fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
                   {curLv.label}
-                </span>
-              )}
-              {pushState === 'idle' && (
-                <button onClick={pushSubscribe} title="Включить уведомления"
-                  style={{ background: 'none', border: 'none', color: C.muted, cursor: 'pointer', padding: '4px 4px', lineHeight: 1, display: 'flex', alignItems: 'center', flexShrink: 0 }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                  </svg>
-                </button>
-              )}
-              {pushState === 'granted' && (
-                <span title="Уведомления включены" style={{ padding: '4px 4px', color: C.accent, display: 'flex', alignItems: 'center' }}>
-                  <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
-                    <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 0 1-3.46 0"/>
-                  </svg>
                 </span>
               )}
               <button
@@ -174,6 +177,53 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, onUs
           active={tab}
           isAdmin={isAdmin}
         />
+      )}
+
+      {/* ── Push notifications bottom sheet ── */}
+      {pushSheetVisible && (
+        <div style={{ position: 'fixed', inset: 0, zIndex: 400, display: 'flex', flexDirection: 'column', justifyContent: 'flex-end', pointerEvents: 'none' }}>
+          <div style={{
+            background: C.white, borderRadius: '20px 20px 0 0',
+            padding: '24px 24px 40px', boxShadow: '0 -4px 32px rgba(0,0,0,0.14)',
+            pointerEvents: 'all', position: 'relative', maxWidth: 480, width: '100%', margin: '0 auto',
+          }}>
+            <button onClick={dismissPushSheet} style={{
+              position: 'absolute', top: 16, right: 16, background: C.surface2,
+              border: 'none', borderRadius: 8, width: 32, height: 32, display: 'flex',
+              alignItems: 'center', justifyContent: 'center', cursor: 'pointer', color: C.muted,
+            }}>
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+              </svg>
+            </button>
+            <div style={{
+              width: 64, height: 64, borderRadius: '50%', background: '#EEF2FF',
+              display: 'flex', alignItems: 'center', justifyContent: 'center', marginBottom: 20,
+            }}>
+              <svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="#4F6EF7" strokeWidth="1.8" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                <path d="M13.73 21a2 2 0 0 1-3.46 0"/>
+                <circle cx="18" cy="8" r="3" fill="#4F6EF7" stroke="none"/>
+              </svg>
+            </div>
+            <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 22, fontWeight: 600, color: C.ink, marginBottom: 8 }}>
+              Включите уведомления
+            </div>
+            <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 28 }}>
+              Получайте уведомления о новых материалах, объявлениях и обновлениях платформы
+            </div>
+            <button
+              onClick={async () => { await pushSubscribe(); setPushSheetVisible(false); }}
+              disabled={pushState === 'loading'}
+              style={{
+                width: '100%', padding: '14px', background: '#4F6EF7', color: '#fff',
+                border: 'none', borderRadius: 12, fontSize: 16, fontWeight: 500,
+                cursor: pushState === 'loading' ? 'default' : 'pointer', opacity: pushState === 'loading' ? 0.7 : 1,
+              }}>
+              {pushState === 'loading' ? 'Подключение…' : 'Включить'}
+            </button>
+          </div>
+        </div>
       )}
 
       {/* ── Modal покупки ── */}
