@@ -813,7 +813,9 @@ export function usePushNotifications() {
     try {
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') { setState('denied'); return; }
-      const reg = await withTimeout(navigator.serviceWorker.ready, 10000, 'SW ready');
+      let reg = await navigator.serviceWorker.getRegistration('/');
+      if (!reg) reg = await withTimeout(navigator.serviceWorker.register('/sw.js'), 10000, 'SW register');
+      if (!reg) throw new Error('SW not available');
       const key = urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY);
       const sub = await withTimeout(
         reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key }),
