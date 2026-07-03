@@ -3241,7 +3241,7 @@ function KnowledgeAttachmentsEditor({ itemId, onInsert, showToast }) {
   );
 }
 
-function SectionPush({ showToast }) {
+function SectionPush({ showToast, isMobile }) {
   const [title,   setTitle]   = useState('');
   const [body,    setBody]    = useState('');
   const [url,     setUrl]     = useState('/');
@@ -3270,6 +3270,7 @@ function SectionPush({ showToast }) {
   return (
     <div>
       <AdminSectionHead num="08" title="Push-уведомления" subtitle="Отправка всем подписанным пользователям" kanji="報" />
+      <div style={{ padding: isMobile ? '20px 16px 40px' : '32px 36px 60px' }}>
       <div style={{ maxWidth: 560, display: 'flex', flexDirection: 'column', gap: 18 }}>
         <div>
           <div style={{ fontFamily: F.mono, fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 6 }}>Заголовок *</div>
@@ -3296,6 +3297,7 @@ function SectionPush({ showToast }) {
         <div style={{ fontFamily: F.serif, fontSize: 14, color: C.muted, lineHeight: 1.7, borderTop: `1px solid ${C.border}`, paddingTop: 16 }}>
           Пользователь получит уведомление если нажал колокольчик в приложении. На iOS нужно добавить платформу на рабочий стол.
         </div>
+      </div>
       </div>
     </div>
   );
