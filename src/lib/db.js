@@ -803,6 +803,9 @@ export function usePushNotifications() {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
     setState('loading');
     try {
+      // iOS requires requestPermission called directly from user gesture before any async ops
+      const permission = await Notification.requestPermission();
+      if (permission !== 'granted') { setState('denied'); return; }
       const reg = await navigator.serviceWorker.ready;
       const key = urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY);
       const sub = await reg.pushManager.subscribe({
