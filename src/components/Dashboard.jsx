@@ -30,7 +30,7 @@ const TABS = [
 export default function Dashboard({ nav, watched, user: userProp, onLogout, onUserUpdate, initialTab }) {
   const [tab, setTab]     = useState(initialTab || 'months');
   const [modal, setModal] = useState(null);
-  const { state: pushState, subscribe: pushSubscribe } = usePushNotifications();
+  const { state: pushState, subscribe: pushSubscribe, pushError } = usePushNotifications();
   const [pushSheetVisible, setPushSheetVisible] = useState(false);
 
   useEffect(() => {
@@ -212,6 +212,11 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, onUs
             <div style={{ fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 28 }}>
               Получайте уведомления о новых материалах, объявлениях и обновлениях платформы
             </div>
+            {pushError && (
+              <div style={{ fontSize: 12, color: '#c0392b', background: '#fdf2f2', border: '1px solid #f5c6cb', borderRadius: 8, padding: '8px 12px', marginBottom: 12 }}>
+                {pushError}
+              </div>
+            )}
             <button
               onClick={async () => { await pushSubscribe(); setPushSheetVisible(false); }}
               disabled={pushState === 'loading'}

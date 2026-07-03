@@ -787,8 +787,15 @@ function urlBase64ToUint8Array(base64String) {
   return new Uint8Array([...raw].map(c => c.charCodeAt(0)));
 }
 
+const withTimeout = (promise, ms, label) =>
+  Promise.race([
+    promise,
+    new Promise((_, reject) => setTimeout(() => reject(new Error(`Timeout: ${label}`)), ms)),
+  ]);
+
 export function usePushNotifications() {
   const [state, setState] = useState('idle');
+  const [pushError, setPushError] = useState(null);
 
   useEffect(() => {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) {
@@ -802,19 +809,23 @@ export function usePushNotifications() {
   const subscribe = useCallback(async () => {
     if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
     setState('loading');
+    setPushError(null);
     try {
-      // iOS requires requestPermission called directly from user gesture before any async ops
       const permission = await Notification.requestPermission();
       if (permission !== 'granted') { setState('denied'); return; }
-      const reg = await navigator.serviceWorker.ready;
+      const reg = await withTimeout(navigator.serviceWorker.ready, 10000, 'SW ready');
       const key = urlBase64ToUint8Array(process.env.NEXT_PUBLIC_VAPID_PUBLIC_KEY);
-      const sub = await reg.pushManager.subscribe({
-        userVisibleOnly: true,
-        applicationServerKey: key,
-      });
-      await api('/api/push/subscribe', { method: 'POST', body: sub.toJSON() });
+      const sub = await withTimeout(
+        reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key }),
+        20000, 'pushManager.subscribe'
+      );
+      await withTimeout(
+        api('/api/push/subscribe', { method: 'POST', body: sub.toJSON() }),
+        10000, 'save subscription'
+      );
       setState('granted');
-    } catch {
+    } catch (err) {
+      setPushError(err?.message || 'Ошибка');
       setState(Notification.permission === 'denied' ? 'denied' : 'idle');
     }
   }, []);
@@ -831,5 +842,5 @@ export function usePushNotifications() {
     } catch { }
   }, []);
 
-  return { state, subscribe, unsubscribe };
+  return { state, subscribe, unsubscribe, pushError };
 }
