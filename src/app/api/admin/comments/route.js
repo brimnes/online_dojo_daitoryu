@@ -21,6 +21,7 @@ export async function GET(request) {
       orderBy: { createdAt: 'desc' },
       include: {
         user:    { select: { name: true, email: true } },
+        lesson:  { select: { monthId: true, title: true } },
         replies: { where: { isAdminReply: true }, select: { id: true, text: true, createdAt: true } },
       },
     }),
@@ -40,6 +41,8 @@ export async function GET(request) {
     type,
     // lesson comments → lesson_id; knowledge comments → knowledge_item_id + item title
     lesson_id:          type === 'lesson'    ? c.lessonId          : null,
+    lesson_month_id:    type === 'lesson'    ? (c.lesson?.monthId  || null) : null,
+    lesson_title:       type === 'lesson'    ? (c.lesson?.title    || null) : null,
     knowledge_item_id:  type === 'knowledge' ? c.knowledgeItemId   : null,
     knowledge_item_title: type === 'knowledge' ? (c.knowledgeItem?.title || c.knowledgeItemId) : null,
     user_id:       c.userId,

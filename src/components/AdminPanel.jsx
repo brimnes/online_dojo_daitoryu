@@ -5,7 +5,7 @@ import {
   useUsers, useAccess, useExams,
   useMonths, useLessons, useTechniques,
   useComments, useVideoUpload,
-  useAdminUserAccess, useKnowledge,
+  useAdminUserAccess, useKnowledge, useAdminPayments,
   grantAccess, revokeAccess,
 } from '@/lib/db';
 // Supabase removed — always connected to Timeweb PostgreSQL
@@ -193,7 +193,7 @@ function AvatarCircle({ letter, size=34, color, bg }) {
 }
 
 // ── Pill2 — design-system pill with kind variants ───────────────
-function Pill2({ children, kind='neutral', dot, style }) {
+function Pill2({ children, kind='neutral', dot, style, onClick }) {
   const kinds = {
     neutral: {bg:'transparent', fg:C.ink2,    border:C.hairline},
     accent:  {bg:'transparent', fg:C.accent,  border:C.accent},
@@ -205,7 +205,7 @@ function Pill2({ children, kind='neutral', dot, style }) {
   };
   const k = kinds[kind] || kinds.neutral;
   return (
-    <span style={{display:'inline-flex',alignItems:'center',gap:6,padding:'3px 9px',background:k.bg,color:k.fg,border:`1px solid ${k.border}`,fontFamily:F.mono,fontSize:11,letterSpacing:'0.12em',textTransform:'uppercase',lineHeight:1.4,fontWeight:500,...style}}>
+    <span onClick={onClick} style={{display:'inline-flex',alignItems:'center',gap:6,padding:'3px 9px',background:k.bg,color:k.fg,border:`1px solid ${k.border}`,fontFamily:F.mono,fontSize:11,letterSpacing:'0.12em',textTransform:'uppercase',lineHeight:1.4,fontWeight:500,cursor:onClick?'pointer':undefined,...style}}>
       {dot && <span style={{display:'inline-block',width:6,height:6,borderRadius:'50%',background:k.fg,flexShrink:0}}/>}
       {children}
     </span>
@@ -401,16 +401,73 @@ const SECTIONS = [
 
 const ADMIN_SECTION_KEY = 'dojo_admin_section';
 
-export default function AdminPanel({ onExit }) {
+export default function AdminPanel({ onExit, user }) {
   const [section,       setSection]       = useState('dashboard');
   const [toast,         setToast]         = useState(false);
   const [drawerOpen,    setDrawerOpen]    = useState(false);
+  const [exporting,     setExporting]     = useState(false);
   const isMobile = useIsMobile();
 
   const showToast = useCallback((text) => {
     setToast(text || 'Сохранено');
     setTimeout(() => setToast(false), 2400);
   }, []);
+
+  // ─── Переход к месту, где оставлен комментарий ───────────────────
+  // Пишем маршрут в localStorage (App.jsx восстановит его при загрузке)
+  // и уходим на основной сайт.
+  const openCommentTarget = useCallback((c) => {
+    const route = c.type === 'knowledge'
+      ? (c.knowledge_item_id ? { page: 'knowledge_item', itemId: c.knowledge_item_id } : null)
+      : (c.lesson_month_id && c.lesson_id ? { page: 'lesson', monthId: c.lesson_month_id, lessonId: c.lesson_id } : null);
+    if (!route) { showToast('Не удалось определить источник комментария'); return; }
+    try {
+      const key = user?.id ? `dojo_route_${user.id}` : 'dojo_route';
+      localStorage.setItem(key, JSON.stringify(route));
+    } catch {}
+    window.location.href = '/';
+  }, [user, showToast]);
+
+  // ─── Экспорт данных текущего раздела в CSV ───────────────────────
+  const handleExport = useCallback(async () => {
+    const EXPORTS = {
+      dashboard: { url: '/api/admin/payments', name: 'payments' },
+      payments:  { url: '/api/admin/payments', name: 'payments' },
+      users:     { url: '/api/admin/users',    name: 'users' },
+      access:    { url: '/api/admin/access',   name: 'access' },
+      comments:  { url: '/api/admin/comments', name: 'comments' },
+    };
+    const cfg = EXPORTS[section];
+    if (!cfg) { showToast('Экспорт недоступен для этого раздела'); return; }
+    setExporting(true);
+    try {
+      const res  = await fetch(cfg.url);
+      if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      const data = await res.json();
+      if (!Array.isArray(data) || data.length === 0) { showToast('Нет данных для экспорта'); return; }
+      // Колонки — все скалярные поля первой строки (вложенные объекты/массивы пропускаем)
+      const cols = Object.keys(data[0]).filter(k => {
+        const v = data[0][k];
+        return v === null || typeof v !== 'object';
+      });
+      const esc = v => `"${String(v ?? '').replace(/"/g, '""')}"`;
+      const csv = '\ufeff' + [
+        cols.join(';'),
+        ...data.map(r => cols.map(c => esc(r[c])).join(';')),
+      ].join('\n');
+      const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob);
+      a.download = `${cfg.name}-${new Date().toISOString().slice(0, 10)}.csv`;
+      a.click();
+      URL.revokeObjectURL(a.href);
+      showToast(`Экспортировано: ${data.length} строк`);
+    } catch (e) {
+      showToast('Ошибка экспорта: ' + e.message);
+    } finally {
+      setExporting(false);
+    }
+  }, [section, showToast]);
 
   // ─── Восстановление секции после refresh ────────────────────────
   useEffect(() => {
@@ -563,8 +620,8 @@ export default function AdminPanel({ onExit }) {
             </div>
             {/* Actions */}
             <div style={{display:'flex',gap:10,flexShrink:0}}>
-              <Btn2 kind="quiet" size="sm">Экспорт ↓</Btn2>
-              <Btn2 kind="accent" size="sm">+ Новый урок</Btn2>
+              <Btn2 kind="quiet" size="sm" disabled={exporting} onClick={handleExport}>{exporting?'Экспорт…':'Экспорт ↓'}</Btn2>
+              <Btn2 kind="accent" size="sm" onClick={()=>handleSectionSelect('months')}>+ Новый урок</Btn2>
             </div>
           </div>
         )}
@@ -577,7 +634,7 @@ export default function AdminPanel({ onExit }) {
           {section==='payments'  && <SectionPayments                        isMobile={isMobile}/>}
           {section==='months'    && <SectionMonths    showToast={showToast} isMobile={isMobile}/>}
           {section==='ikkajo'    && <SectionIkkajo    showToast={showToast} isMobile={isMobile}/>}
-          {section==='comments'  && <SectionComments  showToast={showToast} isMobile={isMobile}/>}
+          {section==='comments'  && <SectionComments  showToast={showToast} isMobile={isMobile} onOpenTarget={openCommentTarget}/>}
           {section==='push'      && <SectionPush      showToast={showToast} isMobile={isMobile}/>}
         </div>
       </main>
@@ -866,7 +923,13 @@ function StatGrid({children,cols=4,isMobile}){
 function SectionUsers({showToast,isMobile}){
   const {users,loading,updateLevel,resetPassword,deleteUser} = useUsers();
   const {payments} = useAccess();
+  const {payments: realPayments} = useAdminPayments();
   const { exams } = useExams();
+
+  // Реально оплатили раздел: уникальные пользователи с succeeded-платежом за section
+  const paidSectionUsers = new Set(
+    realPayments.filter(p=>p.status==='succeeded'&&p.product_type==='section').map(p=>p.user_id)
+  ).size;
   const [selected,  setSelected]  = useState(null);
   const [filter,    setFilter]    = useState('all');
   const [search,    setSearch]    = useState('');
@@ -1007,7 +1070,7 @@ function SectionUsers({showToast,isMobile}){
             {label:'Активные',      kanji:'活', value:String(counts.active), delta:counts.all?`${Math.round(counts.active/counts.all*100)}%`:'—', deltaDir:'up'},
             {label:'Новые · неделя',kanji:'新', value:String(counts.new)},
             {label:'На паузе',      kanji:'休', value:String(counts.paused), deltaDir:'flat'},
-            {label:'С Иккаджо+',   kanji:'技', value:String(mapped.filter(u=>u.access&&u.access!=='—').length), sub:'· купили раздел'},
+            {label:'С Иккаджо+',   kanji:'技', value:String(paidSectionUsers), sub:'· оплатили раздел'},
           ].map((m,i)=>(
             <div key={i} style={{background:C.surface,border:`1px solid ${C.hairline}`,padding:'18px 20px',display:'flex',flexDirection:'column',gap:4,minHeight:isMobile?90:110}}>
               <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
@@ -1695,56 +1758,69 @@ function ExamDetailPanel({exam, onApprove, onReject}){
 // ═══════════════════════════════════════════════════════════════
 // 3. ОПЛАТЫ
 // ═══════════════════════════════════════════════════════════════
-const REVENUE_BREAKDOWN_PROTO = [
-  {label:'Месячные подписки',kanji:'月',value:156000,pct:32,count:78},
-  {label:'Разделы Иккаджо',  kanji:'一',value:138000,pct:28,count:46},
-  {label:'Разделы Никаджо',  kanji:'二',value: 96000,pct:20,count:32},
-  {label:'Годовые пакеты',   kanji:'年',value: 79600,pct:16,count:4},
-  {label:'Прочее',           kanji:'他',value: 16400,pct: 4,count:12},
-];
-
 function SectionPayments({isMobile}){
-  const {payments,loading} = useAccess();
+  const {payments,loading} = useAdminPayments();
   const [filter,setFilter] = useState('all');
   const [period,setPeriod] = useState('month');
+  const [visibleCount,setVisibleCount] = useState(12);
 
-  const totalAll   = payments.reduce((s,p)=>s+p.amount,0);
-  const totalMonth = payments.reduce((s,p)=>s+p.amount,0); // simplified: all = month for now
-  const avgCheck   = payments.length ? Math.round(totalAll/payments.length) : 0;
-  const paidCount  = payments.filter(p=>p.amount>0).length;
-  const uniquePayers = new Set(payments.map(p=>p.userId)).size;
+  // ── границы периода ──────────────────────────────────────────
+  const now = new Date();
+  const periodStart =
+    period==='today'   ? new Date(now.getFullYear(),now.getMonth(),now.getDate()) :
+    period==='quarter' ? new Date(now.getFullYear(),Math.floor(now.getMonth()/3)*3,1) :
+                         new Date(now.getFullYear(),now.getMonth(),1); // month
+  const periodLabel = period==='today'?'сегодня':period==='quarter'?'квартал':'месяц';
 
-  // map real payments → display shape
-  const mappedPayments = payments.map(p=>({
+  // дата платежа: paid_at если есть, иначе created_at
+  const payDate = p => new Date(p.paid_at || p.created_at);
+  const inPeriod = payments.filter(p => payDate(p) >= periodStart);
+
+  // ── метрики: только успешные оплаты ──────────────────────────
+  const succeeded = inPeriod.filter(p=>p.status==='succeeded');
+  const income    = succeeded.reduce((s,p)=>s+(p.amount||0),0);
+  const avgCheck  = succeeded.length ? Math.round(income/succeeded.length) : 0;
+  const pendingCount   = inPeriod.filter(p=>p.status==='pending').length;
+  const cancelledCount = inPeriod.filter(p=>p.status==='cancelled'||p.status==='failed').length;
+
+  // ── структура дохода (только succeeded) ──────────────────────
+  const monthPaid   = succeeded.filter(p=>p.product_type==='month');
+  const sectionPaid = succeeded.filter(p=>p.product_type==='section');
+  const monthSum    = monthPaid.reduce((s,p)=>s+(p.amount||0),0);
+  const sectionSum  = sectionPaid.reduce((s,p)=>s+(p.amount||0),0);
+  const breakdown = [
+    {label:'Месячные подписки',kanji:'月',value:monthSum,   pct:income?Math.round(monthSum/income*100):0,   count:monthPaid.length},
+    {label:'Разделы',          kanji:'技',value:sectionSum, pct:income?Math.round(sectionSum/income*100):0, count:sectionPaid.length},
+  ];
+
+  // ── таблица: платежи периода → display shape ─────────────────
+  const fmtPayDate = p => payDate(p).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
+  const mappedPayments = inPeriod.map(p=>({
     id:      String(p.id||'—'),
-    date:    p.date||'—',
-    letter:  (p.userName||'?')[0].toUpperCase(),
-    name:    p.userName||'—',
-    email:   '—',
-    item:    p.desc||'—',
-    itemSub: p.type==='month'?'Месячный':p.type==='section'?'Раздел':'—',
-    method:  '—',
+    date:    fmtPayDate(p),
+    letter:  (p.user_name||'?')[0].toUpperCase(),
+    name:    p.user_name||'—',
+    email:   p.user_email||'—',
+    item:    p.product_title||p.product_reference||'—',
+    itemSub: p.product_type==='month'?'Месячный':p.product_type==='section'?'Раздел':'—',
+    method:  p.provider==='yookassa'?'ЮKassa':(p.provider||'—'),
     amount:  p.amount||0,
-    status:  'paid',
+    status:  p.status,
   }));
 
-  // build real breakdown from payments
-  const monthSum   = payments.filter(p=>p.type==='month').reduce((s,p)=>s+p.amount,0);
-  const sectionSum = payments.filter(p=>p.type==='section').reduce((s,p)=>s+p.amount,0);
-  const realBreakdown = totalAll > 0 ? [
-    {label:'Месячные подписки',kanji:'月',value:monthSum,   pct:totalAll?Math.round(monthSum/totalAll*100):0,   count:payments.filter(p=>p.type==='month').length},
-    {label:'Разделы',          kanji:'技',value:sectionSum, pct:totalAll?Math.round(sectionSum/totalAll*100):0, count:payments.filter(p=>p.type==='section').length},
-  ] : REVENUE_BREAKDOWN_PROTO;
-  const breakdown = realBreakdown;
-
-  const filtered = mappedPayments.filter(p=>filter==='all'||(filter==='paid'&&p.status==='paid')||(filter==='pending'&&p.status==='pending'));
-  const displayList = filtered.length ? filtered : [];
+  const filtered = mappedPayments.filter(p=>
+    filter==='all' ||
+    (filter==='paid'      && p.status==='succeeded') ||
+    (filter==='pending'   && p.status==='pending') ||
+    (filter==='cancelled' && (p.status==='cancelled'||p.status==='failed'))
+  );
+  const displayList = filtered.slice(0, visibleCount);
 
   const PAY_STATUS = {
-    paid:    {kind:'success',label:'оплачено'},
-    pending: {kind:'gold',   label:'ожидание'},
-    refund:  {kind:'muted',  label:'возврат'},
-    failed:  {kind:'danger', label:'ошибка'},
+    succeeded: {kind:'success',label:'оплачено'},
+    pending:   {kind:'gold',   label:'ожидание'},
+    cancelled: {kind:'muted',  label:'отменён'},
+    failed:    {kind:'danger', label:'ошибка'},
   };
 
   const columns = [
@@ -1771,7 +1847,7 @@ function SectionPayments({isMobile}){
         {p.amount>0?p.amount.toLocaleString('ru-RU')+' ₽':'бесплатно'}
       </span>
     )},
-    {label:'Статус', width:'0.9fr',render:(p)=>{const m=PAY_STATUS[p.status]||PAY_STATUS.paid;return <Pill2 kind={m.kind} dot>{m.label}</Pill2>;}},
+    {label:'Статус', width:'0.9fr',render:(p)=>{const m=PAY_STATUS[p.status]||{kind:'muted',label:p.status};return <Pill2 kind={m.kind} dot>{m.label}</Pill2>;}},
     {label:'',       width:'36px',align:'center',render:()=>(<span style={{color:C.muted,fontSize:15,letterSpacing:2}}>···</span>)},
   ];
 
@@ -1785,7 +1861,7 @@ function SectionPayments({isMobile}){
           actions={
             <div style={{display:'flex',gap:4}}>
               {[['today','сегодня'],['month','месяц'],['quarter','квартал']].map(([k,l])=>(
-                <Pill2 key={k} kind={period===k?'solidInk':'muted'} style={{cursor:'pointer'}} onClick={()=>setPeriod(k)}>{l}</Pill2>
+                <Pill2 key={k} kind={period===k?'solidInk':'muted'} style={{cursor:'pointer'}} onClick={()=>{setPeriod(k);setVisibleCount(12);}}>{l}</Pill2>
               ))}
             </div>
           }
@@ -1797,10 +1873,10 @@ function SectionPayments({isMobile}){
           {/* 2x2 metrics */}
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
             {[
-              {label:'Доход · май',   kanji:'月',value: totalAll>0?(totalAll/1000).toFixed(0):'486',unit:'тыс. ₽',delta:'+18% к апр.',deltaDir:'up'},
-              {label:'Транзакций',    kanji:'数',value:String(paidCount||172),delta:'+24',deltaDir:'up'},
-              {label:'Средний чек',   kanji:'平',value:avgCheck>0?avgCheck.toLocaleString('ru-RU'):'2 826',unit:'₽',delta:'−4%',deltaDir:'down'},
-              {label:'Возвратов',     kanji:'戻',value:'0',sub:'· 0 ₽'},
+              {label:`Доход · ${periodLabel}`, kanji:'月',value:income>=1000?(income/1000).toFixed(1):String(income),unit:income>=1000?'тыс. ₽':'₽',sub:'· только успешные'},
+              {label:'Оплат',         kanji:'数',value:String(succeeded.length),sub:pendingCount>0?`· ${pendingCount} ожид.`:null},
+              {label:'Средний чек',   kanji:'平',value:avgCheck>0?avgCheck.toLocaleString('ru-RU'):'0',unit:'₽'},
+              {label:'Отменённых',    kanji:'戻',value:String(cancelledCount),sub:'· не завершили оплату'},
             ].map((m,i)=>(
               <div key={i} style={{background:C.surface,border:`1px solid ${C.hairline}`,padding:'18px 20px',display:'flex',flexDirection:'column',gap:4,minHeight:110}}>
                 <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',marginBottom:4}}>
@@ -1834,7 +1910,7 @@ function SectionPayments({isMobile}){
                   <div>
                     <div style={{fontFamily:F.mono,fontSize:13,color:C.ink2,fontWeight:500}}>{r.label}</div>
                     <div style={{height:2,background:C.hairline,marginTop:6,position:'relative'}}>
-                      <div style={{position:'absolute',inset:0,width:`${Math.min(r.pct*2,100)}%`,background:C.accent}}/>
+                      <div style={{position:'absolute',inset:0,width:`${Math.min(r.pct,100)}%`,background:C.accent}}/>
                     </div>
                   </div>
                   <span style={{fontFamily:F.mono,fontSize:11,color:C.muted,letterSpacing:'0.04em',textAlign:'right'}}>{r.count} шт.</span>
@@ -1847,32 +1923,39 @@ function SectionPayments({isMobile}){
 
         {/* filter chips */}
         <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12,alignItems:'center'}}>
-          <FilterChip2 label="Все"      value={String(payments.length||172)} active={filter==='all'}     onClick={()=>setFilter('all')}/>
-          <FilterChip2 label="Оплачено" value={String(paidCount||161)}       active={filter==='paid'}    onClick={()=>setFilter('paid')}    dot={C.success}/>
-          <FilterChip2 label="Ожидают"  value="0"                            active={filter==='pending'} onClick={()=>setFilter('pending')} dot={C.goldSoft}/>
-          <FilterChip2 label="Возвраты" value="0"                                                                                           dot={C.muted}/>
-          <FilterChip2 label="Ошибки"   value="0"                                                                                           dot={C.danger}/>
+          <FilterChip2 label="Все"      value={String(inPeriod.length)}      active={filter==='all'}       onClick={()=>{setFilter('all');setVisibleCount(12);}}/>
+          <FilterChip2 label="Оплачено" value={String(succeeded.length)}     active={filter==='paid'}      onClick={()=>{setFilter('paid');setVisibleCount(12);}}      dot={C.success}/>
+          <FilterChip2 label="Ожидают"  value={String(pendingCount)}         active={filter==='pending'}   onClick={()=>{setFilter('pending');setVisibleCount(12);}}   dot={C.goldSoft}/>
+          <FilterChip2 label="Отменено" value={String(cancelledCount)}       active={filter==='cancelled'} onClick={()=>{setFilter('cancelled');setVisibleCount(12);}} dot={C.muted}/>
           <div style={{flex:1}}/>
-          <FilterChip2 label="Способ: все"/>
           <FilterChip2 label="↕ По дате ↓"/>
         </div>
 
         {/* table / mobile cards */}
-        {isMobile ? (
+        {filtered.length === 0 ? (
+          <div style={{textAlign:'center',padding:'48px 16px',background:C.surface,border:`1px solid ${C.hairline}`}}>
+            <div style={{fontFamily:F.kanji,fontSize:40,color:C.accent,opacity:0.15,marginBottom:10}}>銭</div>
+            <div style={{fontFamily:F.serif,fontSize:15,color:C.muted}}>Платежей за этот период нет</div>
+          </div>
+        ) : isMobile ? (
           <div style={{background:C.surface,border:`1px solid ${C.hairline}`}}>
-            {(displayList.length?displayList:payments.slice(0,8).map(p=>({...p,letter:(p.userName||'?')[0].toUpperCase(),name:p.userName,item:p.desc,amount:p.amount||0}))).map((p,i,arr)=>(
-              <div key={p.id||i} style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',borderBottom:i===arr.length-1?'none':`1px solid ${C.hairline}`,minHeight:62}}>
-                <AvatarCircle letter={p.letter||'?'} size={32}/>
-                <div style={{flex:1,minWidth:0}}>
-                  <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.name||p.userName}</div>
-                  <div style={{fontFamily:F.serif,fontSize:11,color:C.muted,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.item||p.desc}</div>
+            {displayList.map((p,i,arr)=>{
+              const m = PAY_STATUS[p.status]||{kind:'muted',label:p.status};
+              return (
+                <div key={p.id||i} style={{display:'flex',alignItems:'center',gap:12,padding:'12px 14px',borderBottom:i===arr.length-1?'none':`1px solid ${C.hairline}`,minHeight:62}}>
+                  <AvatarCircle letter={p.letter||'?'} size={32}/>
+                  <div style={{flex:1,minWidth:0}}>
+                    <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.name}</div>
+                    <div style={{fontFamily:F.serif,fontSize:11,color:C.muted,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{p.item}</div>
+                    <div style={{marginTop:3}}><Pill2 kind={m.kind} dot>{m.label}</Pill2></div>
+                  </div>
+                  <div style={{textAlign:'right'}}>
+                    <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:600}}>{p.amount>0?p.amount.toLocaleString('ru-RU')+' ₽':'—'}</div>
+                    <div style={{fontFamily:F.mono,fontSize:11,color:C.muted,marginTop:2}}>{p.date}</div>
+                  </div>
                 </div>
-                <div style={{textAlign:'right'}}>
-                  <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:600}}>{(p.amount||0)>0?(p.amount).toLocaleString('ru-RU')+' ₽':'free'}</div>
-                  <div style={{fontFamily:F.mono,fontSize:11,color:C.muted,marginTop:2}}>{(p.date||'').split(' ')[0]}</div>
-                </div>
-              </div>
-            ))}
+              );
+            })}
           </div>
         ) : (
           <HairlineTable2 columns={columns} rows={displayList} dense/>
@@ -1881,9 +1964,11 @@ function SectionPayments({isMobile}){
         {/* footer */}
         <div style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'14px 4px',marginTop:4}}>
           <span style={{fontFamily:F.mono,fontSize:11,color:C.muted,letterSpacing:'0.12em',textTransform:'uppercase'}}>
-            Показано 1 — {Math.min(12,displayList.length||payments.length)} из {payments.length||172}
+            Показано {Math.min(visibleCount,filtered.length)} из {filtered.length}
           </span>
-          <Btn2 kind="ghost" size="sm">Загрузить ещё</Btn2>
+          {filtered.length > visibleCount && (
+            <Btn2 kind="ghost" size="sm" onClick={()=>setVisibleCount(v=>v+12)}>Загрузить ещё</Btn2>
+          )}
         </div>
 
       </div>
@@ -2946,7 +3031,7 @@ const COMMENTS_DATA_PROTO = [
   {id:'c-976',letter:'А',name:'spambot734',         email:'spam@viagrabest.cn', when:'2 дн. назад',  at:'Главная страница',             atKanji:'宣',text:'★★★ КУПИТЕ ДЕШЁВЫЕ КУРСЫ → bit.ly/xxx',state:'spam',flag:'spam',replies:0},
 ];
 
-function SectionComments({showToast,isMobile}){
+function SectionComments({showToast,isMobile,onOpenTarget}){
   const {comments, loading, hideComment, unhideComment, replyToComment} = useComments();
   const [filter,    setFilter]    = useState('noreply');
   const [replyOpen, setReplyOpen] = useState({});
@@ -3065,11 +3150,15 @@ function SectionComments({showToast,isMobile}){
                         <span style={{fontFamily:F.mono,fontSize:11,color:C.muted}}>{c.created_at}</span>
                         <span style={{color:C.muted}}>·</span>
                         {c.type === 'knowledge' ? (
-                          <span style={{fontFamily:F.serif,fontSize:13,color:C.copper}}>
-                            База знаний: {c.knowledge_item_title || c.knowledge_item_id}
+                          <span onClick={()=>onOpenTarget?.(c)} title="Открыть статью"
+                            style={{fontFamily:F.serif,fontSize:13,color:C.copper,cursor:'pointer',textDecoration:'underline',textUnderlineOffset:3}}>
+                            База знаний: {c.knowledge_item_title || c.knowledge_item_id} ↗
                           </span>
                         ) : (
-                          <span style={{fontFamily:F.serif,fontSize:13,color:C.muted}}>Урок: {c.lesson_id}</span>
+                          <span onClick={()=>onOpenTarget?.(c)} title="Открыть урок"
+                            style={{fontFamily:F.serif,fontSize:13,color:C.muted,cursor:'pointer',textDecoration:'underline',textUnderlineOffset:3}}>
+                            Урок: {c.lesson_title || c.lesson_id} ↗
+                          </span>
                         )}
                         {isHidden && <Pill2 kind="muted" dot>скрыт</Pill2>}
                         {!isHidden && c.replied && <Pill2 kind="success" dot>отвечен</Pill2>}

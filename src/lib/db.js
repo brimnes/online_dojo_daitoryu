@@ -140,6 +140,24 @@ export function useAccess() {
 }
 
 // ─────────────────────────────────────────────────────────────
+// HOOK: useAdminPayments — реальные транзакции с их статусами
+// ─────────────────────────────────────────────────────────────
+
+export function useAdminPayments() {
+  const [payments, setPayments] = useState([]);
+  const [loading,  setLoading]  = useState(true);
+
+  useEffect(() => {
+    api('/api/admin/payments')
+      .then(data => setPayments(Array.isArray(data) ? data : []))
+      .catch(() => {})
+      .finally(() => setLoading(false));
+  }, []);
+
+  return { payments, loading };
+}
+
+// ─────────────────────────────────────────────────────────────
 // HOOK: useExams
 // ─────────────────────────────────────────────────────────────
 

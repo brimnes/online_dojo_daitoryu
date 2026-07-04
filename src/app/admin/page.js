@@ -6,14 +6,14 @@ import AdminPanel from '@/components/AdminPanel';
 
 export default function AdminPage() {
   const router = useRouter();
-  const [allowed, setAllowed] = useState(null); // null=loading, true=ok, false=denied
+  const [admin, setAdmin] = useState(null); // null=loading/denied, user object=ok
 
   useEffect(() => {
     fetch('/api/auth/me')
       .then(r => r.ok ? r.json() : null)
       .then(data => {
         if (data?.user?.role === 'admin') {
-          setAllowed(true);
+          setAdmin(data.user);
         } else {
           router.replace('/');
         }
@@ -21,7 +21,7 @@ export default function AdminPage() {
       .catch(() => router.replace('/'));
   }, [router]);
 
-  if (!allowed) return null; // тихо ждём — не показываем ничего во время проверки
+  if (!admin) return null; // тихо ждём — не показываем ничего во время проверки
 
-  return <AdminPanel onExit={() => router.push('/')} />;
+  return <AdminPanel onExit={() => router.push('/')} user={admin} />;
 }
