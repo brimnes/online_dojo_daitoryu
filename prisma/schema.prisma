@@ -219,6 +219,8 @@ model UserAccess {
   reference String               // 'jan','feb',...,'ikkajo','tachiai',...
   paidAt    DateTime @default(now()) @map("paid_at")
   amount    Int?                 // в рублях
+  // Источник: 'yookassa' | 'free' | 'cash' | 'card' | 'crypto'
+  source    String?
 
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 

@@ -21,7 +21,7 @@ export async function GET(request) {
   try {
     const access = await prisma.userAccess.findMany({
       where:   { userId: targetUserId },
-      select:  { id: true, type: true, reference: true, amount: true, paidAt: true },
+      select:  { id: true, type: true, reference: true, amount: true, paidAt: true, source: true },
       orderBy: { paidAt: 'desc' },
     });
 
@@ -34,6 +34,7 @@ export async function GET(request) {
         reference: a.reference,
         amount:    a.amount,
         paid_at:   a.paidAt,
+        source:    a.source,
       }))
     );
   } catch (e) {

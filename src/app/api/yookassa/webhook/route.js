@@ -96,10 +96,12 @@ export async function POST(request) {
           reference: product.reference,
           paidAt,
           amount:    Math.round(Number(product.price)),
+          source:    'yookassa',
         },
         update: {
           paidAt,
           amount: Math.round(Number(product.price)),
+          source: 'yookassa',
         },
       });
       console.log(`[webhook] access granted: user=${userId} type=${accessType} ref=${product.reference}`);

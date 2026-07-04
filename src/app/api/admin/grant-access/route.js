@@ -1,8 +1,12 @@
 /**
  * POST /api/admin/grant-access
- * Тело: { user_id, type: 'month'|'section', reference: 'jan'|...|'ikkajo', revoke?: true }
+ * Тело: { user_id, type: 'month'|'section', reference: 'jan'|...|'ikkajo',
+ *         source?: 'free'|'cash'|'card'|'crypto', amount?: number, revoke?: true }
  * Только для admin. Ручная выдача или отзыв доступа.
+ * source — как получены деньги ('free' если доступ подарен).
  */
+
+const MANUAL_SOURCES = ['free', 'cash', 'card', 'crypto'];
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma.js';
@@ -12,11 +16,14 @@ export async function POST(request) {
   const { error } = await requireAdmin(request);
   if (error) return error;
 
-  const { user_id, type, reference, revoke } = await request.json();
+  const { user_id, type, reference, revoke, source, amount } = await request.json();
 
   if (!user_id || !type || !reference) {
     return NextResponse.json({ error: 'user_id, type, reference required' }, { status: 400 });
   }
+
+  const accessSource = MANUAL_SOURCES.includes(source) ? source : 'free';
+  const accessAmount = accessSource === 'free' ? 0 : Math.max(0, Math.round(Number(amount) || 0));
 
   try {
     if (revoke) {
@@ -50,11 +57,14 @@ export async function POST(request) {
         userId:    user_id,
         type,
         reference,
-        amount:    0,
+        amount:    accessAmount,
+        source:    accessSource,
         paidAt:    new Date(),
       },
       update: {
         paidAt: new Date(),
+        amount: accessAmount,
+        source: accessSource,
       },
     });
 

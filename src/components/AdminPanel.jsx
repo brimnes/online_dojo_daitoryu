@@ -1168,6 +1168,8 @@ function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLe
   const { months: grantMonths } = useMonths();
   const [grantType, setGrantType] = useState('month');
   const [grantRef, setGrantRef] = useState('');
+  const [grantSource, setGrantSource] = useState('free');
+  const [grantAmount, setGrantAmount] = useState('');
   const [granting, setGranting] = useState(false);
   const [revoking, setRevoking] = useState(null); // id being revoked
 
@@ -1203,10 +1205,14 @@ function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLe
 
   const handleGrant = async () => {
     if (!grantRef) return;
+    if (grantSource !== 'free' && !(Number(grantAmount) > 0)) { showToast('Укажите полученную сумму'); return; }
     setGranting(true);
-    const { ok, error } = await grantAccess({ userId: user.id, type: grantType, reference: grantRef });
+    const { ok, error } = await grantAccess({
+      userId: user.id, type: grantType, reference: grantRef,
+      source: grantSource, amount: grantSource === 'free' ? 0 : Number(grantAmount),
+    });
     setGranting(false);
-    if (ok) { showToast('Доступ выдан'); reloadAccess(); setGrantRef(''); }
+    if (ok) { showToast('Доступ выдан'); reloadAccess(); setGrantRef(''); setGrantAmount(''); }
     else showToast('Ошибка: ' + error);
   };
 
@@ -1387,7 +1393,11 @@ function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLe
                     <div key={row.id||i} style={{display:'flex', alignItems:'center', gap:10, background:C.bg2, border:`1px solid ${C.hairline}`, padding:'10px 14px'}}>
                       <div style={{flex:1, minWidth:0}}>
                         <div style={{fontFamily:F.mono, fontSize:13, color:C.ink, fontWeight:500}}>{row.reference}</div>
-                        <div style={{fontFamily:F.mono, fontSize:11, color:C.muted, letterSpacing:'0.06em', textTransform:'uppercase', marginTop:2}}>{row.type} · {row.paid_at || '—'}</div>
+                        <div style={{fontFamily:F.mono, fontSize:11, color:C.muted, letterSpacing:'0.06em', textTransform:'uppercase', marginTop:2}}>
+                          {row.type} · {row.paid_at ? new Date(row.paid_at).toLocaleDateString('ru-RU') : '—'}
+                          {row.source && <> · {ACCESS_SOURCE_LABELS[row.source] || row.source}</>}
+                          {row.amount > 0 && <> · {row.amount.toLocaleString('ru-RU')} ₽</>}
+                        </div>
                       </div>
                       <button onClick={() => handleRevoke(row)} disabled={revoking===row.id}
                         style={{background:'none', border:`1px solid ${C.hairline}`, padding:'4px 10px', cursor:revoking===row.id?'default':'pointer', fontFamily:F.mono, fontSize:11, color:revoking===row.id?C.muted:C.danger, letterSpacing:'0.08em', textTransform:'uppercase', opacity:revoking===row.id?0.5:1}}>
@@ -1414,7 +1424,7 @@ function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLe
                     {grantType === 'month' ? 'Месяц (например: june)' : 'Раздел'}
                   </div>
                   {grantType === 'section' ? (
-                    <Select value={grantRef} onChange={setGrantRef} options={[{value:'',label:'— выберите —'}, ...IKKAJO_SECTION_OPTIONS]}/>
+                    <Select value={grantRef} onChange={setGrantRef} options={[{value:'',label:'— выберите —'}, ...ACCESS_SECTION_OPTIONS]}/>
                   ) : (
                     <Select value={grantRef} onChange={setGrantRef} options={[
                       {value:'',label:'— выберите —'},
@@ -1422,6 +1432,16 @@ function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLe
                     ]}/>
                   )}
                 </div>
+                <div>
+                  <div style={{fontFamily:F.mono, fontSize:11, color:C.muted, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:5}}>Оплата</div>
+                  <Select value={grantSource} onChange={setGrantSource} options={ACCESS_SOURCE_OPTIONS}/>
+                </div>
+                {grantSource !== 'free' && (
+                  <div>
+                    <div style={{fontFamily:F.mono, fontSize:11, color:C.muted, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:5}}>Полученная сумма, ₽</div>
+                    <Input value={grantAmount} onChange={setGrantAmount} placeholder="1990" type="number"/>
+                  </div>
+                )}
                 <Btn2 kind="accent" size="sm" disabled={!grantRef || granting} onClick={handleGrant}>
                   {granting ? '…' : 'Выдать доступ'}
                 </Btn2>
@@ -1760,6 +1780,7 @@ function ExamDetailPanel({exam, onApprove, onReject}){
 // ═══════════════════════════════════════════════════════════════
 function SectionPayments({isMobile}){
   const {payments,loading} = useAdminPayments();
+  const {payments: accessRows} = useAccess();
   const [filter,setFilter] = useState('all');
   const [period,setPeriod] = useState('month');
   const [visibleCount,setVisibleCount] = useState(12);
@@ -1778,12 +1799,21 @@ function SectionPayments({isMobile}){
 
   // ── метрики: только успешные оплаты ──────────────────────────
   const succeeded = inPeriod.filter(p=>p.status==='succeeded');
-  const income    = succeeded.reduce((s,p)=>s+(p.amount||0),0);
-  const avgCheck  = succeeded.length ? Math.round(income/succeeded.length) : 0;
+  const ykIncome  = succeeded.reduce((s,p)=>s+(p.amount||0),0);
   const pendingCount   = inPeriod.filter(p=>p.status==='pending').length;
   const cancelledCount = inPeriod.filter(p=>p.status==='cancelled'||p.status==='failed').length;
 
-  // ── структура дохода (только succeeded) ──────────────────────
+  // Деньги вне ЮKassa: доступы, выданные вручную за наличные/карту/крипту
+  const external = accessRows.filter(a =>
+    ['cash','card','crypto'].includes(a.source) && a.dateIso && new Date(a.dateIso) >= periodStart
+  );
+  const externalSum = external.reduce((s,a)=>s+(a.amount||0),0);
+
+  const income   = ykIncome + externalSum;
+  const paidOps  = succeeded.length + external.length;
+  const avgCheck = paidOps ? Math.round(income/paidOps) : 0;
+
+  // ── структура дохода (только реально полученные деньги) ──────
   const monthPaid   = succeeded.filter(p=>p.product_type==='month');
   const sectionPaid = succeeded.filter(p=>p.product_type==='section');
   const monthSum    = monthPaid.reduce((s,p)=>s+(p.amount||0),0);
@@ -1791,6 +1821,7 @@ function SectionPayments({isMobile}){
   const breakdown = [
     {label:'Месячные подписки',kanji:'月',value:monthSum,   pct:income?Math.round(monthSum/income*100):0,   count:monthPaid.length},
     {label:'Разделы',          kanji:'技',value:sectionSum, pct:income?Math.round(sectionSum/income*100):0, count:sectionPaid.length},
+    {label:'Вне ЮKassa · нал/карта/крипта',kanji:'手',value:externalSum,pct:income?Math.round(externalSum/income*100):0,count:external.length},
   ];
 
   // ── таблица: платежи периода → display shape ─────────────────
@@ -1873,8 +1904,8 @@ function SectionPayments({isMobile}){
           {/* 2x2 metrics */}
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
             {[
-              {label:`Доход · ${periodLabel}`, kanji:'月',value:income>=1000?(income/1000).toFixed(1):String(income),unit:income>=1000?'тыс. ₽':'₽',sub:'· только успешные'},
-              {label:'Оплат',         kanji:'数',value:String(succeeded.length),sub:pendingCount>0?`· ${pendingCount} ожид.`:null},
+              {label:`Доход · ${periodLabel}`, kanji:'月',value:income>=1000?(income/1000).toFixed(1):String(income),unit:income>=1000?'тыс. ₽':'₽',sub:externalSum>0?'· ЮKassa + вне кассы':'· только успешные'},
+              {label:'Оплат',         kanji:'数',value:String(paidOps),sub:pendingCount>0?`· ${pendingCount} ожид.`:null},
               {label:'Средний чек',   kanji:'平',value:avgCheck>0?avgCheck.toLocaleString('ru-RU'):'0',unit:'₽'},
               {label:'Отменённых',    kanji:'戻',value:String(cancelledCount),sub:'· не завершили оплату'},
             ].map((m,i)=>(
@@ -2768,22 +2799,53 @@ const ACCESS_SECTION_OPTIONS = [
   ...IKKAJO_SECTION_OPTIONS,
 ];
 
+// Источник оплаты при ручной выдаче доступа
+const ACCESS_SOURCE_OPTIONS = [
+  {value:'free',   label:'Бесплатно (подарок)'},
+  {value:'cash',   label:'Наличные'},
+  {value:'card',   label:'Перевод на карту'},
+  {value:'crypto', label:'Криптовалюта'},
+];
+const ACCESS_SOURCE_LABELS = {
+  yookassa: 'ЮKassa',
+  free:     'бесплатно',
+  cash:     'наличные',
+  card:     'на карту',
+  crypto:   'крипта',
+};
+
 function SectionAccess({showToast,isMobile}){
   const {users,loading:uLoading} = useUsers();
+  const {payments: allAccess} = useAccess();
   const [selectedUserId, setSelectedUserId] = useState('');
   const [type,      setType]      = useState('month');
   const [reference, setReference] = useState('jan');
+  const [source,    setSource]    = useState('free');
+  const [amount,    setAmount]    = useState('');
   const [granting,  setGranting]  = useState(false);
   const {rows:accessRows, loading:aLoading, reload} = useAdminUserAccess(selectedUserId);
 
   const refOptions = type === 'month' ? ACCESS_MONTH_OPTIONS : ACCESS_SECTION_OPTIONS;
 
+  // Разбивка всех доступов по источнику
+  const bySource = {};
+  for (const a of allAccess) {
+    const s = a.source || (a.amount > 0 ? 'yookassa' : 'free');
+    if (!bySource[s]) bySource[s] = { count: 0, sum: 0 };
+    bySource[s].count++;
+    bySource[s].sum += a.amount || 0;
+  }
+
   const doGrant = async () => {
     if (!selectedUserId) { showToast('Выберите пользователя'); return; }
+    if (source !== 'free' && !(Number(amount) > 0)) { showToast('Укажите полученную сумму'); return; }
     setGranting(true);
-    const {ok,error} = await grantAccess({userId:selectedUserId, type, reference});
+    const {ok,error} = await grantAccess({
+      userId:selectedUserId, type, reference,
+      source, amount: source === 'free' ? 0 : Number(amount),
+    });
     setGranting(false);
-    if(ok){ showToast('Доступ выдан'); reload(); }
+    if(ok){ showToast('Доступ выдан'); reload(); setAmount(''); }
     else showToast('Ошибка: ' + error);
   };
 
@@ -2809,6 +2871,31 @@ function SectionAccess({showToast,isMobile}){
         <AdminSectionHead num="" title="Доступы" subtitle="Ручная выдача и отзыв доступов" kanji="鍵"/>
         <SumiStroke style={{margin:'0 0 24px',opacity:0.3}}/>
 
+        {/* Разбивка по источнику оплаты */}
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'repeat(5,1fr)',gap:14,marginBottom:24}}>
+          {[
+            {key:'yookassa', label:'ЮKassa',    kanji:'決'},
+            {key:'cash',     label:'Наличные',  kanji:'現'},
+            {key:'card',     label:'На карту',  kanji:'札'},
+            {key:'crypto',   label:'Крипта',    kanji:'暗'},
+            {key:'free',     label:'Бесплатно', kanji:'贈'},
+          ].map(m=>{
+            const s = bySource[m.key] || {count:0,sum:0};
+            return (
+              <div key={m.key} style={{background:C.surface,border:`1px solid ${C.hairline}`,padding:'14px 16px',display:'flex',flexDirection:'column',gap:3,minHeight:86}}>
+                <div style={{display:'flex',alignItems:'center',justifyContent:'space-between'}}>
+                  <span style={{fontFamily:F.mono,fontSize:11,letterSpacing:'0.18em',color:C.muted,textTransform:'uppercase'}}>{m.label}</span>
+                  <span style={{fontFamily:F.kanji,fontSize:13,color:C.copper,opacity:0.55}}>{m.kanji}</span>
+                </div>
+                <div style={{fontFamily:F.serif,fontSize:26,color:C.ink,fontWeight:500,lineHeight:1.1}}>{s.count}</div>
+                <div style={{marginTop:'auto',fontFamily:F.mono,fontSize:11,color:C.muted}}>
+                  {m.key==='free' ? '· доступов' : `· ${s.sum.toLocaleString('ru-RU')} ₽`}
+                </div>
+              </div>
+            );
+          })}
+        </div>
+
         <div style={{display:isMobile?'flex':'grid',flexDirection:'column',gridTemplateColumns:'1fr 1fr',gap:20,alignItems:'start'}}>
 
           {/* Grant form */}
@@ -2831,6 +2918,18 @@ function SectionAccess({showToast,isMobile}){
                   <Label>Раздел / Месяц</Label>
                   <Select value={reference} onChange={setReference} options={refOptions}/>
                 </div>
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:source==='free'?'1fr':'1fr 1fr',gap:10}}>
+                <div>
+                  <Label>Оплата</Label>
+                  <Select value={source} onChange={setSource} options={ACCESS_SOURCE_OPTIONS}/>
+                </div>
+                {source !== 'free' && (
+                  <div>
+                    <Label>Сумма, ₽</Label>
+                    <Input value={amount} onChange={setAmount} placeholder="1990" type="number"/>
+                  </div>
+                )}
               </div>
               <Btn2 kind="accent" onClick={doGrant} disabled={granting}>{granting?'…':'Выдать доступ'}</Btn2>
             </div>
@@ -2856,7 +2955,10 @@ function SectionAccess({showToast,isMobile}){
                   <span style={{fontFamily:F.kanji,fontSize:13,color:row.type==='month'?C.gold:C.accent,opacity:0.8}}>{row.type==='month'?'月':'技'}</span>
                   <div>
                     <div style={{fontFamily:F.mono,fontSize:13,color:C.ink}}>{refLabel[row.reference]||row.reference}</div>
-                    {row.amount>0 && <div style={{fontFamily:F.mono,fontSize:11,color:C.muted}}>{row.amount?.toLocaleString()} ₽</div>}
+                    <div style={{fontFamily:F.mono,fontSize:11,color:C.muted}}>
+                      {ACCESS_SOURCE_LABELS[row.source] || (row.amount>0?'ЮKassa':'бесплатно')}
+                      {row.amount>0 && <> · {row.amount?.toLocaleString('ru-RU')} ₽</>}
+                    </div>
                   </div>
                 </div>
                 <Btn2 kind="quiet" size="sm" onClick={()=>doRevoke(row)}>Отозвать</Btn2>

@@ -33,8 +33,8 @@ async function queryYooKassa(providerPaymentId) {
 async function grantAccess(userId, accessType, reference, amount, paidAt) {
   await prisma.userAccess.upsert({
     where:  { userId_type_reference: { userId, type: accessType, reference } },
-    create: { userId, type: accessType, reference, paidAt, amount: Math.round(Number(amount ?? 0)) },
-    update: { paidAt, amount: Math.round(Number(amount ?? 0)) },
+    create: { userId, type: accessType, reference, paidAt, amount: Math.round(Number(amount ?? 0)), source: 'yookassa' },
+    update: { paidAt, amount: Math.round(Number(amount ?? 0)), source: 'yookassa' },
   });
   console.log(`[verify-payment] access granted: user=${userId} ${accessType}/${reference}`);
 }

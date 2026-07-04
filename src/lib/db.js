@@ -116,6 +116,7 @@ export function useAccess() {
       .then(data => {
         setAccess(data.map(a => ({
           ...a,
+          paid_at_iso: a.paid_at,
           paid_at: fmtDate(a.paid_at),
           desc: a.type === 'month'
             ? `${a.reference.charAt(0).toUpperCase() + a.reference.slice(1)} 2026`
@@ -131,9 +132,11 @@ export function useAccess() {
     userId:   a.user_id,
     userName: a.user_name || '—',
     date:     a.paid_at,
+    dateIso:  a.paid_at_iso,
     desc:     a.desc,
     amount:   a.amount,
     type:     a.type,
+    source:   a.source,
   }));
 
   return { payments, loading };
@@ -627,11 +630,11 @@ export function useUserAccessRows() {
 // ADMIN: grantAccess / revokeAccess
 // ─────────────────────────────────────────────────────────────
 
-export async function grantAccess({ userId, type, reference }) {
+export async function grantAccess({ userId, type, reference, source, amount }) {
   try {
     await api('/api/admin/grant-access', {
       method: 'POST',
-      body: { user_id: userId, type, reference },
+      body: { user_id: userId, type, reference, source, amount },
     });
     return { ok: true };
   } catch (e) {

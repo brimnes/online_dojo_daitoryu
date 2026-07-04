@@ -20,5 +20,6 @@ export async function GET(request) {
     reference: a.reference,
     amount:    a.amount,
     paid_at:   a.paidAt,
+    source:    a.source,
   })));
 }

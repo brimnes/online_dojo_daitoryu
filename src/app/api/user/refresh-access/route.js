@@ -83,8 +83,8 @@ export async function POST(request) {
         // 4. Выдаём / обновляем user_access
         await prisma.userAccess.upsert({
           where:  { userId_type_reference: { userId: user.id, type: accessType, reference } },
-          create: { userId: user.id, type: accessType, reference, paidAt, amount },
-          update: { paidAt, amount },
+          create: { userId: user.id, type: accessType, reference, paidAt, amount, source: 'yookassa' },
+          update: { paidAt, amount, source: 'yookassa' },
         });
 
         granted.push(`${accessType}/${reference}`);
