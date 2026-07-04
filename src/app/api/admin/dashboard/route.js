@@ -1,6 +1,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma.js';
 import { requireAdmin } from '@/lib/auth-server.js';
+import { REVENUE_START } from '@/lib/revenue.js';
 
 // helper to get date N days ago
 function daysAgo(n) { const d = new Date(); d.setDate(d.getDate() - n); return d; }
@@ -88,7 +89,9 @@ export async function GET(request) {
     };
 
     // ── Payments ─────────────────────────────────────────────
-    const succeeded = allPayments.filter(p => p.status === 'succeeded');
+    // Платежи до запуска платформы (REVENUE_START) — тестовые, не считаем
+    const realPayments = allPayments.filter(p => new Date(p.paidAt || p.createdAt) >= REVENUE_START);
+    const succeeded = realPayments.filter(p => p.status === 'succeeded');
     const totalRevenue = succeeded.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
 
     // Last 6 months keys
@@ -117,10 +120,10 @@ export async function GET(request) {
     const payments = {
       totalRevenue,
       countSucceeded: succeeded.length,
-      countPending:   allPayments.filter(p => p.status === 'pending').length,
-      countCancelled: allPayments.filter(p => p.status === 'cancelled').length,
+      countPending:   realPayments.filter(p => p.status === 'pending').length,
+      countCancelled: realPayments.filter(p => p.status === 'cancelled').length,
       revenueByMonth,
-      recent: allPayments.slice(0, 5).map(p => ({
+      recent: realPayments.slice(0, 5).map(p => ({
         id: p.id,
         userName: p.user?.name || null,
         productTitle: p.productTitle,

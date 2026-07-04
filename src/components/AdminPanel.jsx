@@ -10,6 +10,7 @@ import {
 } from '@/lib/db';
 // Supabase removed — always connected to Timeweb PostgreSQL
 import { IKKAJO_SECTION_OPTIONS, IKKAJO_SECTION_LABELS as IKKAJO_LABELS } from '@/lib/ikkajoSections';
+import { REVENUE_START } from '@/lib/revenue';
 import { KYU_DATA } from '@/data/techniques';
 import KinescopeUploader from '@/components/KinescopeUploader';
 
@@ -1787,10 +1788,12 @@ function SectionPayments({isMobile}){
 
   // ── границы периода ──────────────────────────────────────────
   const now = new Date();
-  const periodStart =
+  const rawStart =
     period==='today'   ? new Date(now.getFullYear(),now.getMonth(),now.getDate()) :
     period==='quarter' ? new Date(now.getFullYear(),now.getMonth()-2,1) : // последние 3 месяца
                          new Date(now.getFullYear(),now.getMonth(),1); // month
+  // Всё до запуска платформы — тестовые платежи, не показываем и не считаем
+  const periodStart = rawStart > REVENUE_START ? rawStart : REVENUE_START;
   const periodLabel = period==='today'?'сегодня':period==='quarter'?'3 месяца':'месяц';
 
   // дата платежа: paid_at если есть, иначе created_at
