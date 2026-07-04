@@ -1768,9 +1768,9 @@ function SectionPayments({isMobile}){
   const now = new Date();
   const periodStart =
     period==='today'   ? new Date(now.getFullYear(),now.getMonth(),now.getDate()) :
-    period==='quarter' ? new Date(now.getFullYear(),Math.floor(now.getMonth()/3)*3,1) :
+    period==='quarter' ? new Date(now.getFullYear(),now.getMonth()-2,1) : // последние 3 месяца
                          new Date(now.getFullYear(),now.getMonth(),1); // month
-  const periodLabel = period==='today'?'сегодня':period==='quarter'?'квартал':'месяц';
+  const periodLabel = period==='today'?'сегодня':period==='quarter'?'3 месяца':'месяц';
 
   // дата платежа: paid_at если есть, иначе created_at
   const payDate = p => new Date(p.paid_at || p.created_at);
@@ -1860,7 +1860,7 @@ function SectionPayments({isMobile}){
         <AdminSectionHead num="05" title="Платежи" subtitle={`${new Date().toLocaleString('ru-RU',{month:'long',year:'numeric'})} · продажи разделов и подписок`} kanji="銭"
           actions={
             <div style={{display:'flex',gap:4}}>
-              {[['today','сегодня'],['month','месяц'],['quarter','квартал']].map(([k,l])=>(
+              {[['today','сегодня'],['month','месяц'],['quarter','3 месяца']].map(([k,l])=>(
                 <Pill2 key={k} kind={period===k?'solidInk':'muted'} style={{cursor:'pointer'}} onClick={()=>{setPeriod(k);setVisibleCount(12);}}>{l}</Pill2>
               ))}
             </div>
