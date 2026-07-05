@@ -179,8 +179,31 @@ export default function App({ initialUser = null }) {
     back:          ()                   => goBack(),
   };
 
-  const toggleWatched = (id) =>
-    setWatched(prev => ({ ...prev, [id]: !prev[id] }));
+  // ─── Прогресс «просмотрено» — хранится в БД (lesson_progress) ────
+  // Загружаем при входе; каждый клик сохраняется на сервере.
+  useEffect(() => {
+    if (!currentUser?.id) { setWatched({}); return; }
+    fetch('/api/user/progress', { credentials: 'same-origin' })
+      .then(r => r.ok ? r.json() : null)
+      .then(data => { if (data?.watched) setWatched(data.watched); })
+      .catch(() => {});
+  }, [currentUser?.id]);
+
+  const toggleWatched = (id) => {
+    const next = !watched[id];
+    setWatched(prev => ({ ...prev, [id]: next })); // оптимистично
+    fetch('/api/user/progress', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      credentials: 'same-origin',
+      body: JSON.stringify({ lesson_id: id, watched: next }),
+    }).then(r => {
+      if (!r.ok) throw new Error();
+    }).catch(() => {
+      // не сохранилось — откатываем отметку
+      setWatched(prev => ({ ...prev, [id]: !next }));
+    });
+  };
 
   const addComment = (lessonId, text) => {
     if (!text.trim()) return;
