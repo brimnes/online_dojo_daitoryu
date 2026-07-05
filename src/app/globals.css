@@ -13,6 +13,9 @@ html, body {
   -webkit-font-smoothing: antialiased;
   font-size: 15px;
   overflow-x: clip; /* clip (not hidden) preserves position:sticky children */
+  /* Android Chrome иначе самовольно увеличивает текст (font boosting) */
+  -webkit-text-size-adjust: 100%;
+  text-size-adjust: 100%;
 }
 
 button, input, textarea, select {
@@ -27,7 +30,7 @@ button, a, [role="button"] {
   touch-action: manipulation;
 }
 
-::-webkit-scrollbar       { width: 4px; }
+::-webkit-scrollbar       { width: 4px; height: 4px; }
 ::-webkit-scrollbar-track { background: #e6e0d2; }
 ::-webkit-scrollbar-thumb { background: #bab09a; border-radius: 2px; }
 

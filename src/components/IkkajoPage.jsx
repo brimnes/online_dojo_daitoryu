@@ -215,12 +215,14 @@ export default function IkkajoPage({ nav, user = {}, onLogout, initialKyu }) {
 
 
           {/* ── Kyu tabs ── */}
-          <div style={{
+          <div className={isMobile ? 'chips-scroll' : undefined} style={{
             display: 'flex', gap: isMobile ? 0 : 8,
             marginBottom: isMobile ? 24 : 36,
             padding: '4px',
             background: C.surface, border: `1px solid ${C.border}`,
             overflowX: isMobile ? 'auto' : 'visible',
+            WebkitOverflowScrolling: isMobile ? 'touch' : undefined,
+            overscrollBehaviorX: isMobile ? 'contain' : undefined,
           }}>
             {KYU_DATA.map(k => {
               const active = activeKyu === k.id;
