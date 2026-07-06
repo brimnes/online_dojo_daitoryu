@@ -539,6 +539,28 @@ function FinalCtaSection({ isMobile, onLogin, onRegister }) {
   );
 }
 
+// ─── ПОДВАЛ ───────────────────────────────────────────────────
+function LandingFooter({ isMobile }) {
+  return (
+    <div style={{
+      background: DARK.bg2, borderTop: `1px solid ${DARK.border}`,
+      padding: isMobile ? '20px 24px' : '20px 48px',
+      display: 'flex', flexDirection: isMobile ? 'column' : 'row',
+      alignItems: 'center', justifyContent: 'space-between', gap: 12,
+    }}>
+      <span style={{
+        fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+        fontSize: 11, letterSpacing: '0.06em', color: DARK.muted,
+      }}>© {new Date().getFullYear()} Дайто-рю Додзё</span>
+      <a href="/oferta" style={{
+        fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
+        fontSize: 11, letterSpacing: '0.1em', textTransform: 'uppercase',
+        color: DARK.text, textDecoration: 'underline', textUnderlineOffset: 3,
+      }}>Публичная оферта</a>
+    </div>
+  );
+}
+
 // ─── ЭКСПОРТ ─────────────────────────────────────────────────
 export default function LandingContent({ isMobile, onLogin, onRegister }) {
   return (
@@ -548,6 +570,7 @@ export default function LandingContent({ isMobile, onLogin, onRegister }) {
       <ForWhomSection isMobile={isMobile} />
       <AuthorSection isMobile={isMobile} />
       <FinalCtaSection isMobile={isMobile} onLogin={onLogin} onRegister={onRegister} />
+      <LandingFooter isMobile={isMobile} />
     </>
   );
 }
