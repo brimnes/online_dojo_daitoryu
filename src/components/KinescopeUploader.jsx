@@ -261,10 +261,26 @@ export default function KinescopeUploader({
     );
   };
 
+  // ── video preview — так видно, какой именно ролик прикреплён ─────────────
+  const VideoPreview = () => {
+    if (!currentVideoId || currentStatus !== 'ready') return null;
+    return (
+      <div style={{ marginBottom: 10, maxWidth: 360 }}>
+        <iframe
+          src={`https://kinescope.io/embed/${currentVideoId}`}
+          style={{ width: '100%', aspectRatio: '16/9', border: 'none', display: 'block', background: '#000' }}
+          allow="autoplay; fullscreen; picture-in-picture; encrypted-media"
+          allowFullScreen
+        />
+      </div>
+    );
+  };
+
   // ── idle ──────────────────────────────────────────────────────────────────
   if (phase === 'idle') return (
     <div>
       <StatusBadge />
+      <VideoPreview />
       <div
         onDrop={handleDrop}
         onDragOver={e => { e.preventDefault(); setDragOver(true); }}
