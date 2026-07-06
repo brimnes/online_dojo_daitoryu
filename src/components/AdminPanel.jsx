@@ -2024,7 +2024,7 @@ function LessonEditForm({ draft, setDraft, doSave, setEditId, saving, showToast,
         <div><Label>Заголовок</Label><Input value={draft.title||''} onChange={v=>setDraft(d=>({...d,title:v}))} placeholder="Название урока"/></div>
         <div><Label>Подзаголовок</Label><Input value={draft.subtitle||''} onChange={v=>setDraft(d=>({...d,subtitle:v}))} placeholder="Тема урока"/></div>
       </div>
-      <div style={{marginBottom:12}}><Label>Описание</Label><Textarea value={draft.text||''} onChange={v=>setDraft(d=>({...d,text:v}))} rows={3}/></div>
+      <div style={{marginBottom:12}}><Label>Описание</Label><Textarea value={draft.text||''} onChange={v=>setDraft(d=>({...d,text:v}))} rows={10}/></div>
       <div style={{marginBottom:14}}>
         <Label>Видео урока (Kinescope)</Label>
         <KinescopeUploader
