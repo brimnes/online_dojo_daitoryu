@@ -2148,9 +2148,10 @@ function SectionMonths({showToast,isMobile}){
   const activeMId = activeMonth || months[0]?.id || null;
   const activeM   = months.find(m=>m.id===activeMId);
 
-  const {lessons,loading:lLoading,saving,saveLesson,addLesson,deleteLesson} = useLessons(activeMId);
+  const {lessons,loading:lLoading,saving,saveLesson,addLesson,deleteLesson,reload:reloadLessons} = useLessons(activeMId);
   const [editId, setEditId] = useState(null);
   const [draft,  setDraft]  = useState({});
+  const [checkingStatuses, setCheckingStatuses] = useState(false);
 
   // ── Month description edit ──────────────────────────────
   const [editingMonth, setEditingMonth] = useState(false);
@@ -2202,10 +2203,35 @@ function SectionMonths({showToast,isMobile}){
     showToast('Урок удалён');
   };
 
+  // Пробегает по урокам этого месяца с video_id, но статусом не «ready»,
+  // и спрашивает у Kinescope реальный статус напрямую — не дожидаясь
+  // вебхука или открытой формы редактирования (там опрос работает,
+  // только пока страница открыта).
+  const checkPendingStatuses = async () => {
+    const pending = lessons.filter(l => l.video_id && l.video_status !== 'ready');
+    if (pending.length === 0) { showToast('Все уроки уже готовы'); return; }
+    setCheckingStatuses(true);
+    let becameReady = 0;
+    for (const l of pending) {
+      try {
+        const res = await fetch('/api/kinescope/sync-status', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ videoId: l.video_id }),
+        });
+        const json = await res.json();
+        if (res.ok && json.status === 'ready') becameReady++;
+      } catch {}
+    }
+    await reloadLessons();
+    setCheckingStatuses(false);
+    showToast(becameReady > 0 ? `Обновлено: ${becameReady} из ${pending.length}` : 'Ещё обрабатываются в Kinescope');
+  };
+
   if(mLoading) return <Spinner/>;
 
-  const totalPub   = lessons.filter(l=>l.video_status==='ready').length;
-  const totalDraft = lessons.filter(l=>!l.video_id||l.video_status!=='ready').length;
+  const totalPub     = lessons.filter(l=>l.video_status==='ready').length;
+  const totalDraft   = lessons.filter(l=>!l.video_id||l.video_status!=='ready').length;
+  const pendingCount = lessons.filter(l=>l.video_id && l.video_status!=='ready').length;
 
   // lesson table columns (desktop)
   const lessonCols = [
@@ -2250,9 +2276,14 @@ function SectionMonths({showToast,isMobile}){
 
         <AdminSectionHead num="03" title="Контент" subtitle={`Месяцы · ${lessons.length} уроков · видео из Kinescope`} kanji="月"
           actions={
-            <div style={{display:'flex',gap:6,alignItems:'center'}}>
+            <div style={{display:'flex',gap:6,alignItems:'center',flexWrap:'wrap'}}>
               <Pill2 kind="success" dot>{totalPub} опубл.</Pill2>
               <Pill2 kind="gold"    dot>{totalDraft} черн.</Pill2>
+              {pendingCount > 0 && (
+                <Btn2 kind="quiet" size="sm" onClick={checkPendingStatuses} disabled={checkingStatuses}>
+                  {checkingStatuses ? 'Проверка…' : 'Проверить статусы'}
+                </Btn2>
+              )}
               <Btn2 kind="accent" size="sm" onClick={doAdd} disabled={!activeMId || mLoading}>+ Урок</Btn2>
             </div>
           }
