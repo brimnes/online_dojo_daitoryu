@@ -18,6 +18,10 @@ const IS_TEST          = process.env.ROBOKASSA_TEST_MODE === '1';
 // Система налогообложения для чека — уточнить в поддержке Робокассы для
 // самозанятых (НПД); если не задана, поле в чек не попадает.
 const SNO              = process.env.ROBOKASSA_SNO || null;
+// Пока к магазину не подключена онлайн-касса, Робокасса отклоняет ЛЮБОЙ
+// запрос с параметром Receipt (код 29). Включить после подключения кассы —
+// без изменений в коде.
+const RECEIPT_ENABLED  = process.env.ROBOKASSA_RECEIPT_ENABLED === '1';
 
 function md5(str) {
   return createHash('md5').update(str, 'utf-8').digest('hex');
@@ -56,13 +60,18 @@ function buildPaymentUrl({ invId, amount, description, successUrl, failUrl }) {
   }
 
   const outSum  = fmtSum(amount);
-  const receipt = buildReceipt({ title: description, amount });
-  const receiptJson    = JSON.stringify(receipt);
-  // Официальная документация Робокассы: Receipt должен быть URL-encoded
-  // ДО того, как попадёт в строку для расчёта подписи (не сырой JSON).
-  const receiptEncoded = encodeURIComponent(receiptJson);
+  const receipt = RECEIPT_ENABLED ? buildReceipt({ title: description, amount }) : null;
 
-  const signatureBase = `${MERCHANT_LOGIN}:${outSum}:${invId}:${receiptEncoded}:${PASSWORD_1}`;
+  let signatureBase;
+  if (receipt) {
+    const receiptJson = JSON.stringify(receipt);
+    // Официальная документация Робокассы: Receipt должен быть URL-encoded
+    // ДО того, как попадёт в строку для расчёта подписи (не сырой JSON).
+    const receiptEncoded = encodeURIComponent(receiptJson);
+    signatureBase = `${MERCHANT_LOGIN}:${outSum}:${invId}:${receiptEncoded}:${PASSWORD_1}`;
+  } else {
+    signatureBase = `${MERCHANT_LOGIN}:${outSum}:${invId}:${PASSWORD_1}`;
+  }
   const signature = md5(signatureBase);
 
   // Строим URL вручную с единым encodeURIComponent для всех полей — чтобы
@@ -75,7 +84,7 @@ function buildPaymentUrl({ invId, amount, description, successUrl, failUrl }) {
     ['InvId',          String(invId)],
     ['Description',    description],
     ['SignatureValue', signature],
-    ['Receipt',        receiptJson],   // энкодим ниже сами, единообразно
+    ...(receipt    ? [['Receipt', JSON.stringify(receipt)]] : []),
     ['Culture',        'ru'],
     ...(successUrl ? [['SuccessURL2', successUrl]] : []),
     ...(failUrl    ? [['FailURL2',    failUrl]]    : []),
