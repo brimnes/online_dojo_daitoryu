@@ -1,14 +1,16 @@
 /**
  * POST /api/yookassa/verify-payment
  *
- * Проверяет статус оплаты текущего пользователя напрямую у YooKassa.
+ * Проверяет статус оплаты текущего пользователя напрямую у платёжного
+ * провайдера — ЮKassa или Робокасса, в зависимости от того, кем был создан
+ * конкретный платёж (payment.paymentProvider). Имя роута осталось историческим,
  * НЕ требует provider_payment_id — находит платёж сам по type+reference.
  *
  * Body: { type: 'month'|'section', reference: 'jun'|'jul'|... }
  *
  * Flow:
  *   1. Находим самый свежий pending-платёж пользователя с нужным type+reference
- *   2. Запрашиваем YooKassa GET /v3/payments/{providerPaymentId}
+ *   2. Запрашиваем статус у соответствующего провайдера
  *   3. Если succeeded → обновляем payment + выдаём user_access
  *   4. Возвращаем { status: 'succeeded'|'pending'|'cancelled' }
  *
@@ -18,6 +20,7 @@
 import { NextResponse } from 'next/server';
 import { prisma }       from '@/lib/prisma.js';
 import { requireAuth }  from '@/lib/auth-server.js';
+import { queryRobokassaStatus } from '@/lib/robokassa.js';
 
 async function queryYooKassa(providerPaymentId) {
   const credentials = Buffer.from(
@@ -30,13 +33,13 @@ async function queryYooKassa(providerPaymentId) {
   return res.json();
 }
 
-async function grantAccess(userId, accessType, reference, amount, paidAt) {
+async function grantAccess(userId, accessType, reference, amount, paidAt, source) {
   await prisma.userAccess.upsert({
     where:  { userId_type_reference: { userId, type: accessType, reference } },
-    create: { userId, type: accessType, reference, paidAt, amount: Math.round(Number(amount ?? 0)), source: 'yookassa' },
-    update: { paidAt, amount: Math.round(Number(amount ?? 0)), source: 'yookassa' },
+    create: { userId, type: accessType, reference, paidAt, amount: Math.round(Number(amount ?? 0)), source },
+    update: { paidAt, amount: Math.round(Number(amount ?? 0)), source },
   });
-  console.log(`[verify-payment] access granted: user=${userId} ${accessType}/${reference}`);
+  console.log(`[verify-payment] access granted: user=${userId} ${accessType}/${reference} via ${source}`);
 }
 
 export async function POST(request) {
@@ -80,13 +83,42 @@ export async function POST(request) {
     // Если payment уже succeeded в БД но access нет — выдаём access
     if (payment.status === 'succeeded') {
       const paidAt = payment.paidAt ?? new Date();
-      await grantAccess(user.id, type, reference, payment.amount, paidAt);
+      await grantAccess(user.id, type, reference, payment.amount, paidAt, payment.paymentProvider || 'yookassa');
       return NextResponse.json({ status: 'succeeded', type, reference });
     }
 
-    // 3. Запросить актуальный статус у YooKassa
     if (!payment.providerPaymentId) {
       return NextResponse.json({ status: 'pending', error: 'No provider_payment_id' });
+    }
+
+    // 3. Запросить актуальный статус у соответствующего провайдера
+    if (payment.paymentProvider === 'robokassa') {
+      let rkState;
+      try {
+        rkState = await queryRobokassaStatus(payment.providerPaymentId);
+      } catch (e) {
+        console.error('[verify-payment] Robokassa query failed:', e.message);
+        return NextResponse.json({ status: 'pending', error: e.message }, { status: 502 });
+      }
+
+      console.log(`[verify-payment] Robokassa ${payment.providerPaymentId} → code ${rkState.code}`);
+
+      if (rkState.succeeded) {
+        const paidAt = new Date();
+        await prisma.payment.update({
+          where: { id: payment.id },
+          data:  { status: 'succeeded', paidAt, rawPayload: { code: rkState.code } },
+        });
+        await grantAccess(user.id, type, reference, payment.amount, paidAt, 'robokassa');
+        return NextResponse.json({ status: 'succeeded', type, reference });
+      }
+
+      if (rkState.code === '5') {
+        await prisma.payment.update({ where: { id: payment.id }, data: { status: 'cancelled' } });
+        return NextResponse.json({ status: 'cancelled' });
+      }
+
+      return NextResponse.json({ status: 'pending' });
     }
 
     let ykPayment;
@@ -108,7 +140,7 @@ export async function POST(request) {
         data:  { status: 'succeeded', paidAt, rawPayload: ykPayment },
       });
       // Выдать доступ
-      await grantAccess(user.id, type, reference, payment.amount, paidAt);
+      await grantAccess(user.id, type, reference, payment.amount, paidAt, 'yookassa');
       return NextResponse.json({ status: 'succeeded', type, reference });
     }
 

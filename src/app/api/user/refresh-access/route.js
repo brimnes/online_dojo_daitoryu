@@ -1,8 +1,9 @@
 /**
  * POST /api/user/refresh-access
  *
- * Проверяет все pending-платежи текущего пользователя напрямую в YooKassa
- * и выдаёт user_access для тех, что уже оплачены.
+ * Проверяет все pending-платежи текущего пользователя напрямую у провайдера
+ * (ЮKassa или Робокасса — в зависимости от payment.paymentProvider) и выдаёт
+ * user_access для тех, что уже оплачены.
  *
  * Вызывается автоматически при загрузке Dashboard — подстраховка на случай,
  * если success-страница не смогла завершить верификацию (нестабильный редирект,
@@ -16,6 +17,7 @@
 import { NextResponse } from 'next/server';
 import { prisma }       from '@/lib/prisma.js';
 import { requireAuth }  from '@/lib/auth-server.js';
+import { queryRobokassaStatus } from '@/lib/robokassa.js';
 
 const MONTH_REFS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
 
@@ -28,6 +30,20 @@ async function queryYooKassa(providerPaymentId) {
   });
   if (!res.ok) throw new Error(`YooKassa ${res.status}`);
   return res.json();
+}
+
+/** Возвращает { succeeded, paidAt, rawPayload } независимо от провайдера */
+async function queryProvider(payment) {
+  if (payment.paymentProvider === 'robokassa') {
+    const rk = await queryRobokassaStatus(payment.providerPaymentId);
+    return { succeeded: rk.succeeded, paidAt: new Date(), rawPayload: { code: rk.code } };
+  }
+  const yk = await queryYooKassa(payment.providerPaymentId);
+  return {
+    succeeded:  yk.status === 'succeeded',
+    paidAt:     new Date(yk.captured_at || yk.created_at || Date.now()),
+    rawPayload: yk,
+  };
 }
 
 export async function POST(request) {
@@ -64,27 +80,27 @@ export async function POST(request) {
 
     for (const payment of unique) {
       try {
-        // 2. Проверяем статус в YooKassa
-        const yk = await queryYooKassa(payment.providerPaymentId);
+        // 2. Проверяем статус у нужного провайдера
+        const result = await queryProvider(payment);
+        if (!result.succeeded) continue;
 
-        if (yk.status !== 'succeeded') continue;
-
-        const paidAt     = new Date(yk.captured_at || yk.created_at || Date.now());
+        const paidAt     = result.paidAt;
         const accessType = MONTH_REFS.includes(payment.productReference) ? 'month' : 'section';
         const reference  = payment.productReference;
         const amount     = Math.round(Number(payment.amount ?? 0));
+        const source     = payment.paymentProvider || 'yookassa';
 
         // 3. Обновляем payment → succeeded
         await prisma.payment.update({
           where: { id: payment.id },
-          data:  { status: 'succeeded', paidAt, rawPayload: yk },
+          data:  { status: 'succeeded', paidAt, rawPayload: result.rawPayload },
         });
 
         // 4. Выдаём / обновляем user_access
         await prisma.userAccess.upsert({
           where:  { userId_type_reference: { userId: user.id, type: accessType, reference } },
-          create: { userId: user.id, type: accessType, reference, paidAt, amount, source: 'yookassa' },
-          update: { paidAt, amount, source: 'yookassa' },
+          create: { userId: user.id, type: accessType, reference, paidAt, amount, source },
+          update: { paidAt, amount, source },
         });
 
         granted.push(`${accessType}/${reference}`);

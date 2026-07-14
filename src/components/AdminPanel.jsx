@@ -1837,7 +1837,7 @@ function SectionPayments({isMobile}){
     email:   p.user_email||'—',
     item:    p.product_title||p.product_reference||'—',
     itemSub: p.product_type==='month'?'Месячный':p.product_type==='section'?'Раздел':'—',
-    method:  p.provider==='yookassa'?'ЮKassa':(p.provider||'—'),
+    method:  p.provider==='yookassa'?'ЮKassa':p.provider==='robokassa'?'Робокасса':(p.provider||'—'),
     amount:  p.amount||0,
     status:  p.status,
   }));
@@ -2841,11 +2841,12 @@ const ACCESS_SOURCE_OPTIONS = [
   {value:'crypto', label:'Криптовалюта'},
 ];
 const ACCESS_SOURCE_LABELS = {
-  yookassa: 'ЮKassa',
-  free:     'бесплатно',
-  cash:     'наличные',
-  card:     'на карту',
-  crypto:   'крипта',
+  yookassa:  'ЮKassa',
+  robokassa: 'Робокасса',
+  free:      'бесплатно',
+  cash:      'наличные',
+  card:      'на карту',
+  crypto:    'крипта',
 };
 
 function SectionAccess({showToast,isMobile}){
@@ -2906,13 +2907,14 @@ function SectionAccess({showToast,isMobile}){
         <SumiStroke style={{margin:'0 0 24px',opacity:0.3}}/>
 
         {/* Разбивка по источнику оплаты */}
-        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'repeat(5,1fr)',gap:14,marginBottom:24}}>
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'repeat(6,1fr)',gap:14,marginBottom:24}}>
           {[
-            {key:'yookassa', label:'ЮKassa',    kanji:'決'},
-            {key:'cash',     label:'Наличные',  kanji:'現'},
-            {key:'card',     label:'На карту',  kanji:'札'},
-            {key:'crypto',   label:'Крипта',    kanji:'暗'},
-            {key:'free',     label:'Бесплатно', kanji:'贈'},
+            {key:'yookassa',  label:'ЮKassa',    kanji:'決'},
+            {key:'robokassa', label:'Робокасса', kanji:'頑'},
+            {key:'cash',      label:'Наличные',  kanji:'現'},
+            {key:'card',      label:'На карту',  kanji:'札'},
+            {key:'crypto',    label:'Крипта',    kanji:'暗'},
+            {key:'free',      label:'Бесплатно', kanji:'贈'},
           ].map(m=>{
             const s = bySource[m.key] || {count:0,sum:0};
             return (

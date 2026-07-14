@@ -273,7 +273,7 @@ function MonthPurchaseModal({ month, product, onClose, isMobile }) {
     if (!product || buying) return;
     setBuying(true); setBuyError('');
     try {
-      const res  = await fetch('/api/yookassa/create-payment', {
+      const res  = await fetch('/api/robokassa/create-payment', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ product_id: product.id }),
       });
@@ -1356,7 +1356,7 @@ function IkkajoChoiceModal({ products, onClose, isMobile }) {
     setBuyingId(product.id);
     setError('');
     try {
-      const res = await fetch('/api/yookassa/create-payment', {
+      const res = await fetch('/api/robokassa/create-payment', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ product_id: product.id }),
       });
@@ -1999,7 +1999,7 @@ function TabUnlockAccess({ userAccess, isMobile }) {
     setBuyError('');
     try {
       // Авторизация через httpOnly cookie — заголовок Authorization не нужен
-      const res = await fetch('/api/yookassa/create-payment', {
+      const res = await fetch('/api/robokassa/create-payment', {
         method:  'POST',
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ product_id: product.id }),

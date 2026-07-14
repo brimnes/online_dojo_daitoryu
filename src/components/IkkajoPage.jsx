@@ -48,7 +48,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout, initialKyu }) {
     setBuying(true);
     setBuyError('');
     try {
-      const res  = await fetch('/api/yookassa/create-payment', {
+      const res  = await fetch('/api/robokassa/create-payment', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({ product_id: product.id }),
       });
