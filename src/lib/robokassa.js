@@ -57,26 +57,33 @@ function buildPaymentUrl({ invId, amount, description, successUrl, failUrl }) {
 
   const outSum  = fmtSum(amount);
   const receipt = buildReceipt({ title: description, amount });
-  const receiptJson = JSON.stringify(receipt);
+  const receiptJson    = JSON.stringify(receipt);
+  // Официальная документация Робокассы: Receipt должен быть URL-encoded
+  // ДО того, как попадёт в строку для расчёта подписи (не сырой JSON).
+  const receiptEncoded = encodeURIComponent(receiptJson);
 
-  const signatureBase = `${MERCHANT_LOGIN}:${outSum}:${invId}:${receiptJson}:${PASSWORD_1}`;
+  const signatureBase = `${MERCHANT_LOGIN}:${outSum}:${invId}:${receiptEncoded}:${PASSWORD_1}`;
   const signature = md5(signatureBase);
 
-  const params = new URLSearchParams({
-    MerchantLogin: MERCHANT_LOGIN,
-    OutSum:        outSum,
-    InvId:         String(invId),
-    Description:   description,
-    SignatureValue: signature,
-    Receipt:       receiptJson,
-    Culture:       'ru',
-  });
-  if (successUrl) params.set('SuccessURL2', successUrl);
-  if (failUrl)    params.set('FailURL2', failUrl);
-  if (IS_TEST)    params.set('IsTest', '1');
+  // Строим URL вручную с единым encodeURIComponent для всех полей — чтобы
+  // байты Receipt в самом URL совпадали ровно с тем, что ушло в подпись
+  // (URLSearchParams использует другую схему кодирования: пробел → '+',
+  // а не '%20', что дало бы иную строку и другую подпись).
+  const qs = [
+    ['MerchantLogin',  MERCHANT_LOGIN],
+    ['OutSum',         outSum],
+    ['InvId',          String(invId)],
+    ['Description',    description],
+    ['SignatureValue', signature],
+    ['Receipt',        receiptJson],   // энкодим ниже сами, единообразно
+    ['Culture',        'ru'],
+    ...(successUrl ? [['SuccessURL2', successUrl]] : []),
+    ...(failUrl    ? [['FailURL2',    failUrl]]    : []),
+    ...(IS_TEST    ? [['IsTest',      '1']]        : []),
+  ].map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
 
   return {
-    url: `https://auth.robokassa.ru/Merchant/Index.aspx?${params.toString()}`,
+    url: `https://auth.robokassa.ru/Merchant/Index.aspx?${qs}`,
     receipt,
   };
 }
