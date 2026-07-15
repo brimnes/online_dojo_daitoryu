@@ -62,34 +62,33 @@ function buildPaymentUrl({ invId, amount, description, successUrl, failUrl }) {
   const outSum  = fmtSum(amount);
   const receipt = RECEIPT_ENABLED ? buildReceipt({ title: description, amount }) : null;
 
+  // Receipt однократно URL-encoded — именно в этом виде участвует в подписи.
+  let receiptEncodedOnce = null;
   let signatureBase;
   if (receipt) {
-    const receiptJson = JSON.stringify(receipt);
-    // Официальная документация Робокассы: Receipt должен быть URL-encoded
-    // ДО того, как попадёт в строку для расчёта подписи (не сырой JSON).
-    const receiptEncoded = encodeURIComponent(receiptJson);
-    signatureBase = `${MERCHANT_LOGIN}:${outSum}:${invId}:${receiptEncoded}:${PASSWORD_1}`;
+    receiptEncodedOnce = encodeURIComponent(JSON.stringify(receipt));
+    signatureBase = `${MERCHANT_LOGIN}:${outSum}:${invId}:${receiptEncodedOnce}:${PASSWORD_1}`;
   } else {
     signatureBase = `${MERCHANT_LOGIN}:${outSum}:${invId}:${PASSWORD_1}`;
   }
   const signature = md5(signatureBase);
 
-  // Строим URL вручную с единым encodeURIComponent для всех полей — чтобы
-  // байты Receipt в самом URL совпадали ровно с тем, что ушло в подпись
-  // (URLSearchParams использует другую схему кодирования: пробел → '+',
-  // а не '%20', что дало бы иную строку и другую подпись).
+  // Подтверждено поддержкой Робокассы: при формировании GET-запроса (ссылки)
+  // значение Receipt в самом URL должно быть закодировано ДВАЖДЫ — один раз
+  // как для подписи, и ещё раз поверх для передачи в query string. Остальные
+  // поля кодируются как обычно, один раз.
   const qs = [
-    ['MerchantLogin',  MERCHANT_LOGIN],
-    ['OutSum',         outSum],
-    ['InvId',          String(invId)],
-    ['Description',    description],
-    ['SignatureValue', signature],
-    ...(receipt    ? [['Receipt', JSON.stringify(receipt)]] : []),
+    ['MerchantLogin',  encodeURIComponent(MERCHANT_LOGIN)],
+    ['OutSum',         encodeURIComponent(outSum)],
+    ['InvId',          encodeURIComponent(String(invId))],
+    ['Description',    encodeURIComponent(description)],
+    ['SignatureValue', encodeURIComponent(signature)],
+    ...(receiptEncodedOnce ? [['Receipt', encodeURIComponent(receiptEncodedOnce)]] : []),
     ['Culture',        'ru'],
-    ...(successUrl ? [['SuccessURL2', successUrl]] : []),
-    ...(failUrl    ? [['FailURL2',    failUrl]]    : []),
+    ...(successUrl ? [['SuccessURL2', encodeURIComponent(successUrl)]] : []),
+    ...(failUrl    ? [['FailURL2',    encodeURIComponent(failUrl)]]    : []),
     ...(IS_TEST    ? [['IsTest',      '1']]        : []),
-  ].map(([k, v]) => `${k}=${encodeURIComponent(v)}`).join('&');
+  ].map(([k, v]) => `${k}=${v}`).join('&');
 
   return {
     url: `https://auth.robokassa.ru/Merchant/Index.aspx?${qs}`,
