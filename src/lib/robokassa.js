@@ -85,8 +85,8 @@ function buildPaymentUrl({ invId, amount, description, successUrl, failUrl }) {
     ['SignatureValue', encodeURIComponent(signature)],
     ...(receiptEncodedOnce ? [['Receipt', encodeURIComponent(receiptEncodedOnce)]] : []),
     ['Culture',        'ru'],
-    ...(successUrl ? [['SuccessURL2', encodeURIComponent(successUrl)]] : []),
-    ...(failUrl    ? [['FailURL2',    encodeURIComponent(failUrl)]]    : []),
+    ...(successUrl ? [['SuccessURL', encodeURIComponent(successUrl)]] : []),
+    ...(failUrl    ? [['FailURL',    encodeURIComponent(failUrl)]]    : []),
     ...(IS_TEST    ? [['IsTest',      '1']]        : []),
   ].map(([k, v]) => `${k}=${v}`).join('&');
 
