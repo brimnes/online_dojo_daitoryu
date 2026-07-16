@@ -61,7 +61,7 @@ export function useUsers() {
     setLoading(true);
     try {
       const data = await api('/api/admin/users');
-      setUsers(data.map(u => ({ ...u, joined_at: fmtDate(u.joined_at) })));
+      setUsers(data.map(u => ({ ...u, joined_at_iso: u.joined_at, joined_at: fmtDate(u.joined_at) })));
     } catch (e) {
       setError(e.message);
     } finally {

@@ -934,6 +934,9 @@ function SectionUsers({showToast,isMobile}){
   const [selected,  setSelected]  = useState(null);
   const [filter,    setFilter]    = useState('all');
   const [search,    setSearch]    = useState('');
+  const [regFrom,   setRegFrom]   = useState('');
+  const [regTo,     setRegTo]     = useState('');
+  const [sortDir,   setSortDir]   = useState('desc'); // по дате регистрации
   const [page,      setPage]      = useState(0);
   const PER_PAGE = 12;
 
@@ -941,8 +944,8 @@ function SectionUsers({showToast,isMobile}){
   const mapped = users.filter(u => u.status !== 'deleted').map(u => {
     const upays = payments.filter(p=>p.userId===u.id);
     const accessLabel = upays.length ? upays.map(p=>p.desc||'—').join(' · ') : '—';
-    const joinDate = u.joined_at
-      ? new Date(u.joined_at).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'})
+    const joinDate = u.joined_at_iso
+      ? new Date(u.joined_at_iso).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'})
       : '—';
     return {
       id:        u.id,
@@ -956,6 +959,7 @@ function SectionUsers({showToast,isMobile}){
       lessons:   '— / —',
       activity:  '—',
       joined:    joinDate,
+      joinedIso: u.joined_at_iso || null,
       raw:       u,
     };
   });
@@ -968,21 +972,40 @@ function SectionUsers({showToast,isMobile}){
     paused: mapped.filter(u=>u.status==='paused').length,
   };
 
+  const regFromTime = regFrom ? new Date(regFrom + 'T00:00:00').getTime() : null;
+  const regToTime   = regTo   ? new Date(regTo   + 'T23:59:59').getTime() : null;
+
   const filtered = mapped.filter(u=>{
     if (filter!=='all' && u.status!==filter) return false;
-    if (search && !u.name.toLowerCase().includes(search.toLowerCase()) && !u.email.toLowerCase().includes(search.toLowerCase())) return false;
+    const q = search.trim().toLowerCase();
+    if (q && !u.name.toLowerCase().includes(q) && !u.email.toLowerCase().includes(q)) return false;
+    if (regFromTime || regToTime) {
+      const t = u.joinedIso ? new Date(u.joinedIso).getTime() : null;
+      if (t == null) return false;
+      if (regFromTime && t < regFromTime) return false;
+      if (regToTime   && t > regToTime)   return false;
+    }
     return true;
+  });
+
+  const sorted = [...filtered].sort((a,b) => {
+    const ta = a.joinedIso ? new Date(a.joinedIso).getTime() : 0;
+    const tb = b.joinedIso ? new Date(b.joinedIso).getTime() : 0;
+    return sortDir === 'desc' ? tb - ta : ta - tb;
   });
 
   const selUser  = mapped.find(u=>u.id===selected);
 
   const openUser = (u) => { setSelected(u.id); };
 
-  const list     = filtered.length ? filtered : mapped;
+  const list     = sorted;
   const maxPage  = Math.max(0, Math.ceil(list.length / PER_PAGE) - 1);
   const pageList = list.slice(page * PER_PAGE, (page + 1) * PER_PAGE);
   const handleFilter = (f) => { setFilter(f); setPage(0); };
   const handleSearch = (s) => { setSearch(s); setPage(0); };
+  const handleRegFrom = (v) => { setRegFrom(v); setPage(0); };
+  const handleRegTo   = (v) => { setRegTo(v); setPage(0); };
+  const clearRegFilter = () => { setRegFrom(''); setRegTo(''); setPage(0); };
 
   if (loading) return <Spinner/>;
 
@@ -1089,6 +1112,25 @@ function SectionUsers({showToast,isMobile}){
           ))}
         </div>
 
+        {/* ── search + registration date filter ────────────────── */}
+        <div style={{display:'flex',flexWrap:'wrap',gap:10,marginBottom:12,alignItems:'flex-end'}}>
+          <div style={{flex:'1 1 220px',minWidth:180}}>
+            <div style={{fontFamily:F.mono,fontSize:11,color:C.muted,letterSpacing:'0.1em',textTransform:'uppercase',marginBottom:5}}>Поиск</div>
+            <Input value={search} onChange={handleSearch} placeholder="Имя или email…"/>
+          </div>
+          <div style={{minWidth:140}}>
+            <div style={{fontFamily:F.mono,fontSize:11,color:C.muted,letterSpacing:'0.1em',textTransform:'uppercase',marginBottom:5}}>Регистрация с</div>
+            <Input type="date" value={regFrom} onChange={handleRegFrom}/>
+          </div>
+          <div style={{minWidth:140}}>
+            <div style={{fontFamily:F.mono,fontSize:11,color:C.muted,letterSpacing:'0.1em',textTransform:'uppercase',marginBottom:5}}>по</div>
+            <Input type="date" value={regTo} onChange={handleRegTo}/>
+          </div>
+          {(regFrom || regTo) && (
+            <Btn2 kind="quiet" size="sm" onClick={clearRegFilter}>Сбросить даты</Btn2>
+          )}
+        </div>
+
         {/* ── filter chips ─────────────────────────────────────── */}
         <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12,alignItems:'center'}}>
           <FilterChip2 label="Все"      value={String(counts.all)}    active={filter==='all'}    onClick={()=>handleFilter('all')}/>
@@ -1098,9 +1140,16 @@ function SectionUsers({showToast,isMobile}){
           <FilterChip2 label="На паузе" value={String(counts.paused)} active={filter==='paused'} onClick={()=>handleFilter('paused')} dot={C.muted}/>
           <div style={{flex:1}}/>
           <span style={{fontFamily:F.mono,fontSize:11,color:C.muted,letterSpacing:'0.12em'}}>СОРТИРОВКА:</span>
-          <FilterChip2 label="По дате регистрации ↓"/>
-          <FilterChip2 label="6 кю → 1 кю"/>
+          <FilterChip2 label={`По дате регистрации ${sortDir==='desc'?'↓':'↑'}`} active
+            onClick={()=>setSortDir(d=>d==='desc'?'asc':'desc')}/>
         </div>
+
+        {list.length===0 && (
+          <div style={{textAlign:'center',padding:'40px 16px',background:C.surface,border:`1px solid ${C.hairline}`,marginBottom:16}}>
+            <div style={{fontFamily:F.kanji,fontSize:36,color:C.accent,opacity:0.15,marginBottom:8}}>人</div>
+            <div style={{fontFamily:F.serif,fontSize:15,color:C.muted}}>Никто не найден по этим условиям</div>
+          </div>
+        )}
 
         {/* ── selected user detail panel ───────────────────────── */}
         {selUser && (
@@ -1816,16 +1865,26 @@ function SectionPayments({isMobile}){
   const paidOps  = succeeded.length + external.length;
   const avgCheck = paidOps ? Math.round(income/paidOps) : 0;
 
-  // ── структура дохода (только реально полученные деньги) ──────
-  const monthPaid   = succeeded.filter(p=>p.product_type==='month');
-  const sectionPaid = succeeded.filter(p=>p.product_type==='section');
-  const monthSum    = monthPaid.reduce((s,p)=>s+(p.amount||0),0);
-  const sectionSum  = sectionPaid.reduce((s,p)=>s+(p.amount||0),0);
-  const breakdown = [
-    {label:'Месячные подписки',kanji:'月',value:monthSum,   pct:income?Math.round(monthSum/income*100):0,   count:monthPaid.length},
-    {label:'Разделы',          kanji:'技',value:sectionSum, pct:income?Math.round(sectionSum/income*100):0, count:sectionPaid.length},
-    {label:'Вне ЮKassa · нал/карта/крипта',kanji:'手',value:externalSum,pct:income?Math.round(externalSum/income*100):0,count:external.length},
-  ];
+  // ── по продуктам: сколько купили каждого товара за период ────
+  // Учитывает и оплаты через провайдера, и вручную выданные (нал/карта/крипта).
+  const productMap = new Map();
+  const addSale = (key, label, kanji, amount) => {
+    const row = productMap.get(key) || { label, kanji, count: 0, sum: 0 };
+    row.count += 1;
+    row.sum   += amount || 0;
+    productMap.set(key, row);
+  };
+  succeeded.forEach(p => {
+    const key = `${p.product_type}/${p.product_reference}`;
+    addSale(key, p.product_title || p.product_reference || '—', p.product_type==='month'?'月':'技', p.amount);
+  });
+  external.forEach(a => {
+    const key = `${a.type}/${a.desc}`;
+    addSale(key, a.desc || '—', a.type==='month'?'月':'技', a.amount);
+  });
+  const breakdown = [...productMap.values()]
+    .sort((a,b) => b.sum - a.sum)
+    .map(r => ({ ...r, pct: income ? Math.round(r.sum/income*100) : 0 }));
 
   // ── таблица: платежи периода → display shape ─────────────────
   const fmtPayDate = p => payDate(p).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
@@ -1931,13 +1990,16 @@ function SectionPayments({isMobile}){
             ))}
           </div>
 
-          {/* breakdown */}
-          <div style={{background:C.surface,border:`1px solid ${C.hairline}`}}>
+          {/* breakdown: по продуктам за выбранный период */}
+          <div style={{background:C.surface,border:`1px solid ${C.hairline}`,display:'flex',flexDirection:'column'}}>
             <div style={{padding:'14px 18px',borderBottom:`1px solid ${C.hairline}`,display:'flex',alignItems:'center',gap:10}}>
               <span style={{fontFamily:F.kanji,fontSize:13,color:C.gold,opacity:0.85}}>内訳</span>
-              <span style={{fontFamily:F.serif,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>СТРУКТУРА ДОХОДА</span>
+              <span style={{fontFamily:F.serif,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>ПРОДАЖИ ПО ПРОДУКТАМ · {periodLabel.toUpperCase()}</span>
             </div>
-            <div style={{padding:'4px 18px'}}>
+            <div style={{padding:'4px 18px',maxHeight:260,overflowY:'auto'}}>
+              {breakdown.length===0 && (
+                <div style={{padding:'20px 0',fontFamily:F.serif,fontSize:13,color:C.muted,textAlign:'center'}}>Продаж за этот период нет</div>
+              )}
               {breakdown.map((r,i)=>(
                 <div key={i} style={{display:'grid',gridTemplateColumns:'24px 1fr 60px 70px',gap:12,alignItems:'center',padding:'10px 0',borderBottom:i===breakdown.length-1?'none':`1px solid ${C.hairline}`}}>
                   <span style={{fontFamily:F.kanji,fontSize:15,color:C.accent,opacity:0.7}}>{r.kanji}</span>
@@ -1948,7 +2010,7 @@ function SectionPayments({isMobile}){
                     </div>
                   </div>
                   <span style={{fontFamily:F.mono,fontSize:11,color:C.muted,letterSpacing:'0.04em',textAlign:'right'}}>{r.count} шт.</span>
-                  <span style={{fontFamily:F.mono,fontSize:13,color:C.ink,letterSpacing:'0.04em',textAlign:'right',fontWeight:600}}>{(r.value/1000).toFixed(0)}к ₽</span>
+                  <span style={{fontFamily:F.mono,fontSize:13,color:C.ink,letterSpacing:'0.04em',textAlign:'right',fontWeight:600}}>{(r.sum/1000).toFixed(1)}к ₽</span>
                 </div>
               ))}
             </div>
@@ -1964,6 +2026,15 @@ function SectionPayments({isMobile}){
           <div style={{flex:1}}/>
           <FilterChip2 label="↕ По дате ↓"/>
         </div>
+
+        {filter==='pending' && pendingCount>0 && (
+          <div style={{padding:'10px 14px',background:C.surface,border:`1px solid ${C.goldSoft}`,marginBottom:16,fontFamily:F.serif,fontSize:13,color:C.ink2,lineHeight:1.6}}>
+            <b>«Ожидание»</b> — ученик нажал «Купить» и попал на страницу оплаты (Робокасса/ЮKassa),
+            но ещё не завершил ввод данных карты, либо закрыл вкладку до подтверждения.
+            Доступ откроется автоматически, как только оплата действительно пройдёт —
+            вручную ничего делать не нужно.
+          </div>
+        )}
 
         {/* table / mobile cards */}
         {filtered.length === 0 ? (
