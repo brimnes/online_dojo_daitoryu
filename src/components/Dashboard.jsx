@@ -489,7 +489,7 @@ function MonthPurchaseModal({ month, product, onClose, isMobile }) {
                 fontSize: 13, letterSpacing: '0.14em', textTransform: 'uppercase',
                 marginBottom: 8, transition: 'background 0.15s',
               }}>
-              {buying ? 'Переход к оплате…' : `ПЕРЕЙТИ К ОПЛАТЕ · ЮKASSA →`}
+              {buying ? 'Переход к оплате…' : `ПЕРЕЙТИ К ОПЛАТЕ →`}
             </button>
           ) : (
             <div style={{ fontFamily: "var(--font-mono),'JetBrains Mono',monospace", fontSize: 13, color: C.muted, textAlign: 'center', marginBottom: 8 }}>
