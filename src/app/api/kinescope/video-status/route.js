@@ -43,8 +43,11 @@ async function syncFromKinescope(videoId) {
     const techData      = { videoStatus: status };
     const knowledgeData = { videoStatus: status };
     if (status === 'ready') {
-      if (data.duration)   { lessonData.videoDuration = String(data.duration); techData.duration = String(data.duration); }
-      if (data.poster_url) { lessonData.videoPosterUrl = data.poster_url; }
+      if (data.duration) { lessonData.videoDuration = String(data.duration); techData.duration = String(data.duration); }
+      // poster_url приходит от Kinescope как объект { original, md, sm, xs, ... }, а не строка.
+      const posterObj = data.poster_url;
+      const poster = typeof posterObj === 'string' ? posterObj : (posterObj?.original ?? posterObj?.md ?? undefined);
+      if (poster) { lessonData.videoPosterUrl = poster; }
     }
     await Promise.allSettled([
       prisma.lesson.updateMany({ where: { videoId }, data: lessonData }),

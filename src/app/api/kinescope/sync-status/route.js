@@ -54,7 +54,10 @@ export async function POST(request) {
   const data   = json.data ?? json;
   const status = mapStatus(data.status);
   const durationSec = data.duration;
-  const poster      = data.poster_url ?? data.poster ?? undefined;
+  // poster_url приходит от Kinescope как объект { original, md, sm, xs, ... },
+  // а не строка — берём готовую ссылку, иначе Prisma падает на записи объекта в String-поле.
+  const posterObj   = data.poster_url ?? data.poster ?? undefined;
+  const poster       = typeof posterObj === 'string' ? posterObj : (posterObj?.original ?? posterObj?.md ?? undefined);
 
   if (!status) {
     return NextResponse.json({ error: 'Cannot determine status from Kinescope response', raw: json }, { status: 502 });

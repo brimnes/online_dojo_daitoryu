@@ -31,7 +31,9 @@ export async function POST(request) {
 
     const videoId  = data?.id;
     const duration = data?.duration;  // секунды (число) от Kinescope
-    const poster   = data?.poster_url;
+    // poster_url приходит от Kinescope как объект { original, md, sm, xs, ... }, а не строка.
+    const posterObj = data?.poster_url;
+    const poster    = typeof posterObj === 'string' ? posterObj : (posterObj?.original ?? posterObj?.md ?? undefined);
 
     // Конвертация секунд → "MM:SS" или "H:MM:SS"
     function fmtDuration(secs) {
