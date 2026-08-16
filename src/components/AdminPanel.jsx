@@ -2278,9 +2278,9 @@ function SectionMonths({showToast,isMobile}){
   // и спрашивает у Kinescope реальный статус напрямую — не дожидаясь
   // вебхука или открытой формы редактирования (там опрос работает,
   // только пока страница открыта).
-  const checkPendingStatuses = async () => {
+  const checkPendingStatuses = async (silent = false) => {
     const pending = lessons.filter(l => l.video_id && l.video_status !== 'ready');
-    if (pending.length === 0) { showToast('Все уроки уже готовы'); return; }
+    if (pending.length === 0) { if (!silent) showToast('Все уроки уже готовы'); return; }
     setCheckingStatuses(true);
     let becameReady = 0;
     for (const l of pending) {
@@ -2295,8 +2295,24 @@ function SectionMonths({showToast,isMobile}){
     }
     await reloadLessons();
     setCheckingStatuses(false);
-    showToast(becameReady > 0 ? `Обновлено: ${becameReady} из ${pending.length}` : 'Ещё обрабатываются в Kinescope');
+    if (!silent) showToast(becameReady > 0 ? `Обновлено: ${becameReady} из ${pending.length}` : 'Ещё обрабатываются в Kinescope');
   };
+
+  // Вебхук Kinescope не всегда доходит (см. api/kinescope/webhook), а ручная
+  // кнопка «Проверить статусы» требует, чтобы админ о ней вспомнил.
+  // Поэтому при каждом открытии месяца с зависшими статусами тихо
+  // сверяем их с Kinescope один раз — без этого видео могут навсегда
+  // остаться в «обрабатывается», даже если на Kinescope они давно готовы.
+  const autoCheckedMonthRef = useRef(null);
+  useEffect(() => {
+    if (!activeMId || lLoading) return;
+    if (autoCheckedMonthRef.current === activeMId) return;
+    const pending = lessons.filter(l => l.video_id && l.video_status !== 'ready');
+    if (pending.length === 0) return;
+    autoCheckedMonthRef.current = activeMId;
+    checkPendingStatuses(true);
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [activeMId, lLoading, lessons]);
 
   if(mLoading) return <Spinner/>;
 
@@ -2351,7 +2367,7 @@ function SectionMonths({showToast,isMobile}){
               <Pill2 kind="success" dot>{totalPub} опубл.</Pill2>
               <Pill2 kind="gold"    dot>{totalDraft} черн.</Pill2>
               {pendingCount > 0 && (
-                <Btn2 kind="quiet" size="sm" onClick={checkPendingStatuses} disabled={checkingStatuses}>
+                <Btn2 kind="quiet" size="sm" onClick={() => checkPendingStatuses()} disabled={checkingStatuses}>
                   {checkingStatuses ? 'Проверка…' : 'Проверить статусы'}
                 </Btn2>
               )}
