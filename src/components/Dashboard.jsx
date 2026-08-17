@@ -278,11 +278,13 @@ function MonthPurchaseModal({ month, product, onClose, isMobile }) {
         body: JSON.stringify({ product_id: product.id }),
       });
       const data = await res.json();
-      if (!res.ok) { setBuyError(data.error || 'Ошибка'); return; }
+      if (!res.ok) { setBuyError(data.error || 'Ошибка'); setBuying(false); return; }
       if (data.payment_id) { try { sessionStorage.setItem('yk_pending_pid', data.payment_id); } catch {} }
+      // Не сбрасываем buying — кнопка должна остаться заблокированной до
+      // самого перехода на страницу оплаты (он не мгновенный), иначе
+      // пользователь видит «отпустившую» кнопку и жмёт «Купить» ещё раз.
       window.location.href = data.confirmation_url;
-    } catch { setBuyError('Ошибка соединения'); }
-    finally { setBuying(false); }
+    } catch { setBuyError('Ошибка соединения'); setBuying(false); }
   };
 
   const topics  = tryParseJSON(month.modal_topics,  []);
@@ -2013,6 +2015,7 @@ function TabUnlockAccess({ userAccess, isMobile }) {
         } else {
           setBuyError(data.error || 'Ошибка при создании платежа');
         }
+        setBuyingId(null);
         return;
       }
 
@@ -2020,13 +2023,14 @@ function TabUnlockAccess({ userAccess, isMobile }) {
       if (data.payment_id) {
         try { sessionStorage.setItem('yk_pending_pid', data.payment_id); } catch {}
       }
-      // Редиректим на страницу оплаты ЮKassa
+      // Не сбрасываем buyingId — кнопка остаётся заблокированной до самого
+      // перехода на страницу оплаты (он не мгновенный), иначе пользователь
+      // видит «отпустившую» кнопку и жмёт «Купить» ещё раз.
       window.location.href = data.confirmation_url;
 
     } catch (err) {
       console.error('[handleBuy]', err);
       setBuyError('Ошибка соединения');
-    } finally {
       setBuyingId(null);
     }
   };

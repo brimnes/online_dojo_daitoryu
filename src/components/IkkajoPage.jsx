@@ -53,11 +53,13 @@ export default function IkkajoPage({ nav, user = {}, onLogout, initialKyu }) {
         body: JSON.stringify({ product_id: product.id }),
       });
       const data = await res.json();
-      if (!res.ok) { setBuyError(data.error || 'Ошибка при создании платежа'); return; }
+      if (!res.ok) { setBuyError(data.error || 'Ошибка при создании платежа'); setBuying(false); return; }
       if (data.payment_id) { try { sessionStorage.setItem('yk_pending_pid', data.payment_id); } catch {} }
+      // Не сбрасываем buying — кнопка должна остаться заблокированной до
+      // самого перехода на страницу оплаты (он не мгновенный), иначе
+      // пользователь видит «отпустившую» кнопку и жмёт «Купить» ещё раз.
       window.location.href = data.confirmation_url;
-    } catch { setBuyError('Ошибка соединения'); }
-    finally { setBuying(false); }
+    } catch { setBuyError('Ошибка соединения'); setBuying(false); }
   };
 
   const videoCountByTech = useMemo(() => {
