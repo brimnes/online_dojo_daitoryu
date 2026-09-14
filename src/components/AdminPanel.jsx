@@ -1840,10 +1840,11 @@ function SectionPayments({isMobile}){
   const rawStart =
     period==='today'   ? new Date(now.getFullYear(),now.getMonth(),now.getDate()) :
     period==='quarter' ? new Date(now.getFullYear(),now.getMonth()-2,1) : // последние 3 месяца
+    period==='all'      ? REVENUE_START : // весь период существования додзё
                          new Date(now.getFullYear(),now.getMonth(),1); // month
   // Всё до запуска платформы — тестовые платежи, не показываем и не считаем
   const periodStart = rawStart > REVENUE_START ? rawStart : REVENUE_START;
-  const periodLabel = period==='today'?'сегодня':period==='quarter'?'3 месяца':'месяц';
+  const periodLabel = period==='today'?'сегодня':period==='quarter'?'3 месяца':period==='all'?'всё время':'месяц';
 
   // дата платежа: paid_at если есть, иначе created_at
   const payDate = p => new Date(p.paid_at || p.created_at);
@@ -1950,10 +1951,10 @@ function SectionPayments({isMobile}){
     <div style={{background:C.bg,minHeight:'100%'}}>
       <div style={{padding:isMobile?'20px 16px 40px':'32px 36px 60px'}}>
 
-        <AdminSectionHead num="05" title="Платежи" subtitle={`${new Date().toLocaleString('ru-RU',{month:'long',year:'numeric'})} · продажи разделов и подписок`} kanji="銭"
+        <AdminSectionHead num="05" title="Платежи" subtitle={`${period==='all'?'весь период':new Date().toLocaleString('ru-RU',{month:'long',year:'numeric'})} · продажи разделов и подписок`} kanji="銭"
           actions={
             <div style={{display:'flex',gap:4}}>
-              {[['today','сегодня'],['month','месяц'],['quarter','3 месяца']].map(([k,l])=>(
+              {[['today','сегодня'],['month','месяц'],['quarter','3 месяца'],['all','всё время']].map(([k,l])=>(
                 <Pill2 key={k} kind={period===k?'solidInk':'muted'} style={{cursor:'pointer'}} onClick={()=>{setPeriod(k);setVisibleCount(12);}}>{l}</Pill2>
               ))}
             </div>
