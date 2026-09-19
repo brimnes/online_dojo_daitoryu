@@ -17,9 +17,9 @@ export const C = {
   white:      '#fff',
   // Text
   ink:        '#15120e',  // graphite-black
-  ink2:       '#3a342b',  // strong body text
+  ink2:       '#2a251d',  // strong body text (darkened for readability, ~11.5:1 contrast on bg)
   dark:       '#15120e',
-  muted:      '#6f6452',  // bronze-gray secondary
+  muted:      '#52493a',  // bronze-gray secondary (darkened for readability, ~6.5:1 contrast on bg)
   // Borders
   border:     '#bab09a',  // stone divider (hairline)
   hairline2:  '#cec3ac',
