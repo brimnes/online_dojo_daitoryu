@@ -3,6 +3,7 @@
 import { useState, useEffect } from 'react';
 import { C } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
+import { useAccessibility } from '@/lib/accessibility';
 import { BELT, VIDEO_CATS } from '@/data/techniques';
 import KinescopePlayer from '@/components/KinescopePlayer';
 import { useTechniques, useUserAccessRows } from '@/lib/db';
@@ -150,6 +151,7 @@ function TechniqueComments({ techniqueId }) {
 
 export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerId, user = {}, onLogout }) {
   const isMobile = useIsMobile();
+  const { fontScale, highContrast } = useAccessibility();
   const belt = BELT[kyu.belt] || { color: '#ccc', border: '#aaa', label: '' };
   const [cat, setCat] = useState('overview');
   const [vid, setVid] = useState(null);
@@ -357,7 +359,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
           }}>{tech.nameRu}</h1>
 
           {content.description && (
-            <p style={{ fontSize: 18, color: C.ink2, lineHeight: 1.7, marginBottom: 12 }}>{content.description}</p>
+            <p style={{ fontSize: Math.round(18 * fontScale), color: highContrast ? '#000000' : C.ink2, lineHeight: 1.7, marginBottom: 12 }}>{content.description}</p>
           )}
 
         </div>
@@ -407,14 +409,14 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
 
         {/* Principles */}
         {content.principles?.length > 0 && (
-          <div style={{ margin: '12px 16px 0', background: C.surface, border: `1px solid ${C.border}`, padding: '18px 16px' }}>
-            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ margin: '12px 16px 0', background: highContrast ? '#ffffff' : C.surface, border: `1px solid ${C.border}`, padding: '18px 16px' }}>
+            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: highContrast ? '#1a1a1a' : C.muted, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ color: C.gold, fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 13 }}>道</span>КЛЮЧЕВЫЕ ПРИНЦИПЫ
             </div>
             {content.principles.map((p, i) => (
               <div key={i} style={{ display: 'flex', gap: 12, marginBottom: 10 }}>
-                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, minWidth: 20, flexShrink: 0 }}>{String(i + 1).padStart(2, '0')}</div>
-                <div style={{ fontSize: 18, color: C.ink2, lineHeight: 1.7 }}>{p}</div>
+                <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: highContrast ? '#1a1a1a' : C.muted, minWidth: 20, flexShrink: 0 }}>{String(i + 1).padStart(2, '0')}</div>
+                <div style={{ fontSize: Math.round(18 * fontScale), color: highContrast ? '#000000' : C.ink2, lineHeight: 1.7 }}>{p}</div>
               </div>
             ))}
           </div>
@@ -422,14 +424,14 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
 
         {/* Mistakes */}
         {content.mistakes?.length > 0 && (
-          <div style={{ margin: '12px 16px 0', background: C.surface, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.accent}`, padding: '18px 16px' }}>
-            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
+          <div style={{ margin: '12px 16px 0', background: highContrast ? '#ffffff' : C.surface, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.accent}`, padding: '18px 16px' }}>
+            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: highContrast ? '#1a1a1a' : C.muted, letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 14, display: 'flex', alignItems: 'center', gap: 8 }}>
               <span style={{ color: C.accent, fontSize: 11 }}>✕</span>ТИПИЧНЫЕ ОШИБКИ
             </div>
             {content.mistakes.map((m, i) => (
               <div key={i} style={{ marginBottom: 12 }}>
-                <div style={{ fontSize: 18, fontWeight: 600, color: C.accent, marginBottom: 3 }}>{m.title}</div>
-                <div style={{ fontSize: 18, color: C.muted, lineHeight: 1.65 }}>{m.description || m.desc}</div>
+                <div style={{ fontSize: Math.round(18 * fontScale), fontWeight: 600, color: C.accent, marginBottom: 3 }}>{m.title}</div>
+                <div style={{ fontSize: Math.round(18 * fontScale), color: highContrast ? '#1a1a1a' : C.muted, lineHeight: 1.65 }}>{m.description || m.desc}</div>
               </div>
             ))}
           </div>
@@ -437,15 +439,15 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
 
         {/* Sensei quote */}
         {content.senseiQuote && (
-          <div style={{ margin: '12px 16px 0', background: C.surface, border: `1px solid ${C.border}`, padding: '18px 16px' }}>
+          <div style={{ margin: '12px 16px 0', background: highContrast ? '#ffffff' : C.surface, border: `1px solid ${C.border}`, padding: '18px 16px' }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 12 }}>
               <div style={{ width: 32, height: 32, borderRadius: '50%', background: C.light, border: `1px solid ${C.goldBorder}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontFamily: "'Cormorant Garamond', serif", fontSize: 15, color: C.gold, flexShrink: 0 }}>К</div>
               <div>
                 <div style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>Сэнсэй Копин</div>
-                <div style={{ fontSize: 15, color: C.muted }}>Комментарий к технике</div>
+                <div style={{ fontSize: 15, color: highContrast ? '#1a1a1a' : C.muted }}>Комментарий к технике</div>
               </div>
             </div>
-            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: C.ink2, lineHeight: 1.85, borderLeft: `2px solid ${C.goldBorder}`, paddingLeft: 14 }}>
+            <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: Math.round(18 * fontScale), color: highContrast ? '#000000' : C.ink2, lineHeight: 1.85, borderLeft: `2px solid ${C.goldBorder}`, paddingLeft: 14 }}>
               «{content.senseiQuote}»
             </div>
           </div>
@@ -534,7 +536,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
 
             {/* Description */}
             {content.description && (
-              <p style={{ fontSize: 18, color: C.ink2, lineHeight: 1.75, maxWidth: 640, marginBottom: 20 }}>{content.description}</p>
+              <p style={{ fontSize: Math.round(18 * fontScale), color: highContrast ? '#000000' : C.ink2, lineHeight: 1.75, maxWidth: 640, marginBottom: 20 }}>{content.description}</p>
             )}
 
           </div>
@@ -656,9 +658,9 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
 
           {/* Principles */}
           {content.principles?.length > 0 && (
-            <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: '22px 24px', marginTop: 20, marginBottom: 12 }}>
+            <div style={{ background: highContrast ? '#ffffff' : C.surface, border: `1px solid ${C.border}`, padding: '22px 24px', marginTop: 20, marginBottom: 12 }}>
               <div style={{
-                fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted,
+                fontFamily: "var(--font-mono), monospace", fontSize: 11, color: highContrast ? '#1a1a1a' : C.muted,
                 letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 18,
                 display: 'flex', alignItems: 'center', gap: 8,
               }}>
@@ -667,8 +669,8 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
               </div>
               {content.principles.map((p, i) => (
                 <div key={i} style={{ display: 'flex', gap: 14, marginBottom: 12 }}>
-                  <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, minWidth: 22, flexShrink: 0 }}>{String(i + 1).padStart(2, '0')}</div>
-                  <div style={{ fontSize: 18, color: C.ink2, lineHeight: 1.7 }}>{p}</div>
+                  <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: highContrast ? '#1a1a1a' : C.muted, minWidth: 22, flexShrink: 0 }}>{String(i + 1).padStart(2, '0')}</div>
+                  <div style={{ fontSize: Math.round(18 * fontScale), color: highContrast ? '#000000' : C.ink2, lineHeight: 1.7 }}>{p}</div>
                 </div>
               ))}
             </div>
@@ -676,9 +678,9 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
 
           {/* Mistakes */}
           {content.mistakes?.length > 0 && (
-            <div style={{ background: C.surface, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.accent}`, padding: '22px 24px', marginBottom: 12 }}>
+            <div style={{ background: highContrast ? '#ffffff' : C.surface, border: `1px solid ${C.border}`, borderLeft: `3px solid ${C.accent}`, padding: '22px 24px', marginBottom: 12 }}>
               <div style={{
-                fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted,
+                fontFamily: "var(--font-mono), monospace", fontSize: 11, color: highContrast ? '#1a1a1a' : C.muted,
                 letterSpacing: '0.2em', textTransform: 'uppercase', marginBottom: 18,
                 display: 'flex', alignItems: 'center', gap: 8,
               }}>
@@ -686,8 +688,8 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
               </div>
               {content.mistakes.map((m, i) => (
                 <div key={i} style={{ marginBottom: 14 }}>
-                  <div style={{ fontSize: 18, fontWeight: 600, color: C.accent, marginBottom: 4 }}>{m.title}</div>
-                  <div style={{ fontSize: 18, color: C.muted, lineHeight: 1.65 }}>{m.description || m.desc}</div>
+                  <div style={{ fontSize: Math.round(18 * fontScale), fontWeight: 600, color: C.accent, marginBottom: 4 }}>{m.title}</div>
+                  <div style={{ fontSize: Math.round(18 * fontScale), color: highContrast ? '#1a1a1a' : C.muted, lineHeight: 1.65 }}>{m.description || m.desc}</div>
                 </div>
               ))}
             </div>
@@ -695,7 +697,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
 
           {/* Sensei quote */}
           {content.senseiQuote && (
-            <div style={{ background: C.surface, border: `1px solid ${C.border}`, padding: '22px 24px' }}>
+            <div style={{ background: highContrast ? '#ffffff' : C.surface, border: `1px solid ${C.border}`, padding: '22px 24px' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 12, marginBottom: 16 }}>
                 <div style={{
                   width: 36, height: 36, borderRadius: '50%', background: C.light,
@@ -704,10 +706,10 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
                 }}>К</div>
                 <div>
                   <div style={{ fontSize: 15, fontWeight: 600, color: C.ink }}>Сэнсэй Копин</div>
-                  <div style={{ fontSize: 13, color: C.muted }}>Комментарий к технике</div>
+                  <div style={{ fontSize: 13, color: highContrast ? '#1a1a1a' : C.muted }}>Комментарий к технике</div>
                 </div>
               </div>
-              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: 18, color: C.ink2, lineHeight: 1.85, borderLeft: `2px solid ${C.goldBorder}`, paddingLeft: 16 }}>
+              <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: Math.round(18 * fontScale), color: highContrast ? '#000000' : C.ink2, lineHeight: 1.85, borderLeft: `2px solid ${C.goldBorder}`, paddingLeft: 16 }}>
                 «{content.senseiQuote}»
               </div>
             </div>

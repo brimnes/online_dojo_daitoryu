@@ -1,5 +1,6 @@
 import './globals.css';
 import { Cormorant_Garamond, Noto_Serif_JP, JetBrains_Mono } from 'next/font/google';
+import AccessibilityRoot from '@/components/AccessibilityToggle';
 
 const cormorant = Cormorant_Garamond({
   subsets:  ['latin', 'cyrillic'],
@@ -66,7 +67,7 @@ export default function RootLayout({ children }) {
         <link rel="icon" type="image/png" sizes="512x512" href="/icons/icon-512.png" />
       </head>
       <body style={{ background: '#e6e0d2' }}>
-        {children}
+        <AccessibilityRoot>{children}</AccessibilityRoot>
       </body>
     </html>
   );
