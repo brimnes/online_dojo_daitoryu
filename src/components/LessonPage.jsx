@@ -3,6 +3,7 @@
 import { useState, useEffect, useCallback } from 'react';
 import { C } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
+import { useAccessibility } from '@/lib/accessibility';
 import { useMonths, useLessons } from '@/lib/db';
 import KinescopePlayer from '@/components/KinescopePlayer';
 import Sidebar from '@/components/Sidebar';
@@ -16,6 +17,7 @@ export default function LessonPage({
   user = {}, onLogout,
 }) {
   const isMobile = useIsMobile();
+  const { fontScale, highContrast } = useAccessibility();
   const { months } = useMonths();
   const { lessons, reload } = useLessons(monthId);
 
@@ -224,16 +226,20 @@ export default function LessonPage({
 
               {/* Description */}
               {lesson.text && (
-                <div style={{ padding: isMobile ? '20px 18px' : 0, marginBottom: isMobile ? 0 : 32 }}>
+                <div style={{
+                  padding: isMobile ? '20px 18px' : 0, marginBottom: isMobile ? 0 : 32,
+                  background: highContrast ? '#ffffff' : 'transparent',
+                  borderRadius: highContrast ? 8 : 0,
+                }}>
                   <div style={{
                     fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
-                    fontSize: 11, letterSpacing: '0.22em', color: C.muted,
+                    fontSize: Math.round(11 * fontScale), letterSpacing: '0.22em', color: highContrast ? '#1a1a1a' : C.muted,
                     textTransform: 'uppercase', marginBottom: 14,
                   }}>ОПИСАНИЕ</div>
                   <p style={{
                     fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
-                    fontSize: isMobile ? 17 : 19, lineHeight: 1.75,
-                    color: C.ink2, margin: 0,
+                    fontSize: Math.round((isMobile ? 17 : 19) * fontScale), lineHeight: 1.75,
+                    color: highContrast ? '#000000' : C.ink2, margin: 0,
                     borderLeft: `2px solid ${C.accent}`, paddingLeft: 22,
                   }}>{lesson.text}</p>
                 </div>
