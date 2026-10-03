@@ -163,7 +163,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout, initialKyu }) {
                 fontSize: isMobile ? 16 : 20,
                 color: C.muted, marginTop: isMobile ? 8 : 10, maxWidth: 540, lineHeight: 1.55,
               }}>
-                Программа ученических степеней от 6 кю до 1 кю.{!isMobile && ' Семь разделов, сто восемнадцать техник.'}
+                Программа ученических степеней от 6 кю до 1 кю.{!isMobile && ' Четыре раздела, больше тридцати техник.'}
               </div>
             </div>
 
