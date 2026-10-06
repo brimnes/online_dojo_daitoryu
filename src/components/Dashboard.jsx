@@ -74,7 +74,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, onUs
 
       {/* ── Sidebar (desktop only) ── */}
       {!isMobile && (
-        <Sidebar activeTab={tab} onTabClick={changeTab} user={u} onLogout={onLogout} />
+        <Sidebar activeTab={tab} onTabClick={changeTab} onHome={() => changeTab('months')} user={u} onLogout={onLogout} />
       )}
 
       {/* ── Main content ── */}
@@ -87,7 +87,10 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, onUs
             position: 'sticky', top: 0, zIndex: 50,
           }}>
             <div style={{ display: 'flex', alignItems: 'center', padding: `max(12px, env(safe-area-inset-top)) 16px 12px`, gap: 10 }}>
-              <TakedaMon size={26} color={C.accent} />
+              <button type="button" onClick={() => changeTab('months')} aria-label="На главную"
+                style={{ background: 'none', border: 'none', padding: 0, cursor: 'pointer', display: 'flex', alignItems: 'center', flexShrink: 0 }}>
+                <TakedaMon size={26} color={C.accent} />
+              </button>
               <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, letterSpacing: '0.06em', color: C.ink, flex: 1 }}>
                 {TABS.find(t => t.id === tab)?.label}
               </span>

@@ -219,7 +219,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
   if (!accessLoading && !canAccess) {
     return (
       <div style={{ display: 'flex', minHeight: '100vh' }}>
-        {!isMobile && <Sidebar activeTab="database" onTabClick={onBack} user={user} onLogout={onLogout} />}
+        {!isMobile && <Sidebar activeTab="database" onTabClick={onBack} onHome={() => (nav?.dashboard ? nav.dashboard('months') : onBack())} user={user} onLogout={onLogout} />}
         <div style={{ flex: 1, display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 16, padding: '60px 32px', background: C.bg, textAlign: 'center' }}>
           <div style={{ fontSize: 36 }}>🔒</div>
           <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 18, color: C.accent }}>Нет доступа к разделу</div>
@@ -465,7 +465,7 @@ export default function TechniquePage({ kyu, section, tech, onBack, nav, viewerI
   // ── DESKTOP ──────────────────────────────────────────────────────
   return (
     <div className="fade" style={{ display: 'flex', minHeight: '100vh' }}>
-      <Sidebar activeTab="database" onTabClick={onBack} user={user} onLogout={onLogout} />
+      <Sidebar activeTab="database" onTabClick={onBack} onHome={() => (nav?.dashboard ? nav.dashboard('months') : onBack())} user={user} onLogout={onLogout} />
 
       <div style={{ flex: 1, background: C.bg, minHeight: '100vh', overflow: 'auto', paddingLeft: 260 }}>
 
