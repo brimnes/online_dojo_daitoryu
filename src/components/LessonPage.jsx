@@ -4,6 +4,7 @@ import { useState, useEffect, useCallback } from 'react';
 import { C } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
 import { useAccessibility } from '@/lib/accessibility';
+import RichText from '@/components/RichText';
 import { useMonths, useLessons } from '@/lib/db';
 import KinescopePlayer from '@/components/KinescopePlayer';
 import Sidebar from '@/components/Sidebar';
@@ -236,12 +237,14 @@ export default function LessonPage({
                     fontSize: Math.round(11 * fontScale), letterSpacing: '0.22em', color: highContrast ? '#1a1a1a' : C.muted,
                     textTransform: 'uppercase', marginBottom: 14,
                   }}>ОПИСАНИЕ</div>
-                  <p style={{
+                  <div style={{
                     fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
                     fontSize: Math.round((isMobile ? 17 : 19) * fontScale), lineHeight: 1.75,
                     color: highContrast ? '#000000' : C.ink2, margin: 0,
                     borderLeft: `2px solid ${C.accent}`, paddingLeft: 22,
-                  }}>{lesson.text}</p>
+                  }}>
+                    <RichText content={lesson.text} breaks />
+                  </div>
                 </div>
               )}
 
