@@ -39,7 +39,7 @@ export default function KnowledgePage({ nav }) {
       result = result.filter(item =>
         item.title?.toLowerCase().includes(q) ||
         item.subtitle?.toLowerCase().includes(q) ||
-        item.content?.toLowerCase().includes(q)
+        item.content?.replace(/<\/?u>/g, '').toLowerCase().includes(q)
       );
     }
     return result;

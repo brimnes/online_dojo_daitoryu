@@ -13,6 +13,12 @@ import { IKKAJO_SECTION_OPTIONS, IKKAJO_SECTION_LABELS as IKKAJO_LABELS } from '
 import { REVENUE_START } from '@/lib/revenue';
 import { KYU_DATA } from '@/data/techniques';
 import KinescopeUploader from '@/components/KinescopeUploader';
+import dynamic from 'next/dynamic';
+
+const RichTextEditor = dynamic(() => import('@/components/RichTextEditor'), {
+  ssr: false,
+  loading: () => <div style={{minHeight:260,border:'1px solid #bab09a',background:'#fff'}}/>,
+});
 
 // ═══════════════════════════════════════════════════════════════
 // ЦВЕТА
@@ -2096,7 +2102,7 @@ function LessonEditForm({ draft, setDraft, doSave, setEditId, saving, showToast,
         <div><Label>Заголовок</Label><Input value={draft.title||''} onChange={v=>setDraft(d=>({...d,title:v}))} placeholder="Название урока"/></div>
         <div><Label>Подзаголовок</Label><Input value={draft.subtitle||''} onChange={v=>setDraft(d=>({...d,subtitle:v}))} placeholder="Тема урока"/></div>
       </div>
-      <div style={{marginBottom:12}}><Label>Описание</Label><Textarea value={draft.text||''} onChange={v=>setDraft(d=>({...d,text:v}))} rows={10}/></div>
+      <div style={{marginBottom:12}}><Label>Описание</Label><RichTextEditor value={draft.text||''} onChange={v=>setDraft(d=>({...d,text:v}))} minHeight={220} breaks/></div>
       <div style={{marginBottom:14}}>
         <Label>Видео урока (Kinescope)</Label>
         <KinescopeUploader
@@ -3149,7 +3155,7 @@ function SectionKnowledge({showToast,isMobile}){
             <div style={{display:'flex',flexDirection:'column',gap:12,marginBottom:16}}>
               <div><Label>Заголовок</Label><Input value={draft.title||''} onChange={v=>setDraft(d=>({...d,title:v}))} placeholder="Название"/></div>
               <div><Label>Подзаголовок</Label><Input value={draft.subtitle||''} onChange={v=>setDraft(d=>({...d,subtitle:v}))} placeholder="Краткое описание"/></div>
-              <div><Label>Контент (Markdown)</Label><Textarea value={draft.content||''} onChange={v=>setDraft(d=>({...d,content:v}))} rows={6} placeholder="Текст материала…"/></div>
+              <div><Label>Контент</Label><RichTextEditor value={draft.content||''} onChange={v=>setDraft(d=>({...d,content:v}))} minHeight={260}/></div>
               <div style={{display:'grid',gridTemplateColumns:'1fr auto',gap:12,alignItems:'end'}}>
                 <div>
                   <Label>Категория (тег)</Label>

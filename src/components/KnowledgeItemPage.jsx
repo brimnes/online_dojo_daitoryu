@@ -6,7 +6,7 @@ import { useIsMobile } from '@/lib/mobile';
 import { useAccessibility } from '@/lib/accessibility';
 import KinescopePlayer from '@/components/KinescopePlayer';
 import { MobileBottomNav } from '@/components/BottomNav';
-import ReactMarkdown from 'react-markdown';
+import RichText from '@/components/RichText';
 
 export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
   const isMobile = useIsMobile();
@@ -186,38 +186,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
             padding: highContrast ? 20 : 0,
             borderRadius: highContrast ? 8 : 0,
           }}>
-            <ReactMarkdown
-              components={{
-                p:      ({children}) => <p style={{marginBottom:'1em'}}>{children}</p>,
-                h1:     ({children}) => <h1 style={{fontFamily:F.serif,fontSize:Math.round((isMobile?28:36)*fontScale),color:highContrast?'#000000':C.ink,margin:'1.4em 0 0.5em',fontWeight:400}}>{children}</h1>,
-                h2:     ({children}) => <h2 style={{fontFamily:F.serif,fontSize:Math.round((isMobile?22:28)*fontScale),color:highContrast?'#000000':C.ink,margin:'1.2em 0 0.4em',fontWeight:400}}>{children}</h2>,
-                h3:     ({children}) => <h3 style={{fontFamily:F.mono,fontSize:Math.round(13*fontScale),letterSpacing:'0.12em',color:highContrast?'#1a1a1a':C.muted,textTransform:'uppercase',margin:'1em 0 0.3em'}}>{children}</h3>,
-                strong: ({children}) => <strong style={{color:highContrast?'#000000':C.ink,fontWeight:600}}>{children}</strong>,
-                em:     ({children}) => <em style={{fontStyle:'italic'}}>{children}</em>,
-                ul:     ({children}) => <ul style={{paddingLeft:24,marginBottom:'1em'}}>{children}</ul>,
-                ol:     ({children}) => <ol style={{paddingLeft:24,marginBottom:'1em'}}>{children}</ol>,
-                li:     ({children}) => <li style={{marginBottom:'0.3em'}}>{children}</li>,
-                blockquote: ({children}) => (
-                  <blockquote style={{borderLeft:`3px solid ${C.accent}`,paddingLeft:16,margin:'1em 0',color:highContrast?'#1a1a1a':C.muted,fontStyle:'italic'}}>
-                    {children}
-                  </blockquote>
-                ),
-                img: ({src, alt}) => (
-                  <span style={{display:'block',margin:'1.5em 0'}}>
-                    <img src={src} alt={alt||''} style={{maxWidth:'100%',height:'auto',display:'block'}}/>
-                    {alt && <span style={{display:'block',marginTop:6,fontFamily:F.mono,fontSize:Math.round(11*fontScale),color:highContrast?'#1a1a1a':C.muted,letterSpacing:'0.08em'}}>{alt}</span>}
-                  </span>
-                ),
-                a: ({href, children}) => (
-                  <a href={href} target="_blank" rel="noopener noreferrer" style={{color:C.accent,textDecoration:'underline'}}>
-                    {children}
-                  </a>
-                ),
-                hr: () => <hr style={{border:'none',borderTop:`1px solid ${C.border}`,margin:'2em 0'}}/>,
-              }}
-            >
-              {item.content}
-            </ReactMarkdown>
+            <RichText content={item.content} />
           </div>
         )}
 
