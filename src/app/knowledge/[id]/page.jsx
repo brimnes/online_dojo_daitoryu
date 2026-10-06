@@ -3,6 +3,7 @@
 import { useEffect, useState } from 'react';
 import { useRouter, useParams } from 'next/navigation';
 import { C } from '@/lib/utils';
+import RichText from '@/components/RichText';
 
 const KinescopePlayer = ({ videoId }) => (
   <div style={{ position: 'relative', paddingBottom: '56.25%', background: '#000', marginBottom: 24 }}>
@@ -80,9 +81,9 @@ export default function KnowledgeItemPage() {
           <div style={{
             fontSize: 14, lineHeight: 1.8, color: '#333',
             background: '#fff', border: '1px solid #e8e0d0',
-            padding: '24px', whiteSpace: 'pre-wrap',
+            padding: '24px',
           }}>
-            {item.content}
+            <RichText content={item.content} />
           </div>
         )}
       </div>
