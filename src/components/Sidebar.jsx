@@ -30,8 +30,9 @@ const LEVEL_SHORT = {
  *   onTabClick — (tabId) => void  — called when a nav item is clicked
  *   user       — { name, email, level, role }
  *   onLogout   — () => void
+ *   onHome     — () => void  — logo / brand click, returns to the start page
  */
-export default function Sidebar({ activeTab, onTabClick, user = {}, onLogout }) {
+export default function Sidebar({ activeTab, onTabClick, user = {}, onLogout, onHome }) {
   const curLv   = LEVELS.find(l => l.id === user.level);
   const isAdmin = user.role === 'admin';
 
@@ -62,7 +63,16 @@ export default function Sidebar({ activeTab, onTabClick, user = {}, onLogout }) 
       }} />
 
       {/* Brand */}
-      <div style={{ padding: '32px 28px 24px', display: 'flex', alignItems: 'center', gap: 12, position: 'relative', flexShrink: 0 }}>
+      <button
+        type="button"
+        onClick={onHome}
+        aria-label="На главную"
+        style={{
+          padding: '32px 28px 24px', display: 'flex', alignItems: 'center', gap: 12, position: 'relative', flexShrink: 0,
+          width: '100%', background: 'none', border: 'none', textAlign: 'left',
+          cursor: onHome ? 'pointer' : 'default',
+        }}
+      >
         <TakedaMon size={28} color='#b8923a' />
         <div>
           <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.22em', color: '#ede5d3', fontWeight: 600 }}>
@@ -72,7 +82,7 @@ export default function Sidebar({ activeTab, onTabClick, user = {}, onLogout }) 
             合気柔術
           </div>
         </div>
-      </div>
+      </button>
 
       <div style={{ height: 1, background: '#1f1a16', position: 'relative', flexShrink: 0 }} />
 
