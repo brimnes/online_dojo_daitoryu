@@ -2230,6 +2230,7 @@ function SectionMonths({showToast,isMobile}){
   const [editId, setEditId] = useState(null);
   const [draft,  setDraft]  = useState({});
   const [checkingStatuses, setCheckingStatuses] = useState(false);
+  const [updatingPosters, setUpdatingPosters] = useState(false);
 
   // ── Month description edit ──────────────────────────────
   const [editingMonth, setEditingMonth] = useState(false);
@@ -2305,6 +2306,27 @@ function SectionMonths({showToast,isMobile}){
     if (!silent) showToast(becameReady > 0 ? `Обновлено: ${becameReady} из ${pending.length}` : 'Ещё обрабатываются в Kinescope');
   };
 
+  // Создаёт обложки из кадра видео (начало ролика) для всех готовых уроков месяца.
+  // По одному запросу на урок — так же, как checkPendingStatuses, чтобы не упереться в таймаут.
+  const updatePosters = async () => {
+    const ready = lessons.filter(l => l.video_id && l.video_status === 'ready');
+    if (ready.length === 0) { showToast('Нет готовых видео'); return; }
+    setUpdatingPosters(true);
+    let done = 0;
+    for (const l of ready) {
+      try {
+        const res = await fetch('/api/kinescope/generate-poster', {
+          method: 'POST', headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ lessonId: l.id }),
+        });
+        if (res.ok) done++;
+      } catch {}
+    }
+    await reloadLessons();
+    setUpdatingPosters(false);
+    showToast(`Превью обновлены: ${done} из ${ready.length}`);
+  };
+
   // Вебхук Kinescope не всегда доходит (см. api/kinescope/webhook), а ручная
   // кнопка «Проверить статусы» требует, чтобы админ о ней вспомнил.
   // Поэтому при каждом открытии месяца с зависшими статусами тихо
@@ -2332,7 +2354,9 @@ function SectionMonths({showToast,isMobile}){
     {label:'№',    width:'36px', render:(l)=>(<span style={{fontFamily:F.mono,fontSize:11,color:C.muted,letterSpacing:'0.06em'}}>{String(l.num).padStart(2,'0')}</span>)},
     {label:'',     width:'70px', render:(l)=>(
       <div style={{width:60,height:36,background:'#100c08',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',overflow:'hidden',flexShrink:0}}>
-        <span style={{fontFamily:F.kanji,fontSize:24,color:'rgba(200,160,90,0.2)',lineHeight:1}}>月</span>
+        {l.video_poster_url
+          ? <img src={l.video_poster_url} alt="" loading="lazy" style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}}/>
+          : <span style={{fontFamily:F.kanji,fontSize:24,color:'rgba(200,160,90,0.2)',lineHeight:1}}>月</span>}
         <svg width="8" height="10" viewBox="0 0 8 10" style={{position:'absolute'}}><polygon points="0,0 8,5 0,10" fill="rgba(237,228,207,0.7)"/></svg>
       </div>
     )},
@@ -2376,6 +2400,11 @@ function SectionMonths({showToast,isMobile}){
               {pendingCount > 0 && (
                 <Btn2 kind="quiet" size="sm" onClick={() => checkPendingStatuses()} disabled={checkingStatuses}>
                   {checkingStatuses ? 'Проверка…' : 'Проверить статусы'}
+                </Btn2>
+              )}
+              {totalPub > 0 && (
+                <Btn2 kind="quiet" size="sm" onClick={updatePosters} disabled={updatingPosters}>
+                  {updatingPosters ? 'Обновление…' : 'Обновить превью'}
                 </Btn2>
               )}
               <Btn2 kind="accent" size="sm" onClick={doAdd} disabled={!activeMId || mLoading}>+ Урок</Btn2>

@@ -268,8 +268,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
 function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMobile }) {
   const [hover, setHover] = useState(false);
 
-  // Kanji for video thumbnail: first 2 chars of subtitle before " · "
-  const thumbKanji = (lesson.subtitle || '').split(' · ')[0]?.slice(0, 2) || '';
+  const poster = lesson.video_poster_url || '';
 
   // ── Mobile: horizontal row layout ────────────────────────────────
   if (isMobile) {
@@ -295,16 +294,13 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           position: 'relative', overflow: 'hidden',
         }}>
-          {thumbKanji && (
-            <span style={{
-              position: 'absolute', inset: 0, display: 'flex', alignItems: 'center', justifyContent: 'center',
-              fontFamily: "'Noto Serif JP', var(--font-noto), serif",
-              fontSize: 36, color: C.accent, opacity: 0.2, userSelect: 'none',
-            }}>{thumbKanji}</span>
+          {poster && (
+            <img src={poster} alt="" loading="lazy" draggable={false}
+              style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
           )}
           <div style={{
             width: 36, height: 36, borderRadius: '50%',
-            background: 'rgba(255,255,255,0.1)', border: '1.5px solid rgba(255,255,255,0.25)',
+            background: poster ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.1)', border: '1.5px solid rgba(255,255,255,0.35)',
             display: 'flex', alignItems: 'center', justifyContent: 'center', position: 'relative', zIndex: 1,
           }}>
             <span style={{ color: '#fff', fontSize: 11, marginLeft: 1 }}>▶</span>
@@ -383,21 +379,15 @@ function LessonCard({ lesson, watched, isCurrent, onOpen, onToggleWatched, isMob
         marginBottom: 14, display: 'flex', alignItems: 'center', justifyContent: 'center',
         position: 'relative', overflow: 'hidden', transition: 'background 0.15s',
       }}>
-        {/* Kanji watermark */}
-        {thumbKanji && (
-          <span style={{
-            position: 'absolute', inset: 0,
-            display: 'flex', alignItems: 'center', justifyContent: 'center',
-            fontFamily: "'Noto Serif JP', var(--font-noto), serif",
-            fontSize: 80, color: C.accent, opacity: 0.18,
-            userSelect: 'none', pointerEvents: 'none',
-          }}>{thumbKanji}</span>
+        {poster && (
+          <img src={poster} alt="" loading="lazy" draggable={false}
+            style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover' }} />
         )}
         {/* Play button */}
         <div style={{
           width: 36, height: 36, borderRadius: '50%',
-          background: 'rgba(255,255,255,0.1)',
-          border: '1.5px solid rgba(255,255,255,0.25)',
+          background: poster ? 'rgba(0,0,0,0.45)' : 'rgba(255,255,255,0.1)',
+          border: '1.5px solid rgba(255,255,255,0.35)',
           display: 'flex', alignItems: 'center', justifyContent: 'center',
           transform: hover ? 'scale(1.1)' : 'scale(1)', transition: 'transform 0.15s',
           position: 'relative', zIndex: 1,

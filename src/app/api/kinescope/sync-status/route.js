@@ -10,6 +10,7 @@
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma.js';
+import { generatePosterInBackground } from '@/lib/kinescopePoster.js';
 import { requireAdmin } from '@/lib/auth-server.js';
 
 const API_SECRET = process.env.KINESCOPE_API_SECRET;
@@ -54,10 +55,6 @@ export async function POST(request) {
   const data   = json.data ?? json;
   const status = mapStatus(data.status);
   const durationSec = data.duration;
-  // poster_url приходит от Kinescope как объект { original, md, sm, xs, ... },
-  // а не строка — берём готовую ссылку, иначе Prisma падает на записи объекта в String-поле.
-  const posterObj   = data.poster_url ?? data.poster ?? undefined;
-  const poster       = typeof posterObj === 'string' ? posterObj : (posterObj?.original ?? posterObj?.md ?? undefined);
 
   if (!status) {
     return NextResponse.json({ error: 'Cannot determine status from Kinescope response', raw: json }, { status: 502 });
@@ -83,7 +80,6 @@ export async function POST(request) {
   if (status === 'ready') {
     if (durationSec) lessonData.videoDuration = String(durationSec);
     if (durationFmt) { lessonData.duration = durationFmt; techData.duration = durationFmt; }
-    if (poster)      lessonData.videoPosterUrl = poster;
   }
 
   const [lessonRes, techRes, knowledgeRes] = await Promise.allSettled([
@@ -95,6 +91,8 @@ export async function POST(request) {
   const lessonCount    = lessonRes.status    === 'fulfilled' ? lessonRes.value.count    : 0;
   const techCount      = techRes.status      === 'fulfilled' ? techRes.value.count      : 0;
   const knowledgeCount = knowledgeRes.status === 'fulfilled' ? knowledgeRes.value.count : 0;
+
+  if (status === 'ready' && lessonCount > 0) generatePosterInBackground(videoId, durationSec);
 
   console.log(`[sync-status] videoId=${videoId} status=${status} lessons=${lessonCount} techs=${techCount} knowledge=${knowledgeCount}`);
 

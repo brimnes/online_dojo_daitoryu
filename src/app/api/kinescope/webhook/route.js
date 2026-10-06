@@ -9,6 +9,7 @@
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma.js';
+import { generatePosterInBackground } from '@/lib/kinescopePoster.js';
 // import { validateWebhookSignature } from '@/lib/kinescope'; // disabled
 
 export async function POST(request) {
@@ -31,9 +32,6 @@ export async function POST(request) {
 
     const videoId  = data?.id;
     const duration = data?.duration;  // секунды (число) от Kinescope
-    // poster_url приходит от Kinescope как объект { original, md, sm, xs, ... }, а не строка.
-    const posterObj = data?.poster_url;
-    const poster    = typeof posterObj === 'string' ? posterObj : (posterObj?.original ?? posterObj?.md ?? undefined);
 
     // Конвертация секунд → "MM:SS" или "H:MM:SS"
     function fmtDuration(secs) {
@@ -66,7 +64,6 @@ export async function POST(request) {
     if (videoStatus === 'ready') {
       if (duration)    lessonData.videoDuration  = String(duration);
       if (durationFmt) lessonData.duration       = durationFmt;  // автозаполняем поле длительности
-      if (poster)      lessonData.videoPosterUrl = poster;
     }
 
     // technique_videos: поле duration
@@ -84,6 +81,10 @@ export async function POST(request) {
       prisma.techniqueVideo.updateMany({ where: { videoId }, data: techData }),
       prisma.knowledgeItem.updateMany({ where: { videoId }, data: knowledgeData }),
     ]);
+
+    if (videoStatus === 'ready' && lessonResult.status === 'fulfilled' && lessonResult.value.count > 0) {
+      generatePosterInBackground(videoId, duration);
+    }
 
     console.log('[kinescope-webhook] lessons:',
       lessonResult.status === 'fulfilled' ? lessonResult.value.count : lessonResult.reason
