@@ -6,6 +6,7 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma.js';
 import { requireAuth, requireAdmin } from '@/lib/auth-server.js';
 import { hasMonthAccess } from '@/lib/access.js';
+import { ensurePostersInBackground } from '@/lib/kinescopePoster.js';
 
 function toSnake(l) {
   return {
@@ -42,6 +43,7 @@ export async function GET(request) {
     where: { monthId },
     orderBy: { num: 'asc' },
   });
+  ensurePostersInBackground(lessons);
   return NextResponse.json(lessons.map(toSnake));
 }
 

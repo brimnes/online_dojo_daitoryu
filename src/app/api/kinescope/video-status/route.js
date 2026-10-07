@@ -10,6 +10,7 @@
 
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma.js';
+import { generatePosterInBackground } from '@/lib/kinescopePoster.js';
 import { requireAuth } from '@/lib/auth-server.js';
 
 const API_SECRET = process.env.KINESCOPE_API_SECRET;
@@ -44,16 +45,13 @@ async function syncFromKinescope(videoId) {
     const knowledgeData = { videoStatus: status };
     if (status === 'ready') {
       if (data.duration) { lessonData.videoDuration = String(data.duration); techData.duration = String(data.duration); }
-      // poster_url приходит от Kinescope как объект { original, md, sm, xs, ... }, а не строка.
-      const posterObj = data.poster_url;
-      const poster = typeof posterObj === 'string' ? posterObj : (posterObj?.original ?? posterObj?.md ?? undefined);
-      if (poster) { lessonData.videoPosterUrl = poster; }
     }
     await Promise.allSettled([
       prisma.lesson.updateMany({ where: { videoId }, data: lessonData }),
       prisma.techniqueVideo.updateMany({ where: { videoId }, data: techData }),
       prisma.knowledgeItem.updateMany({ where: { videoId }, data: knowledgeData }),
     ]);
+    if (status === 'ready') generatePosterInBackground(videoId, data.duration);
     return status;
   } catch {
     return null;

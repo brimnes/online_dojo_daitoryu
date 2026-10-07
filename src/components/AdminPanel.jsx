@@ -2332,7 +2332,9 @@ function SectionMonths({showToast,isMobile}){
     {label:'№',    width:'36px', render:(l)=>(<span style={{fontFamily:F.mono,fontSize:11,color:C.muted,letterSpacing:'0.06em'}}>{String(l.num).padStart(2,'0')}</span>)},
     {label:'',     width:'70px', render:(l)=>(
       <div style={{width:60,height:36,background:'#100c08',display:'flex',alignItems:'center',justifyContent:'center',position:'relative',overflow:'hidden',flexShrink:0}}>
-        <span style={{fontFamily:F.kanji,fontSize:24,color:'rgba(200,160,90,0.2)',lineHeight:1}}>月</span>
+        {l.video_poster_url
+          ? <img src={l.video_poster_url} alt="" loading="lazy" style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}}/>
+          : <span style={{fontFamily:F.kanji,fontSize:24,color:'rgba(200,160,90,0.2)',lineHeight:1}}>月</span>}
         <svg width="8" height="10" viewBox="0 0 8 10" style={{position:'absolute'}}><polygon points="0,0 8,5 0,10" fill="rgba(237,228,207,0.7)"/></svg>
       </div>
     )},
