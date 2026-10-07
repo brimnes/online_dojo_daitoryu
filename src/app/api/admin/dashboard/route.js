@@ -92,7 +92,13 @@ export async function GET(request) {
     // Платежи до запуска платформы (REVENUE_START) — тестовые, не считаем
     const realPayments = allPayments.filter(p => new Date(p.paidAt || p.createdAt) >= REVENUE_START);
     const succeeded = realPayments.filter(p => p.status === 'succeeded');
-    const totalRevenue = succeeded.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0);
+    // Доступы, выданные вручную за наличные/карту/крипту, — тоже оплаты (как на вкладке «Платежи»)
+    const manualPaid = allAccess.filter(a =>
+      ['cash', 'card', 'crypto'].includes(a.source) && a.paidAt && new Date(a.paidAt) >= REVENUE_START
+    );
+    const totalRevenue =
+      succeeded.reduce((sum, p) => sum + (parseFloat(p.amount) || 0), 0) +
+      manualPaid.reduce((sum, a) => sum + (a.amount || 0), 0);
 
     // Last 6 months keys
     const last6Months = [];
@@ -111,6 +117,11 @@ export async function GET(request) {
       revenueMap[key] = (revenueMap[key] || 0) + (parseFloat(p.amount) || 0);
     }
 
+    for (const a of manualPaid) {
+      const key = monthKey(a.paidAt);
+      revenueMap[key] = (revenueMap[key] || 0) + (a.amount || 0);
+    }
+
     const revenueByMonth = last6Months.map(key => ({
       month: key,
       label: monthLabel(key),
@@ -119,7 +130,8 @@ export async function GET(request) {
 
     const payments = {
       totalRevenue,
-      countSucceeded: succeeded.length,
+      countSucceeded: succeeded.length + manualPaid.length,
+      countManual:    manualPaid.length,
       countPending:   realPayments.filter(p => p.status === 'pending').length,
       countCancelled: realPayments.filter(p => p.status === 'cancelled').length,
       revenueByMonth,

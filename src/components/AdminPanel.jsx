@@ -727,7 +727,7 @@ function SectionDashboard({showToast, isMobile, onNavigate}) {
     {
       label: 'Оплат', kanji: '決',
       value: String(data.payments.countSucceeded),
-      sub: '· succeeded',
+      sub: data.payments.countManual > 0 ? `· в т.ч. ${data.payments.countManual} вручную` : '· онлайн',
       nav: 'payments',
     },
     {
@@ -1872,6 +1872,8 @@ function SectionPayments({isMobile}){
   const paidOps  = succeeded.length + external.length;
   const avgCheck = paidOps ? Math.round(income/paidOps) : 0;
 
+  const MONTH_RU = {jan:'Январь',feb:'Февраль',mar:'Март',apr:'Апрель',may:'Май',jun:'Июнь',jul:'Июль',aug:'Август',sep:'Сентябрь',oct:'Октябрь',nov:'Ноябрь',dec:'Декабрь'};
+
   // ── по продуктам: сколько купили каждого товара за период ────
   // Учитывает и оплаты через провайдера, и вручную выданные (нал/карта/крипта).
   const productMap = new Map();
@@ -1881,13 +1883,16 @@ function SectionPayments({isMobile}){
     row.sum   += amount || 0;
     productMap.set(key, row);
   };
+  // Один и тот же месяц из онлайн-оплаты и ручной выдачи — одна строка (ключ по type/reference)
   succeeded.forEach(p => {
-    const key = `${p.product_type}/${p.product_reference}`;
-    addSale(key, p.product_title || p.product_reference || '—', p.product_type==='month'?'月':'技', p.amount);
+    const key   = `${p.product_type}/${p.product_reference}`;
+    const label = p.product_type==='month' && MONTH_RU[p.product_reference] ? MONTH_RU[p.product_reference] : (p.product_title || p.product_reference || '—');
+    addSale(key, label, p.product_type==='month'?'月':'技', p.amount);
   });
   external.forEach(a => {
-    const key = `${a.type}/${a.desc}`;
-    addSale(key, a.desc || '—', a.type==='month'?'月':'技', a.amount);
+    const key   = `${a.type}/${a.reference}`;
+    const label = a.type==='month' && MONTH_RU[a.reference] ? MONTH_RU[a.reference] : (a.desc || '—');
+    addSale(key, label, a.type==='month'?'月':'技', a.amount);
   });
   const breakdown = [...productMap.values()]
     .sort((a,b) => b.sum - a.sum)
@@ -1895,7 +1900,9 @@ function SectionPayments({isMobile}){
 
   // ── таблица: платежи периода → display shape ─────────────────
   const fmtPayDate = p => payDate(p).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
-  const mappedPayments = inPeriod.map(p=>({
+  const MANUAL_METHOD = {cash:'Наличные',card:'Перевод на карту',crypto:'Крипта'};
+  const onlineRows = inPeriod.map(p=>({
+    ts:      payDate(p).getTime(),
     id:      String(p.id||'—'),
     date:    fmtPayDate(p),
     letter:  (p.user_name||'?')[0].toUpperCase(),
@@ -1907,6 +1914,21 @@ function SectionPayments({isMobile}){
     amount:  p.amount||0,
     status:  p.status,
   }));
+  // Доступы, выданные вручную (наличные/карта/крипта), — тоже платежи: показываем в таблице
+  const manualRows = external.map(a=>({
+    ts:      new Date(a.dateIso).getTime(),
+    id:      String(a.id||'—'),
+    date:    new Date(a.dateIso).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'}),
+    letter:  (a.userName||'?')[0].toUpperCase(),
+    name:    a.userName||'—',
+    email:   'выдано вручную',
+    item:    a.type==='month' ? (MONTH_RU[a.reference] || a.desc) : a.desc,
+    itemSub: a.type==='month'?'Месячный':'Раздел',
+    method:  MANUAL_METHOD[a.source]||a.source,
+    amount:  a.amount||0,
+    status:  'succeeded',
+  }));
+  const mappedPayments = [...onlineRows, ...manualRows].sort((a,b)=>b.ts-a.ts);
 
   const filtered = mappedPayments.filter(p=>
     filter==='all' ||
@@ -1974,7 +1996,7 @@ function SectionPayments({isMobile}){
           <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:12}}>
             {[
               {label:`Доход · ${periodLabel}`, kanji:'月',value:income>=1000?(income/1000).toFixed(1):String(income),unit:income>=1000?'тыс. ₽':'₽',sub:externalSum>0?'· ЮKassa + вне кассы':'· только успешные'},
-              {label:'Оплат',         kanji:'数',value:String(paidOps),sub:pendingCount>0?`· ${pendingCount} ожид.`:null},
+              {label:'Оплат',         kanji:'数',value:String(paidOps),sub:pendingCount>0?`· ещё ${pendingCount} в ожидании, в сумму не входят`:null},
               {label:'Средний чек',   kanji:'平',value:avgCheck>0?avgCheck.toLocaleString('ru-RU'):'0',unit:'₽'},
               {label:'Отменённых',    kanji:'戻',value:String(cancelledCount),sub:'· не завершили оплату'},
             ].map((m,i)=>(
@@ -2026,8 +2048,8 @@ function SectionPayments({isMobile}){
 
         {/* filter chips */}
         <div style={{display:'flex',flexWrap:'wrap',gap:6,marginBottom:12,alignItems:'center'}}>
-          <FilterChip2 label="Все"      value={String(inPeriod.length)}      active={filter==='all'}       onClick={()=>{setFilter('all');setVisibleCount(12);}}/>
-          <FilterChip2 label="Оплачено" value={String(succeeded.length)}     active={filter==='paid'}      onClick={()=>{setFilter('paid');setVisibleCount(12);}}      dot={C.success}/>
+          <FilterChip2 label="Все"      value={String(mappedPayments.length)} active={filter==='all'}       onClick={()=>{setFilter('all');setVisibleCount(12);}}/>
+          <FilterChip2 label="Оплачено" value={String(paidOps)}                active={filter==='paid'}      onClick={()=>{setFilter('paid');setVisibleCount(12);}}      dot={C.success}/>
           <FilterChip2 label="Ожидают"  value={String(pendingCount)}         active={filter==='pending'}   onClick={()=>{setFilter('pending');setVisibleCount(12);}}   dot={C.goldSoft}/>
           <FilterChip2 label="Отменено" value={String(cancelledCount)}       active={filter==='cancelled'} onClick={()=>{setFilter('cancelled');setVisibleCount(12);}} dot={C.muted}/>
           <div style={{flex:1}}/>
