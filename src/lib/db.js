@@ -134,6 +134,7 @@ export function useAccess() {
     date:     a.paid_at,
     dateIso:  a.paid_at_iso,
     desc:     a.desc,
+    reference: a.reference,
     amount:   a.amount,
     type:     a.type,
     source:   a.source,
