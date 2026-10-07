@@ -93,3 +93,31 @@ export function generatePosterInBackground(videoId, durationSec) {
     .then((url) => savePosterForVideo(videoId, url))
     .catch((err) => console.error('[kinescope-poster] background', videoId, err.message));
 }
+
+// ── Самовосстановление: уроки, загруженные до появления автогенерации ──────
+// Вызывается при отдаче списка уроков. Для каждого готового видео один раз за жизнь
+// процесса (повторно — не чаще раза в 10 минут после неудачи) создаёт обложку из кадра.
+// Шаг идемпотентный (см. generateFramePoster), уроки обрабатываются по очереди.
+const RETRY_MS = 10 * 60 * 1000;
+const posterDone     = new Set();
+const posterAttempts = new Map();
+let posterQueue = Promise.resolve();
+
+export function ensurePostersInBackground(lessons) {
+  if (!process.env.KINESCOPE_API_SECRET) return;
+  const now = Date.now();
+  for (const l of lessons) {
+    const { videoId } = l;
+    if (!videoId || l.videoStatus !== 'ready' || posterDone.has(videoId)) continue;
+    if (now - (posterAttempts.get(videoId) || 0) < RETRY_MS) continue;
+    posterAttempts.set(videoId, now);
+    posterQueue = posterQueue
+      .then(async () => {
+        const url = await generateFramePoster(videoId, l.videoDuration);
+        if (!url) return;
+        if (url !== l.videoPosterUrl) await savePosterForVideo(videoId, url);
+        posterDone.add(videoId);
+      })
+      .catch((err) => console.error('[kinescope-poster] ensure', videoId, err.message));
+  }
+}
