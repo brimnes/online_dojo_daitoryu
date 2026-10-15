@@ -101,7 +101,8 @@ export default function RichTextEditor({ value, onChange, minHeight = 220, break
     setSource((s) => !s);
   };
 
-  const c = editor?.chain().focus();
+  // chain().focus() запрашивает фокус сразу при вызове — создаём цепочку только по клику, не при рендере
+  const chain = () => editor.chain().focus();
   const is = (name, attrs) => !!editor?.isActive(name, attrs);
 
   return (
@@ -110,24 +111,24 @@ export default function RichTextEditor({ value, onChange, minHeight = 220, break
       <div style={{ display: 'flex', flexWrap: 'wrap', alignItems: 'center', gap: 2, padding: '6px 8px', borderBottom: `1px solid ${C.border}`, background: C.surface }}>
         {!source && editor && (
           <>
-            <ToolBtn title="Жирный" active={is('bold')} onClick={() => c.toggleBold().run()} style={{ fontWeight: 700 }}>B</ToolBtn>
-            <ToolBtn title="Курсив" active={is('italic')} onClick={() => c.toggleItalic().run()} style={{ fontStyle: 'italic', fontFamily: F.serif }}>I</ToolBtn>
-            <ToolBtn title="Подчёркнутый" active={is('underline')} onClick={() => c.toggleUnderline().run()} style={{ textDecoration: 'underline' }}>U</ToolBtn>
-            <ToolBtn title="Зачёркнутый" active={is('strike')} onClick={() => c.toggleStrike().run()} style={{ textDecoration: 'line-through' }}>S</ToolBtn>
+            <ToolBtn title="Жирный" active={is('bold')} onClick={() => chain().toggleBold().run()} style={{ fontWeight: 700 }}>B</ToolBtn>
+            <ToolBtn title="Курсив" active={is('italic')} onClick={() => chain().toggleItalic().run()} style={{ fontStyle: 'italic', fontFamily: F.serif }}>I</ToolBtn>
+            <ToolBtn title="Подчёркнутый" active={is('underline')} onClick={() => chain().toggleUnderline().run()} style={{ textDecoration: 'underline' }}>U</ToolBtn>
+            <ToolBtn title="Зачёркнутый" active={is('strike')} onClick={() => chain().toggleStrike().run()} style={{ textDecoration: 'line-through' }}>S</ToolBtn>
             <Sep />
-            <ToolBtn title="Заголовок" active={is('heading', { level: 2 })} onClick={() => c.toggleHeading({ level: 2 }).run()}>Заголовок</ToolBtn>
-            <ToolBtn title="Подзаголовок" active={is('heading', { level: 3 })} onClick={() => c.toggleHeading({ level: 3 }).run()}>Подзаголовок</ToolBtn>
-            <ToolBtn title="Обычный текст" active={is('paragraph')} onClick={() => c.setParagraph().run()}>Текст</ToolBtn>
+            <ToolBtn title="Заголовок" active={is('heading', { level: 2 })} onClick={() => chain().toggleHeading({ level: 2 }).run()}>Заголовок</ToolBtn>
+            <ToolBtn title="Подзаголовок" active={is('heading', { level: 3 })} onClick={() => chain().toggleHeading({ level: 3 }).run()}>Подзаголовок</ToolBtn>
+            <ToolBtn title="Обычный текст" active={is('paragraph')} onClick={() => chain().setParagraph().run()}>Текст</ToolBtn>
             <Sep />
-            <ToolBtn title="Маркированный список" active={is('bulletList')} onClick={() => c.toggleBulletList().run()}>• Список</ToolBtn>
-            <ToolBtn title="Нумерованный список" active={is('orderedList')} onClick={() => c.toggleOrderedList().run()}>1. Список</ToolBtn>
-            <ToolBtn title="Цитата" active={is('blockquote')} onClick={() => c.toggleBlockquote().run()}>“ Цитата</ToolBtn>
+            <ToolBtn title="Маркированный список" active={is('bulletList')} onClick={() => chain().toggleBulletList().run()}>• Список</ToolBtn>
+            <ToolBtn title="Нумерованный список" active={is('orderedList')} onClick={() => chain().toggleOrderedList().run()}>1. Список</ToolBtn>
+            <ToolBtn title="Цитата" active={is('blockquote')} onClick={() => chain().toggleBlockquote().run()}>“ Цитата</ToolBtn>
             <Sep />
             <ToolBtn title="Ссылка" active={is('link')} onClick={setLink}>Ссылка</ToolBtn>
-            <ToolBtn title="Разделитель" onClick={() => c.setHorizontalRule().run()}>—</ToolBtn>
+            <ToolBtn title="Разделитель" onClick={() => chain().setHorizontalRule().run()}>—</ToolBtn>
             <Sep />
-            <ToolBtn title="Отменить" disabled={!editor.can().undo()} onClick={() => c.undo().run()}>↶</ToolBtn>
-            <ToolBtn title="Повторить" disabled={!editor.can().redo()} onClick={() => c.redo().run()}>↷</ToolBtn>
+            <ToolBtn title="Отменить" disabled={!editor.can().undo()} onClick={() => chain().undo().run()}>↶</ToolBtn>
+            <ToolBtn title="Повторить" disabled={!editor.can().redo()} onClick={() => chain().redo().run()}>↷</ToolBtn>
           </>
         )}
         <ToolBtn
