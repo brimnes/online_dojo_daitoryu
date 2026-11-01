@@ -10,6 +10,7 @@ import LessonPage from './LessonPage';
 import KnowledgePage from './KnowledgePage';
 import KnowledgeItemPage from './KnowledgeItemPage';
 import CoursePage from './CoursePage';
+import CourseSectionPage from './CourseSectionPage';
 import { INITIAL_COMMENTS } from '@/data/months';
 import { USER } from '@/data/users';
 import { registerServiceWorker } from '@/lib/mobile';
@@ -177,6 +178,9 @@ export default function App({ initialUser = null }) {
     knowledge:     ()                   => navigate({ page: 'knowledge' }),
     knowledgeItem: (itemId)             => navigate({ page: 'knowledge_item', itemId }),
     course:        (courseId)           => navigate({ page: 'course', courseId }),
+    courseSection: (courseId, sectionId) => navigate({ page: 'course_section', courseId, sectionId }),
+    // Переход между разделами внутри страницы раздела — без записи в историю
+    setCourseSection: (sectionId)       => setRoute(r => ({ ...r, sectionId })),
     // Назад: поп из стека (или dashboard если стек пуст)
     back:          ()                   => goBack(),
   };
@@ -289,6 +293,9 @@ export default function App({ initialUser = null }) {
       )}
       {route.page === 'course' && (
         <CoursePage nav={nav} courseId={route.courseId} user={user} onLogout={handleLogout} />
+      )}
+      {route.page === 'course_section' && (
+        <CourseSectionPage nav={nav} courseId={route.courseId} sectionId={route.sectionId} user={user} onLogout={handleLogout} />
       )}
     </>
   );

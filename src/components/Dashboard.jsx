@@ -13,6 +13,7 @@ import { MobileBottomNav } from '@/components/BottomNav';
 import { hasIkkajoFullAccess, hasIkkajoSectionAccess, IKKAJO_SECTIONS, IKKAJO_SECTION_LABELS, getAccessibleIkkajoSections } from '@/lib/access';
 import { IKKAJO_SECTION_KEYS } from '@/lib/ikkajoSections';
 import { useProducts } from '@/lib/useProducts';
+import { pluralSections } from '@/components/CoursePage';
 
 // Срок программы пока не хранится в БД — единственный явный источник здесь.
 // TODO: перенести в Product.durationMonths + админку, когда появится экран управления Product.
@@ -1416,7 +1417,7 @@ function ThematicCourseCard({ course, isMobile, onOpen }) {
       </div>
       <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: isMobile ? '12px 14px' : '14px 20px', marginTop: 'auto' }}>
         <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: muted, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
-          {course.video_count} {pluralVideo(course.video_count)}
+          {course.video_count} {pluralSections(course.video_count)}
         </span>
         <span style={{ marginLeft: 'auto', fontFamily: open ? "var(--font-mono), monospace" : "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: open ? 11 : 20, letterSpacing: open ? '0.18em' : 0, textTransform: open ? 'uppercase' : 'none', color: open ? C.goldLight : ink, fontWeight: open ? 600 : 500 }}>
           {open ? 'Открыт' : (price != null ? `${price.toLocaleString('ru-RU')} ₽` : '')}
@@ -1427,12 +1428,6 @@ function ThematicCourseCard({ course, isMobile, onOpen }) {
   );
 }
 
-function pluralVideo(n) {
-  const m10 = n % 10, m100 = n % 100;
-  if (m10 === 1 && m100 !== 11) return 'фильм';
-  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return 'фильма';
-  return 'фильмов';
-}
 
 // ── Модалка выбора покупки Иккаджо (отдельный раздел / весь сразу) ──
 function IkkajoChoiceModal({ products, onClose, isMobile }) {

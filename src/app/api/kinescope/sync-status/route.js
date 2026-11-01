@@ -87,6 +87,7 @@ export async function POST(request) {
     prisma.techniqueVideo.updateMany({ where: { videoId }, data: techData }),
     prisma.knowledgeItem.updateMany({ where: { videoId }, data: knowledgeData }),
     prisma.courseVideo.updateMany({ where: { videoId }, data: techData }),
+    prisma.course.updateMany({ where: { videoId }, data: { videoStatus: status } }),
   ]);
 
   const lessonCount    = lessonRes.status    === 'fulfilled' ? lessonRes.value.count    : 0;

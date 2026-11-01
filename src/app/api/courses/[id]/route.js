@@ -45,6 +45,9 @@ export async function PUT(request, { params }) {
     if (body.kanji        !== undefined) data.kanji       = body.kanji;
     if (body.sort_order   !== undefined) data.sortOrder   = Number(body.sort_order) || 0;
     if (body.is_published !== undefined) data.isPublished = !!body.is_published;
+    if (body.video_provider !== undefined) data.videoProvider = body.video_provider;
+    if (body.video_id       !== undefined) data.videoId       = body.video_id || null;
+    if (body.video_status   !== undefined) data.videoStatus   = body.video_status;
 
     const course = await prisma.course.update({
       where: { id: params.id }, data,

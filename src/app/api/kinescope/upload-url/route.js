@@ -6,6 +6,7 @@
  *   techniqueVideoId  — string
  *   knowledgeItemId   — string
  *   courseVideoId     — string
+ *   courseId          — string (фильм курса целиком)
  *   title             — string  (русский — ok, конвертируем в ASCII для Kinescope)
  *   filename          — string  (оригинальное имя файла)
  *   filesize          — number  (bytes)
@@ -44,9 +45,9 @@ export async function POST(request) {
 
     // 2. Parse body
     const body = await request.json();
-    const { lessonId, techniqueVideoId, knowledgeItemId, courseVideoId, title, filename, filesize, parentId } = body;
+    const { lessonId, techniqueVideoId, knowledgeItemId, courseVideoId, courseId, title, filename, filesize, parentId } = body;
 
-    console.log('[upload-url] payload:', { lessonId, techniqueVideoId, knowledgeItemId, courseVideoId, filename, filesize });
+    console.log('[upload-url] payload:', { lessonId, techniqueVideoId, knowledgeItemId, courseVideoId, courseId, filename, filesize });
 
     if (!filename || !filesize) {
       return NextResponse.json(
@@ -54,9 +55,9 @@ export async function POST(request) {
         { status: 400 }
       );
     }
-    if (!lessonId && !techniqueVideoId && !knowledgeItemId && !courseVideoId) {
+    if (!lessonId && !techniqueVideoId && !knowledgeItemId && !courseVideoId && !courseId) {
       return NextResponse.json(
-        { error: 'lessonId, techniqueVideoId, knowledgeItemId, or courseVideoId is required' },
+        { error: 'lessonId, techniqueVideoId, knowledgeItemId, courseVideoId, or courseId is required' },
         { status: 400 }
       );
     }
@@ -116,6 +117,16 @@ export async function POST(request) {
       if (result.count === 0) {
         console.error('[upload-url] courseVideo not found:', courseVideoId);
         return NextResponse.json({ error: `CourseVideo ${courseVideoId} not found` }, { status: 404 });
+      }
+    }
+    if (courseId) {
+      const result = await prisma.course.updateMany({
+        where: { id: courseId },
+        data:  videoUpdate,
+      });
+      if (result.count === 0) {
+        console.error('[upload-url] course not found:', courseId);
+        return NextResponse.json({ error: `Course ${courseId} not found` }, { status: 404 });
       }
     }
 

@@ -12,6 +12,7 @@ import { useState, useEffect } from 'react';
  *   posterUrl   — thumbnail URL (optional, из Kinescope webhook)
  *   title       — for placeholder display
  *   duration    — for placeholder display
+ *   startTime   — секунда, с которой начать (разделы фильма по таймкодам)
  *
  * UX:
  *   - Если есть posterUrl: показываем постер + кнопка play → клик → iframe с autoplay.
@@ -19,7 +20,7 @@ import { useState, useEffect } from 'react';
  *   - Если posterUrl нет: рендерим iframe сразу + скрываем через overlay пока он грузится,
  *     убираем overlay по событию onLoad.
  */
-export default function KinescopePlayer({ videoId, videoStatus, viewerId, posterUrl, title, duration }) {
+export default function KinescopePlayer({ videoId, videoStatus, viewerId, posterUrl, title, duration, startTime }) {
   const [liveStatus, setLiveStatus] = useState(videoStatus);
   const [activated,  setActivated]  = useState(false);  // пользователь нажал play
   const [iframeReady, setIframeReady] = useState(false); // iframe сообщил onLoad
@@ -66,6 +67,7 @@ export default function KinescopePlayer({ videoId, videoStatus, viewerId, poster
   const params = new URLSearchParams();
   if (viewerId) params.set('viewer_id', viewerId);
   params.set('playsinline', '1');
+  if (startTime > 0) params.set('t', String(Math.round(startTime)));
   if (activated) params.set('autoplay', '1');
 
   const embedSrc = `https://kinescope.io/embed/${videoId}?${params.toString()}`;

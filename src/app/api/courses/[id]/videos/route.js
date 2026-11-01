@@ -16,7 +16,8 @@ export async function POST(request, { params }) {
     const video = await prisma.courseVideo.create({
       data: {
         courseId:    params.id,
-        title:       body.title       || 'Новый урок',
+        title:       body.title       || 'Новый раздел',
+        subtitle:    body.subtitle    || '',
         description: body.description || '',
         sortOrder:   body.sort_order  ?? ((last?.sortOrder ?? 0) + 1),
       },

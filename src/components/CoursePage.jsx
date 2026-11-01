@@ -1,46 +1,24 @@
 'use client';
 
-import { useState, useEffect, useCallback } from 'react';
+import { useState } from 'react';
 import { C } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
+import { useCourse, formatTimecode } from '@/lib/db';
 import Sidebar from '@/components/Sidebar';
 import { MobileBottomNav } from '@/components/BottomNav';
-import KinescopePlayer from '@/components/KinescopePlayer';
 import RichText from '@/components/RichText';
 
 const MONO  = "var(--font-mono), 'JetBrains Mono', monospace";
 const SERIF = "var(--font-cormorant), 'Cormorant Garamond', serif";
 const KANJI = "'Noto Serif JP', var(--font-noto), serif";
 
-// ── Страница тематического курса: описание, стоимость, покупка, фильмы ──
+// ── Страница тематического курса: описание, стоимость, покупка, программа ──
+// Повторяет логику Иккаджо: программа → страница раздела с видео.
 export default function CoursePage({ nav, courseId, user = {}, onLogout }) {
   const isMobile = useIsMobile();
-  const [course,   setCourse]   = useState(null);
-  const [loading,  setLoading]  = useState(true);
-  const [notFound, setNotFound] = useState(false);
+  const { course, loading, notFound } = useCourse(courseId);
   const [buying,   setBuying]   = useState(false);
   const [buyError, setBuyError] = useState('');
-
-  const load = useCallback(async () => {
-    if (!courseId) { setNotFound(true); setLoading(false); return; }
-    try {
-      const res = await fetch(`/api/courses/${courseId}`);
-      if (!res.ok) setNotFound(true);
-      else { setCourse(await res.json()); setNotFound(false); }
-    } catch {
-      setNotFound(true);
-    }
-    setLoading(false);
-  }, [courseId]);
-
-  useEffect(() => { load(); }, [load]);
-
-  // Возврат со страницы оплаты — перечитываем доступ
-  useEffect(() => {
-    const onVisible = () => { if (document.visibilityState === 'visible') load(); };
-    document.addEventListener('visibilitychange', onVisible);
-    return () => document.removeEventListener('visibilitychange', onVisible);
-  }, [load]);
 
   const handleBuy = async () => {
     const product = course?.product;
@@ -178,11 +156,11 @@ export default function CoursePage({ nav, courseId, user = {}, onLogout }) {
                 </aside>
               </div>
 
-              {/* ── Фильмы курса ── */}
-              <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, padding: '8px 0', borderBottom: `1px solid ${C.border}`, marginBottom: 16 }}>
-                <span style={{ fontFamily: KANJI, fontSize: isMobile ? 20 : 24, color: canWatch ? C.accent : C.muted, lineHeight: 1 }}>映</span>
-                <span style={{ fontFamily: SERIF, fontSize: isMobile ? 18 : 22, color: canWatch ? C.ink : C.muted, fontWeight: 500, letterSpacing: '0.05em' }}>Материалы курса</span>
-                <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 10, color: C.muted, letterSpacing: '0.12em' }}>{course.videos.length} ВИДЕО</span>
+              {/* ── Программа курса ── */}
+              <div style={{ display: 'flex', alignItems: 'baseline', gap: isMobile ? 10 : 16, padding: '8px 0', borderBottom: `1px solid ${C.border}`, marginBottom: 12, flexWrap: 'wrap' }}>
+                <span style={{ fontFamily: KANJI, fontSize: isMobile ? 22 : 28, color: canWatch ? C.accent : C.muted, lineHeight: 1, letterSpacing: '0.1em' }}>目次</span>
+                <span style={{ fontFamily: SERIF, fontSize: isMobile ? 16 : 22, color: canWatch ? C.ink : C.muted, fontWeight: 500, letterSpacing: '0.05em' }}>Программа курса</span>
+                <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: isMobile ? 9 : 10, color: C.muted, letterSpacing: '0.12em' }}>{course.videos.length} {pluralSections(course.videos.length).toUpperCase()}</span>
                 {!canWatch && <span style={{ fontSize: 13 }}>🔒</span>}
               </div>
 
@@ -190,30 +168,20 @@ export default function CoursePage({ nav, courseId, user = {}, onLogout }) {
                 <div style={{ fontFamily: SERIF, fontSize: 15, color: C.muted }}>Материалы готовятся к публикации.</div>
               )}
 
-              <div style={{ display: 'flex', flexDirection: 'column', gap: canWatch ? (isMobile ? 28 : 40) : 1, background: canWatch ? 'transparent' : C.border }}>
-                {course.videos.map((v, i) => canWatch ? (
-                  <section key={v.id}>
-                    <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, marginBottom: 12 }}>
-                      <span style={{ fontFamily: MONO, fontSize: 11, color: C.muted }}>{String(i + 1).padStart(2, '0')}</span>
-                      <h3 style={{ margin: 0, fontFamily: SERIF, fontSize: isMobile ? 20 : 24, color: C.ink, fontWeight: 500 }}>{v.title}</h3>
-                      {v.duration && <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 11, color: C.muted }}>{v.duration}</span>}
-                    </div>
-                    {v.video_id ? (
-                      <KinescopePlayer videoId={v.video_id} videoStatus={v.video_status || 'ready'} viewerId={user.id} posterUrl={v.video_poster_url} title={v.title} duration={v.duration} />
-                    ) : (
-                      <div style={{ padding: '32px 20px', background: C.bg2, border: `1px solid ${C.border}`, textAlign: 'center', fontFamily: MONO, fontSize: 11, color: C.muted, letterSpacing: '0.12em', textTransform: 'uppercase' }}>Видео скоро появится</div>
-                    )}
-                    {v.description && <div style={{ marginTop: 14 }}><RichText content={v.description} breaks /></div>}
-                  </section>
-                ) : (
-                  <div key={v.id} style={{ display: 'flex', alignItems: 'center', gap: 14, padding: isMobile ? '14px' : '16px 18px', background: C.surface }}>
-                    <span style={{ fontFamily: MONO, fontSize: 11, color: C.muted, minWidth: 22 }}>{String(i + 1).padStart(2, '0')}</span>
-                    <span style={{ flex: 1, fontFamily: MONO, fontSize: 15, color: C.ink2 }}>{v.title}</span>
-                    {v.duration && <span style={{ fontFamily: MONO, fontSize: 11, color: C.muted }}>{v.duration}</span>}
-                    <span style={{ fontSize: 13 }}>🔒</span>
-                  </div>
+              <div style={{ display: 'grid', gridTemplateColumns: isMobile ? '1fr' : 'repeat(2, 1fr)', gap: 1, background: C.border }}>
+                {course.videos.map((v, i) => (
+                  <SectionCard
+                    key={v.id} section={v} index={i} isMobile={isMobile} locked={!canWatch}
+                    timecode={canWatch && !v.has_video && course.video_id ? formatTimecode(v.start_time) : ''}
+                    onClick={canWatch ? () => nav.courseSection(course.id, v.id) : undefined}
+                  />
                 ))}
               </div>
+              {!canWatch && course.videos.length > 0 && (
+                <div style={{ marginTop: 12, fontFamily: MONO, fontSize: 11, color: C.muted, letterSpacing: '0.1em', textTransform: 'uppercase' }}>
+                  Разделы откроются после покупки курса
+                </div>
+              )}
             </>
           )}
         </div>
@@ -222,4 +190,42 @@ export default function CoursePage({ nav, courseId, user = {}, onLogout }) {
       {isMobile && <MobileBottomNav nav={nav} active="database" isAdmin={user?.role === 'admin'} />}
     </div>
   );
+}
+
+// ── Карточка раздела программы (как TechCard в Иккаджо) ───────────
+function SectionCard({ section, index, isMobile, locked, timecode, onClick }) {
+  const [hover, setHover] = useState(false);
+  return (
+    <div onClick={onClick}
+      onMouseEnter={() => !isMobile && !locked && setHover(true)}
+      onMouseLeave={() => setHover(false)}
+      style={{
+        display: 'flex', alignItems: 'center', gap: 14,
+        padding: isMobile ? '14px 14px' : '16px 18px',
+        background: hover ? C.surface2 : C.surface,
+        cursor: locked ? 'default' : 'pointer', transition: 'background 0.1s',
+        minHeight: isMobile ? 56 : 'auto',
+      }}>
+      <span style={{ fontFamily: MONO, fontSize: 11, color: C.muted, letterSpacing: '0.06em', minWidth: 22, flexShrink: 0 }}>
+        {String(index + 1).padStart(2, '0')}
+      </span>
+      <div style={{ flex: 1, minWidth: 0 }}>
+        <div style={{ fontFamily: MONO, fontSize: 15, fontWeight: 500, color: locked ? C.ink2 : C.ink, letterSpacing: '0.01em' }}>{section.title}</div>
+        {section.subtitle && (
+          <div style={{ fontFamily: SERIF, fontSize: 15, color: C.muted, marginTop: 1, letterSpacing: '0.03em' }}>{section.subtitle}</div>
+        )}
+      </div>
+      {timecode && <span style={{ fontFamily: MONO, fontSize: 11, color: C.accent, letterSpacing: '0.06em', flexShrink: 0 }}>{timecode}</span>}
+      {locked
+        ? <span style={{ fontSize: 13, flexShrink: 0 }}>🔒</span>
+        : <span style={{ color: hover ? C.accent : C.muted, fontSize: 15, transition: 'color 0.15s', flexShrink: 0 }}>→</span>}
+    </div>
+  );
+}
+
+export function pluralSections(n) {
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return 'раздел';
+  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return 'раздела';
+  return 'разделов';
 }

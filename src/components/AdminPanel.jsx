@@ -6,7 +6,7 @@ import {
   useMonths, useLessons, useTechniques,
   useComments, useVideoUpload,
   useAdminUserAccess, useKnowledge, useAdminPayments, useCourses,
-  grantAccess, revokeAccess,
+  grantAccess, revokeAccess, parseTimecode, formatTimecode,
 } from '@/lib/db';
 // Supabase removed — always connected to Timeweb PostgreSQL
 import { IKKAJO_SECTION_OPTIONS, IKKAJO_SECTION_LABELS as IKKAJO_LABELS } from '@/lib/ikkajoSections';
@@ -3147,7 +3147,9 @@ function SectionCourses({showToast,isMobile}){
 
   const doSave = async () => {
     const isNew = editId === 'new';
-    const {ok,error,course} = await saveCourse(draft,{isNew});
+    // Поля фильма сохраняет только загрузчик — черновик формы мог устареть
+    const {video_id, video_status, video_provider, ...fields} = draft;
+    const {ok,error,course} = await saveCourse(fields,{isNew});
     if(ok){ showToast('Сохранено'); setEditId(course.id); setDraft({...course, price: course.product?.price ?? 0}); }
     else showToast('Ошибка: '+error);
   };
@@ -3211,19 +3213,42 @@ function SectionCourses({showToast,isMobile}){
               {current && <Btn2 kind="quiet" size="sm" onClick={doDelete}>Удалить курс</Btn2>}
             </div>
 
-            {/* Фильмы / уроки курса — доступны после первого сохранения */}
+            {/* Фильм целиком — если курс загружен одним видео, разделы открываются по таймкодам */}
+            {current && (
+              <div style={{borderTop:`1px solid ${C.hairline}`,paddingTop:18,marginBottom:22}}>
+                <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:6}}>
+                  <span style={{fontFamily:F.kanji,fontSize:13,color:C.gold,opacity:0.8}}>映</span>
+                  <span style={{fontFamily:F.serif,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>ФИЛЬМ ЦЕЛИКОМ (НЕОБЯЗАТЕЛЬНО)</span>
+                </div>
+                <div style={{fontFamily:F.mono,fontSize:11,color:C.muted,marginBottom:10,lineHeight:1.5}}>
+                  Если фильм — одно видео, загрузите его сюда и укажите у разделов «Начало в фильме». Раздел со своим видео играет своё.
+                </div>
+                <KinescopeUploader
+                  courseId={current.id}
+                  currentVideoId={current.video_id}
+                  currentStatus={current.video_status}
+                  onComplete={async ({videoId,status})=>{
+                    const {ok,error} = await saveCourse({...current, price: current.product?.price ?? 0, video_id:videoId, video_status:status, video_provider:'kinescope'});
+                    if(ok) showToast('Фильм загружен и сохранён');
+                    else showToast('Фильм загружен, но не сохранён: '+error);
+                  }}
+                />
+              </div>
+            )}
+
+            {/* Разделы курса — доступны после первого сохранения */}
             {current && (
               <CourseVideosEditor course={current} addVideo={addVideo} saveVideo={saveVideo} deleteVideo={deleteVideo} showToast={showToast} isMobile={isMobile}/>
             )}
             {!current && (
-              <div style={{marginTop:14,fontFamily:F.mono,fontSize:11,color:C.muted}}>Сохраните курс, чтобы добавить видео.</div>
+              <div style={{marginTop:14,fontFamily:F.mono,fontSize:11,color:C.muted}}>Сохраните курс, чтобы добавить разделы и видео.</div>
             )}
           </div>
         )}
 
         <div style={{background:C.surface,border:`1px solid ${C.hairline}`}}>
           <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 70px':'1fr 90px 110px 80px 36px',borderBottom:`1px solid ${C.hairline}`,background:C.bg2}}>
-            {(isMobile?['Курс','Статус']:['Курс','Видео','Цена','Статус','']).map((h,i)=>(
+            {(isMobile?['Курс','Статус']:['Курс','Разделов','Цена','Статус','']).map((h,i)=>(
               <div key={i} style={{padding:'11px 16px',fontFamily:F.mono,fontSize:11,letterSpacing:'0.18em',color:C.muted,textTransform:'uppercase',fontWeight:600}}>{h}</div>
             ))}
           </div>
@@ -3258,19 +3283,22 @@ function SectionCourses({showToast,isMobile}){
   );
 }
 
-// ── Редактор фильмов курса ───────────────────────────────────────
+// ── Редактор разделов курса ──────────────────────────────────────
 function CourseVideosEditor({course,addVideo,saveVideo,deleteVideo,showToast,isMobile}){
   const [drafts, setDrafts] = useState({});
   const videos = course.videos || [];
-  const get = (v) => drafts[v.id] ?? v;
-  const set = (id, patch) => setDrafts(d => ({...d, [id]: {...(d[id] ?? videos.find(v=>v.id===id)), ...patch}}));
+  const get = (v) => drafts[v.id] ?? {...v, _tc: formatTimecode(v.start_time)};
+  const set = (id, patch) => setDrafts(d => ({...d, [id]: {...(d[id] ?? get(videos.find(v=>v.id===id))), ...patch}}));
 
   const doAdd = async () => {
-    const {ok,error} = await addVideo(course.id, `Урок ${videos.length+1}`);
-    if(ok) showToast('Видео добавлено'); else showToast('Ошибка: '+error);
+    const {ok,error} = await addVideo(course.id, `Раздел ${videos.length+1}`);
+    if(ok) showToast('Раздел добавлен'); else showToast('Ошибка: '+error);
   };
   const doSave = async (v) => {
-    const {ok,error} = await saveVideo(course.id, get(v));
+    const d = get(v);
+    const startTime = parseTimecode(d._tc);
+    if (d._tc && startTime === null) { showToast('Таймкод в формате мм:сс или ч:мм:сс'); return; }
+    const {ok,error} = await saveVideo(course.id, {...d, start_time: startTime});
     if(ok){ setDrafts(d=>{const n={...d}; delete n[v.id]; return n;}); showToast('Сохранено'); }
     else showToast('Ошибка: '+error);
   };
@@ -3284,9 +3312,9 @@ function CourseVideosEditor({course,addVideo,saveVideo,deleteVideo,showToast,isM
     <div style={{borderTop:`1px solid ${C.hairline}`,paddingTop:18}}>
       <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
         <span style={{fontFamily:F.kanji,fontSize:13,color:C.gold,opacity:0.8}}>映</span>
-        <span style={{fontFamily:F.serif,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>ФИЛЬМЫ И УРОКИ</span>
+        <span style={{fontFamily:F.serif,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>РАЗДЕЛЫ КУРСА</span>
         <span style={{fontFamily:F.mono,fontSize:11,color:C.muted}}>{videos.length}</span>
-        <div style={{marginLeft:'auto'}}><Btn2 kind="ghost" size="sm" onClick={doAdd}>+ Добавить видео</Btn2></div>
+        <div style={{marginLeft:'auto'}}><Btn2 kind="ghost" size="sm" onClick={doAdd}>+ Добавить раздел</Btn2></div>
       </div>
       <div style={{display:'flex',flexDirection:'column',gap:12}}>
         {videos.map((v,i)=>{
@@ -3295,20 +3323,24 @@ function CourseVideosEditor({course,addVideo,saveVideo,deleteVideo,showToast,isM
             <div key={v.id} style={{border:`1px solid ${C.hairline}`,background:C.bg,padding:isMobile?'12px':'16px'}}>
               <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'40px 1fr 110px 80px',gap:10,alignItems:'end',marginBottom:10}}>
                 {!isMobile && <div style={{fontFamily:F.mono,fontSize:13,color:C.muted,paddingBottom:8}}>{String(i+1).padStart(2,'0')}</div>}
-                <div><Label>Название</Label><Input value={d.title||''} onChange={val=>set(v.id,{title:val})}/></div>
-                <div><Label>Длительность</Label><Input value={d.duration||''} onChange={val=>set(v.id,{duration:val})} placeholder="42:10"/></div>
+                <div><Label>Техника</Label><Input value={d.title||''} onChange={val=>set(v.id,{title:val})} placeholder="Иппондори"/></div>
+                <div><Label>Длительность</Label><Input value={d.duration||''} onChange={val=>set(v.id,{duration:val})} placeholder="8:10"/></div>
                 <div><Label>Порядок</Label><Input value={String(d.sort_order??0)} onChange={val=>set(v.id,{sort_order:val})} type="number"/></div>
+              </div>
+              <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 180px',gap:10,marginBottom:10}}>
+                <div><Label>Атака</Label><Input value={d.subtitle||''} onChange={val=>set(v.id,{subtitle:val})} placeholder="от прямого удара рукой"/></div>
+                <div><Label>Начало в фильме</Label><Input value={d._tc||''} onChange={val=>set(v.id,{_tc:val})} placeholder="мм:сс"/></div>
               </div>
               <div style={{marginBottom:10}}><Label>Описание</Label><Textarea value={d.description||''} onChange={val=>set(v.id,{description:val})} rows={2}/></div>
               <div style={{marginBottom:10}}>
-                <Label>Видео (Kinescope)</Label>
+                <Label>Своё видео раздела (если фильм не одним файлом)</Label>
                 <KinescopeUploader
                   courseVideoId={v.id}
                   currentVideoId={v.video_id}
                   currentStatus={v.video_status}
                   onComplete={async ({videoId,status})=>{
                     // upload-url уже записал video_id в БД; сохраняем статус
-                    const {ok,error} = await saveVideo(course.id, {...get(v), video_id:videoId, video_status:status, video_provider:'kinescope'});
+                    const {ok,error} = await saveVideo(course.id, {...v, video_id:videoId, video_status:status, video_provider:'kinescope'});
                     if(ok) showToast('Видео загружено и сохранено');
                     else showToast('Видео загружено, но не сохранено: '+error);
                   }}

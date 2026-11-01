@@ -15,6 +15,8 @@ export async function PUT(request, { params }) {
     const body = await request.json();
     const data = {};
     if (body.title          !== undefined) data.title         = body.title;
+    if (body.subtitle       !== undefined) data.subtitle      = body.subtitle;
+    if (body.start_time     !== undefined) data.startTime     = body.start_time === null || body.start_time === '' ? null : Math.max(0, Math.round(Number(body.start_time)) || 0);
     if (body.description    !== undefined) data.description   = body.description;
     if (body.duration       !== undefined) data.duration      = body.duration || null;
     if (body.sort_order     !== undefined) data.sortOrder     = Number(body.sort_order) || 0;
