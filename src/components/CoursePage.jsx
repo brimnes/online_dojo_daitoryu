@@ -114,6 +114,15 @@ export default function CoursePage({ nav, courseId, user = {}, onLogout }) {
                 </div>
               )}
 
+              {course.image_url && (
+                <div style={{ position: 'relative', marginBottom: isMobile ? 20 : 32, border: `1px solid ${C.border}`, background: '#0f0d0a', overflow: 'hidden' }}>
+                  <img src={course.image_url} alt={course.title} style={{ display: 'block', width: '100%', aspectRatio: isMobile ? '16 / 9' : '21 / 8', objectFit: 'cover' }} />
+                  {!course.has_access && (
+                    <div style={{ position: 'absolute', top: 12, right: 12, padding: '5px 10px', background: C.surface, border: `1px solid ${C.border}`, fontFamily: MONO, fontSize: 11, letterSpacing: '0.16em', textTransform: 'uppercase', color: C.ink2 }}>🔒 К покупке</div>
+                  )}
+                </div>
+              )}
+
               {!course.is_published && isStaff && (
                 <div style={{ padding: '10px 14px', marginBottom: 20, background: C.surface, border: `1px solid ${C.goldBorder}`, fontSize: 13, color: C.gold }}>
                   ↳ Курс не опубликован — ученики его не видят.

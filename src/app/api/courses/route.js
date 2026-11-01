@@ -52,6 +52,7 @@ export async function POST(request) {
         subtitle:    body.subtitle    || '',
         description: body.description || '',
         kanji:       body.kanji       || '',
+        imageUrl:    body.image_url   || null,
         sortOrder:   body.sort_order  ?? 0,
         isPublished: body.is_published ?? false,
       },

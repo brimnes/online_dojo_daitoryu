@@ -463,6 +463,7 @@ model Course {
   subtitle    String?  @default("")
   description String?  @default("")   // markdown / html (RichText)
   kanji       String?  @default("")
+  imageUrl    String?  @map("image_url")  // обложка курса
   sortOrder   Int      @default(0)     @map("sort_order")
   isPublished Boolean  @default(false) @map("is_published")
   createdAt   DateTime @default(now()) @map("created_at")

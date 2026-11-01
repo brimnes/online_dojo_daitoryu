@@ -43,6 +43,7 @@ export async function PUT(request, { params }) {
     if (body.subtitle     !== undefined) data.subtitle    = body.subtitle;
     if (body.description  !== undefined) data.description = body.description;
     if (body.kanji        !== undefined) data.kanji       = body.kanji;
+    if (body.image_url    !== undefined) data.imageUrl    = body.image_url || null;
     if (body.sort_order   !== undefined) data.sortOrder   = Number(body.sort_order) || 0;
     if (body.is_published !== undefined) data.isPublished = !!body.is_published;
 

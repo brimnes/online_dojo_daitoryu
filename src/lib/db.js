@@ -834,6 +834,7 @@ export function useCourses({ adminMode = false } = {}) {
         subtitle:     course.subtitle    || '',
         description:  course.description || '',
         kanji:        course.kanji       || '',
+        image_url:    course.image_url   || null,
         sort_order:   Number(course.sort_order) || 0,
         is_published: !!course.is_published,
         price:        course.price,
