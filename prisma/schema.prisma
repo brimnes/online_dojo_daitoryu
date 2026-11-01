@@ -468,15 +468,7 @@ model Course {
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt      @map("updated_at")
 
-  // Фильм целиком (если курс загружен одним видео — разделы по таймкодам)
-  videoProvider  String? @default("kinescope") @map("video_provider")
-  videoId        String? @map("video_id")
-  videoStatus    String? @default("none")      @map("video_status")
-  videoPosterUrl String? @map("video_poster_url")
-
   videos CourseVideo[]
-
-  @@index([videoId], map: "idx_courses_video_id")
 
   @@map("courses")
 }
@@ -484,8 +476,7 @@ model Course {
 
 // ────────────────────────────────────────────────────────────
 // course_videos
-// Разделы курса. У раздела может быть своё видео (Kinescope-поля),
-// либо он открывает фильм курса с таймкода start_time (секунды).
+// Разделы курса. У каждого раздела своё видео (Kinescope-поля — как у lessons).
 // ────────────────────────────────────────────────────────────
 model CourseVideo {
   id          String  @id @default(uuid()) @db.Uuid
@@ -494,7 +485,6 @@ model CourseVideo {
   subtitle    String? @default("") // атака: 'от прямого удара рукой'
   description String? @default("")
   duration    String?
-  startTime   Int?    @map("start_time")
 
   videoProvider  String? @default("kinescope") @map("video_provider")
   videoId        String? @map("video_id")

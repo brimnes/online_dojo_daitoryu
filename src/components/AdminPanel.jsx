@@ -6,7 +6,7 @@ import {
   useMonths, useLessons, useTechniques,
   useComments, useVideoUpload,
   useAdminUserAccess, useKnowledge, useAdminPayments, useCourses,
-  grantAccess, revokeAccess, parseTimecode, formatTimecode,
+  grantAccess, revokeAccess,
 } from '@/lib/db';
 // Supabase removed — always connected to Timeweb PostgreSQL
 import { IKKAJO_SECTION_OPTIONS, IKKAJO_SECTION_LABELS as IKKAJO_LABELS } from '@/lib/ikkajoSections';
@@ -3147,9 +3147,7 @@ function SectionCourses({showToast,isMobile}){
 
   const doSave = async () => {
     const isNew = editId === 'new';
-    // Поля фильма сохраняет только загрузчик — черновик формы мог устареть
-    const {video_id, video_status, video_provider, ...fields} = draft;
-    const {ok,error,course} = await saveCourse(fields,{isNew});
+    const {ok,error,course} = await saveCourse(draft,{isNew});
     if(ok){ showToast('Сохранено'); setEditId(course.id); setDraft({...course, price: course.product?.price ?? 0}); }
     else showToast('Ошибка: '+error);
   };
@@ -3213,29 +3211,6 @@ function SectionCourses({showToast,isMobile}){
               {current && <Btn2 kind="quiet" size="sm" onClick={doDelete}>Удалить курс</Btn2>}
             </div>
 
-            {/* Фильм целиком — если курс загружен одним видео, разделы открываются по таймкодам */}
-            {current && (
-              <div style={{borderTop:`1px solid ${C.hairline}`,paddingTop:18,marginBottom:22}}>
-                <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:6}}>
-                  <span style={{fontFamily:F.kanji,fontSize:13,color:C.gold,opacity:0.8}}>映</span>
-                  <span style={{fontFamily:F.serif,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>ФИЛЬМ ЦЕЛИКОМ (НЕОБЯЗАТЕЛЬНО)</span>
-                </div>
-                <div style={{fontFamily:F.mono,fontSize:11,color:C.muted,marginBottom:10,lineHeight:1.5}}>
-                  Если фильм — одно видео, загрузите его сюда и укажите у разделов «Начало в фильме». Раздел со своим видео играет своё.
-                </div>
-                <KinescopeUploader
-                  courseId={current.id}
-                  currentVideoId={current.video_id}
-                  currentStatus={current.video_status}
-                  onComplete={async ({videoId,status})=>{
-                    const {ok,error} = await saveCourse({...current, price: current.product?.price ?? 0, video_id:videoId, video_status:status, video_provider:'kinescope'});
-                    if(ok) showToast('Фильм загружен и сохранён');
-                    else showToast('Фильм загружен, но не сохранён: '+error);
-                  }}
-                />
-              </div>
-            )}
-
             {/* Разделы курса — доступны после первого сохранения */}
             {current && (
               <CourseVideosEditor course={current} addVideo={addVideo} saveVideo={saveVideo} deleteVideo={deleteVideo} showToast={showToast} isMobile={isMobile}/>
@@ -3287,18 +3262,15 @@ function SectionCourses({showToast,isMobile}){
 function CourseVideosEditor({course,addVideo,saveVideo,deleteVideo,showToast,isMobile}){
   const [drafts, setDrafts] = useState({});
   const videos = course.videos || [];
-  const get = (v) => drafts[v.id] ?? {...v, _tc: formatTimecode(v.start_time)};
-  const set = (id, patch) => setDrafts(d => ({...d, [id]: {...(d[id] ?? get(videos.find(v=>v.id===id))), ...patch}}));
+  const get = (v) => drafts[v.id] ?? v;
+  const set = (id, patch) => setDrafts(d => ({...d, [id]: {...(d[id] ?? videos.find(v=>v.id===id)), ...patch}}));
 
   const doAdd = async () => {
     const {ok,error} = await addVideo(course.id, `Раздел ${videos.length+1}`);
     if(ok) showToast('Раздел добавлен'); else showToast('Ошибка: '+error);
   };
   const doSave = async (v) => {
-    const d = get(v);
-    const startTime = parseTimecode(d._tc);
-    if (d._tc && startTime === null) { showToast('Таймкод в формате мм:сс или ч:мм:сс'); return; }
-    const {ok,error} = await saveVideo(course.id, {...d, start_time: startTime});
+    const {ok,error} = await saveVideo(course.id, get(v));
     if(ok){ setDrafts(d=>{const n={...d}; delete n[v.id]; return n;}); showToast('Сохранено'); }
     else showToast('Ошибка: '+error);
   };
@@ -3327,13 +3299,10 @@ function CourseVideosEditor({course,addVideo,saveVideo,deleteVideo,showToast,isM
                 <div><Label>Длительность</Label><Input value={d.duration||''} onChange={val=>set(v.id,{duration:val})} placeholder="8:10"/></div>
                 <div><Label>Порядок</Label><Input value={String(d.sort_order??0)} onChange={val=>set(v.id,{sort_order:val})} type="number"/></div>
               </div>
-              <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 180px',gap:10,marginBottom:10}}>
-                <div><Label>Атака</Label><Input value={d.subtitle||''} onChange={val=>set(v.id,{subtitle:val})} placeholder="от прямого удара рукой"/></div>
-                <div><Label>Начало в фильме</Label><Input value={d._tc||''} onChange={val=>set(v.id,{_tc:val})} placeholder="мм:сс"/></div>
-              </div>
+              <div style={{marginBottom:10}}><Label>Атака</Label><Input value={d.subtitle||''} onChange={val=>set(v.id,{subtitle:val})} placeholder="от прямого удара рукой"/></div>
               <div style={{marginBottom:10}}><Label>Описание</Label><Textarea value={d.description||''} onChange={val=>set(v.id,{description:val})} rows={2}/></div>
               <div style={{marginBottom:10}}>
-                <Label>Своё видео раздела (если фильм не одним файлом)</Label>
+                <Label>Видео раздела (Kinescope)</Label>
                 <KinescopeUploader
                   courseVideoId={v.id}
                   currentVideoId={v.video_id}

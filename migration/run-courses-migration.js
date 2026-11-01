@@ -1,6 +1,6 @@
 /**
  * Создаёт таблицы courses / course_videos, стартовые курсы + продукты
- * и программу курса «Иккаджо Оё-вадза».
+ * и программу курса «Иккаджо Оё-вадза» (12 разделов).
  * SQL — supabase/migrations/012_courses.sql, 013_course_sections.sql (идемпотентны).
  * Запуск из корня проекта: node migration/run-courses-migration.js
  */

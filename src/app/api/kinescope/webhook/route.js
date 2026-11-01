@@ -82,7 +82,6 @@ export async function POST(request) {
       prisma.knowledgeItem.updateMany({ where: { videoId }, data: knowledgeData }),
       // course_videos: те же поля, что у technique_videos
       prisma.courseVideo.updateMany({ where: { videoId }, data: techData }),
-      prisma.course.updateMany({ where: { videoId }, data: { videoStatus } }),
     ]);
 
     if (videoStatus === 'ready' && lessonResult.status === 'fulfilled' && lessonResult.value.count > 0) {

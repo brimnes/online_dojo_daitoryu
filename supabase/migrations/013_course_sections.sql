@@ -1,19 +1,11 @@
--- 013: курс «Иккаджо Оё-вадза» — 12 разделов, навигация по фильму
+-- 013: курс «Иккаджо Оё-вадза» — программа из 12 разделов
 --
--- • courses: поля фильма целиком (если курс загружен одним видео —
---   разделы открываются по таймкодам course_videos.start_time)
--- • course_videos: subtitle (атака) и start_time (секунды от начала фильма)
--- • курс ikkajo-oyowaza: название, описание и программа из 12 разделов
+-- • course_videos.subtitle — атака раздела («от прямого удара рукой»)
+-- • курс ikkajo-oyowaza: название, описание и 12 разделов.
+--   У каждого раздела своё видео — загружается в админке («Курсы»).
 -- Безопасно запускать повторно. Требует 012_courses.sql.
 
-ALTER TABLE courses ADD COLUMN IF NOT EXISTS video_provider   TEXT DEFAULT 'kinescope';
-ALTER TABLE courses ADD COLUMN IF NOT EXISTS video_id         TEXT;
-ALTER TABLE courses ADD COLUMN IF NOT EXISTS video_status     TEXT DEFAULT 'none';
-ALTER TABLE courses ADD COLUMN IF NOT EXISTS video_poster_url TEXT;
-CREATE INDEX IF NOT EXISTS idx_courses_video_id ON courses (video_id);
-
-ALTER TABLE course_videos ADD COLUMN IF NOT EXISTS subtitle   TEXT DEFAULT '';
-ALTER TABLE course_videos ADD COLUMN IF NOT EXISTS start_time INTEGER;
+ALTER TABLE course_videos ADD COLUMN IF NOT EXISTS subtitle TEXT DEFAULT '';
 
 UPDATE courses SET
   title       = 'Иккаджо Оё-вадза',

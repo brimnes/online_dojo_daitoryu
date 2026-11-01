@@ -2,7 +2,7 @@
 
 import { C } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
-import { useCourse, formatTimecode } from '@/lib/db';
+import { useCourse } from '@/lib/db';
 import Sidebar from '@/components/Sidebar';
 import { MobileBottomNav } from '@/components/BottomNav';
 import KinescopePlayer from '@/components/KinescopePlayer';
@@ -11,20 +11,6 @@ import RichText from '@/components/RichText';
 const MONO  = "var(--font-mono), 'JetBrains Mono', monospace";
 const SERIF = "var(--font-cormorant), 'Cormorant Garamond', serif";
 const KANJI = "'Noto Serif JP', var(--font-noto), serif";
-
-/**
- * Что играть в разделе: своё видео раздела, иначе фильм курса целиком
- * с таймкода начала раздела.
- */
-function sectionPlayback(course, section) {
-  if (section?.video_id) {
-    return { videoId: section.video_id, status: section.video_status, poster: section.video_poster_url, startTime: 0 };
-  }
-  if (course?.video_id) {
-    return { videoId: course.video_id, status: course.video_status, poster: course.video_poster_url, startTime: section?.start_time || 0 };
-  }
-  return null;
-}
 
 // ── Страница раздела курса — аналог страницы техники Иккаджо ──────
 export default function CourseSectionPage({ nav, courseId, sectionId, user = {}, onLogout }) {
@@ -39,7 +25,6 @@ export default function CourseSectionPage({ nav, courseId, sectionId, user = {},
   const prev     = sections[idx - 1];
   const next     = sections[idx + 1];
   const total    = sections.length;
-  const play     = sectionPlayback(course, section);
   const kanji    = course?.kanji || '技';
 
   // Переход между разделами не копит историю — «назад» ведёт на страницу курса
@@ -71,13 +56,12 @@ export default function CourseSectionPage({ nav, courseId, sectionId, user = {},
   }
 
   // ── Плеер ─────────────────────────────────────────────────────
-  const player = play ? (
+  const player = section.video_id ? (
     <KinescopePlayer
-      key={`${play.videoId}_${section.id}`}
-      videoId={play.videoId} videoStatus={play.status || 'ready'}
-      viewerId={user.id} posterUrl={play.poster}
+      key={section.id}
+      videoId={section.video_id} videoStatus={section.video_status || 'ready'}
+      viewerId={user.id} posterUrl={section.video_poster_url}
       title={section.title} duration={section.duration}
-      startTime={play.startTime}
     />
   ) : (
     <div style={{ background: '#0f0d0a', aspectRatio: '16/9', display: 'flex', flexDirection: 'column', alignItems: 'center', justifyContent: 'center', gap: 12, position: 'relative', overflow: 'hidden' }}>
@@ -91,12 +75,12 @@ export default function CourseSectionPage({ nav, courseId, sectionId, user = {},
     <div style={{ border: `1px solid ${C.border}`, borderTop: isMobile ? `1px solid ${C.border}` : 'none', background: C.surface }}>
       <div style={{ padding: '11px 14px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{ fontFamily: KANJI, fontSize: 13, color: C.muted }}>目次</span>
-        <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase' }}>Оглавление фильма</span>
+        <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase' }}>Оглавление курса</span>
         <span style={{ marginLeft: 'auto', fontFamily: MONO, fontSize: 11, color: C.muted }}>{total}</span>
       </div>
       {sections.map((s, i) => {
         const active = s.id === section.id;
-        const tc = !s.video_id && course.video_id ? formatTimecode(s.start_time) : (s.duration || '');
+        const tc = s.duration || '';
         return (
           <div key={s.id} onClick={() => !active && goSection(s)}
             style={{ display: 'flex', alignItems: 'center', gap: 12, padding: '11px 14px', background: active ? C.light : C.surface, cursor: active ? 'default' : 'pointer', borderBottom: i < total - 1 ? `1px solid ${C.border}` : 'none' }}

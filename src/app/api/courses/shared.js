@@ -4,7 +4,6 @@ export function videoToSnake(v, { withVideo = true } = {}) {
   return {
     id: v.id, course_id: v.courseId, title: v.title, subtitle: v.subtitle ?? '',
     description: v.description, duration: v.duration, sort_order: v.sortOrder,
-    start_time: v.startTime ?? null,
     // Без доступа ID видео не отдаём — плеер всё равно не пустит (kinescope/auth)
     video_provider: withVideo ? v.videoProvider  : null,
     video_id:       withVideo ? v.videoId        : null,
@@ -19,11 +18,6 @@ export function courseToSnake(c, { product = null, hasAccess = false, withVideo 
     id: c.id, title: c.title, subtitle: c.subtitle, description: c.description,
     kanji: c.kanji, sort_order: c.sortOrder, is_published: c.isPublished,
     created_at: c.createdAt, updated_at: c.updatedAt,
-    // Фильм целиком — без доступа не отдаём
-    video_provider:   withVideo ? c.videoProvider  : null,
-    video_id:         withVideo ? c.videoId        : null,
-    video_status:     withVideo ? c.videoStatus    : null,
-    video_poster_url: withVideo ? c.videoPosterUrl : null,
     video_count: (c.videos ?? []).length,
     videos: (c.videos ?? []).map(v => videoToSnake(v, { withVideo })),
     has_access: hasAccess,

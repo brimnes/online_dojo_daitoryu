@@ -51,7 +51,6 @@ async function syncFromKinescope(videoId) {
       prisma.techniqueVideo.updateMany({ where: { videoId }, data: techData }),
       prisma.knowledgeItem.updateMany({ where: { videoId }, data: knowledgeData }),
       prisma.courseVideo.updateMany({ where: { videoId }, data: techData }),
-      prisma.course.updateMany({ where: { videoId }, data: { videoStatus: status } }),
     ]);
     if (status === 'ready') generatePosterInBackground(videoId, data.duration);
     return status;
@@ -72,7 +71,7 @@ export async function GET(request) {
   }
 
   // Ищем во всех трёх таблицах параллельно
-  const [lesson, techVideo, knowledgeItem, courseVideo, courseFilm] = await Promise.all([
+  const [lesson, techVideo, knowledgeItem, courseVideo] = await Promise.all([
     prisma.lesson.findFirst({
       where:  { videoId },
       select: { videoStatus: true },
@@ -89,13 +88,9 @@ export async function GET(request) {
       where:  { videoId },
       select: { videoStatus: true },
     }),
-    prisma.course.findFirst({
-      where:  { videoId },
-      select: { videoStatus: true },
-    }),
   ]);
 
-  let status = lesson?.videoStatus ?? techVideo?.videoStatus ?? knowledgeItem?.videoStatus ?? courseVideo?.videoStatus ?? courseFilm?.videoStatus ?? null;
+  let status = lesson?.videoStatus ?? techVideo?.videoStatus ?? knowledgeItem?.videoStatus ?? courseVideo?.videoStatus ?? null;
 
   // Если статус всё ещё processing — проверяем Kinescope напрямую
   if (status === 'processing' || status === 'uploading') {

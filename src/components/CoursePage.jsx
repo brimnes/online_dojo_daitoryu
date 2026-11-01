@@ -3,7 +3,7 @@
 import { useState } from 'react';
 import { C } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
-import { useCourse, formatTimecode } from '@/lib/db';
+import { useCourse } from '@/lib/db';
 import Sidebar from '@/components/Sidebar';
 import { MobileBottomNav } from '@/components/BottomNav';
 import RichText from '@/components/RichText';
@@ -172,7 +172,7 @@ export default function CoursePage({ nav, courseId, user = {}, onLogout }) {
                 {course.videos.map((v, i) => (
                   <SectionCard
                     key={v.id} section={v} index={i} isMobile={isMobile} locked={!canWatch}
-                    timecode={canWatch && !v.has_video && course.video_id ? formatTimecode(v.start_time) : ''}
+                    duration={v.duration}
                     onClick={canWatch ? () => nav.courseSection(course.id, v.id) : undefined}
                   />
                 ))}
@@ -193,7 +193,7 @@ export default function CoursePage({ nav, courseId, user = {}, onLogout }) {
 }
 
 // ── Карточка раздела программы (как TechCard в Иккаджо) ───────────
-function SectionCard({ section, index, isMobile, locked, timecode, onClick }) {
+function SectionCard({ section, index, isMobile, locked, duration, onClick }) {
   const [hover, setHover] = useState(false);
   return (
     <div onClick={onClick}
@@ -215,7 +215,7 @@ function SectionCard({ section, index, isMobile, locked, timecode, onClick }) {
           <div style={{ fontFamily: SERIF, fontSize: 15, color: C.muted, marginTop: 1, letterSpacing: '0.03em' }}>{section.subtitle}</div>
         )}
       </div>
-      {timecode && <span style={{ fontFamily: MONO, fontSize: 11, color: C.accent, letterSpacing: '0.06em', flexShrink: 0 }}>{timecode}</span>}
+      {duration && <span style={{ fontFamily: MONO, fontSize: 11, color: C.muted, letterSpacing: '0.06em', flexShrink: 0 }}>{duration}</span>}
       {locked
         ? <span style={{ fontSize: 13, flexShrink: 0 }}>🔒</span>
         : <span style={{ color: hover ? C.accent : C.muted, fontSize: 15, transition: 'color 0.15s', flexShrink: 0 }}>→</span>}

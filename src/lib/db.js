@@ -838,12 +838,6 @@ export function useCourses({ adminMode = false } = {}) {
         is_published: !!course.is_published,
         price:        course.price,
       };
-      // Фильм курса целиком — только если поле пришло (форма курса его не трогает)
-      if (course.video_id !== undefined) {
-        body.video_id       = course.video_id;
-        body.video_status   = course.video_status;
-        body.video_provider = course.video_provider || 'kinescope';
-      }
       if (isNew) {
         const { course: created } = await api('/api/courses', { method: 'POST', body: { ...body, id: course.id } });
         setCourses(prev => [...prev, created]);
@@ -888,7 +882,7 @@ export function useCourses({ adminMode = false } = {}) {
       const { video: updated } = await api(`/api/courses/${courseId}/videos/${video.id}`, {
         method: 'PUT',
         body: {
-          title: video.title, subtitle: video.subtitle || '', start_time: video.start_time ?? null,
+          title: video.title, subtitle: video.subtitle || '',
           description: video.description || '', duration: video.duration || '',
           sort_order: video.sort_order, video_provider: video.video_provider,
           video_id: video.video_id, video_status: video.video_status,
@@ -946,24 +940,6 @@ export function useCourse(courseId) {
   }, [reload]);
 
   return { course, loading, notFound, reload };
-}
-
-/** '1:05:30' | '12:40' | '95' → секунды; пусто/некорректно → null */
-export function parseTimecode(str) {
-  const s = String(str ?? '').trim();
-  if (!s) return null;
-  const parts = s.split(':').map(Number);
-  if (parts.some(n => !Number.isFinite(n) || n < 0) || parts.length > 3) return null;
-  return parts.reduce((acc, n) => acc * 60 + n, 0);
-}
-
-/** секунды → '12:40' / '1:05:30' */
-export function formatTimecode(sec) {
-  if (sec === null || sec === undefined || sec === '') return '';
-  const t = Math.max(0, Math.round(Number(sec)));
-  const h = Math.floor(t / 3600), m = Math.floor((t % 3600) / 60), ss = t % 60;
-  const pad = n => String(n).padStart(2, '0');
-  return h > 0 ? `${h}:${pad(m)}:${pad(ss)}` : `${m}:${pad(ss)}`;
 }
 
 function urlBase64ToUint8Array(base64String) {
