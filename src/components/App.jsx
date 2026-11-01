@@ -9,6 +9,7 @@ import MonthPage from './MonthPage';
 import LessonPage from './LessonPage';
 import KnowledgePage from './KnowledgePage';
 import KnowledgeItemPage from './KnowledgeItemPage';
+import CoursePage from './CoursePage';
 import { INITIAL_COMMENTS } from '@/data/months';
 import { USER } from '@/data/users';
 import { registerServiceWorker } from '@/lib/mobile';
@@ -175,6 +176,7 @@ export default function App({ initialUser = null }) {
     lesson:        (monthId, lessonId)  => navigate({ page: 'lesson', monthId, lessonId }),
     knowledge:     ()                   => navigate({ page: 'knowledge' }),
     knowledgeItem: (itemId)             => navigate({ page: 'knowledge_item', itemId }),
+    course:        (courseId)           => navigate({ page: 'course', courseId }),
     // Назад: поп из стека (или dashboard если стек пуст)
     back:          ()                   => goBack(),
   };
@@ -284,6 +286,9 @@ export default function App({ initialUser = null }) {
       )}
       {route.page === 'knowledge_item' && (
         <KnowledgeItemPage nav={nav} itemId={route.itemId} viewerId={user.id} />
+      )}
+      {route.page === 'course' && (
+        <CoursePage nav={nav} courseId={route.courseId} user={user} onLogout={handleLogout} />
       )}
     </>
   );

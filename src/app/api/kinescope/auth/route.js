@@ -31,7 +31,7 @@ export async function POST(request) {
     }
 
     // 2. Параллельно: ищем видео и пользователя одним батчем
-    const [lesson, techVideo, user] = await Promise.all([
+    const [lesson, techVideo, courseVideo, user] = await Promise.all([
       prisma.lesson.findFirst({
         where:  { videoId: video_id },
         select: { id: true, monthId: true },
@@ -39,6 +39,10 @@ export async function POST(request) {
       prisma.techniqueVideo.findFirst({
         where:  { videoId: video_id },
         select: { id: true, techniqueId: true },
+      }),
+      prisma.courseVideo.findFirst({
+        where:  { videoId: video_id },
+        select: { id: true, courseId: true },
       }),
       prisma.user.findUnique({
         where:  { id: viewer_id },
@@ -69,6 +73,16 @@ export async function POST(request) {
 
       if (access) return NextResponse.json({ allow: true });
       return NextResponse.json({ error: 'No access to this section' }, { status: 403 });
+    }
+
+    // 3c. Course video → проверяем доступ к курсу
+    if (courseVideo) {
+      const access = await prisma.userAccess.findFirst({
+        where: { userId: viewer_id, type: 'course', reference: courseVideo.courseId },
+      });
+
+      if (access) return NextResponse.json({ allow: true });
+      return NextResponse.json({ error: 'No access to this course' }, { status: 403 });
     }
 
     // Video not found in our DB — deny

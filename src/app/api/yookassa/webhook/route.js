@@ -9,8 +9,8 @@
  */
 
 import { prisma } from '@/lib/prisma.js';
+import { accessTypeForProduct } from '@/lib/access.js';
 
-const MONTH_REFS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
 
 export async function POST(request) {
   try {
@@ -83,7 +83,7 @@ export async function POST(request) {
     }
 
     // Выдаём доступ через user_access
-    const accessType = MONTH_REFS.includes(product.reference) ? 'month' : 'section';
+    const accessType = accessTypeForProduct(product.type, product.reference);
 
     try {
       await prisma.userAccess.upsert({

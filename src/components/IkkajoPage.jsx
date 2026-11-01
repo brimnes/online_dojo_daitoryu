@@ -108,7 +108,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout, initialKyu }) {
               fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
               fontSize: 11, letterSpacing: '0.1em', color: C.accent,
               textTransform: 'uppercase', padding: 0,
-            }}>← БАЗА ТЕХНИК</button>
+            }}>← КУРСЫ</button>
             <span style={{ color: C.border }}>/</span>
             <span style={{
               fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
@@ -147,7 +147,7 @@ export default function IkkajoPage({ nav, user = {}, onLogout, initialKyu }) {
               }}>
                 <span style={{ color: C.accent, fontWeight: 600 }}>03</span>
                 <span>·</span>
-                <span>БАЗА ТЕХНИК · РАЗДЕЛ ПЕРВЫЙ</span>
+                <span>КУРСЫ · ЭКЗАМЕНАЦИОННАЯ ПРОГРАММА</span>
               </div>
 
               {/* Title */}

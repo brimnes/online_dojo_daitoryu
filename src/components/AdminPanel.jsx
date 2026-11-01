@@ -5,7 +5,7 @@ import {
   useUsers, useAccess, useExams,
   useMonths, useLessons, useTechniques,
   useComments, useVideoUpload,
-  useAdminUserAccess, useKnowledge, useAdminPayments,
+  useAdminUserAccess, useKnowledge, useAdminPayments, useCourses,
   grantAccess, revokeAccess,
 } from '@/lib/db';
 // Supabase removed — always connected to Timeweb PostgreSQL
@@ -397,11 +397,12 @@ const SECTIONS = [
   {id:'dashboard', num:'01', label:'Дашборд',        kanji:'見'},
   {id:'users',     num:'02', label:'Ученики',         kanji:'人'},
   {id:'months',    num:'03', label:'Месяцы и уроки',  kanji:'月'},
-  {id:'ikkajo',    num:'04', label:'База техник',     kanji:'技'},
-  {id:'knowledge', num:'05', label:'База знаний',     kanji:'智'},
-  {id:'payments',  num:'06', label:'Платежи',         kanji:'銭'},
-  {id:'comments',  num:'07', label:'Комментарии',     kanji:'声'},
-  {id:'push',      num:'08', label:'Уведомления',     kanji:'報'},
+  {id:'ikkajo',    num:'04', label:'Техники Иккаджо', kanji:'技'},
+  {id:'courses',   num:'05', label:'Курсы',           kanji:'講'},
+  {id:'knowledge', num:'06', label:'База знаний',     kanji:'智'},
+  {id:'payments',  num:'07', label:'Платежи',         kanji:'銭'},
+  {id:'comments',  num:'08', label:'Комментарии',     kanji:'声'},
+  {id:'push',      num:'09', label:'Уведомления',     kanji:'報'},
   // hidden (functional, not in nav)
   {id:'access',    num:'',   label:'Доступы',         kanji:'鍵', hidden:true},
 ];
@@ -641,6 +642,7 @@ export default function AdminPanel({ onExit, user }) {
           {section==='payments'  && <SectionPayments                        isMobile={isMobile}/>}
           {section==='months'    && <SectionMonths    showToast={showToast} isMobile={isMobile}/>}
           {section==='ikkajo'    && <SectionIkkajo    showToast={showToast} isMobile={isMobile}/>}
+          {section==='courses'   && <SectionCourses   showToast={showToast} isMobile={isMobile}/>}
           {section==='comments'  && <SectionComments  showToast={showToast} isMobile={isMobile} onOpenTarget={openCommentTarget}/>}
           {section==='push'      && <SectionPush      showToast={showToast} isMobile={isMobile}/>}
         </div>
@@ -1909,7 +1911,7 @@ function SectionPayments({isMobile}){
     name:    p.user_name||'—',
     email:   p.user_email||'—',
     item:    p.product_title||p.product_reference||'—',
-    itemSub: p.product_type==='month'?'Месячный':p.product_type==='section'?'Раздел':'—',
+    itemSub: p.product_type==='month'?'Месячный':p.product_type==='section'?'Раздел':p.product_type==='course'?'Курс':'—',
     method:  p.provider==='yookassa'?'ЮKassa':p.provider==='robokassa'?'Робокасса':(p.provider||'—'),
     amount:  p.amount||0,
     status:  p.status,
@@ -2828,7 +2830,7 @@ function SectionIkkajo({showToast,isMobile}){
     <div style={{background:C.bg,minHeight:'100%'}}>
       <div style={{padding:isMobile?'20px 16px 40px':'32px 36px 60px'}}>
 
-        <AdminSectionHead num="04" title="База техник" subtitle={`${techniques.length||302} техник в трёх программах`} kanji="技"/>
+        <AdminSectionHead num="04" title="Техники Иккаджо" subtitle={`${techniques.length||302} техник в трёх программах`} kanji="技"/>
         <SumiStroke style={{margin:'0 0 24px',opacity:0.3}}/>
 
         {/* program cards */}
@@ -2969,6 +2971,8 @@ const ACCESS_SOURCE_LABELS = {
 
 function SectionAccess({showToast,isMobile}){
   const {users,loading:uLoading} = useUsers();
+  const {courses} = useCourses({adminMode:true});
+  const courseOptions = courses.map(c=>({value:c.id,label:c.title}));
   const {payments: allAccess} = useAccess();
   const [selectedUserId, setSelectedUserId] = useState('');
   const [type,      setType]      = useState('month');
@@ -2978,7 +2982,7 @@ function SectionAccess({showToast,isMobile}){
   const [granting,  setGranting]  = useState(false);
   const {rows:accessRows, loading:aLoading, reload} = useAdminUserAccess(selectedUserId);
 
-  const refOptions = type === 'month' ? ACCESS_MONTH_OPTIONS : ACCESS_SECTION_OPTIONS;
+  const refOptions = type === 'month' ? ACCESS_MONTH_OPTIONS : type === 'course' ? courseOptions : ACCESS_SECTION_OPTIONS;
 
   // Разбивка всех доступов по источнику
   const bySource = {};
@@ -3014,6 +3018,7 @@ function SectionAccess({showToast,isMobile}){
     sep:'Сентябрь',oct:'Октябрь',nov:'Ноябрь',dec:'Декабрь',
     ikkajo:'Иккаджо (весь)',
     ...IKKAJO_LABELS,
+    ...Object.fromEntries(courses.map(c=>[c.id,`Курс «${c.title}»`])),
   };
 
   if(uLoading) return <Spinner/>;
@@ -3066,10 +3071,10 @@ function SectionAccess({showToast,isMobile}){
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
                 <div>
                   <Label>Тип</Label>
-                  <Select value={type} onChange={v=>{setType(v);setReference(v==='month'?'jan':'ikkajo');}} options={[{value:'month',label:'Месяц'},{value:'section',label:'Раздел'}]}/>
+                  <Select value={type} onChange={v=>{setType(v);setReference(v==='month'?'jan':v==='course'?(courses[0]?.id||''):'ikkajo');}} options={[{value:'month',label:'Месяц'},{value:'section',label:'Иккаджо'},{value:'course',label:'Курс'}]}/>
                 </div>
                 <div>
-                  <Label>Раздел / Месяц</Label>
+                  <Label>Раздел / Месяц / Курс</Label>
                   <Select value={reference} onChange={setReference} options={refOptions}/>
                 </div>
               </div>
@@ -3106,7 +3111,7 @@ function SectionAccess({showToast,isMobile}){
             {selectedUserId && !aLoading && accessRows.map(row=>(
               <div key={row.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 0',borderBottom:`1px solid ${C.hairline}`,gap:8}}>
                 <div style={{display:'flex',alignItems:'center',gap:8}}>
-                  <span style={{fontFamily:F.kanji,fontSize:13,color:row.type==='month'?C.gold:C.accent,opacity:0.8}}>{row.type==='month'?'月':'技'}</span>
+                  <span style={{fontFamily:F.kanji,fontSize:13,color:row.type==='month'?C.gold:C.accent,opacity:0.8}}>{row.type==='month'?'月':row.type==='course'?'講':'技'}</span>
                   <div>
                     <div style={{fontFamily:F.mono,fontSize:13,color:C.ink}}>{refLabel[row.reference]||row.reference}</div>
                     <div style={{fontFamily:F.mono,fontSize:11,color:C.muted}}>
@@ -3121,6 +3126,201 @@ function SectionAccess({showToast,isMobile}){
           </div>
         </div>
 
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SECTION КУРСЫ — тематические курсы (courses + course_videos + products)
+// ═══════════════════════════════════════════════════════════════
+function SectionCourses({showToast,isMobile}){
+  const {courses,loading,saving,saveCourse,deleteCourse,addVideo,saveVideo,deleteVideo} = useCourses({adminMode:true});
+  const [editId, setEditId] = useState(null);   // id курса | 'new'
+  const [draft,  setDraft]  = useState({});
+
+  const startEdit = (c) => { setEditId(c.id); setDraft({...c, price: c.product?.price ?? 0}); };
+  const startNew  = ()  => {
+    setEditId('new');
+    setDraft({id:'', title:'', subtitle:'', description:'', kanji:'', sort_order:(courses.length+1)*10, is_published:false, price:0});
+  };
+
+  const doSave = async () => {
+    const isNew = editId === 'new';
+    const {ok,error,course} = await saveCourse(draft,{isNew});
+    if(ok){ showToast('Сохранено'); setEditId(course.id); setDraft({...course, price: course.product?.price ?? 0}); }
+    else showToast('Ошибка: '+error);
+  };
+  const doDelete = async () => {
+    if(!window.confirm('Удалить курс? Купленные доступы сохранятся, но курс исчезнет со страницы.')) return;
+    const {ok,error} = await deleteCourse(editId);
+    if(ok){ showToast('Курс удалён'); setEditId(null); }
+    else showToast('Ошибка: '+error);
+  };
+
+  const current = courses.find(c => c.id === editId);
+
+  if(loading) return <Spinner/>;
+
+  return(
+    <div style={{background:C.bg,minHeight:'100%'}}>
+      <div style={{padding:isMobile?'20px 16px 40px':'32px 36px 60px'}}>
+
+        <AdminSectionHead
+          num="" title="Курсы" kanji="講"
+          subtitle={`${courses.length} тематических курсов · продаются отдельно`}
+          actions={<Btn2 kind="accent" size="sm" onClick={startNew}>+ Новый курс</Btn2>}
+        />
+        <SumiStroke style={{margin:'0 0 24px',opacity:0.3}}/>
+
+        {editId && (
+          <div style={{background:C.surface,border:`1px solid ${C.accent}`,padding:isMobile?'18px 16px':'24px 22px',marginBottom:20}}>
+            <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,paddingBottom:14,borderBottom:`1px solid ${C.hairline}`}}>
+              <span style={{fontFamily:F.kanji,fontSize:15,color:C.accent,opacity:0.85}}>講</span>
+              <span style={{fontFamily:F.serif,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>
+                {editId==='new'?'НОВЫЙ КУРС':'РЕДАКТИРОВАНИЕ КУРСА'}
+              </span>
+            </div>
+
+            <div style={{display:'flex',flexDirection:'column',gap:12,marginBottom:16}}>
+              <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 2fr',gap:12}}>
+                <div>
+                  <Label>ID (латиница, для ссылок и оплаты)</Label>
+                  {editId==='new'
+                    ? <Input value={draft.id||''} onChange={v=>setDraft(d=>({...d,id:v.toLowerCase().replace(/[^a-z0-9-]/g,'')}))} placeholder="ukemi"/>
+                    : <div style={{padding:'8px 10px',fontFamily:F.mono,fontSize:13,color:C.muted}}>{draft.id}</div>}
+                </div>
+                <div><Label>Название</Label><Input value={draft.title||''} onChange={v=>setDraft(d=>({...d,title:v}))} placeholder="Название курса"/></div>
+              </div>
+              <div><Label>Подзаголовок</Label><Input value={draft.subtitle||''} onChange={v=>setDraft(d=>({...d,subtitle:v}))} placeholder="Кратко, одной строкой"/></div>
+              <div><Label>Описание</Label><RichTextEditor value={draft.description||''} onChange={v=>setDraft(d=>({...d,description:v}))} minHeight={200} breaks/></div>
+              <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'1fr 1fr 1fr auto',gap:12,alignItems:'end'}}>
+                <div><Label>Цена, ₽</Label><Input value={String(draft.price??'')} onChange={v=>setDraft(d=>({...d,price:v}))} type="number" placeholder="3000"/></div>
+                <div><Label>Иероглиф</Label><Input value={draft.kanji||''} onChange={v=>setDraft(d=>({...d,kanji:v}))} placeholder="応"/></div>
+                <div><Label>Порядок</Label><Input value={String(draft.sort_order??0)} onChange={v=>setDraft(d=>({...d,sort_order:v}))} type="number"/></div>
+                <div style={{display:'flex',alignItems:'center',gap:8,paddingBottom:4}}>
+                  <input type="checkbox" id="course_pub" checked={!!draft.is_published} onChange={e=>setDraft(d=>({...d,is_published:e.target.checked}))}/>
+                  <label htmlFor="course_pub" style={{fontFamily:F.mono,fontSize:11,color:C.ink,cursor:'pointer',letterSpacing:'0.06em',textTransform:'uppercase'}}>Опубликован</label>
+                </div>
+              </div>
+            </div>
+
+            <div style={{display:'flex',gap:8,flexWrap:'wrap',marginBottom:current?24:0}}>
+              <Btn2 kind="accent" size="sm" onClick={doSave} disabled={saving}>{saving?'…':'Сохранить курс'}</Btn2>
+              <Btn2 kind="quiet"  size="sm" onClick={()=>setEditId(null)}>Закрыть</Btn2>
+              {current && <Btn2 kind="quiet" size="sm" onClick={doDelete}>Удалить курс</Btn2>}
+            </div>
+
+            {/* Фильмы / уроки курса — доступны после первого сохранения */}
+            {current && (
+              <CourseVideosEditor course={current} addVideo={addVideo} saveVideo={saveVideo} deleteVideo={deleteVideo} showToast={showToast} isMobile={isMobile}/>
+            )}
+            {!current && (
+              <div style={{marginTop:14,fontFamily:F.mono,fontSize:11,color:C.muted}}>Сохраните курс, чтобы добавить видео.</div>
+            )}
+          </div>
+        )}
+
+        <div style={{background:C.surface,border:`1px solid ${C.hairline}`}}>
+          <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 70px':'1fr 90px 110px 80px 36px',borderBottom:`1px solid ${C.hairline}`,background:C.bg2}}>
+            {(isMobile?['Курс','Статус']:['Курс','Видео','Цена','Статус','']).map((h,i)=>(
+              <div key={i} style={{padding:'11px 16px',fontFamily:F.mono,fontSize:11,letterSpacing:'0.18em',color:C.muted,textTransform:'uppercase',fontWeight:600}}>{h}</div>
+            ))}
+          </div>
+          {courses.length===0 && (
+            <div style={{padding:'48px 22px',textAlign:'center'}}>
+              <div style={{fontFamily:F.kanji,fontSize:40,color:C.muted,opacity:0.3,marginBottom:8}}>講</div>
+              <div style={{fontFamily:F.serif,fontSize:15,color:C.muted}}>Нет курсов — добавьте первый</div>
+            </div>
+          )}
+          {courses.map((c,ri)=>(
+            <div key={c.id} onClick={()=>startEdit(c)}
+              style={{display:'grid',gridTemplateColumns:isMobile?'1fr 70px':'1fr 90px 110px 80px 36px',borderBottom:ri<courses.length-1?`1px solid ${C.hairline}`:'none',cursor:'pointer',background:editId===c.id?C.bg2:'transparent'}}>
+              <div style={{padding:'14px 16px',minWidth:0,display:'flex',alignItems:'center',gap:10}}>
+                <span style={{fontFamily:F.kanji,fontSize:18,color:C.accent,opacity:0.8}}>{c.kanji||'技'}</span>
+                <div style={{minWidth:0}}>
+                  <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{c.title}</div>
+                  <div style={{fontFamily:F.mono,fontSize:11,color:C.muted,marginTop:2}}>{c.id}</div>
+                </div>
+              </div>
+              {!isMobile && <div style={{padding:'14px 16px',display:'flex',alignItems:'center',fontFamily:F.mono,fontSize:13,color:C.ink2}}>{c.video_count}</div>}
+              {!isMobile && <div style={{padding:'14px 16px',display:'flex',alignItems:'center',fontFamily:F.mono,fontSize:13,color:C.ink2}}>{c.product?`${c.product.price.toLocaleString('ru-RU')} ₽`:'—'}</div>}
+              <div style={{padding:'14px 16px',display:'flex',alignItems:'center'}}>
+                <Pill2 kind={c.is_published?'success':'muted'} dot>{c.is_published?'живой':'черн.'}</Pill2>
+              </div>
+              {!isMobile && <div style={{padding:'14px 12px',display:'flex',alignItems:'center',justifyContent:'center',color:C.muted,fontSize:13}}>→</div>}
+            </div>
+          ))}
+        </div>
+
+      </div>
+    </div>
+  );
+}
+
+// ── Редактор фильмов курса ───────────────────────────────────────
+function CourseVideosEditor({course,addVideo,saveVideo,deleteVideo,showToast,isMobile}){
+  const [drafts, setDrafts] = useState({});
+  const videos = course.videos || [];
+  const get = (v) => drafts[v.id] ?? v;
+  const set = (id, patch) => setDrafts(d => ({...d, [id]: {...(d[id] ?? videos.find(v=>v.id===id)), ...patch}}));
+
+  const doAdd = async () => {
+    const {ok,error} = await addVideo(course.id, `Урок ${videos.length+1}`);
+    if(ok) showToast('Видео добавлено'); else showToast('Ошибка: '+error);
+  };
+  const doSave = async (v) => {
+    const {ok,error} = await saveVideo(course.id, get(v));
+    if(ok){ setDrafts(d=>{const n={...d}; delete n[v.id]; return n;}); showToast('Сохранено'); }
+    else showToast('Ошибка: '+error);
+  };
+  const doDelete = async (v) => {
+    if(!window.confirm(`Удалить «${v.title}»?`)) return;
+    const {ok,error} = await deleteVideo(course.id, v.id);
+    if(ok) showToast('Удалено'); else showToast('Ошибка: '+error);
+  };
+
+  return (
+    <div style={{borderTop:`1px solid ${C.hairline}`,paddingTop:18}}>
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
+        <span style={{fontFamily:F.kanji,fontSize:13,color:C.gold,opacity:0.8}}>映</span>
+        <span style={{fontFamily:F.serif,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>ФИЛЬМЫ И УРОКИ</span>
+        <span style={{fontFamily:F.mono,fontSize:11,color:C.muted}}>{videos.length}</span>
+        <div style={{marginLeft:'auto'}}><Btn2 kind="ghost" size="sm" onClick={doAdd}>+ Добавить видео</Btn2></div>
+      </div>
+      <div style={{display:'flex',flexDirection:'column',gap:12}}>
+        {videos.map((v,i)=>{
+          const d = get(v);
+          return (
+            <div key={v.id} style={{border:`1px solid ${C.hairline}`,background:C.bg,padding:isMobile?'12px':'16px'}}>
+              <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'40px 1fr 110px 80px',gap:10,alignItems:'end',marginBottom:10}}>
+                {!isMobile && <div style={{fontFamily:F.mono,fontSize:13,color:C.muted,paddingBottom:8}}>{String(i+1).padStart(2,'0')}</div>}
+                <div><Label>Название</Label><Input value={d.title||''} onChange={val=>set(v.id,{title:val})}/></div>
+                <div><Label>Длительность</Label><Input value={d.duration||''} onChange={val=>set(v.id,{duration:val})} placeholder="42:10"/></div>
+                <div><Label>Порядок</Label><Input value={String(d.sort_order??0)} onChange={val=>set(v.id,{sort_order:val})} type="number"/></div>
+              </div>
+              <div style={{marginBottom:10}}><Label>Описание</Label><Textarea value={d.description||''} onChange={val=>set(v.id,{description:val})} rows={2}/></div>
+              <div style={{marginBottom:10}}>
+                <Label>Видео (Kinescope)</Label>
+                <KinescopeUploader
+                  courseVideoId={v.id}
+                  currentVideoId={v.video_id}
+                  currentStatus={v.video_status}
+                  onComplete={async ({videoId,status})=>{
+                    // upload-url уже записал video_id в БД; сохраняем статус
+                    const {ok,error} = await saveVideo(course.id, {...get(v), video_id:videoId, video_status:status, video_provider:'kinescope'});
+                    if(ok) showToast('Видео загружено и сохранено');
+                    else showToast('Видео загружено, но не сохранено: '+error);
+                  }}
+                />
+              </div>
+              <div style={{display:'flex',gap:8}}>
+                <Btn2 kind="accent" size="sm" onClick={()=>doSave(v)} disabled={!drafts[v.id]}>Сохранить</Btn2>
+                <Btn2 kind="quiet" size="sm" onClick={()=>doDelete(v)}>Удалить</Btn2>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

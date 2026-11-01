@@ -5,6 +5,7 @@
  *   lessonId          — string (one of these three required)
  *   techniqueVideoId  — string
  *   knowledgeItemId   — string
+ *   courseVideoId     — string
  *   title             — string  (русский — ok, конвертируем в ASCII для Kinescope)
  *   filename          — string  (оригинальное имя файла)
  *   filesize          — number  (bytes)
@@ -43,9 +44,9 @@ export async function POST(request) {
 
     // 2. Parse body
     const body = await request.json();
-    const { lessonId, techniqueVideoId, knowledgeItemId, title, filename, filesize, parentId } = body;
+    const { lessonId, techniqueVideoId, knowledgeItemId, courseVideoId, title, filename, filesize, parentId } = body;
 
-    console.log('[upload-url] payload:', { lessonId, techniqueVideoId, knowledgeItemId, filename, filesize });
+    console.log('[upload-url] payload:', { lessonId, techniqueVideoId, knowledgeItemId, courseVideoId, filename, filesize });
 
     if (!filename || !filesize) {
       return NextResponse.json(
@@ -53,9 +54,9 @@ export async function POST(request) {
         { status: 400 }
       );
     }
-    if (!lessonId && !techniqueVideoId && !knowledgeItemId) {
+    if (!lessonId && !techniqueVideoId && !knowledgeItemId && !courseVideoId) {
       return NextResponse.json(
-        { error: 'lessonId, techniqueVideoId, or knowledgeItemId is required' },
+        { error: 'lessonId, techniqueVideoId, knowledgeItemId, or courseVideoId is required' },
         { status: 400 }
       );
     }
@@ -105,6 +106,16 @@ export async function POST(request) {
       if (result.count === 0) {
         console.error('[upload-url] knowledgeItem not found:', knowledgeItemId);
         return NextResponse.json({ error: `KnowledgeItem ${knowledgeItemId} not found` }, { status: 404 });
+      }
+    }
+    if (courseVideoId) {
+      const result = await prisma.courseVideo.updateMany({
+        where: { id: courseVideoId },
+        data:  videoUpdate,
+      });
+      if (result.count === 0) {
+        console.error('[upload-url] courseVideo not found:', courseVideoId);
+        return NextResponse.json({ error: `CourseVideo ${courseVideoId} not found` }, { status: 404 });
       }
     }
 

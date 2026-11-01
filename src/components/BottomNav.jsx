@@ -16,7 +16,7 @@ const NA  = '#9e2f1f';      // nav accent (active stripe)
 const ITEMS = [
   { id: 'knowledge', label: 'Знания',  kanji: '智' },
   { id: 'months',    label: 'Месяцы',  kanji: '月' },
-  { id: 'database',  label: 'База',    kanji: '技' },
+  { id: 'database',  label: 'Курсы',   kanji: '技' },
   { id: 'profile',   label: 'Профиль', kanji: '人' },
 ];
 

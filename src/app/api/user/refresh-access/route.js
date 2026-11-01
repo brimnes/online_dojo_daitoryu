@@ -18,8 +18,8 @@ import { NextResponse } from 'next/server';
 import { prisma }       from '@/lib/prisma.js';
 import { requireAuth }  from '@/lib/auth-server.js';
 import { queryRobokassaStatus } from '@/lib/robokassa.js';
+import { accessTypeForProduct } from '@/lib/access.js';
 
-const MONTH_REFS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
 
 async function queryYooKassa(providerPaymentId) {
   const credentials = Buffer.from(
@@ -85,7 +85,7 @@ export async function POST(request) {
         if (!result.succeeded) continue;
 
         const paidAt     = result.paidAt;
-        const accessType = MONTH_REFS.includes(payment.productReference) ? 'month' : 'section';
+        const accessType = accessTypeForProduct(payment.productType, payment.productReference);
         const reference  = payment.productReference;
         const amount     = Math.round(Number(payment.amount ?? 0));
         const source     = payment.paymentProvider || 'yookassa';

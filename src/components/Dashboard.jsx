@@ -5,7 +5,7 @@ import { C, hasLevel, levelIndex } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
 import { LEVELS, SELF_LEVELS } from '@/data/users';
 import { DB_SECTIONS } from '@/data/techniques';
-import { useMonths, useLessons, useUserAccessRows, hasMonthAccess, useKnowledge, useMonthsWithLessons, useUserExams, useUserPayments, useTechniques, usePushNotifications } from '@/lib/db';
+import { useMonths, useLessons, useUserAccessRows, hasMonthAccess, useKnowledge, useMonthsWithLessons, useUserExams, useUserPayments, useTechniques, usePushNotifications, useCourses } from '@/lib/db';
 import TakedaMon from '@/components/TakedaMon';
 import Sidebar from '@/components/Sidebar';
 import GlobalSearch from '@/components/GlobalSearch';
@@ -21,7 +21,7 @@ const PROGRAM_DURATION_MONTHS = { ikkajo: 12, nikkajo: 8, sankajo: 8 };
 const TABS = [
   { id: 'knowledge', label: 'База знаний',    num: '01', kanji: '智' },
   { id: 'months',    label: 'Месяцы 2026',    num: '02', kanji: '月' },
-  { id: 'database',  label: 'База техник',    num: '03', kanji: '技' },
+  { id: 'database',  label: 'Курсы',          num: '03', kanji: '技' },
   { id: 'profile',   label: 'Личный кабинет', num: '04', kanji: '人' },
 ];
 
@@ -990,11 +990,18 @@ function TabKnowledge({ nav, isMobile }) {
   );
 }
 
-// ── Вкладка: База техник ──────────────────────────────────────────
+// Экзаменационные программы, которые показываются в разделе «Курсы».
+// Никаджо и Санкаджо пока не размещаем — добавить id сюда, когда будут готовы.
+const EXAM_PROGRAM_IDS = ['ikkajo'];
+
+// ── Вкладка: Курсы ────────────────────────────────────────────────
+// Блок 1 — «Экзаменационная программа» (Иккаджо),
+// блок 2 — «Тематические курсы» (из таблицы courses, без хардкода).
 function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
   const [ikkajoChoiceOpen, setIkkajoChoiceOpen] = useState(false);
   const ua = userAccess ?? [];
   const { products: allProducts } = useProducts();
+  const { courses, loading: coursesLoading } = useCourses();
 
   // Доступ к Иккаджо считается «есть», если куплен весь раздел ИЛИ
   // хотя бы один из 4 подразделов (татиай/идори/усиродори/хандза-хандати)
@@ -1064,13 +1071,15 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
     }
   }
 
-  const allSecs = (DB_SECTIONS ?? []).map((sec, i) => ({
+  const allSecs = (DB_SECTIONS ?? []).filter(sec => EXAM_PROGRAM_IDS.includes(sec.id)).map((sec, i) => ({
     ...sec, ...(SECTION_EXTRA[sec.id] || {}), ...(REAL_STATS[sec.id] || {}),
     num: String(i + 1).padStart(2, '0'),
     accessState: getAccessState(sec),
   }));
 
-  const openCount  = allSecs.filter(s => s.accessState === 'open').length;
+  const openCourses = courses.filter(c => c.has_access).length;
+  const openCount  = allSecs.filter(s => s.accessState === 'open').length + openCourses;
+  const totalCount = allSecs.length + courses.length;
   const totalTechs = allSecs.reduce((sum, s) => sum + (s.techniques || 0), 0);
 
   const filtered = allSecs;
@@ -1284,10 +1293,10 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 13, color: C.muted, letterSpacing: '0.18em' }}>技 · 大東流</span>
           <span style={{ color: C.hairline2, fontSize: 13 }}>/</span>
-          <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.18em', color: C.ink, fontWeight: 600 }}>БАЗА ТЕХНИК</span>
+          <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.18em', color: C.ink, fontWeight: 600 }}>КУРСЫ</span>
         </div>
         <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.12em' }}>
-          {openCount} / {allSecs.length} РАЗДЕЛОВ ДОСТУПНО
+          {openCount} / {totalCount} КУРСОВ ДОСТУПНО
         </span>
       </div>
 
@@ -1297,10 +1306,10 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 24, marginBottom: 16 }}>
             <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 160, lineHeight: 0.85, color: C.accent, opacity: 0.1, flexShrink: 0, marginLeft: -8, marginBottom: -8 }}>技</div>
             <div style={{ flex: 1, paddingBottom: 4 }}>
-              <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 12 }}>БАЗА ТЕХНИК · ПРОГРАММЫ ШКОЛЫ</div>
-              <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 60, lineHeight: 0.9, letterSpacing: '0.04em', color: C.ink, fontWeight: 400, textTransform: 'uppercase' }}>База техник</h1>
+              <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 12 }}>КУРСЫ · ПРОГРАММЫ ШКОЛЫ</div>
+              <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 60, lineHeight: 0.9, letterSpacing: '0.04em', color: C.ink, fontWeight: 400, textTransform: 'uppercase' }}>Курсы</h1>
               <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 17, color: C.muted, marginTop: 14, maxWidth: 540, lineHeight: 1.55 }}>
-                Полное собрание программ Дайто-рю — от ученических до старших данов. Каждый раздел открывается отдельно.
+                Экзаменационная программа Дайто-рю и тематические курсы. Каждый курс приобретается отдельно.
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, paddingBottom: 8, flexShrink: 0 }}>
@@ -1322,16 +1331,33 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, marginBottom: 20 }}>
           <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 80, lineHeight: 0.85, color: C.accent, opacity: 0.13, flexShrink: 0 }}>技</span>
           <div style={{ paddingBottom: 4 }}>
-            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.22em', color: C.muted, textTransform: 'uppercase', marginBottom: 8 }}>БАЗА ТЕХНИК</div>
-            <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 36, color: C.ink, fontWeight: 400, textTransform: 'uppercase', lineHeight: 0.95 }}>База<br />техник</h1>
+            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.22em', color: C.muted, textTransform: 'uppercase', marginBottom: 8 }}>ПРОГРАММЫ ШКОЛЫ</div>
+            <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 36, color: C.ink, fontWeight: 400, textTransform: 'uppercase', lineHeight: 0.95 }}>Курсы</h1>
           </div>
         </div>
       )}
 
-      {/* ── Section cards ── */}
+      {/* ── Блок 1: Экзаменационная программа ── */}
+      <CoursesBlockHead kanji="試" title="Экзаменационная программа" isMobile={isMobile} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 16 : 20 }}>
         {filtered.map(sec => isMobile ? renderMobileCard(sec) : renderCard(sec))}
       </div>
+
+      {/* ── Блок 2: Тематические курсы ── */}
+      {(coursesLoading || courses.length > 0) && (
+        <>
+          <CoursesBlockHead kanji="専" title="Тематические курсы" isMobile={isMobile} style={{ marginTop: isMobile ? 36 : 52 }} />
+          <div style={{
+            display: 'grid',
+            gridTemplateColumns: isMobile ? '1fr' : 'repeat(auto-fill, minmax(340px, 1fr))',
+            gap: isMobile ? 16 : 20,
+          }}>
+            {coursesLoading && courses.length === 0
+              ? <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Загрузка…</div>
+              : courses.map(c => <ThematicCourseCard key={c.id} course={c} isMobile={isMobile} onOpen={() => nav.course(c.id)} />)}
+          </div>
+        </>
+      )}
 
 
       {/* ── Выбор покупки Иккаджо (раздел / весь сразу) ── */}
@@ -1344,6 +1370,68 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
       )}
     </div>
   );
+}
+
+// ── Заголовок блока на вкладке «Курсы» ──
+function CoursesBlockHead({ kanji, title, isMobile, style }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, paddingBottom: 10, marginBottom: isMobile ? 14 : 18, borderBottom: `1px solid ${C.border}`, ...style }}>
+      <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: isMobile ? 18 : 22, color: C.accent, lineHeight: 1 }}>{kanji}</span>
+      <h2 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: isMobile ? 20 : 26, color: C.ink, fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{title}</h2>
+    </div>
+  );
+}
+
+// ── Карточка тематического курса ──
+function ThematicCourseCard({ course, isMobile, onOpen }) {
+  const [hover, setHover] = useState(false);
+  const open  = course.has_access;
+  const price = course.product?.price;
+  const ink   = open ? '#ede5d3' : C.ink;
+  const muted = open ? '#7a6c52' : C.muted;
+  const hair  = open ? 'rgba(184,146,58,0.18)' : C.border;
+  return (
+    <article
+      onClick={onOpen}
+      onMouseEnter={() => !isMobile && setHover(true)}
+      onMouseLeave={() => !isMobile && setHover(false)}
+      style={{
+        display: 'flex', flexDirection: 'column', cursor: 'pointer',
+        background: open ? '#0f0d0a' : C.surface,
+        backgroundImage: open
+          ? 'linear-gradient(155deg, #18130d 0%, #0f0c08 60%, #0a0805 100%)'
+          : `linear-gradient(155deg, ${C.surface2} 0%, ${C.surface} 60%, ${C.bg2} 100%)`,
+        border: `1px solid ${hair}`, borderTop: `1px solid ${open ? C.accent : C.border}`,
+        boxShadow: hover ? '0 18px 40px -24px rgba(0,0,0,0.45)' : 'none',
+        transition: 'box-shadow 0.2s', overflow: 'hidden',
+      }}>
+      <div style={{ display: 'flex', alignItems: 'stretch', borderBottom: `1px solid ${hair}` }}>
+        <div style={{ width: isMobile ? 84 : 110, flexShrink: 0, display: 'flex', alignItems: 'center', justifyContent: 'center', borderRight: `1px solid ${hair}`, background: open ? 'linear-gradient(170deg, #1f1812 0%, #0d0a07 100%)' : C.bg2, minHeight: isMobile ? 84 : 110 }}>
+          <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: isMobile ? 48 : 64, lineHeight: 0.85, color: open ? C.accent : C.gold, fontWeight: 300 }}>{course.kanji || '技'}</span>
+        </div>
+        <div style={{ flex: 1, minWidth: 0, padding: isMobile ? '12px 14px' : '16px 20px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 6 }}>
+          <h3 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: isMobile ? 22 : 26, color: ink, fontWeight: 500, letterSpacing: '0.03em', lineHeight: 1.05, textTransform: 'uppercase' }}>{course.title}</h3>
+          {course.subtitle && <div style={{ fontFamily: "'Cormorant Garamond', serif", fontSize: isMobile ? 14 : 15, color: muted, lineHeight: 1.35 }}>{course.subtitle}</div>}
+        </div>
+      </div>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 12, padding: isMobile ? '12px 14px' : '14px 20px', marginTop: 'auto' }}>
+        <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: muted, letterSpacing: '0.16em', textTransform: 'uppercase' }}>
+          {course.video_count} {pluralVideo(course.video_count)}
+        </span>
+        <span style={{ marginLeft: 'auto', fontFamily: open ? "var(--font-mono), monospace" : "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: open ? 11 : 20, letterSpacing: open ? '0.18em' : 0, textTransform: open ? 'uppercase' : 'none', color: open ? C.goldLight : ink, fontWeight: open ? 600 : 500 }}>
+          {open ? 'Открыт' : (price != null ? `${price.toLocaleString('ru-RU')} ₽` : '')}
+        </span>
+        <span style={{ color: hover ? C.accent : muted, fontSize: 16, transition: 'color 0.15s' }}>→</span>
+      </div>
+    </article>
+  );
+}
+
+function pluralVideo(n) {
+  const m10 = n % 10, m100 = n % 100;
+  if (m10 === 1 && m100 !== 11) return 'фильм';
+  if (m10 >= 2 && m10 <= 4 && (m100 < 12 || m100 > 14)) return 'фильма';
+  return 'фильмов';
 }
 
 // ── Модалка выбора покупки Иккаджо (отдельный раздел / весь сразу) ──

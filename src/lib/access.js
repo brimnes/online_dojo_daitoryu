@@ -49,3 +49,22 @@ export function getAccessibleIkkajoSections(userAccessRows) {
   if (hasIkkajoFullAccess(userAccessRows)) return IKKAJO_SECTION_KEYS;
   return IKKAJO_SECTION_KEYS.filter(s => hasIkkajoSectionAccess(userAccessRows, s));
 }
+
+/** Доступ к тематическому курсу (type=course, reference=courses.id) */
+export function hasCourseAccess(userAccessRows, courseId) {
+  return (userAccessRows || []).some(
+    a => a.type === 'course' && a.reference === courseId
+  );
+}
+
+const MONTH_REFS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
+
+/**
+ * Тип строки user_access, которую выдаёт оплата продукта.
+ * Курсы — по product.type; для старых продуктов сохраняется прежнее
+ * правило (месяц по reference, иначе section), чтобы не менять доступы.
+ */
+export function accessTypeForProduct(productType, reference) {
+  if (productType === 'course') return 'course';
+  return MONTH_REFS.includes(reference) ? 'month' : 'section';
+}
