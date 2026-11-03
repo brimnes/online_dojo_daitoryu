@@ -1223,6 +1223,8 @@ function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLe
   const [deleting, setDeleting] = useState(false);
   const { rows: accessRows, loading: accessLoading, reload: reloadAccess } = useAdminUserAccess(user.id);
   const { months: grantMonths } = useMonths();
+  const { courses: grantCourses } = useCourses({adminMode:true});
+  const courseTitle = Object.fromEntries(grantCourses.map(c => [c.id, c.title]));
   const [grantType, setGrantType] = useState('month');
   const [grantRef, setGrantRef] = useState('');
   const [grantSource, setGrantSource] = useState('free');
@@ -1449,9 +1451,9 @@ function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLe
                   {accessRows.map((row, i) => (
                     <div key={row.id||i} style={{display:'flex', alignItems:'center', gap:10, background:C.bg2, border:`1px solid ${C.hairline}`, padding:'10px 14px'}}>
                       <div style={{flex:1, minWidth:0}}>
-                        <div style={{fontFamily:F.mono, fontSize:13, color:C.ink, fontWeight:500}}>{row.reference}</div>
+                        <div style={{fontFamily:F.mono, fontSize:13, color:C.ink, fontWeight:500}}>{row.type === 'course' ? (courseTitle[row.reference] || row.reference) : row.reference}</div>
                         <div style={{fontFamily:F.mono, fontSize:11, color:C.muted, letterSpacing:'0.06em', textTransform:'uppercase', marginTop:2}}>
-                          {row.type} · {row.paid_at ? new Date(row.paid_at).toLocaleDateString('ru-RU') : '—'}
+                          {row.type === 'course' ? 'курс' : row.type} · {row.paid_at ? new Date(row.paid_at).toLocaleDateString('ru-RU') : '—'}
                           {row.source && <> · {ACCESS_SOURCE_LABELS[row.source] || row.source}</>}
                           {row.amount > 0 && <> · {row.amount.toLocaleString('ru-RU')} ₽</>}
                         </div>
@@ -1471,16 +1473,22 @@ function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLe
               <div style={{display:'flex', flexDirection:'column', gap:8}}>
                 <div>
                   <div style={{fontFamily:F.mono, fontSize:11, color:C.muted, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:5}}>Тип</div>
-                  <Select value={grantType} onChange={setGrantType} options={[
+                  <Select value={grantType} onChange={v=>{setGrantType(v);setGrantRef('');}} options={[
                     {value:'month',   label:'Месяц'},
                     {value:'section', label:'Раздел Иккаджо'},
+                    {value:'course',  label:'Тематический курс'},
                   ]}/>
                 </div>
                 <div>
                   <div style={{fontFamily:F.mono, fontSize:11, color:C.muted, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:5}}>
-                    {grantType === 'month' ? 'Месяц (например: june)' : 'Раздел'}
+                    {grantType === 'month' ? 'Месяц (например: june)' : grantType === 'course' ? 'Курс' : 'Раздел'}
                   </div>
-                  {grantType === 'section' ? (
+                  {grantType === 'course' ? (
+                    <Select value={grantRef} onChange={setGrantRef} options={[
+                      {value:'',label:'— выберите —'},
+                      ...grantCourses.map(c => ({ value: c.id, label: c.title })),
+                    ]}/>
+                  ) : grantType === 'section' ? (
                     <Select value={grantRef} onChange={setGrantRef} options={[{value:'',label:'— выберите —'}, ...ACCESS_SECTION_OPTIONS]}/>
                   ) : (
                     <Select value={grantRef} onChange={setGrantRef} options={[
@@ -1838,6 +1846,7 @@ function ExamDetailPanel({exam, onApprove, onReject}){
 function SectionPayments({isMobile}){
   const {payments,loading} = useAdminPayments();
   const {payments: accessRows} = useAccess();
+  const {courses} = useCourses({adminMode:true});
   const [filter,setFilter] = useState('all');
   const [period,setPeriod] = useState('month');
   const [visibleCount,setVisibleCount] = useState(12);
@@ -1873,6 +1882,10 @@ function SectionPayments({isMobile}){
   const paidOps  = succeeded.length + external.length;
   const avgCheck = paidOps ? Math.round(income/paidOps) : 0;
 
+  // Название ручной выдачи: месяц по-русски, курс — по названию курса
+  const accessLabel = a => a.type==='month' && MONTH_RU[a.reference] ? MONTH_RU[a.reference]
+    : a.type==='course' ? `Курс «${courses.find(c=>c.id===a.reference)?.title || a.reference}»`
+    : (a.desc || '—');
   const MONTH_RU = {jan:'Январь',feb:'Февраль',mar:'Март',apr:'Апрель',may:'Май',jun:'Июнь',jul:'Июль',aug:'Август',sep:'Сентябрь',oct:'Октябрь',nov:'Ноябрь',dec:'Декабрь'};
 
   // ── по продуктам: сколько купили каждого товара за период ────
@@ -1892,8 +1905,7 @@ function SectionPayments({isMobile}){
   });
   external.forEach(a => {
     const key   = `${a.type}/${a.reference}`;
-    const label = a.type==='month' && MONTH_RU[a.reference] ? MONTH_RU[a.reference] : (a.desc || '—');
-    addSale(key, label, a.type==='month'?'月':'技', a.amount);
+    addSale(key, accessLabel(a), a.type==='month'?'月':'技', a.amount);
   });
   const breakdown = [...productMap.values()]
     .sort((a,b) => b.sum - a.sum)
@@ -1923,8 +1935,8 @@ function SectionPayments({isMobile}){
     letter:  (a.userName||'?')[0].toUpperCase(),
     name:    a.userName||'—',
     email:   'выдано вручную',
-    item:    a.type==='month' ? (MONTH_RU[a.reference] || a.desc) : a.desc,
-    itemSub: a.type==='month'?'Месячный':'Раздел',
+    item:    accessLabel(a),
+    itemSub: a.type==='month'?'Месячный':a.type==='course'?'Курс':'Раздел',
     method:  MANUAL_METHOD[a.source]||a.source,
     amount:  a.amount||0,
     status:  'succeeded',
