@@ -14,6 +14,7 @@ import { hasIkkajoFullAccess, hasIkkajoSectionAccess, IKKAJO_SECTIONS, IKKAJO_SE
 import { IKKAJO_SECTION_KEYS } from '@/lib/ikkajoSections';
 import { useProducts } from '@/lib/useProducts';
 import { pluralSections } from '@/components/CoursePage';
+import CoursePurchaseModal from '@/components/CoursePurchaseModal';
 
 // Срок программы пока не хранится в БД — единственный явный источник здесь.
 // TODO: перенести в Product.durationMonths + админку, когда появится экран управления Product.
@@ -1000,6 +1001,7 @@ const EXAM_PROGRAM_IDS = ['ikkajo'];
 // блок 2 — «Тематические курсы» (из таблицы courses, без хардкода).
 function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
   const [ikkajoChoiceOpen, setIkkajoChoiceOpen] = useState(false);
+  const [coursePreview,    setCoursePreview]    = useState(null); // курс для окна покупки
   const ua = userAccess ?? [];
   const { products: allProducts } = useProducts();
   const { courses, loading: coursesLoading } = useCourses();
@@ -1090,7 +1092,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
     const n = c.video_count;
     const price = c.product?.price;
     return {
-      id: `course:${c.id}`, courseId: c.id, isCourse: true,
+      id: `course:${c.id}`, courseId: c.id, isCourse: true, course: c,
       kanji: c.kanji || '技', image: c.image_url,
       label: c.title, programLabel: 'Тематический курс', program: `${n} ${pluralSections(n)}`,
       desc: c.subtitle || '',
@@ -1105,7 +1107,12 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
   });
 
   function handleCta(sec) {
-    if (sec.isCourse) { nav.course(sec.courseId); return; }
+    // Как у Иккаджо: купленный курс — внутрь, иначе окно с описанием и оплатой
+    if (sec.isCourse) {
+      if (sec.accessState === 'open') nav.course(sec.courseId);
+      else setCoursePreview(sec.course);
+      return;
+    }
     if (sec.id === 'ikkajo') {
       if (hasAnyIkkajoAccess) nav.ikkajo();
       else if (sec.accessState === 'purchase') setIkkajoChoiceOpen(true);
@@ -1389,6 +1396,11 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
       )}
       {coursesLoading && courseSecs.length === 0 && (
         <div style={{ marginTop: 36, fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Загрузка курсов…</div>
+      )}
+
+      {/* ── Превью и покупка тематического курса ── */}
+      {coursePreview && (
+        <CoursePurchaseModal course={coursePreview} onClose={() => setCoursePreview(null)} isMobile={isMobile} />
       )}
 
       {/* ── Выбор покупки Иккаджо (раздел / весь сразу) ── */}

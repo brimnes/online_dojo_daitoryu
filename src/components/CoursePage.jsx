@@ -7,6 +7,7 @@ import { useCourse } from '@/lib/db';
 import Sidebar from '@/components/Sidebar';
 import { MobileBottomNav } from '@/components/BottomNav';
 import RichText from '@/components/RichText';
+import CoursePurchaseModal from '@/components/CoursePurchaseModal';
 
 const MONO  = "var(--font-mono), 'JetBrains Mono', monospace";
 const SERIF = "var(--font-cormorant), 'Cormorant Garamond', serif";
@@ -17,26 +18,7 @@ const KANJI = "'Noto Serif JP', var(--font-noto), serif";
 export default function CoursePage({ nav, courseId, user = {}, onLogout }) {
   const isMobile = useIsMobile();
   const { course, loading, notFound } = useCourse(courseId);
-  const [buying,   setBuying]   = useState(false);
-  const [buyError, setBuyError] = useState('');
-
-  const handleBuy = async () => {
-    const product = course?.product;
-    if (!product || buying) return;
-    setBuying(true);
-    setBuyError('');
-    try {
-      const res  = await fetch('/api/robokassa/create-payment', {
-        method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ product_id: product.id }),
-      });
-      const data = await res.json();
-      if (!res.ok) { setBuyError(data.error || 'Ошибка при создании платежа'); setBuying(false); return; }
-      if (data.payment_id) { try { sessionStorage.setItem('yk_pending_pid', data.payment_id); } catch {} }
-      // buying не сбрасываем — кнопка заблокирована до перехода на оплату
-      window.location.href = data.confirmation_url;
-    } catch { setBuyError('Ошибка соединения'); setBuying(false); }
-  };
+  const [buyOpen, setBuyOpen] = useState(false);
 
   const isStaff   = user?.role === 'admin' || user?.role === 'teacher';
   const canWatch  = !!course && (course.has_access || isStaff);
@@ -155,11 +137,10 @@ export default function CoursePage({ nav, courseId, user = {}, onLogout }) {
                       </div>
                       <div style={{ fontFamily: MONO, fontSize: 11, color: C.muted, letterSpacing: '0.12em', marginTop: 8, marginBottom: 18 }}>РАЗОВАЯ ОПЛАТА · ПОСТОЯННЫЙ ДОСТУП</div>
                       <button
-                        onClick={handleBuy} disabled={!canBuy || buying}
-                        style={{ width: '100%', minHeight: 48, padding: '13px', background: buying || !canBuy ? C.muted : C.ink, color: '#ede5d3', border: 'none', cursor: buying || !canBuy ? 'default' : 'pointer', fontFamily: MONO, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-                        {buying ? 'Переход к оплате…' : canBuy ? 'Купить курс' : 'Продажа скоро'}
+                        onClick={() => setBuyOpen(true)} disabled={!canBuy}
+                        style={{ width: '100%', minHeight: 48, padding: '13px', background: !canBuy ? C.muted : C.ink, color: '#ede5d3', border: 'none', cursor: !canBuy ? 'default' : 'pointer', fontFamily: MONO, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
+                        {canBuy ? 'Купить курс' : 'Продажа скоро'}
                       </button>
-                      {buyError && <div style={{ fontFamily: MONO, fontSize: 11, color: '#a03030', marginTop: 8 }}>{buyError}</div>}
                     </>
                   )}
                 </aside>
@@ -197,6 +178,10 @@ export default function CoursePage({ nav, courseId, user = {}, onLogout }) {
       </div>
 
       {isMobile && <MobileBottomNav nav={nav} active="database" isAdmin={user?.role === 'admin'} />}
+
+      {buyOpen && course && (
+        <CoursePurchaseModal course={course} onClose={() => setBuyOpen(false)} isMobile={isMobile} />
+      )}
     </div>
   );
 }
