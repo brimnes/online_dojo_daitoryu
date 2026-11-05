@@ -46,6 +46,7 @@ export async function PUT(request, { params }) {
     if (body.image_url    !== undefined) data.imageUrl    = body.image_url || null;
     if (body.sort_order   !== undefined) data.sortOrder   = Number(body.sort_order) || 0;
     if (body.is_published !== undefined) data.isPublished = !!body.is_published;
+    if (body.is_coming_soon !== undefined) data.isComingSoon = !!body.is_coming_soon;
 
     const course = await prisma.course.update({
       where: { id: params.id }, data,

@@ -3155,7 +3155,7 @@ function SectionCourses({showToast,isMobile}){
 
   const tabs = [
     {id:'ikkajo', kanji:'一', label:'Иккаджо', sub:'экзаменационная программа'},
-    ...courses.map(c=>({id:c.id, kanji:c.kanji||'技', label:c.title, sub:c.is_published?'тематический курс':'черновик'})),
+    ...courses.map(c=>({id:c.id, kanji:c.kanji||'技', label:c.title, sub:!c.is_published?'черновик':c.is_coming_soon?'в разработке':'тематический курс'})),
   ];
   const current = courses.find(c=>c.id===tab);
 
@@ -3261,13 +3261,17 @@ function CourseEditor({course,hook,showToast,isMobile,onCreated,onDeleted}){
               <div><Label>Название</Label><Input value={draft.title||''} onChange={v=>setDraft(d=>({...d,title:v}))} placeholder="Название курса"/></div>
             </div>
             <div><Label>Подзаголовок (на карточке)</Label><Input value={draft.subtitle||''} onChange={v=>setDraft(d=>({...d,subtitle:v}))} placeholder="Кратко, одной строкой"/></div>
-            <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'1fr 1fr 1fr auto',gap:12,alignItems:'end'}}>
+            <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'1fr 1fr 1fr auto auto',gap:12,alignItems:'end'}}>
               <div><Label>Цена, ₽</Label><Input value={String(draft.price??'')} onChange={v=>setDraft(d=>({...d,price:v}))} type="number" placeholder="3000"/></div>
               <div><Label>Иероглиф</Label><Input value={draft.kanji||''} onChange={v=>setDraft(d=>({...d,kanji:v}))} placeholder="応"/></div>
               <div><Label>Порядок</Label><Input value={String(draft.sort_order??0)} onChange={v=>setDraft(d=>({...d,sort_order:v}))} type="number"/></div>
               <div style={{display:'flex',alignItems:'center',gap:8,paddingBottom:4}}>
                 <input type="checkbox" id={`course_pub_${draft.id||'new'}`} checked={!!draft.is_published} onChange={e=>setDraft(d=>({...d,is_published:e.target.checked}))}/>
                 <label htmlFor={`course_pub_${draft.id||'new'}`} style={{fontFamily:F.mono,fontSize:11,color:C.ink,cursor:'pointer',letterSpacing:'0.06em',textTransform:'uppercase'}}>Виден ученикам</label>
+              </div>
+              <div style={{display:'flex',alignItems:'center',gap:8,paddingBottom:4}}>
+                <input type="checkbox" id={`course_soon_${draft.id||'new'}`} checked={!!draft.is_coming_soon} onChange={e=>setDraft(d=>({...d,is_coming_soon:e.target.checked}))}/>
+                <label htmlFor={`course_soon_${draft.id||'new'}`} style={{fontFamily:F.mono,fontSize:11,color:C.ink,cursor:'pointer',letterSpacing:'0.06em',textTransform:'uppercase'}}>В разработке</label>
               </div>
             </div>
           </div>

@@ -837,6 +837,7 @@ export function useCourses({ adminMode = false } = {}) {
         image_url:    course.image_url   || null,
         sort_order:   Number(course.sort_order) || 0,
         is_published: !!course.is_published,
+        is_coming_soon: !!course.is_coming_soon,
         price:        course.price,
       };
       if (isNew) {

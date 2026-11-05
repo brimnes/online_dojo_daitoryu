@@ -55,6 +55,7 @@ export async function POST(request) {
         imageUrl:    body.image_url   || null,
         sortOrder:   body.sort_order  ?? 0,
         isPublished: body.is_published ?? false,
+        isComingSoon: !!body.is_coming_soon,
       },
       include: { videos: true },
     });

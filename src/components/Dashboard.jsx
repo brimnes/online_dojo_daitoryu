@@ -1097,7 +1097,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
       label: c.title, programLabel: 'Тематический курс', program: `${n} ${pluralSections(n)}`,
       desc: c.subtitle || '',
       price: price != null ? `${price.toLocaleString('ru-RU')} ₽` : '',
-      accessState: c.has_access ? 'open' : 'purchase',
+      accessState: c.has_access ? 'open' : c.is_coming_soon ? 'soon' : 'purchase',
       stats: [
         { label: 'Разделов', val: n },
         { label: 'Видео',    val: (c.videos || []).filter(v => v.has_video).length },
@@ -1122,7 +1122,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
   }
 
   const statusBadgeLabel = (sec) => {
-    if (sec.isCourse) return sec.accessState === 'open' ? 'Куплен' : 'К покупке';
+    if (sec.isCourse) return sec.accessState === 'open' ? 'Куплен' : sec.accessState === 'soon' ? 'В разработке' : 'К покупке';
     if (sec.id === 'ikkajo') {
       if (hasFullIkkajo) return 'Куплен';
       if (hasAnyIkkajoAccess) return 'Частично открыт';
@@ -1134,7 +1134,11 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
   };
 
   const ctaLabel = (sec) => {
-    if (sec.isCourse) return sec.accessState === 'open' ? 'Перейти' : (sec.price ? `Купить — ${sec.price}` : 'Подробнее');
+    if (sec.isCourse) {
+      if (sec.accessState === 'open') return 'Перейти';
+      if (sec.accessState === 'soon') return 'В разработке';
+      return sec.price ? `Купить — ${sec.price}` : 'Подробнее';
+    }
     if (sec.id === 'ikkajo') {
       if (hasAnyIkkajoAccess) return 'Перейти';
       if (sec.accessState === 'locked') return '🔒 Нет доступа';

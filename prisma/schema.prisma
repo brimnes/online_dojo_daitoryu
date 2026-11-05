@@ -466,6 +466,8 @@ model Course {
   imageUrl    String?  @map("image_url")  // обложка курса
   sortOrder   Int      @default(0)     @map("sort_order")
   isPublished Boolean  @default(false) @map("is_published")
+  // «В разработке»: карточка видна, но купить нельзя
+  isComingSoon Boolean @default(false) @map("is_coming_soon")
   createdAt   DateTime @default(now()) @map("created_at")
   updatedAt   DateTime @updatedAt      @map("updated_at")
 

@@ -23,7 +23,7 @@ export default function CoursePage({ nav, courseId, user = {}, onLogout }) {
   const isStaff   = user?.role === 'admin' || user?.role === 'teacher';
   const canWatch  = !!course && (course.has_access || isStaff);
   const product   = course?.product;
-  const canBuy    = !!course && !course.has_access && product?.is_active;
+  const canBuy    = !!course && !course.has_access && product?.is_active && !course.is_coming_soon;
 
   return (
     <div className="fade" style={{ display: 'flex', minHeight: '100vh' }}>
@@ -139,7 +139,7 @@ export default function CoursePage({ nav, courseId, user = {}, onLogout }) {
                       <button
                         onClick={() => setBuyOpen(true)} disabled={!canBuy}
                         style={{ width: '100%', minHeight: 48, padding: '13px', background: !canBuy ? C.muted : C.ink, color: '#ede5d3', border: 'none', cursor: !canBuy ? 'default' : 'pointer', fontFamily: MONO, fontSize: 12, letterSpacing: '0.14em', textTransform: 'uppercase' }}>
-                        {canBuy ? 'Купить курс' : 'Продажа скоро'}
+                        {canBuy ? 'Купить курс' : course.is_coming_soon ? 'В разработке' : 'Продажа скоро'}
                       </button>
                     </>
                   )}

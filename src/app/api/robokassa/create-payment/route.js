@@ -39,6 +39,14 @@ export async function POST(request) {
       return Response.json({ error: 'Product not found', product_id }, { status: 404 });
     }
 
+    // Курс «в разработке» пока не продаётся
+    if (product.type === 'course') {
+      const course = await prisma.course.findUnique({ where: { id: product.reference }, select: { isComingSoon: true } });
+      if (course?.isComingSoon) {
+        return Response.json({ error: 'Курс в разработке и пока не продаётся' }, { status: 409 });
+      }
+    }
+
     const existingAccess = await prisma.userAccess.findFirst({
       where: { userId: user.id, type: product.type, reference: product.reference },
     });

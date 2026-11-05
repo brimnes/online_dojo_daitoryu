@@ -20,7 +20,7 @@ export function courseToSnake(c, { product = null, hasAccess = false, withVideo 
   return {
     id: c.id, title: c.title, subtitle: c.subtitle, description: c.description,
     kanji: c.kanji, image_url: c.imageUrl ?? null,
-    sort_order: c.sortOrder, is_published: c.isPublished,
+    sort_order: c.sortOrder, is_published: c.isPublished, is_coming_soon: !!c.isComingSoon,
     created_at: c.createdAt, updated_at: c.updatedAt,
     video_count: (c.videos ?? []).length,
     videos: (c.videos ?? []).map(v => videoToSnake(v, { withVideo })),

@@ -17,7 +17,7 @@ export default function CoursePurchaseModal({ course, onClose, isMobile }) {
 
   const product  = course.product;
   const sections = course.videos || [];
-  const canBuy   = !!product?.is_active;
+  const canBuy   = !!product?.is_active && !course.is_coming_soon;
 
   const handleBuy = async () => {
     if (!canBuy || buying) return;
@@ -104,7 +104,7 @@ export default function CoursePurchaseModal({ course, onClose, isMobile }) {
                     fontFamily: MONO, fontSize: 12, fontWeight: 600,
                     letterSpacing: '0.14em', textTransform: 'uppercase',
                   }}>
-                  {buying ? 'Переход к оплате…' : canBuy ? 'Купить курс' : 'Продажа скоро'}
+                  {buying ? 'Переход к оплате…' : canBuy ? 'Купить курс' : course.is_coming_soon ? 'В разработке' : 'Продажа скоро'}
                 </button>
               </div>
             </div>
