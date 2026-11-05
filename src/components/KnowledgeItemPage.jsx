@@ -27,7 +27,11 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
       try {
         const res = await fetch(`/api/knowledge/${itemId}`);
         if (!res.ok) { setNotFound(true); }
-        else { setItem(await res.json()); }
+        else {
+          setItem(await res.json());
+          // Счётчик прочтений — без ожидания и без ошибок для ученика
+          fetch(`/api/knowledge/${itemId}/read`, { method: 'POST' }).catch(() => {});
+        }
       } catch {
         setNotFound(true);
       }

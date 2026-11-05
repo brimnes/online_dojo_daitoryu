@@ -3552,6 +3552,7 @@ function SectionKnowledge({showToast,isMobile}){
                 <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,fontWeight:500,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.title||'Без названия'}</div>
                 {item.subtitle&&<div style={{fontFamily:F.mono,fontSize:11,color:C.muted,marginTop:2,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{item.subtitle}</div>}
                 {item.video_id&&<div style={{fontFamily:F.mono,fontSize:11,color:C.gold,marginTop:4,letterSpacing:'0.08em'}}>▶ видео</div>}
+                {item.is_published&&<div style={{fontFamily:F.mono,fontSize:11,color:C.muted,marginTop:4,letterSpacing:'0.04em'}} title="Открытий статьи · уникальных учеников">👁 {item.read_count??0} прочт. · {item.reader_count??0} уч.</div>}
               </div>
               <div style={{padding:'14px 16px',display:'flex',alignItems:'center'}}>
                 {item.tag ? (
