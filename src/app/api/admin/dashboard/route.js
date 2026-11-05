@@ -149,10 +149,11 @@ export async function GET(request) {
     };
 
     // ── Access ───────────────────────────────────────────────
-    const byType = { month: 0, section: 0 };
+    const byType = { month: 0, section: 0, course: 0 };
     for (const a of allAccess) {
       if (a.type === 'month')   byType.month++;
       else if (a.type === 'section') byType.section++;
+      else if (a.type === 'course')  byType.course++;
     }
 
     const access = {

@@ -9,8 +9,8 @@
 
 import { prisma } from '@/lib/prisma.js';
 import { verifyResultSignature } from '@/lib/robokassa.js';
+import { accessTypeForProduct } from '@/lib/access.js';
 
-const MONTH_REFS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
 
 async function handleResult(params) {
   const outSum         = params.get('OutSum');
@@ -34,7 +34,7 @@ async function handleResult(params) {
 
   const existing = await prisma.payment.findUnique({
     where:  { providerPaymentId },
-    select: { id: true, status: true, userId: true, productId: true, productReference: true, amount: true },
+    select: { id: true, status: true, userId: true, productId: true, productType: true, productReference: true, amount: true },
   });
 
   if (!existing) {
@@ -55,7 +55,7 @@ async function handleResult(params) {
     data:  { status: 'succeeded', paidAt, rawPayload: { outSum, invId, signatureValue } },
   });
 
-  const accessType = MONTH_REFS.includes(existing.productReference) ? 'month' : 'section';
+  const accessType = accessTypeForProduct(existing.productType, existing.productReference);
 
   try {
     await prisma.userAccess.upsert({

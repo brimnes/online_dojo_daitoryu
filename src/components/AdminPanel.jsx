@@ -5,7 +5,7 @@ import {
   useUsers, useAccess, useExams,
   useMonths, useLessons, useTechniques,
   useComments, useVideoUpload,
-  useAdminUserAccess, useKnowledge, useAdminPayments,
+  useAdminUserAccess, useKnowledge, useAdminPayments, useCourses,
   grantAccess, revokeAccess,
 } from '@/lib/db';
 // Supabase removed — always connected to Timeweb PostgreSQL
@@ -397,7 +397,7 @@ const SECTIONS = [
   {id:'dashboard', num:'01', label:'Дашборд',        kanji:'見'},
   {id:'users',     num:'02', label:'Ученики',         kanji:'人'},
   {id:'months',    num:'03', label:'Месяцы и уроки',  kanji:'月'},
-  {id:'ikkajo',    num:'04', label:'База техник',     kanji:'技'},
+  {id:'courses',   num:'04', label:'Курсы',           kanji:'技'},
   {id:'knowledge', num:'05', label:'База знаний',     kanji:'智'},
   {id:'payments',  num:'06', label:'Платежи',         kanji:'銭'},
   {id:'comments',  num:'07', label:'Комментарии',     kanji:'声'},
@@ -479,7 +479,8 @@ export default function AdminPanel({ onExit, user }) {
   // ─── Восстановление секции после refresh ────────────────────────
   useEffect(() => {
     try {
-      const saved = localStorage.getItem(ADMIN_SECTION_KEY);
+      let saved = localStorage.getItem(ADMIN_SECTION_KEY);
+      if (saved === 'ikkajo') saved = 'courses'; // техники Иккаджо переехали во вкладку «Курсы»
       if (saved && SECTIONS.some(s => s.id === saved)) {
         setSection(saved);
       }
@@ -640,7 +641,7 @@ export default function AdminPanel({ onExit, user }) {
           {section==='knowledge' && <SectionKnowledge showToast={showToast} isMobile={isMobile}/>}
           {section==='payments'  && <SectionPayments                        isMobile={isMobile}/>}
           {section==='months'    && <SectionMonths    showToast={showToast} isMobile={isMobile}/>}
-          {section==='ikkajo'    && <SectionIkkajo    showToast={showToast} isMobile={isMobile}/>}
+          {section==='courses'   && <SectionCourses   showToast={showToast} isMobile={isMobile}/>}
           {section==='comments'  && <SectionComments  showToast={showToast} isMobile={isMobile} onOpenTarget={openCommentTarget}/>}
           {section==='push'      && <SectionPush      showToast={showToast} isMobile={isMobile}/>}
         </div>
@@ -1222,6 +1223,8 @@ function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLe
   const [deleting, setDeleting] = useState(false);
   const { rows: accessRows, loading: accessLoading, reload: reloadAccess } = useAdminUserAccess(user.id);
   const { months: grantMonths } = useMonths();
+  const { courses: grantCourses } = useCourses({adminMode:true});
+  const courseTitle = Object.fromEntries(grantCourses.map(c => [c.id, c.title]));
   const [grantType, setGrantType] = useState('month');
   const [grantRef, setGrantRef] = useState('');
   const [grantSource, setGrantSource] = useState('free');
@@ -1448,9 +1451,9 @@ function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLe
                   {accessRows.map((row, i) => (
                     <div key={row.id||i} style={{display:'flex', alignItems:'center', gap:10, background:C.bg2, border:`1px solid ${C.hairline}`, padding:'10px 14px'}}>
                       <div style={{flex:1, minWidth:0}}>
-                        <div style={{fontFamily:F.mono, fontSize:13, color:C.ink, fontWeight:500}}>{row.reference}</div>
+                        <div style={{fontFamily:F.mono, fontSize:13, color:C.ink, fontWeight:500}}>{row.type === 'course' ? (courseTitle[row.reference] || row.reference) : row.reference}</div>
                         <div style={{fontFamily:F.mono, fontSize:11, color:C.muted, letterSpacing:'0.06em', textTransform:'uppercase', marginTop:2}}>
-                          {row.type} · {row.paid_at ? new Date(row.paid_at).toLocaleDateString('ru-RU') : '—'}
+                          {row.type === 'course' ? 'курс' : row.type} · {row.paid_at ? new Date(row.paid_at).toLocaleDateString('ru-RU') : '—'}
                           {row.source && <> · {ACCESS_SOURCE_LABELS[row.source] || row.source}</>}
                           {row.amount > 0 && <> · {row.amount.toLocaleString('ru-RU')} ₽</>}
                         </div>
@@ -1470,16 +1473,22 @@ function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLe
               <div style={{display:'flex', flexDirection:'column', gap:8}}>
                 <div>
                   <div style={{fontFamily:F.mono, fontSize:11, color:C.muted, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:5}}>Тип</div>
-                  <Select value={grantType} onChange={setGrantType} options={[
+                  <Select value={grantType} onChange={v=>{setGrantType(v);setGrantRef('');}} options={[
                     {value:'month',   label:'Месяц'},
                     {value:'section', label:'Раздел Иккаджо'},
+                    {value:'course',  label:'Тематический курс'},
                   ]}/>
                 </div>
                 <div>
                   <div style={{fontFamily:F.mono, fontSize:11, color:C.muted, letterSpacing:'0.1em', textTransform:'uppercase', marginBottom:5}}>
-                    {grantType === 'month' ? 'Месяц (например: june)' : 'Раздел'}
+                    {grantType === 'month' ? 'Месяц (например: june)' : grantType === 'course' ? 'Курс' : 'Раздел'}
                   </div>
-                  {grantType === 'section' ? (
+                  {grantType === 'course' ? (
+                    <Select value={grantRef} onChange={setGrantRef} options={[
+                      {value:'',label:'— выберите —'},
+                      ...grantCourses.map(c => ({ value: c.id, label: c.title })),
+                    ]}/>
+                  ) : grantType === 'section' ? (
                     <Select value={grantRef} onChange={setGrantRef} options={[{value:'',label:'— выберите —'}, ...ACCESS_SECTION_OPTIONS]}/>
                   ) : (
                     <Select value={grantRef} onChange={setGrantRef} options={[
@@ -1837,6 +1846,7 @@ function ExamDetailPanel({exam, onApprove, onReject}){
 function SectionPayments({isMobile}){
   const {payments,loading} = useAdminPayments();
   const {payments: accessRows} = useAccess();
+  const {courses} = useCourses({adminMode:true});
   const [filter,setFilter] = useState('all');
   const [period,setPeriod] = useState('month');
   const [visibleCount,setVisibleCount] = useState(12);
@@ -1872,6 +1882,10 @@ function SectionPayments({isMobile}){
   const paidOps  = succeeded.length + external.length;
   const avgCheck = paidOps ? Math.round(income/paidOps) : 0;
 
+  // Название ручной выдачи: месяц по-русски, курс — по названию курса
+  const accessLabel = a => a.type==='month' && MONTH_RU[a.reference] ? MONTH_RU[a.reference]
+    : a.type==='course' ? `Курс «${courses.find(c=>c.id===a.reference)?.title || a.reference}»`
+    : (a.desc || '—');
   const MONTH_RU = {jan:'Январь',feb:'Февраль',mar:'Март',apr:'Апрель',may:'Май',jun:'Июнь',jul:'Июль',aug:'Август',sep:'Сентябрь',oct:'Октябрь',nov:'Ноябрь',dec:'Декабрь'};
 
   // ── по продуктам: сколько купили каждого товара за период ────
@@ -1891,8 +1905,7 @@ function SectionPayments({isMobile}){
   });
   external.forEach(a => {
     const key   = `${a.type}/${a.reference}`;
-    const label = a.type==='month' && MONTH_RU[a.reference] ? MONTH_RU[a.reference] : (a.desc || '—');
-    addSale(key, label, a.type==='month'?'月':'技', a.amount);
+    addSale(key, accessLabel(a), a.type==='month'?'月':'技', a.amount);
   });
   const breakdown = [...productMap.values()]
     .sort((a,b) => b.sum - a.sum)
@@ -1909,7 +1922,7 @@ function SectionPayments({isMobile}){
     name:    p.user_name||'—',
     email:   p.user_email||'—',
     item:    p.product_title||p.product_reference||'—',
-    itemSub: p.product_type==='month'?'Месячный':p.product_type==='section'?'Раздел':'—',
+    itemSub: p.product_type==='month'?'Месячный':p.product_type==='section'?'Раздел':p.product_type==='course'?'Курс':'—',
     method:  p.provider==='yookassa'?'ЮKassa':p.provider==='robokassa'?'Робокасса':(p.provider||'—'),
     amount:  p.amount||0,
     status:  p.status,
@@ -1922,8 +1935,8 @@ function SectionPayments({isMobile}){
     letter:  (a.userName||'?')[0].toUpperCase(),
     name:    a.userName||'—',
     email:   'выдано вручную',
-    item:    a.type==='month' ? (MONTH_RU[a.reference] || a.desc) : a.desc,
-    itemSub: a.type==='month'?'Месячный':'Раздел',
+    item:    accessLabel(a),
+    itemSub: a.type==='month'?'Месячный':a.type==='course'?'Курс':'Раздел',
     method:  MANUAL_METHOD[a.source]||a.source,
     amount:  a.amount||0,
     status:  'succeeded',
@@ -2546,7 +2559,7 @@ function SectionMonths({showToast,isMobile}){
 // ═══════════════════════════════════════════════════════════════
 // 5. ИККАДЖО
 // ═══════════════════════════════════════════════════════════════
-function SectionIkkajo({showToast,isMobile}){
+function SectionIkkajo({showToast,isMobile,embedded}){
   const {techniques,loading,saving,getTechContent,saveTechInfo,saveMistakes,saveVideos} = useTechniques();
   const [selectedId,    setSelectedId]    = useState(null);
   const [filterKyu,     setFilterKyu]     = useState('all');
@@ -2825,11 +2838,13 @@ function SectionIkkajo({showToast,isMobile}){
   );
 
   return (
-    <div style={{background:C.bg,minHeight:'100%'}}>
-      <div style={{padding:isMobile?'20px 16px 40px':'32px 36px 60px'}}>
+    <div style={embedded?undefined:{background:C.bg,minHeight:'100%'}}>
+      <div style={{padding:embedded?0:(isMobile?'20px 16px 40px':'32px 36px 60px')}}>
 
-        <AdminSectionHead num="04" title="База техник" subtitle={`${techniques.length||302} техник в трёх программах`} kanji="技"/>
-        <SumiStroke style={{margin:'0 0 24px',opacity:0.3}}/>
+        {!embedded && <>
+          <AdminSectionHead num="04" title="Техники Иккаджо" subtitle={`${techniques.length||302} техник в трёх программах`} kanji="技"/>
+          <SumiStroke style={{margin:'0 0 24px',opacity:0.3}}/>
+        </>}
 
         {/* program cards */}
         {!isMobile&&(
@@ -2969,6 +2984,8 @@ const ACCESS_SOURCE_LABELS = {
 
 function SectionAccess({showToast,isMobile}){
   const {users,loading:uLoading} = useUsers();
+  const {courses} = useCourses({adminMode:true});
+  const courseOptions = courses.map(c=>({value:c.id,label:c.title}));
   const {payments: allAccess} = useAccess();
   const [selectedUserId, setSelectedUserId] = useState('');
   const [type,      setType]      = useState('month');
@@ -2978,7 +2995,7 @@ function SectionAccess({showToast,isMobile}){
   const [granting,  setGranting]  = useState(false);
   const {rows:accessRows, loading:aLoading, reload} = useAdminUserAccess(selectedUserId);
 
-  const refOptions = type === 'month' ? ACCESS_MONTH_OPTIONS : ACCESS_SECTION_OPTIONS;
+  const refOptions = type === 'month' ? ACCESS_MONTH_OPTIONS : type === 'course' ? courseOptions : ACCESS_SECTION_OPTIONS;
 
   // Разбивка всех доступов по источнику
   const bySource = {};
@@ -3014,6 +3031,7 @@ function SectionAccess({showToast,isMobile}){
     sep:'Сентябрь',oct:'Октябрь',nov:'Ноябрь',dec:'Декабрь',
     ikkajo:'Иккаджо (весь)',
     ...IKKAJO_LABELS,
+    ...Object.fromEntries(courses.map(c=>[c.id,`Курс «${c.title}»`])),
   };
 
   if(uLoading) return <Spinner/>;
@@ -3066,10 +3084,10 @@ function SectionAccess({showToast,isMobile}){
               <div style={{display:'grid',gridTemplateColumns:'1fr 1fr',gap:10}}>
                 <div>
                   <Label>Тип</Label>
-                  <Select value={type} onChange={v=>{setType(v);setReference(v==='month'?'jan':'ikkajo');}} options={[{value:'month',label:'Месяц'},{value:'section',label:'Раздел'}]}/>
+                  <Select value={type} onChange={v=>{setType(v);setReference(v==='month'?'jan':v==='course'?(courses[0]?.id||''):'ikkajo');}} options={[{value:'month',label:'Месяц'},{value:'section',label:'Иккаджо'},{value:'course',label:'Курс'}]}/>
                 </div>
                 <div>
-                  <Label>Раздел / Месяц</Label>
+                  <Label>Раздел / Месяц / Курс</Label>
                   <Select value={reference} onChange={setReference} options={refOptions}/>
                 </div>
               </div>
@@ -3106,7 +3124,7 @@ function SectionAccess({showToast,isMobile}){
             {selectedUserId && !aLoading && accessRows.map(row=>(
               <div key={row.id} style={{display:'flex',alignItems:'center',justifyContent:'space-between',padding:'10px 0',borderBottom:`1px solid ${C.hairline}`,gap:8}}>
                 <div style={{display:'flex',alignItems:'center',gap:8}}>
-                  <span style={{fontFamily:F.kanji,fontSize:13,color:row.type==='month'?C.gold:C.accent,opacity:0.8}}>{row.type==='month'?'月':'技'}</span>
+                  <span style={{fontFamily:F.kanji,fontSize:13,color:row.type==='month'?C.gold:C.accent,opacity:0.8}}>{row.type==='month'?'月':row.type==='course'?'講':'技'}</span>
                   <div>
                     <div style={{fontFamily:F.mono,fontSize:13,color:C.ink}}>{refLabel[row.reference]||row.reference}</div>
                     <div style={{fontFamily:F.mono,fontSize:11,color:C.muted}}>
@@ -3121,6 +3139,287 @@ function SectionAccess({showToast,isMobile}){
           </div>
         </div>
 
+      </div>
+    </div>
+  );
+}
+
+// ═══════════════════════════════════════════════════════════════
+// SECTION КУРСЫ — Иккаджо (техники) + тематические курсы, вкладками
+// ═══════════════════════════════════════════════════════════════
+function SectionCourses({showToast,isMobile}){
+  const hook = useCourses({adminMode:true});
+  const {courses,loading} = hook;
+  // 'ikkajo' — редактор техник Иккаджо; иначе id курса; 'new' — новый курс
+  const [tab, setTab] = useState('ikkajo');
+
+  const tabs = [
+    {id:'ikkajo', kanji:'一', label:'Иккаджо', sub:'экзаменационная программа'},
+    ...courses.map(c=>({id:c.id, kanji:c.kanji||'技', label:c.title, sub:!c.is_published?'черновик':c.is_coming_soon?'в разработке':'тематический курс'})),
+  ];
+  const current = courses.find(c=>c.id===tab);
+
+  return(
+    <div style={{background:C.bg,minHeight:'100%'}}>
+      <div style={{padding:isMobile?'20px 16px 40px':'32px 36px 60px'}}>
+
+        <AdminSectionHead
+          num="04" title="Курсы" kanji="技"
+          subtitle={`Иккаджо и ${courses.length} тематических курсов · каждый продаётся отдельно`}
+        />
+        <SumiStroke style={{margin:'0 0 20px',opacity:0.3}}/>
+
+        {/* Вкладки курсов */}
+        <div style={{display:'flex',gap:8,flexWrap:isMobile?'nowrap':'wrap',overflowX:isMobile?'auto':'visible',marginBottom:24,paddingBottom:isMobile?4:0}}>
+          {tabs.map(t=>{
+            const active = tab===t.id;
+            return (
+              <button key={t.id} onClick={()=>setTab(t.id)}
+                style={{display:'flex',alignItems:'center',gap:10,padding:'10px 16px',minHeight:52,flexShrink:0,
+                  background:active?C.ink:C.surface,color:active?C.onAccent:C.ink,
+                  border:`1px solid ${active?C.ink:C.hairline}`,cursor:'pointer',textAlign:'left'}}>
+                <span style={{fontFamily:F.kanji,fontSize:20,color:active?C.goldLight:C.accent,lineHeight:1}}>{t.kanji}</span>
+                <span style={{display:'flex',flexDirection:'column',gap:2}}>
+                  <span style={{fontFamily:F.serif,fontSize:15,fontWeight:500,letterSpacing:'0.03em'}}>{t.label}</span>
+                  <span style={{fontFamily:F.mono,fontSize:10,letterSpacing:'0.14em',textTransform:'uppercase',color:active?'#c2b59c':C.muted}}>{t.sub}</span>
+                </span>
+              </button>
+            );
+          })}
+          <button onClick={()=>setTab('new')}
+            style={{padding:'10px 16px',minHeight:52,flexShrink:0,background:tab==='new'?C.accent:'transparent',color:tab==='new'?C.onAccent:C.ink2,
+              border:`1px dashed ${tab==='new'?C.accent:C.hairline2}`,cursor:'pointer',fontFamily:F.mono,fontSize:11,letterSpacing:'0.12em',textTransform:'uppercase'}}>
+            + Новый курс
+          </button>
+        </div>
+
+        {tab==='ikkajo' && <SectionIkkajo showToast={showToast} isMobile={isMobile} embedded/>}
+        {tab!=='ikkajo' && loading && <Spinner/>}
+        {tab!=='ikkajo' && !loading && (tab==='new' || current) && (
+          <CourseEditor
+            key={tab}
+            course={tab==='new' ? null : current}
+            hook={hook} showToast={showToast} isMobile={isMobile}
+            onCreated={c=>setTab(c.id)}
+            onDeleted={()=>setTab('ikkajo')}
+          />
+        )}
+      </div>
+    </div>
+  );
+}
+
+// ── Редактор одного тематического курса ──────────────────────────
+function CourseEditor({course,hook,showToast,isMobile,onCreated,onDeleted}){
+  const {saving,saveCourse,deleteCourse,addVideo,saveVideo,deleteVideo} = hook;
+  const isNew = !course;
+  const [draft, setDraft] = useState(() => course
+    ? {...course, price: course.product?.price ?? 0}
+    : {id:'', title:'', subtitle:'', description:'', kanji:'', image_url:null, sort_order:100, is_published:false, price:0});
+
+  const doSave = async () => {
+    const {ok,error,course:saved} = await saveCourse(draft,{isNew});
+    if(!ok){ showToast('Ошибка: '+error); return; }
+    showToast('Сохранено');
+    if(isNew) onCreated(saved);
+  };
+  const doDelete = async () => {
+    if(!window.confirm('Удалить курс? Купленные доступы сохранятся, но курс исчезнет со страницы.')) return;
+    const {ok,error} = await deleteCourse(course.id);
+    if(ok){ showToast('Курс удалён'); onDeleted(); }
+    else showToast('Ошибка: '+error);
+  };
+  // Обложка сохраняется сразу, без кнопки «Сохранить курс»
+  const onImage = async (url) => {
+    setDraft(d=>({...d,image_url:url}));
+    if(isNew) return;
+    const {ok,error} = await saveCourse({...draft,image_url:url});
+    showToast(ok ? (url ? 'Обложка сохранена' : 'Обложка удалена') : 'Ошибка: '+error);
+  };
+
+  return (
+    <div>
+      <div style={{background:C.surface,border:`1px solid ${C.hairline}`,padding:isMobile?'18px 16px':'24px 22px',marginBottom:20}}>
+        <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:18,paddingBottom:14,borderBottom:`1px solid ${C.hairline}`}}>
+          <span style={{fontFamily:F.kanji,fontSize:15,color:C.accent,opacity:0.85}}>{draft.kanji||'講'}</span>
+          <span style={{fontFamily:F.serif,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>
+            {isNew?'НОВЫЙ КУРС':'КАРТОЧКА И СТРАНИЦА КУРСА'}
+          </span>
+          {!isNew && <Pill2 kind={course.is_published?'success':'muted'} dot style={{marginLeft:'auto'}}>{course.is_published?'виден ученикам':'черновик'}</Pill2>}
+        </div>
+
+        <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'280px 1fr',gap:20,marginBottom:16}}>
+          <CourseImageInput url={draft.image_url} onChange={onImage} showToast={showToast}/>
+          <div style={{display:'flex',flexDirection:'column',gap:12}}>
+            <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'1fr 2fr',gap:12}}>
+              <div>
+                <Label>ID (латиница, для ссылок и оплаты)</Label>
+                {isNew
+                  ? <Input value={draft.id||''} onChange={v=>setDraft(d=>({...d,id:v.toLowerCase().replace(/[^a-z0-9-]/g,'')}))} placeholder="ukemi"/>
+                  : <div style={{padding:'8px 10px',fontFamily:F.mono,fontSize:13,color:C.muted}}>{draft.id}</div>}
+              </div>
+              <div><Label>Название</Label><Input value={draft.title||''} onChange={v=>setDraft(d=>({...d,title:v}))} placeholder="Название курса"/></div>
+            </div>
+            <div><Label>Подзаголовок (на карточке)</Label><Input value={draft.subtitle||''} onChange={v=>setDraft(d=>({...d,subtitle:v}))} placeholder="Кратко, одной строкой"/></div>
+            <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr 1fr':'1fr 1fr 1fr auto auto',gap:12,alignItems:'end'}}>
+              <div><Label>Цена, ₽</Label><Input value={String(draft.price??'')} onChange={v=>setDraft(d=>({...d,price:v}))} type="number" placeholder="3000"/></div>
+              <div><Label>Иероглиф</Label><Input value={draft.kanji||''} onChange={v=>setDraft(d=>({...d,kanji:v}))} placeholder="応"/></div>
+              <div><Label>Порядок</Label><Input value={String(draft.sort_order??0)} onChange={v=>setDraft(d=>({...d,sort_order:v}))} type="number"/></div>
+              <div style={{display:'flex',alignItems:'center',gap:8,paddingBottom:4}}>
+                <input type="checkbox" id={`course_pub_${draft.id||'new'}`} checked={!!draft.is_published} onChange={e=>setDraft(d=>({...d,is_published:e.target.checked}))}/>
+                <label htmlFor={`course_pub_${draft.id||'new'}`} style={{fontFamily:F.mono,fontSize:11,color:C.ink,cursor:'pointer',letterSpacing:'0.06em',textTransform:'uppercase'}}>Виден ученикам</label>
+              </div>
+              <div style={{display:'flex',alignItems:'center',gap:8,paddingBottom:4}}>
+                <input type="checkbox" id={`course_soon_${draft.id||'new'}`} checked={!!draft.is_coming_soon} onChange={e=>setDraft(d=>({...d,is_coming_soon:e.target.checked}))}/>
+                <label htmlFor={`course_soon_${draft.id||'new'}`} style={{fontFamily:F.mono,fontSize:11,color:C.ink,cursor:'pointer',letterSpacing:'0.06em',textTransform:'uppercase'}}>В разработке</label>
+              </div>
+            </div>
+          </div>
+        </div>
+        <div style={{marginBottom:16}}><Label>Описание (страница курса)</Label><RichTextEditor value={draft.description||''} onChange={v=>setDraft(d=>({...d,description:v}))} minHeight={180} breaks/></div>
+
+        <div style={{display:'flex',gap:8,flexWrap:'wrap'}}>
+          <Btn2 kind="accent" size="sm" onClick={doSave} disabled={saving}>{saving?'…':isNew?'Создать курс':'Сохранить курс'}</Btn2>
+          {!isNew && <Btn2 kind="quiet" size="sm" onClick={doDelete}>Удалить курс</Btn2>}
+        </div>
+      </div>
+
+      {isNew
+        ? <div style={{fontFamily:F.mono,fontSize:11,color:C.muted}}>Создайте курс, чтобы добавить разделы и видео.</div>
+        : <div style={{background:C.surface,border:`1px solid ${C.hairline}`,padding:isMobile?'18px 16px':'24px 22px'}}>
+            <CourseVideosEditor course={course} addVideo={addVideo} saveVideo={saveVideo} deleteVideo={deleteVideo} showToast={showToast} isMobile={isMobile}/>
+          </div>}
+    </div>
+  );
+}
+
+// ── Обложка курса: загрузка в S3 через /api/upload ───────────────
+function CourseImageInput({url,onChange,showToast}){
+  const fileRef = useRef(null);
+  const [uploading, setUploading] = useState(false);
+  const upload = async (file) => {
+    if(!file) return;
+    if(!file.type.startsWith('image/')){ showToast('Выберите изображение'); return; }
+    setUploading(true);
+    try {
+      const fd = new FormData();
+      fd.append('file', file);
+      fd.append('folder', 'courses');
+      const res  = await fetch('/api/upload', { method:'POST', body:fd });
+      const data = await res.json();
+      if(!res.ok) throw new Error(data.error || `HTTP ${res.status}`);
+      await onChange(data.url);
+    } catch(e) {
+      showToast('Ошибка загрузки: '+e.message);
+    } finally {
+      setUploading(false);
+      if(fileRef.current) fileRef.current.value = '';
+    }
+  };
+  return (
+    <div>
+      <Label>Обложка</Label>
+      <div onClick={()=>!uploading&&fileRef.current?.click()}
+        style={{position:'relative',aspectRatio:'4 / 3',background:C.bg2,border:`1px dashed ${C.hairline2}`,cursor:uploading?'default':'pointer',overflow:'hidden',display:'flex',alignItems:'center',justifyContent:'center'}}>
+        {url
+          ? <img src={url} alt="" style={{position:'absolute',inset:0,width:'100%',height:'100%',objectFit:'cover'}}/>
+          : <span style={{fontFamily:F.mono,fontSize:11,color:C.muted,letterSpacing:'0.1em',textTransform:'uppercase',textAlign:'center',padding:12}}>{uploading?'Загрузка…':'Нажмите, чтобы загрузить\nJPG / PNG / WEBP'}</span>}
+        {url && uploading && <div style={{position:'absolute',inset:0,background:'rgba(0,0,0,0.4)',color:'#fff',display:'flex',alignItems:'center',justifyContent:'center',fontFamily:F.mono,fontSize:11}}>Загрузка…</div>}
+      </div>
+      <input ref={fileRef} type="file" accept="image/jpeg,image/png,image/webp" style={{display:'none'}} onChange={e=>upload(e.target.files?.[0])}/>
+      <div style={{display:'flex',gap:8,marginTop:8}}>
+        <Btn2 kind="quiet" size="sm" onClick={()=>fileRef.current?.click()} disabled={uploading}>{url?'Заменить':'Загрузить'}</Btn2>
+        {url && <Btn2 kind="quiet" size="sm" onClick={()=>onChange(null)} disabled={uploading}>Убрать</Btn2>}
+      </div>
+    </div>
+  );
+}
+
+// ── Редактор разделов курса ──────────────────────────────────────
+function CourseVideosEditor({course,addVideo,saveVideo,deleteVideo,showToast,isMobile}){
+  const [drafts, setDrafts] = useState({});
+  const videos = course.videos || [];
+  const get = (v) => drafts[v.id] ?? v;
+  const set = (id, patch) => setDrafts(d => ({...d, [id]: {...(d[id] ?? videos.find(v=>v.id===id)), ...patch}}));
+
+  const doAdd = async () => {
+    const {ok,error} = await addVideo(course.id, `Раздел ${videos.length+1}`);
+    if(ok) showToast('Раздел добавлен'); else showToast('Ошибка: '+error);
+  };
+  const doSave = async (v) => {
+    const {ok,error} = await saveVideo(course.id, get(v));
+    if(ok){ setDrafts(d=>{const n={...d}; delete n[v.id]; return n;}); showToast('Сохранено'); }
+    else showToast('Ошибка: '+error);
+  };
+  const doDelete = async (v) => {
+    if(!window.confirm(`Удалить «${v.title}»?`)) return;
+    const {ok,error} = await deleteVideo(course.id, v.id);
+    if(ok) showToast('Удалено'); else showToast('Ошибка: '+error);
+  };
+
+  return (
+    <div style={{borderTop:`1px solid ${C.hairline}`,paddingTop:18}}>
+      <div style={{display:'flex',alignItems:'center',gap:10,marginBottom:14}}>
+        <span style={{fontFamily:F.kanji,fontSize:13,color:C.gold,opacity:0.8}}>映</span>
+        <span style={{fontFamily:F.serif,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>РАЗДЕЛЫ КУРСА</span>
+        <span style={{fontFamily:F.mono,fontSize:11,color:C.muted}}>{videos.length}</span>
+        <div style={{marginLeft:'auto'}}><Btn2 kind="ghost" size="sm" onClick={doAdd}>+ Добавить раздел</Btn2></div>
+      </div>
+      <div style={{display:'flex',flexDirection:'column',gap:12}}>
+        {videos.map((v,i)=>{
+          const d = get(v);
+          return (
+            <div key={v.id} style={{border:`1px solid ${C.hairline}`,background:C.bg,padding:isMobile?'12px':'16px'}}>
+              <div style={{display:'grid',gridTemplateColumns:isMobile?'1fr':'40px 1fr 110px 80px',gap:10,alignItems:'end',marginBottom:10}}>
+                {!isMobile && <div style={{fontFamily:F.mono,fontSize:13,color:C.muted,paddingBottom:8}}>{String(i+1).padStart(2,'0')}</div>}
+                <div><Label>Техника</Label><Input value={d.title||''} onChange={val=>set(v.id,{title:val})} placeholder="Иппондори"/></div>
+                <div><Label>Длительность</Label><Input value={d.duration||''} onChange={val=>set(v.id,{duration:val})} placeholder="8:10"/></div>
+                <div><Label>Порядок</Label><Input value={String(d.sort_order??0)} onChange={val=>set(v.id,{sort_order:val})} type="number"/></div>
+              </div>
+              <div style={{marginBottom:10}}><Label>Атака</Label><Input value={d.subtitle||''} onChange={val=>set(v.id,{subtitle:val})} placeholder="от прямого удара рукой"/></div>
+              <div style={{marginBottom:10}}><Label>Описание</Label><Textarea value={d.description||''} onChange={val=>set(v.id,{description:val})} rows={2}/></div>
+              <div style={{marginBottom:10}}>
+                <Label>Видео раздела (Kinescope)</Label>
+                <KinescopeUploader
+                  courseVideoId={v.id}
+                  currentVideoId={v.video_id}
+                  currentStatus={v.video_status}
+                  onComplete={async ({videoId,status})=>{
+                    // upload-url уже записал video_id в БД; сохраняем статус
+                    const {ok,error} = await saveVideo(course.id, {...v, video_id:videoId, video_status:status, video_provider:'kinescope'});
+                    if(ok) showToast('Видео загружено и сохранено');
+                    else showToast('Видео загружено, но не сохранено: '+error);
+                  }}
+                />
+              </div>
+              <div style={{marginBottom:10}}>
+                <Label>Видео с ошибками (необязательно)</Label>
+                <KinescopeUploader
+                  courseVideoId={v.id}
+                  courseVideoField="errors"
+                  currentVideoId={v.errors_video_id}
+                  currentStatus={v.errors_video_status}
+                  onComplete={async ({videoId,status})=>{
+                    const {ok,error} = await saveVideo(course.id, {...v, errors_video_id:videoId, errors_video_status:status});
+                    if(ok) showToast('Видео с ошибками загружено');
+                    else showToast('Видео загружено, но не сохранено: '+error);
+                  }}
+                />
+                {v.errors_video_id && (
+                  <button onClick={async()=>{
+                    if(!window.confirm('Убрать видео с ошибками из раздела?')) return;
+                    const {ok,error} = await saveVideo(course.id, {...v, errors_video_id:null, errors_video_status:'none'});
+                    showToast(ok ? 'Видео с ошибками убрано' : 'Ошибка: '+error);
+                  }} style={{marginTop:6,background:'none',border:'none',padding:0,color:C.muted,fontFamily:F.mono,fontSize:11,cursor:'pointer',textDecoration:'underline'}}>Убрать видео с ошибками</button>
+                )}
+              </div>
+              <div style={{display:'flex',gap:8}}>
+                <Btn2 kind="accent" size="sm" onClick={()=>doSave(v)} disabled={!drafts[v.id]}>Сохранить</Btn2>
+                <Btn2 kind="quiet" size="sm" onClick={()=>doDelete(v)}>Удалить</Btn2>
+              </div>
+            </div>
+          );
+        })}
       </div>
     </div>
   );

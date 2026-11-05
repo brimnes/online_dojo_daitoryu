@@ -208,15 +208,15 @@ model TechniqueVideo {
 // ────────────────────────────────────────────────────────────
 // user_access
 // Оплаченные доступы. КРИТИЧНАЯ таблица — источник правды для платного контента.
-// type: 'month' | 'section'
-// reference: 'jan'..'dec' | 'ikkajo' | 'tachiai' | 'idori' | ...
+// type: 'month' | 'section' | 'course'
+// reference: 'jan'..'dec' | 'ikkajo' | 'tachiai' | 'idori' | ... | courses.id
 // ────────────────────────────────────────────────────────────
 model UserAccess {
   id        Int      @id @default(autoincrement())
   userId    String   @map("user_id") @db.Uuid
-  // Допустимые значения: month section
+  // Допустимые значения: month section course
   type      String
-  reference String               // 'jan','feb',...,'ikkajo','tachiai',...
+  reference String               // 'jan','feb',...,'ikkajo','tachiai',...,courses.id
   paidAt    DateTime @default(now()) @map("paid_at")
   amount    Int?                 // в рублях
   // Источник: 'yookassa' | 'free' | 'cash' | 'card' | 'crypto'
@@ -271,7 +271,8 @@ model Payment {
 // ────────────────────────────────────────────────────────────
 model Product {
   id          String  @id @default(uuid()) @db.Uuid
-  // Допустимые значения: month section
+  // Допустимые значения: month section course
+  // course — тематический курс, reference = courses.id
   type        String
   reference   String              // 'jan','feb',...,'ikkajo','tachiai',...
   title       String
@@ -446,4 +447,63 @@ model PushSubscription {
   user User @relation(fields: [userId], references: [id], onDelete: Cascade)
 
   @@map("push_subscriptions")
+}
+
+
+// ────────────────────────────────────────────────────────────
+// courses
+// Тематические курсы (раздел «Курсы» → «Тематические курсы»).
+// Цена и продажа — через products (type='course', reference=courses.id),
+// доступ — через user_access (type='course', reference=courses.id).
+// Новый курс = новая строка здесь + продукт; структура страницы не меняется.
+// ────────────────────────────────────────────────────────────
+model Course {
+  id          String   @id        // slug: 'ikkajo-oyowaza', 'strength', ...
+  title       String
+  subtitle    String?  @default("")
+  description String?  @default("")   // markdown / html (RichText)
+  kanji       String?  @default("")
+  imageUrl    String?  @map("image_url")  // обложка курса
+  sortOrder   Int      @default(0)     @map("sort_order")
+  isPublished Boolean  @default(false) @map("is_published")
+  // «В разработке»: карточка видна, но купить нельзя
+  isComingSoon Boolean @default(false) @map("is_coming_soon")
+  createdAt   DateTime @default(now()) @map("created_at")
+  updatedAt   DateTime @updatedAt      @map("updated_at")
+
+  videos CourseVideo[]
+
+  @@map("courses")
+}
+
+
+// ────────────────────────────────────────────────────────────
+// course_videos
+// Разделы курса. У каждого раздела своё видео (Kinescope-поля — как у lessons).
+// ────────────────────────────────────────────────────────────
+model CourseVideo {
+  id          String  @id @default(uuid()) @db.Uuid
+  courseId    String  @map("course_id")
+  title       String               // техника: 'Иппондори'
+  subtitle    String? @default("") // атака: 'от прямого удара рукой'
+  description String? @default("")
+  duration    String?
+
+  videoProvider  String? @default("kinescope") @map("video_provider")
+  videoId        String? @map("video_id")
+  // Допустимые значения: none uploading processing ready error
+  videoStatus    String? @default("none")      @map("video_status")
+  videoPosterUrl String? @map("video_poster_url")
+  // Отдельное видео «Разбор ошибок» внутри раздела (необязательно)
+  errorsVideoId     String? @map("errors_video_id")
+  errorsVideoStatus String? @default("none") @map("errors_video_status")
+
+  sortOrder Int      @default(0)     @map("sort_order")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
+
+  @@index([videoId], map: "idx_course_videos_video_id")
+  @@index([errorsVideoId], map: "idx_course_videos_errors_video_id")
+  @@map("course_videos")
 }

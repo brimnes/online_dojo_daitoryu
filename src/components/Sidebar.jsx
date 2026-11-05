@@ -8,7 +8,7 @@ import TakedaMon from '@/components/TakedaMon';
 const TABS = [
   { id: 'knowledge', label: 'База знаний',    num: '01', kanji: '智' },
   { id: 'months',    label: 'Месяцы 2026',    num: '02', kanji: '月' },
-  { id: 'database',  label: 'База техник',    num: '03', kanji: '技' },
+  { id: 'database',  label: 'Курсы',          num: '03', kanji: '技' },
   { id: 'profile',   label: 'Личный кабинет', num: '04', kanji: '人' },
 ];
 

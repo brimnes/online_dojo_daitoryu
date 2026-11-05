@@ -5,7 +5,7 @@ import { C, hasLevel, levelIndex } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
 import { LEVELS, SELF_LEVELS } from '@/data/users';
 import { DB_SECTIONS } from '@/data/techniques';
-import { useMonths, useLessons, useUserAccessRows, hasMonthAccess, useKnowledge, useMonthsWithLessons, useUserExams, useUserPayments, useTechniques, usePushNotifications } from '@/lib/db';
+import { useMonths, useLessons, useUserAccessRows, hasMonthAccess, useKnowledge, useMonthsWithLessons, useUserExams, useUserPayments, useTechniques, usePushNotifications, useCourses } from '@/lib/db';
 import TakedaMon from '@/components/TakedaMon';
 import Sidebar from '@/components/Sidebar';
 import GlobalSearch from '@/components/GlobalSearch';
@@ -13,6 +13,8 @@ import { MobileBottomNav } from '@/components/BottomNav';
 import { hasIkkajoFullAccess, hasIkkajoSectionAccess, IKKAJO_SECTIONS, IKKAJO_SECTION_LABELS, getAccessibleIkkajoSections } from '@/lib/access';
 import { IKKAJO_SECTION_KEYS } from '@/lib/ikkajoSections';
 import { useProducts } from '@/lib/useProducts';
+import { pluralSections } from '@/components/CoursePage';
+import CoursePurchaseModal from '@/components/CoursePurchaseModal';
 
 // Срок программы пока не хранится в БД — единственный явный источник здесь.
 // TODO: перенести в Product.durationMonths + админку, когда появится экран управления Product.
@@ -21,7 +23,7 @@ const PROGRAM_DURATION_MONTHS = { ikkajo: 12, nikkajo: 8, sankajo: 8 };
 const TABS = [
   { id: 'knowledge', label: 'База знаний',    num: '01', kanji: '智' },
   { id: 'months',    label: 'Месяцы 2026',    num: '02', kanji: '月' },
-  { id: 'database',  label: 'База техник',    num: '03', kanji: '技' },
+  { id: 'database',  label: 'Курсы',          num: '03', kanji: '技' },
   { id: 'profile',   label: 'Личный кабинет', num: '04', kanji: '人' },
 ];
 
@@ -990,11 +992,19 @@ function TabKnowledge({ nav, isMobile }) {
   );
 }
 
-// ── Вкладка: База техник ──────────────────────────────────────────
+// Экзаменационные программы, которые показываются в разделе «Курсы».
+// Никаджо и Санкаджо пока не размещаем — добавить id сюда, когда будут готовы.
+const EXAM_PROGRAM_IDS = ['ikkajo'];
+
+// ── Вкладка: Курсы ────────────────────────────────────────────────
+// Блок 1 — «Экзаменационная программа» (Иккаджо),
+// блок 2 — «Тематические курсы» (из таблицы courses, без хардкода).
 function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
   const [ikkajoChoiceOpen, setIkkajoChoiceOpen] = useState(false);
+  const [coursePreview,    setCoursePreview]    = useState(null); // курс для окна покупки
   const ua = userAccess ?? [];
   const { products: allProducts } = useProducts();
+  const { courses, loading: coursesLoading } = useCourses();
 
   // Доступ к Иккаджо считается «есть», если куплен весь раздел ИЛИ
   // хотя бы один из 4 подразделов (татиай/идори/усиродори/хандза-хандати)
@@ -1064,18 +1074,45 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
     }
   }
 
-  const allSecs = (DB_SECTIONS ?? []).map((sec, i) => ({
+  const allSecs = (DB_SECTIONS ?? []).filter(sec => EXAM_PROGRAM_IDS.includes(sec.id)).map((sec, i) => ({
     ...sec, ...(SECTION_EXTRA[sec.id] || {}), ...(REAL_STATS[sec.id] || {}),
     num: String(i + 1).padStart(2, '0'),
     accessState: getAccessState(sec),
   }));
 
-  const openCount  = allSecs.filter(s => s.accessState === 'open').length;
+  const openCourses = courses.filter(c => c.has_access).length;
+  const openCount  = allSecs.filter(s => s.accessState === 'open').length + openCourses;
+  const totalCount = allSecs.length + courses.length;
   const totalTechs = allSecs.reduce((sum, s) => sum + (s.techniques || 0), 0);
 
   const filtered = allSecs;
 
+  // Тематические курсы — в том же формате карточки, что и Иккаджо
+  const courseSecs = courses.map(c => {
+    const n = c.video_count;
+    const price = c.product?.price;
+    return {
+      id: `course:${c.id}`, courseId: c.id, isCourse: true, course: c,
+      kanji: c.kanji || '技', image: c.image_url,
+      label: c.title, programLabel: 'Тематический курс', program: `${n} ${pluralSections(n)}`,
+      desc: c.subtitle || '',
+      price: price != null ? `${price.toLocaleString('ru-RU')} ₽` : '',
+      accessState: c.has_access ? 'open' : c.is_coming_soon ? 'soon' : 'purchase',
+      stats: [
+        { label: 'Разделов', val: n },
+        { label: 'Видео',    val: (c.videos || []).filter(v => v.has_video).length },
+        { label: 'Формат',   val: 'Видеокурс' },
+      ],
+    };
+  });
+
   function handleCta(sec) {
+    // Как у Иккаджо: купленный курс — внутрь, иначе окно с описанием и оплатой
+    if (sec.isCourse) {
+      if (sec.accessState === 'open') nav.course(sec.courseId);
+      else setCoursePreview(sec.course);
+      return;
+    }
     if (sec.id === 'ikkajo') {
       if (hasAnyIkkajoAccess) nav.ikkajo();
       else if (sec.accessState === 'purchase') setIkkajoChoiceOpen(true);
@@ -1085,6 +1122,7 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
   }
 
   const statusBadgeLabel = (sec) => {
+    if (sec.isCourse) return sec.accessState === 'open' ? 'Куплен' : sec.accessState === 'soon' ? 'В разработке' : 'К покупке';
     if (sec.id === 'ikkajo') {
       if (hasFullIkkajo) return 'Куплен';
       if (hasAnyIkkajoAccess) return 'Частично открыт';
@@ -1096,6 +1134,11 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
   };
 
   const ctaLabel = (sec) => {
+    if (sec.isCourse) {
+      if (sec.accessState === 'open') return 'Перейти';
+      if (sec.accessState === 'soon') return 'В разработке';
+      return sec.price ? `Купить — ${sec.price}` : 'Подробнее';
+    }
     if (sec.id === 'ikkajo') {
       if (hasAnyIkkajoAccess) return 'Перейти';
       if (sec.accessState === 'locked') return '🔒 Нет доступа';
@@ -1131,13 +1174,20 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
             <circle cx="50" cy="50" r="46" fill="none" stroke={v.kanjiRing} strokeWidth="0.3" />
             <circle cx="50" cy="50" r="38" fill="none" stroke={v.kanjiRing} strokeWidth="0.2" />
           </svg>
-          <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 120, lineHeight: 0.85, color: v.kanjiColor, fontWeight: 300, position: 'relative', zIndex: 1 }}>{sec.kanji}</div>
+          {sec.image ? (
+            <>
+              <img src={sec.image} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: isOpen ? 'none' : 'grayscale(0.35)' }} />
+              {!isOpen && <div style={{ position: 'absolute', inset: 0, background: 'rgba(15,13,10,0.28)' }} />}
+            </>
+          ) : (
+            <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 120, lineHeight: 0.85, color: v.kanjiColor, fontWeight: 300, position: 'relative', zIndex: 1 }}>{sec.kanji}</div>
+          )}
           {sec.nameJa && (
             <div style={{ position: 'absolute', bottom: 10, left: 14, fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 13, color: v.muted, letterSpacing: '0.25em' }}>{sec.nameJa}</div>
           )}
           {!isOpen && (
-            <div style={{ position: 'absolute', top: 12, right: 14, width: 26, height: 26, border: `1px solid ${v.hairline}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: v.muted }}>
-              {isSoon ? '◷' : '⌬'}
+            <div style={{ position: 'absolute', top: 12, right: 14, width: 26, height: 26, border: `1px solid ${v.hairline}`, background: sec.image ? C.surface : 'transparent', display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 13, color: v.muted, zIndex: 2 }}>
+              {isSoon ? '◷' : '🔒'}
             </div>
           )}
         </div>
@@ -1155,11 +1205,11 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           </div>
           <p style={{ margin: 0, fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 15, color: v.ink2, lineHeight: 1.65, maxWidth: 480 }}>{sec.desc}</p>
           <div style={{ display: 'flex', borderTop: `1px solid ${v.hairline}`, paddingTop: 12, marginTop: 4 }}>
-            {[
+            {(sec.stats ?? [
               { label: 'Техник',   val: isSoon ? '—' : sec.techniques },
               { label: 'Видео',    val: isSoon ? '—' : sec.lessons },
               { label: 'Разделов', val: isSoon ? '—' : sec.sections },
-            ].map((s, i, arr) => (
+            ]).map((s, i, arr) => (
               <div key={s.label} style={{ flex: 1, paddingLeft: i === 0 ? 0 : 14, paddingRight: 14, borderLeft: i > 0 ? `1px solid ${v.hairline}` : 'none' }}>
                 <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.16em', color: v.muted, textTransform: 'uppercase', marginBottom: 3 }}>{s.label}</div>
                 <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 18, fontWeight: 500, color: v.ink }}>{s.val}</div>
@@ -1223,11 +1273,16 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
         overflow: 'hidden',
       }}>
         <div style={{ display: 'flex', alignItems: 'stretch', borderBottom: `1px solid ${v.hairline}` }}>
-          <div style={{ width: 90, position: 'relative', background: v.kanjiBg, borderRight: `1px solid ${v.hairline}`, display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+          <div style={{ width: 90, minHeight: 90, position: 'relative', background: v.kanjiBg, borderRight: `1px solid ${v.hairline}`, display: 'flex', alignItems: 'center', justifyContent: 'center', overflow: 'hidden' }}>
             <svg viewBox="0 0 100 100" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', opacity: 0.3 }}>
               <circle cx="50" cy="50" r="46" fill="none" stroke={v.kanjiRing} strokeWidth="0.3" />
             </svg>
-            <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 68, lineHeight: 0.85, color: v.kanjiColor, position: 'relative' }}>{sec.kanji}</div>
+            {sec.image
+              ? <img src={sec.image} alt="" style={{ position: 'absolute', inset: 0, width: '100%', height: '100%', objectFit: 'cover', filter: isOpen ? 'none' : 'grayscale(0.35)' }} />
+              : <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 68, lineHeight: 0.85, color: v.kanjiColor, position: 'relative' }}>{sec.kanji}</div>}
+            {!isOpen && !isSoon && (
+              <div style={{ position: 'absolute', top: 6, right: 6, width: 22, height: 22, background: C.surface, border: `1px solid ${v.hairline}`, display: 'flex', alignItems: 'center', justifyContent: 'center', fontSize: 11 }}>🔒</div>
+            )}
           </div>
           <div style={{ flex: 1, padding: '12px 14px', display: 'flex', flexDirection: 'column', justifyContent: 'center', gap: 4, minWidth: 0 }}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
@@ -1246,11 +1301,11 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           </div>
           <p style={{ margin: '0 0 12px', fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, color: v.ink2, lineHeight: 1.55 }}>{sec.desc}</p>
           <div style={{ display: 'flex', padding: '10px 0', borderTop: `1px solid ${v.hairline}`, borderBottom: `1px solid ${v.hairline}`, marginBottom: 14 }}>
-            {[
+            {(sec.stats ?? [
               { label: 'Техник',   val: isSoon ? '—' : sec.techniques },
               { label: 'Видео',    val: isSoon ? '—' : sec.lessons },
               { label: 'Разделов', val: isSoon ? '—' : sec.sections },
-            ].map((s, i) => (
+            ]).map((s, i) => (
               <div key={s.label} style={{ flex: 1, paddingLeft: i === 0 ? 0 : 12, borderLeft: i > 0 ? `1px solid ${v.hairline}` : 'none' }}>
                 <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: v.muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 2 }}>{s.label}</div>
                 <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 15, color: v.ink, fontWeight: 500 }}>{s.val}</div>
@@ -1284,10 +1339,10 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
         <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 13, color: C.muted, letterSpacing: '0.18em' }}>技 · 大東流</span>
           <span style={{ color: C.hairline2, fontSize: 13 }}>/</span>
-          <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.18em', color: C.ink, fontWeight: 600 }}>БАЗА ТЕХНИК</span>
+          <span style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 11, letterSpacing: '0.18em', color: C.ink, fontWeight: 600 }}>КУРСЫ</span>
         </div>
         <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.12em' }}>
-          {openCount} / {allSecs.length} РАЗДЕЛОВ ДОСТУПНО
+          {openCount} / {totalCount} КУРСОВ ДОСТУПНО
         </span>
       </div>
 
@@ -1297,10 +1352,10 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 24, marginBottom: 16 }}>
             <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 160, lineHeight: 0.85, color: C.accent, opacity: 0.1, flexShrink: 0, marginLeft: -8, marginBottom: -8 }}>技</div>
             <div style={{ flex: 1, paddingBottom: 4 }}>
-              <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 12 }}>БАЗА ТЕХНИК · ПРОГРАММЫ ШКОЛЫ</div>
-              <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 60, lineHeight: 0.9, letterSpacing: '0.04em', color: C.ink, fontWeight: 400, textTransform: 'uppercase' }}>База техник</h1>
+              <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 12 }}>КУРСЫ · ПРОГРАММЫ ШКОЛЫ</div>
+              <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 60, lineHeight: 0.9, letterSpacing: '0.04em', color: C.ink, fontWeight: 400, textTransform: 'uppercase' }}>Курсы</h1>
               <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 17, color: C.muted, marginTop: 14, maxWidth: 540, lineHeight: 1.55 }}>
-                Полное собрание программ Дайто-рю — от ученических до старших данов. Каждый раздел открывается отдельно.
+                Экзаменационная программа Дайто-рю и тематические курсы. Каждый курс приобретается отдельно.
               </div>
             </div>
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, paddingBottom: 8, flexShrink: 0 }}>
@@ -1322,17 +1377,35 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
         <div style={{ display: 'flex', alignItems: 'flex-end', gap: 14, marginBottom: 20 }}>
           <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 80, lineHeight: 0.85, color: C.accent, opacity: 0.13, flexShrink: 0 }}>技</span>
           <div style={{ paddingBottom: 4 }}>
-            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.22em', color: C.muted, textTransform: 'uppercase', marginBottom: 8 }}>БАЗА ТЕХНИК</div>
-            <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 36, color: C.ink, fontWeight: 400, textTransform: 'uppercase', lineHeight: 0.95 }}>База<br />техник</h1>
+            <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, letterSpacing: '0.22em', color: C.muted, textTransform: 'uppercase', marginBottom: 8 }}>ПРОГРАММЫ ШКОЛЫ</div>
+            <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 36, color: C.ink, fontWeight: 400, textTransform: 'uppercase', lineHeight: 0.95 }}>Курсы</h1>
           </div>
         </div>
       )}
 
-      {/* ── Section cards ── */}
+      {/* ── Блок 1: Экзаменационная программа ── */}
+      <CoursesBlockHead kanji="試" title="Экзаменационная программа" isMobile={isMobile} />
       <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 16 : 20 }}>
         {filtered.map(sec => isMobile ? renderMobileCard(sec) : renderCard(sec))}
       </div>
 
+      {/* ── Блок 2: Тематические курсы ── */}
+      {courseSecs.length > 0 && (
+        <>
+          <CoursesBlockHead kanji="専" title="Тематические курсы" isMobile={isMobile} style={{ marginTop: isMobile ? 36 : 52 }} />
+          <div style={{ display: 'flex', flexDirection: 'column', gap: isMobile ? 16 : 20 }}>
+            {courseSecs.map(sec => isMobile ? renderMobileCard(sec) : renderCard(sec))}
+          </div>
+        </>
+      )}
+      {coursesLoading && courseSecs.length === 0 && (
+        <div style={{ marginTop: 36, fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.16em', textTransform: 'uppercase' }}>Загрузка курсов…</div>
+      )}
+
+      {/* ── Превью и покупка тематического курса ── */}
+      {coursePreview && (
+        <CoursePurchaseModal course={coursePreview} onClose={() => setCoursePreview(null)} isMobile={isMobile} />
+      )}
 
       {/* ── Выбор покупки Иккаджо (раздел / весь сразу) ── */}
       {ikkajoChoiceOpen && (
@@ -1342,6 +1415,16 @@ function TabDatabase({ nav, setModal, user, userAccess, isMobile }) {
           isMobile={isMobile}
         />
       )}
+    </div>
+  );
+}
+
+// ── Заголовок блока на вкладке «Курсы» ──
+function CoursesBlockHead({ kanji, title, isMobile, style }) {
+  return (
+    <div style={{ display: 'flex', alignItems: 'baseline', gap: 12, paddingBottom: 10, marginBottom: isMobile ? 14 : 18, borderBottom: `1px solid ${C.border}`, ...style }}>
+      <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: isMobile ? 18 : 22, color: C.accent, lineHeight: 1 }}>{kanji}</span>
+      <h2 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: isMobile ? 20 : 26, color: C.ink, fontWeight: 500, letterSpacing: '0.06em', textTransform: 'uppercase' }}>{title}</h2>
     </div>
   );
 }

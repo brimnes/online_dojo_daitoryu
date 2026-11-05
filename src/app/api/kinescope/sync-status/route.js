@@ -82,19 +82,22 @@ export async function POST(request) {
     if (durationFmt) { lessonData.duration = durationFmt; techData.duration = durationFmt; }
   }
 
-  const [lessonRes, techRes, knowledgeRes] = await Promise.allSettled([
+  const [lessonRes, techRes, knowledgeRes, courseRes] = await Promise.allSettled([
     prisma.lesson.updateMany({ where: { videoId }, data: lessonData }),
     prisma.techniqueVideo.updateMany({ where: { videoId }, data: techData }),
     prisma.knowledgeItem.updateMany({ where: { videoId }, data: knowledgeData }),
+    prisma.courseVideo.updateMany({ where: { videoId }, data: techData }),
+    prisma.courseVideo.updateMany({ where: { errorsVideoId: videoId }, data: { errorsVideoStatus: status } }),
   ]);
 
   const lessonCount    = lessonRes.status    === 'fulfilled' ? lessonRes.value.count    : 0;
   const techCount      = techRes.status      === 'fulfilled' ? techRes.value.count      : 0;
   const knowledgeCount = knowledgeRes.status === 'fulfilled' ? knowledgeRes.value.count : 0;
+  const courseCount    = courseRes.status    === 'fulfilled' ? courseRes.value.count    : 0;
 
   if (status === 'ready' && lessonCount > 0) generatePosterInBackground(videoId, durationSec);
 
-  console.log(`[sync-status] videoId=${videoId} status=${status} lessons=${lessonCount} techs=${techCount} knowledge=${knowledgeCount}`);
+  console.log(`[sync-status] videoId=${videoId} status=${status} lessons=${lessonCount} techs=${techCount} knowledge=${knowledgeCount} courses=${courseCount}`);
 
-  return NextResponse.json({ ok: true, status, lessonCount, techCount, knowledgeCount });
+  return NextResponse.json({ ok: true, status, lessonCount, techCount, knowledgeCount, courseCount });
 }

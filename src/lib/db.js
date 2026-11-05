@@ -120,7 +120,7 @@ export function useAccess() {
           paid_at: fmtDate(a.paid_at),
           desc: a.type === 'month'
             ? `${a.reference.charAt(0).toUpperCase() + a.reference.slice(1)} 2026`
-            : `База — ${a.reference}`,
+            : a.type === 'course' ? `Курс — ${a.reference}` : `База — ${a.reference}`,
         })));
       })
       .catch(() => {})
@@ -562,7 +562,7 @@ export function useVideoUpload() {
 // ACCESS HELPERS (pure functions, no hooks)
 // ─────────────────────────────────────────────────────────────
 
-export { hasMonthAccess, hasIkkajoFullAccess, hasIkkajoSectionAccess, getAccessibleIkkajoSections } from '@/lib/access';
+export { hasMonthAccess, hasIkkajoFullAccess, hasIkkajoSectionAccess, getAccessibleIkkajoSections, hasCourseAccess } from '@/lib/access';
 export { IKKAJO_SECTION_KEYS as IKKAJO_SECTIONS, IKKAJO_SECTION_LABELS, IKKAJO_SECTION_KEYS } from '@/lib/ikkajoSections';
 
 // ─────────────────────────────────────────────────────────────
@@ -800,6 +800,149 @@ export function useKnowledge({ adminMode = false } = {}) {
   }, []);
 
   return { items, loading, saving, reload, saveItem, deleteItem };
+}
+
+// ─────────────────────────────────────────────────────────────
+// HOOK: useCourses — тематические курсы (раздел «Курсы»)
+// ─────────────────────────────────────────────────────────────
+
+export function useCourses({ adminMode = false } = {}) {
+  const [courses, setCourses] = useState([]);
+  const [loading, setLoading] = useState(true);
+  const [saving,  setSaving]  = useState(false);
+
+  const reload = useCallback(async () => {
+    setLoading(true);
+    try {
+      setCourses(await api(adminMode ? '/api/courses?admin=1' : '/api/courses'));
+    } catch {
+      setCourses([]);
+    } finally {
+      setLoading(false);
+    }
+  }, [adminMode]);
+
+  useEffect(() => { reload(); }, [reload]);
+
+  const replace = (course) => setCourses(prev => prev.map(c => c.id === course.id ? course : c));
+
+  const saveCourse = useCallback(async (course, { isNew = false } = {}) => {
+    setSaving(true);
+    try {
+      const body = {
+        title:        course.title,
+        subtitle:     course.subtitle    || '',
+        description:  course.description || '',
+        kanji:        course.kanji       || '',
+        image_url:    course.image_url   || null,
+        sort_order:   Number(course.sort_order) || 0,
+        is_published: !!course.is_published,
+        is_coming_soon: !!course.is_coming_soon,
+        price:        course.price,
+      };
+      if (isNew) {
+        const { course: created } = await api('/api/courses', { method: 'POST', body: { ...body, id: course.id } });
+        setCourses(prev => [...prev, created]);
+        return { ok: true, course: created };
+      }
+      const { course: updated } = await api(`/api/courses/${course.id}`, { method: 'PUT', body });
+      replace(updated);
+      return { ok: true, course: updated };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    } finally {
+      setSaving(false);
+    }
+  }, []);
+
+  const deleteCourse = useCallback(async (id) => {
+    try {
+      await api(`/api/courses/${id}`, { method: 'DELETE' });
+      setCourses(prev => prev.filter(c => c.id !== id));
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }, []);
+
+  const patchVideos = (courseId, fn) => setCourses(prev => prev.map(c =>
+    c.id === courseId ? { ...c, videos: fn(c.videos || []) } : c
+  ));
+
+  const addVideo = useCallback(async (courseId, title) => {
+    try {
+      const { video } = await api(`/api/courses/${courseId}/videos`, { method: 'POST', body: { title } });
+      patchVideos(courseId, vs => [...vs, video]);
+      return { ok: true, video };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }, []);
+
+  const saveVideo = useCallback(async (courseId, video) => {
+    try {
+      const { video: updated } = await api(`/api/courses/${courseId}/videos/${video.id}`, {
+        method: 'PUT',
+        body: {
+          title: video.title, subtitle: video.subtitle || '',
+          description: video.description || '', duration: video.duration || '',
+          sort_order: video.sort_order, video_provider: video.video_provider,
+          video_id: video.video_id, video_status: video.video_status,
+          errors_video_id: video.errors_video_id, errors_video_status: video.errors_video_status,
+        },
+      });
+      patchVideos(courseId, vs => vs.map(v => v.id === updated.id ? updated : v));
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }, []);
+
+  const deleteVideo = useCallback(async (courseId, videoId) => {
+    try {
+      await api(`/api/courses/${courseId}/videos/${videoId}`, { method: 'DELETE' });
+      patchVideos(courseId, vs => vs.filter(v => v.id !== videoId));
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }, []);
+
+  return { courses, loading, saving, reload, saveCourse, deleteCourse, addVideo, saveVideo, deleteVideo };
+}
+
+// ─────────────────────────────────────────────────────────────
+// HOOK: useCourse — один курс (страница курса и страница раздела)
+// Видео приходят только при наличии доступа.
+// ─────────────────────────────────────────────────────────────
+
+export function useCourse(courseId) {
+  const [course,   setCourse]   = useState(null);
+  const [loading,  setLoading]  = useState(true);
+  const [notFound, setNotFound] = useState(false);
+
+  const reload = useCallback(async () => {
+    if (!courseId) { setNotFound(true); setLoading(false); return; }
+    try {
+      setCourse(await api(`/api/courses/${courseId}`));
+      setNotFound(false);
+    } catch {
+      setNotFound(true);
+    } finally {
+      setLoading(false);
+    }
+  }, [courseId]);
+
+  useEffect(() => { reload(); }, [reload]);
+
+  // Возврат со страницы оплаты — перечитываем доступ
+  useEffect(() => {
+    const onVisible = () => { if (document.visibilityState === 'visible') reload(); };
+    document.addEventListener('visibilitychange', onVisible);
+    return () => document.removeEventListener('visibilitychange', onVisible);
+  }, [reload]);
+
+  return { course, loading, notFound, reload };
 }
 
 function urlBase64ToUint8Array(base64String) {
