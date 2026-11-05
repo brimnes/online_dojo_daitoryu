@@ -386,8 +386,23 @@ model KnowledgeItem {
 
   comments    KnowledgeComment[]
   attachments KnowledgeAttachment[]
+  reads       KnowledgeRead[]
 
   @@map("knowledge_items")
+}
+
+// Прочтения статей базы знаний: одна строка на ученика и статью
+model KnowledgeRead {
+  itemId     String   @map("item_id") @db.Uuid
+  userId     String   @map("user_id") @db.Uuid
+  readCount  Int      @default(1) @map("read_count")
+  firstReadAt DateTime @default(now()) @map("first_read_at")
+  lastReadAt  DateTime @default(now()) @map("last_read_at")
+
+  item KnowledgeItem @relation(fields: [itemId], references: [id], onDelete: Cascade)
+
+  @@id([itemId, userId])
+  @@map("knowledge_reads")
 }
 
 

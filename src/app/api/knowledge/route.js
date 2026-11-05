@@ -38,7 +38,18 @@ export async function GET(request) {
     orderBy: { sortOrder: 'asc' },
     include: { attachments: { orderBy: { sortOrder: 'asc' } } },
   });
-  return NextResponse.json(items.map(toSnake));
+  if (!adminMode) return NextResponse.json(items.map(toSnake));
+
+  // Админке — счётчик прочтений: всего открытий и сколько учеников прочитали
+  const stats = await prisma.knowledgeRead.groupBy({
+    by: ['itemId'], _sum: { readCount: true }, _count: { userId: true },
+  });
+  const byId = Object.fromEntries(stats.map(s => [s.itemId, s]));
+  return NextResponse.json(items.map(k => ({
+    ...toSnake(k),
+    read_count:   byId[k.id]?._sum.readCount ?? 0,
+    reader_count: byId[k.id]?._count.userId  ?? 0,
+  })));
 }
 
 export async function POST(request) {
