@@ -887,6 +887,7 @@ export function useCourses({ adminMode = false } = {}) {
           description: video.description || '', duration: video.duration || '',
           sort_order: video.sort_order, video_provider: video.video_provider,
           video_id: video.video_id, video_status: video.video_status,
+          errors_video_id: video.errors_video_id, errors_video_status: video.errors_video_status,
         },
       });
       patchVideos(courseId, vs => vs.map(v => v.id === updated.id ? updated : v));

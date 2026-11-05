@@ -12,7 +12,7 @@ const prisma = new PrismaClient();
 async function migrate() {
   console.log('Подключаемся к базе…');
 
-  const sql = ['012_courses.sql', '013_course_sections.sql', '014_course_images.sql']
+  const sql = ['012_courses.sql', '013_course_sections.sql', '014_course_images.sql', '015_course_intro_errors.sql']
     .map(f => readFileSync(new URL(`../supabase/migrations/${f}`, import.meta.url), 'utf8'))
     .join('\n');
   // Убираем комментарии и режем на отдельные statements (в файле нет ';' внутри строк)

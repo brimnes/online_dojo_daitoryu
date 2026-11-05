@@ -45,6 +45,7 @@ function toAsciiFn(str) {
  *   techniqueVideoId  — string
  *   knowledgeItemId   — string
  *   courseVideoId     — string
+ *   courseVideoField  — 'errors' → загрузка видео с ошибками раздела курса
  *   currentVideoId    — existing Kinescope video_id
  *   currentStatus     — existing video_status
  *   onComplete        — callback({ videoId, status })
@@ -54,6 +55,7 @@ export default function KinescopeUploader({
   techniqueVideoId,
   knowledgeItemId,
   courseVideoId,
+  courseVideoField,
   currentVideoId,
   currentStatus,
   onComplete,
@@ -129,6 +131,7 @@ export default function KinescopeUploader({
           techniqueVideoId,
           knowledgeItemId,
           courseVideoId,
+          courseVideoField,
           title:    file.name.replace(/\.[^/.]+$/, ''), // strip extension
           filename: file.name,
           filesize: file.size,
@@ -193,7 +196,7 @@ export default function KinescopeUploader({
         setErrorMsg(err.message || 'Ошибка загрузки');
       }
     }
-  }, [lessonId, techniqueVideoId, knowledgeItemId, courseVideoId, onComplete]);
+  }, [lessonId, techniqueVideoId, knowledgeItemId, courseVideoId, courseVideoField, onComplete]);
 
   const handleFile   = useCallback((f) => { if (f) startUpload(f); }, [startUpload]);
   const handleDrop   = useCallback((e) => {

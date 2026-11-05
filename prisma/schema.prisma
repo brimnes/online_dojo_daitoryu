@@ -492,6 +492,9 @@ model CourseVideo {
   // Допустимые значения: none uploading processing ready error
   videoStatus    String? @default("none")      @map("video_status")
   videoPosterUrl String? @map("video_poster_url")
+  // Отдельное видео «Разбор ошибок» внутри раздела (необязательно)
+  errorsVideoId     String? @map("errors_video_id")
+  errorsVideoStatus String? @default("none") @map("errors_video_status")
 
   sortOrder Int      @default(0)     @map("sort_order")
   createdAt DateTime @default(now()) @map("created_at")
@@ -499,5 +502,6 @@ model CourseVideo {
   course Course @relation(fields: [courseId], references: [id], onDelete: Cascade)
 
   @@index([videoId], map: "idx_course_videos_video_id")
+  @@index([errorsVideoId], map: "idx_course_videos_errors_video_id")
   @@map("course_videos")
 }

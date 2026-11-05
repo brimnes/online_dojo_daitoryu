@@ -51,6 +51,7 @@ async function syncFromKinescope(videoId) {
       prisma.techniqueVideo.updateMany({ where: { videoId }, data: techData }),
       prisma.knowledgeItem.updateMany({ where: { videoId }, data: knowledgeData }),
       prisma.courseVideo.updateMany({ where: { videoId }, data: techData }),
+      prisma.courseVideo.updateMany({ where: { errorsVideoId: videoId }, data: { errorsVideoStatus: status } }),
     ]);
     if (status === 'ready') generatePosterInBackground(videoId, data.duration);
     return status;
@@ -85,12 +86,13 @@ export async function GET(request) {
       select: { videoStatus: true },
     }),
     prisma.courseVideo.findFirst({
-      where:  { videoId },
-      select: { videoStatus: true },
+      where:  { OR: [{ videoId }, { errorsVideoId: videoId }] },
+      select: { videoId: true, videoStatus: true, errorsVideoStatus: true },
     }),
   ]);
 
-  let status = lesson?.videoStatus ?? techVideo?.videoStatus ?? knowledgeItem?.videoStatus ?? courseVideo?.videoStatus ?? null;
+  const courseStatus = courseVideo ? (courseVideo.videoId === videoId ? courseVideo.videoStatus : courseVideo.errorsVideoStatus) : null;
+  let status = lesson?.videoStatus ?? techVideo?.videoStatus ?? knowledgeItem?.videoStatus ?? courseStatus ?? null;
 
   // Если статус всё ещё processing — проверяем Kinescope напрямую
   if (status === 'processing' || status === 'uploading') {

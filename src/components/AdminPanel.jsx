@@ -3388,6 +3388,27 @@ function CourseVideosEditor({course,addVideo,saveVideo,deleteVideo,showToast,isM
                   }}
                 />
               </div>
+              <div style={{marginBottom:10}}>
+                <Label>Видео с ошибками (необязательно)</Label>
+                <KinescopeUploader
+                  courseVideoId={v.id}
+                  courseVideoField="errors"
+                  currentVideoId={v.errors_video_id}
+                  currentStatus={v.errors_video_status}
+                  onComplete={async ({videoId,status})=>{
+                    const {ok,error} = await saveVideo(course.id, {...v, errors_video_id:videoId, errors_video_status:status});
+                    if(ok) showToast('Видео с ошибками загружено');
+                    else showToast('Видео загружено, но не сохранено: '+error);
+                  }}
+                />
+                {v.errors_video_id && (
+                  <button onClick={async()=>{
+                    if(!window.confirm('Убрать видео с ошибками из раздела?')) return;
+                    const {ok,error} = await saveVideo(course.id, {...v, errors_video_id:null, errors_video_status:'none'});
+                    showToast(ok ? 'Видео с ошибками убрано' : 'Ошибка: '+error);
+                  }} style={{marginTop:6,background:'none',border:'none',padding:0,color:C.muted,fontFamily:F.mono,fontSize:11,cursor:'pointer',textDecoration:'underline'}}>Убрать видео с ошибками</button>
+                )}
+              </div>
               <div style={{display:'flex',gap:8}}>
                 <Btn2 kind="accent" size="sm" onClick={()=>doSave(v)} disabled={!drafts[v.id]}>Сохранить</Btn2>
                 <Btn2 kind="quiet" size="sm" onClick={()=>doDelete(v)}>Удалить</Btn2>

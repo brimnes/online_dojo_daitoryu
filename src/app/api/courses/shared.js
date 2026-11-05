@@ -9,7 +9,10 @@ export function videoToSnake(v, { withVideo = true } = {}) {
     video_id:       withVideo ? v.videoId        : null,
     video_status:   withVideo ? v.videoStatus    : null,
     video_poster_url: withVideo ? v.videoPosterUrl : null,
+    errors_video_id:     withVideo ? (v.errorsVideoId ?? null) : null,
+    errors_video_status: withVideo ? (v.errorsVideoStatus ?? 'none') : null,
     has_video: !!v.videoId,
+    has_errors_video: !!v.errorsVideoId,
   };
 }
 

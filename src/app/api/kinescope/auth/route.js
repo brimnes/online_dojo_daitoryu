@@ -41,7 +41,7 @@ export async function POST(request) {
         select: { id: true, techniqueId: true },
       }),
       prisma.courseVideo.findFirst({
-        where:  { videoId: video_id },
+        where:  { OR: [{ videoId: video_id }, { errorsVideoId: video_id }] },
         select: { id: true, courseId: true },
       }),
       prisma.user.findUnique({

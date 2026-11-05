@@ -6,6 +6,7 @@
  *   techniqueVideoId  — string
  *   knowledgeItemId   — string
  *   courseVideoId     — string
+ *   courseVideoField  — 'errors' → пишем в errors_video_* (видео с ошибками раздела)
  *   title             — string  (русский — ok, конвертируем в ASCII для Kinescope)
  *   filename          — string  (оригинальное имя файла)
  *   filesize          — number  (bytes)
@@ -44,7 +45,7 @@ export async function POST(request) {
 
     // 2. Parse body
     const body = await request.json();
-    const { lessonId, techniqueVideoId, knowledgeItemId, courseVideoId, title, filename, filesize, parentId } = body;
+    const { lessonId, techniqueVideoId, knowledgeItemId, courseVideoId, courseVideoField, title, filename, filesize, parentId } = body;
 
     console.log('[upload-url] payload:', { lessonId, techniqueVideoId, knowledgeItemId, courseVideoId, filename, filesize });
 
@@ -111,7 +112,9 @@ export async function POST(request) {
     if (courseVideoId) {
       const result = await prisma.courseVideo.updateMany({
         where: { id: courseVideoId },
-        data:  videoUpdate,
+        data:  courseVideoField === 'errors'
+          ? { errorsVideoId: videoId, errorsVideoStatus: 'uploading' }
+          : videoUpdate,
       });
       if (result.count === 0) {
         console.error('[upload-url] courseVideo not found:', courseVideoId);

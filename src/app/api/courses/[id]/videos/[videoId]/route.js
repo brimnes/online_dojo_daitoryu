@@ -22,6 +22,8 @@ export async function PUT(request, { params }) {
     if (body.video_provider !== undefined) data.videoProvider = body.video_provider;
     if (body.video_id       !== undefined) data.videoId       = body.video_id || null;
     if (body.video_status   !== undefined) data.videoStatus   = body.video_status;
+    if (body.errors_video_id     !== undefined) data.errorsVideoId     = body.errors_video_id || null;
+    if (body.errors_video_status !== undefined) data.errorsVideoStatus = body.errors_video_status || 'none';
 
     const { count } = await prisma.courseVideo.updateMany({
       where: { id: params.videoId, courseId: params.id }, data,

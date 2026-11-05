@@ -70,9 +70,25 @@ export default function CourseSectionPage({ nav, courseId, sectionId, user = {},
     </div>
   );
 
+  // ── Видео с ошибками (есть не во всех разделах) ───────────────
+  const errorsVideo = section.errors_video_id ? (
+    <div style={{ marginTop: isMobile ? 12 : 20, background: C.surface, border: `1px solid ${C.border}` }}>
+      <div style={{ padding: '11px 14px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
+        <span style={{ fontFamily: KANJI, fontSize: 13, color: C.accent }}>誤</span>
+        <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase' }}>Разбор ошибок</span>
+      </div>
+      <KinescopePlayer
+        key={section.id + ':errors'}
+        videoId={section.errors_video_id} videoStatus={section.errors_video_status || 'ready'}
+        viewerId={user.id}
+        title={`${section.title} — ошибки`}
+      />
+    </div>
+  ) : null;
+
   // ── Оглавление: все разделы, переход к любому ─────────────────
   const toc = (
-    <div style={{ border: `1px solid ${C.border}`, borderTop: isMobile ? `1px solid ${C.border}` : 'none', background: C.surface }}>
+    <div style={{ border: `1px solid ${C.border}`, borderTop: (isMobile || section.errors_video_id) ? `1px solid ${C.border}` : 'none', background: C.surface }}>
       <div style={{ padding: '11px 14px', borderBottom: `1px solid ${C.border}`, display: 'flex', alignItems: 'center', gap: 8 }}>
         <span style={{ fontFamily: KANJI, fontSize: 13, color: C.muted }}>目次</span>
         <span style={{ fontFamily: MONO, fontSize: 11, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase' }}>Оглавление курса</span>
@@ -166,6 +182,7 @@ export default function CourseSectionPage({ nav, courseId, sectionId, user = {},
 
         <div style={{ padding: '16px 16px 0' }}>
           {player}
+          {errorsVideo}
           <div style={{ marginTop: 12 }}>{navCard}</div>
           <div style={{ marginTop: 12 }}>{toc}</div>
           {description}
@@ -213,7 +230,8 @@ export default function CourseSectionPage({ nav, courseId, sectionId, user = {},
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 300px', alignItems: 'start' }}>
             <div style={{ paddingRight: 24, paddingTop: 24 }}>
               {player}
-              {toc}
+              {errorsVideo}
+              <div style={{ marginTop: errorsVideo ? 20 : 0 }}>{toc}</div>
             </div>
             <div style={{ paddingTop: 24, position: 'sticky', top: 60 }}>
               {navCard}
