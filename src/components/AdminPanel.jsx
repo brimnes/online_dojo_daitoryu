@@ -3211,7 +3211,7 @@ function SectionCourses({showToast,isMobile}){
 
 // ── Редактор одного тематического курса ──────────────────────────
 function CourseEditor({course,hook,showToast,isMobile,onCreated,onDeleted}){
-  const {saving,saveCourse,deleteCourse,addVideo,saveVideo,deleteVideo} = hook;
+  const {saving,saveCourse,deleteCourse,addVideo,saveVideo,patchVideo,deleteVideo} = hook;
   const isNew = !course;
   const [draft, setDraft] = useState(() => course
     ? {...course, price: course.product?.price ?? 0}
@@ -3287,7 +3287,7 @@ function CourseEditor({course,hook,showToast,isMobile,onCreated,onDeleted}){
       {isNew
         ? <div style={{fontFamily:F.mono,fontSize:11,color:C.muted}}>Создайте курс, чтобы добавить разделы и видео.</div>
         : <div style={{background:C.surface,border:`1px solid ${C.hairline}`,padding:isMobile?'18px 16px':'24px 22px'}}>
-            <CourseVideosEditor course={course} addVideo={addVideo} saveVideo={saveVideo} deleteVideo={deleteVideo} showToast={showToast} isMobile={isMobile}/>
+            <CourseVideosEditor course={course} addVideo={addVideo} saveVideo={saveVideo} patchVideo={patchVideo} deleteVideo={deleteVideo} showToast={showToast} isMobile={isMobile}/>
           </div>}
     </div>
   );
@@ -3336,7 +3336,7 @@ function CourseImageInput({url,onChange,showToast}){
 }
 
 // ── Редактор разделов курса ──────────────────────────────────────
-function CourseVideosEditor({course,addVideo,saveVideo,deleteVideo,showToast,isMobile}){
+function CourseVideosEditor({course,addVideo,saveVideo,patchVideo,deleteVideo,showToast,isMobile}){
   const [drafts, setDrafts] = useState({});
   const videos = course.videos || [];
   const get = (v) => drafts[v.id] ?? v;
@@ -3386,7 +3386,7 @@ function CourseVideosEditor({course,addVideo,saveVideo,deleteVideo,showToast,isM
                   currentStatus={v.video_status}
                   onComplete={async ({videoId,status})=>{
                     // upload-url уже записал video_id в БД; сохраняем статус
-                    const {ok,error} = await saveVideo(course.id, {...v, video_id:videoId, video_status:status, video_provider:'kinescope'});
+                    const {ok,error} = await patchVideo(course.id, v.id, {video_id:videoId, video_status:status, video_provider:'kinescope'});
                     if(ok) showToast('Видео загружено и сохранено');
                     else showToast('Видео загружено, но не сохранено: '+error);
                   }}
@@ -3400,7 +3400,7 @@ function CourseVideosEditor({course,addVideo,saveVideo,deleteVideo,showToast,isM
                   currentVideoId={v.errors_video_id}
                   currentStatus={v.errors_video_status}
                   onComplete={async ({videoId,status})=>{
-                    const {ok,error} = await saveVideo(course.id, {...v, errors_video_id:videoId, errors_video_status:status});
+                    const {ok,error} = await patchVideo(course.id, v.id, {errors_video_id:videoId, errors_video_status:status});
                     if(ok) showToast('Видео с ошибками загружено');
                     else showToast('Видео загружено, но не сохранено: '+error);
                   }}
@@ -3408,7 +3408,7 @@ function CourseVideosEditor({course,addVideo,saveVideo,deleteVideo,showToast,isM
                 {v.errors_video_id && (
                   <button onClick={async()=>{
                     if(!window.confirm('Убрать видео с ошибками из раздела?')) return;
-                    const {ok,error} = await saveVideo(course.id, {...v, errors_video_id:null, errors_video_status:'none'});
+                    const {ok,error} = await patchVideo(course.id, v.id, {errors_video_id:null, errors_video_status:'none'});
                     showToast(ok ? 'Видео с ошибками убрано' : 'Ошибка: '+error);
                   }} style={{marginTop:6,background:'none',border:'none',padding:0,color:C.muted,fontFamily:F.mono,fontSize:11,cursor:'pointer',textDecoration:'underline'}}>Убрать видео с ошибками</button>
                 )}

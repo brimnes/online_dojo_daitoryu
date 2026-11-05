@@ -879,6 +879,8 @@ export function useCourses({ adminMode = false } = {}) {
     }
   }, []);
 
+  // Текстовые поля раздела. Видео здесь не трогаем: черновик в форме может хранить
+  // старый video_id и затёр бы только что загруженный ролик — для видео есть patchVideo
   const saveVideo = useCallback(async (courseId, video) => {
     try {
       const { video: updated } = await api(`/api/courses/${courseId}/videos/${video.id}`, {
@@ -886,10 +888,21 @@ export function useCourses({ adminMode = false } = {}) {
         body: {
           title: video.title, subtitle: video.subtitle || '',
           description: video.description || '', duration: video.duration || '',
-          sort_order: video.sort_order, video_provider: video.video_provider,
-          video_id: video.video_id, video_status: video.video_status,
-          errors_video_id: video.errors_video_id, errors_video_status: video.errors_video_status,
+          sort_order: video.sort_order,
         },
+      });
+      patchVideos(courseId, vs => vs.map(v => v.id === updated.id ? updated : v));
+      return { ok: true };
+    } catch (e) {
+      return { ok: false, error: e.message };
+    }
+  }, []);
+
+  // Только переданные поля (video_id / errors_video_id и их статусы)
+  const patchVideo = useCallback(async (courseId, videoId, fields) => {
+    try {
+      const { video: updated } = await api(`/api/courses/${courseId}/videos/${videoId}`, {
+        method: 'PUT', body: fields,
       });
       patchVideos(courseId, vs => vs.map(v => v.id === updated.id ? updated : v));
       return { ok: true };
@@ -908,7 +921,7 @@ export function useCourses({ adminMode = false } = {}) {
     }
   }, []);
 
-  return { courses, loading, saving, reload, saveCourse, deleteCourse, addVideo, saveVideo, deleteVideo };
+  return { courses, loading, saving, reload, saveCourse, deleteCourse, addVideo, saveVideo, patchVideo, deleteVideo };
 }
 
 // ─────────────────────────────────────────────────────────────
