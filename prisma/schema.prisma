@@ -72,8 +72,9 @@ model User {
 // Статичные метаданные 12 месяцев. Меняются только через AdminPanel.
 // ────────────────────────────────────────────────────────────
 model Month {
-  id        String  @id           // 'jan','feb',...,'dec'
+  id        String  @id           // 2026: 'jan'…'dec'; дальше '2027-jan'…
   label     String                // 'Январь', 'Февраль', ...
+  year      Int     @default(2026)
   kanji     String?               // '一', '二', ...
   isOpen    Boolean @default(false) @map("is_open")
   sortOrder Int?    @map("sort_order")

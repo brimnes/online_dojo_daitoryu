@@ -1,10 +1,11 @@
 'use client';
 
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 import { C } from '@/lib/utils';
 import { useIsMobile } from '@/lib/mobile';
 import { useMonths, useLessons, useUserAccessRows } from '@/lib/db';
 import { hasMonthAccess } from '@/lib/access';
+import { monthYear, saveMonthYear } from '@/lib/months';
 import Sidebar from '@/components/Sidebar';
 import { MobileBottomNav } from '@/components/BottomNav';
 
@@ -16,6 +17,9 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
 
   const month       = months.find(m => m.id === monthId);
   const canView     = hasMonthAccess(userAccess, monthId);
+
+  // «← Месяцы» вернёт на вкладку года этого месяца
+  useEffect(() => { if (month) saveMonthYear(monthYear(month)); }, [month]);
 
   const safelessons  = lessons ?? [];
   const watchedCount = safelessons.filter(l => watched[l.id]).length;
@@ -102,7 +106,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
             fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
             fontSize: 11, color: C.accent, letterSpacing: '0.1em',
             padding: '4px 0', minHeight: 44, display: 'flex', alignItems: 'center',
-          }}>← МЕСЯЦЫ 2026</button>
+          }}>← МЕСЯЦЫ {monthYear(month)}</button>
           <span style={{ color: C.border }}>/</span>
           <span style={{
             fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif",
@@ -145,7 +149,7 @@ export default function MonthPage({ nav, monthId, watched, toggleWatched, user =
                 <span style={{
                   fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
                   fontSize: 11, color: C.muted, letterSpacing: '0.18em', textTransform: 'uppercase',
-                }}>Учебный модуль{!isMobile ? ' · 2026' : ''}</span>
+                }}>Учебный модуль{!isMobile ? ` · ${monthYear(month)}` : ''}</span>
               </div>
 
               {/* Title */}

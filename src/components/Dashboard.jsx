@@ -15,6 +15,7 @@ import { IKKAJO_SECTION_KEYS } from '@/lib/ikkajoSections';
 import { useProducts } from '@/lib/useProducts';
 import { pluralSections } from '@/components/CoursePage';
 import CoursePurchaseModal from '@/components/CoursePurchaseModal';
+import { monthYear, monthYears, defaultMonthYear, monthTitle, loadMonthYear, saveMonthYear } from '@/lib/months';
 
 // Срок программы пока не хранится в БД — единственный явный источник здесь.
 // TODO: перенести в Product.durationMonths + админку, когда появится экран управления Product.
@@ -22,7 +23,7 @@ const PROGRAM_DURATION_MONTHS = { ikkajo: 12, nikkajo: 8, sankajo: 8 };
 
 const TABS = [
   { id: 'knowledge', label: 'База знаний',    num: '01', kanji: '智' },
-  { id: 'months',    label: 'Месяцы 2026',    num: '02', kanji: '月' },
+  { id: 'months',    label: 'Месяцы',         num: '02', kanji: '月' },
   { id: 'database',  label: 'Курсы',          num: '03', kanji: '技' },
   { id: 'profile',   label: 'Личный кабинет', num: '04', kanji: '人' },
 ];
@@ -334,7 +335,7 @@ function MonthPurchaseModal({ month, product, onClose, isMobile }) {
           fontSize: 11, letterSpacing: '0.22em', color: sideMuted,
           textTransform: 'uppercase', marginBottom: isMobile ? 12 : 20,
         }}>
-          МЕСЯЦ {String(month.sort_order || '').padStart(2, '0')} · ДАЙТО-РЮ
+          МЕСЯЦ {String(month.sort_order || '').padStart(2, '0')} · {monthYear(month)} · ДАЙТО-РЮ
         </div>
 
         {/* month name */}
@@ -542,14 +543,21 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
   const { months,   loading: monthsLoading }   = useMonths();
   const { products, loading: productsLoading } = useProducts();
   const [purchaseMonth, setPurchaseMonth] = useState(null); // month object for modal
+  const [pickedYear,    setPickedYear]    = useState(loadMonthYear);
 
   if (monthsLoading) return <div style={{ color: C.muted, fontSize: 13 }}>Загрузка…</div>;
+
+  // Вкладки по годам: по умолчанию текущий год (или последний выбранный)
+  const years      = monthYears(months);
+  const year       = years.includes(pickedYear) ? pickedYear : defaultMonthYear(years);
+  const yearMonths = (months ?? []).filter(m => monthYear(m) === year);
+  const pickYear   = (y) => { setPickedYear(y); saveMonthYear(y); };
 
   // Индекс продуктов по reference для быстрого поиска
   const productByRef = {};
   (products ?? []).forEach(p => { if (p.type === 'month') productByRef[p.reference] = p; });
 
-  const openedCount  = (months ?? []).filter(m => hasMonthAccess(userAccess ?? [], m.id)).length;
+  const openedCount  = yearMonths.filter(m => hasMonthAccess(userAccess ?? [], m.id)).length;
   const watchedCount = Object.keys(watched || {}).length;
 
   return (
@@ -560,7 +568,7 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
           <div style={{ display: 'flex', alignItems: 'flex-end', gap: 24, marginBottom: 16 }}>
             <div style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 160, lineHeight: 0.85, color: C.accent, opacity: 0.1, flexShrink: 0, marginLeft: -8, marginBottom: -8 }}>月</div>
             <div style={{ flex: 1, paddingBottom: 4 }}>
-              <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 12 }}>МЕСЯЦЫ 2026 · ИЮНЬ–ДЕКАБРЬ</div>
+              <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, letterSpacing: '0.28em', color: C.muted, textTransform: 'uppercase', marginBottom: 12 }}>МЕСЯЦЫ {year}{year === 2026 ? ' · ИЮНЬ–ДЕКАБРЬ' : ''}</div>
               <h1 style={{ margin: 0, fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 60, lineHeight: 0.9, letterSpacing: '0.04em', color: C.ink, fontWeight: 400, textTransform: 'uppercase' }}>Месяцы Дайто-рю</h1>
               <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 17, color: C.muted, marginTop: 14, maxWidth: 540, lineHeight: 1.55 }}>
                 Ежемесячный онлайн-журнал Daito-Ryu Aiki Jujutsu. В каждом выпуске разбираются вариации техник и их практическое применение, рассматриваются исторические материалы и исследования, а также темы, связанные с боевой подготовкой, развитием навыков и более глубоким пониманием традиции Дайто-рю.
@@ -569,7 +577,7 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
             <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: 4, paddingBottom: 8, flexShrink: 0 }}>
               <span style={{ fontFamily: "'Noto Serif JP', var(--font-noto), serif", fontSize: 11, color: C.muted, letterSpacing: '0.22em' }}>進度</span>
               <div style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 42, color: C.accent, lineHeight: 1, fontWeight: 500 }}>
-                {openedCount} <span style={{ fontSize: 24, color: C.ink2 }}>/ {(months ?? []).length}</span>
+                {openedCount} <span style={{ fontSize: 24, color: C.ink2 }}>/ {yearMonths.length}</span>
               </div>
               <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, letterSpacing: '0.18em', color: C.muted, textTransform: 'uppercase' }}>месяцев открыто</span>
             </div>
@@ -584,7 +592,7 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
       {isMobile && (
         <div style={{ marginBottom: 20 }}>
           <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, letterSpacing: '0.2em', color: C.muted, textTransform: 'uppercase', marginBottom: 10 }}>
-            МЕСЯЦЫ 2026
+            МЕСЯЦЫ {year}
           </div>
           <h1 style={{ fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: 48, letterSpacing: '0.01em', color: C.ink, lineHeight: 0.95, fontWeight: 300, margin: 0, textTransform: 'uppercase' }}>
             Месяцы<br />Дайто-рю
@@ -592,9 +600,24 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
         </div>
       )}
 
+      {/* Вкладки годов */}
+      {years.length > 1 && (
+        <div role="tablist" style={{ display: 'flex', borderBottom: `1px solid ${C.border}`, marginBottom: isMobile ? 16 : 24, marginTop: isMobile ? 0 : -16 }}>
+          {years.map(y => {
+            const on = y === year;
+            return (
+              <button key={y} role="tab" aria-selected={on} onClick={() => pickYear(y)}
+                style={{ background: 'none', border: 'none', borderBottom: `2px solid ${on ? C.accent : 'transparent'}`, marginBottom: -1, padding: isMobile ? '10px 18px' : '12px 26px', minHeight: 44, cursor: on ? 'default' : 'pointer', fontFamily: "var(--font-cormorant), 'Cormorant Garamond', serif", fontSize: isMobile ? 20 : 24, letterSpacing: '0.06em', color: on ? C.ink : C.muted, fontWeight: on ? 500 : 400 }}>
+                {y}
+              </button>
+            );
+          })}
+        </div>
+      )}
+
       {/* Months grid */}
       <div style={{ display: 'grid', gridTemplateColumns: isMobile ? 'repeat(2, 1fr)' : 'repeat(4, 1fr)', gap: isMobile ? 10 : 16 }}>
-        {(months ?? []).map(m => (
+        {yearMonths.map(m => (
           <MonthCard
             key={m.id}
             month={m}
@@ -1992,16 +2015,11 @@ function TabProfile({ user: u, nav, userAccess, accessLoading, isMobile, onLogou
 }
 
 // ── Вкладка: Мой доступ ──────────────────────────────────────────────────────
-const MONTH_LABELS = {
-  jan:'Январь', feb:'Февраль', mar:'Март',    apr:'Апрель',
-  may:'Май',    jun:'Июнь',    jul:'Июль',    aug:'Август',
-  sep:'Сентябрь', oct:'Октябрь', nov:'Ноябрь', dec:'Декабрь',
-};
-const ALL_MONTHS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct','nov','dec'];
-// Месяцы скрытые из публичного списка (sortOrder < 6 — январь–май)
+// Месяцы скрытые из публичного списка (январь–май 2026)
 const HIDDEN_MONTH_IDS = ['jan', 'feb', 'mar', 'apr', 'may'];
 
 function TabMyAccess({ userAccess, loading, isMobile, nav, onGoToUnlock }) {
+  const { months } = useMonths();   // уже без января–мая 2026, по годам
   if (loading) return (
     <div style={{ border: `1px solid ${C.border}`, borderTop: 'none', padding: '24px 16px', background: C.white, color: C.muted, fontSize: 13 }}>
       Загрузка…
@@ -2022,14 +2040,14 @@ function TabMyAccess({ userAccess, loading, isMobile, nav, onGoToUnlock }) {
       <div style={{ padding: '12px 16px', background: C.surface2, borderBottom: `1px solid ${C.border}` }}>
         <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase' }}>Месяцы обучения</div>
       </div>
-      {ALL_MONTHS.filter(m => !HIDDEN_MONTH_IDS.includes(m)).map(m => {
-        const has = hasMonthAccess(ua, m);
+      {(months ?? []).map(m => {
+        const has = hasMonthAccess(ua, m.id);
         return (
-          <div key={m}
-            onClick={() => has && nav?.month(m)}
+          <div key={m.id}
+            onClick={() => has && nav?.month(m.id)}
             style={{ ...rowBase, opacity: has ? 1 : 0.45, cursor: has ? 'pointer' : 'default' }}>
             {tick(has)}
-            <span style={{ color: has ? C.ink : C.muted, flex: 1 }}>{MONTH_LABELS[m]}</span>
+            <span style={{ color: has ? C.ink : C.muted, flex: 1 }}>{monthTitle(m)}</span>
             {has && <span style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, letterSpacing: '0.1em' }}>→</span>}
           </div>
         );
@@ -2127,6 +2145,7 @@ function TabUnlockAccess({ userAccess, isMobile }) {
 
   // Индекс is_open по id месяца (reference совпадает с month.id)
   const monthOpenById = Object.fromEntries((months ?? []).map(m => [m.id, m.is_open]));
+  const monthById     = Object.fromEntries((months ?? []).map(m => [m.id, m]));
 
   const monthProducts   = products.filter(p => p.type === 'month' && !HIDDEN_MONTH_IDS.includes(p.reference));
   const sectionProducts = products.filter(p => p.type === 'section' && p.reference !== 'ikkajo');
@@ -2178,7 +2197,7 @@ function TabUnlockAccess({ userAccess, isMobile }) {
             const isOpen = monthOpenById[p.reference] ?? false;
             return (
               <div key={p.id} style={{ padding: '14px', background: has ? `${C.success}10` : C.surface2, border: `1px solid ${has ? C.success + '40' : C.border}`, opacity: (!has && !isOpen) ? 0.5 : 1 }}>
-                <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, fontWeight: 500, color: C.ink, marginBottom: 4 }}>{p.title}</div>
+                <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, fontWeight: 500, color: C.ink, marginBottom: 4 }}>{monthById[p.reference] ? monthTitle(monthById[p.reference]) : p.title}</div>
                 {!has && !isOpen
                   ? <div style={{ fontFamily: "var(--font-mono), monospace", fontSize: 11, color: C.muted, marginTop: 10, letterSpacing: '0.1em' }}>ЗАКРЫТ</div>
                   : <CardBtn product={p} hasAccess={has} />

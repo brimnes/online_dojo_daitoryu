@@ -6,6 +6,7 @@ import { useIsMobile } from '@/lib/mobile';
 import { useAccessibility } from '@/lib/accessibility';
 import RichText from '@/components/RichText';
 import { useMonths, useLessons } from '@/lib/db';
+import { monthYear } from '@/lib/months';
 import KinescopePlayer from '@/components/KinescopePlayer';
 import Sidebar from '@/components/Sidebar';
 import { MobileBottomNav } from '@/components/BottomNav';
@@ -74,6 +75,7 @@ export default function LessonPage({
 
   // Breadcrumb helpers
   const monthLabel  = month?.label?.toUpperCase() || '';
+  const year        = monthYear(month);
   const lessonNum   = String(lesson.num).padStart(2, '0');
   const totalLessons = lessons.length;
   // Kanji for "第5課"
@@ -124,7 +126,7 @@ export default function LessonPage({
               fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
               fontSize: 11, letterSpacing: '0.1em', color: C.accent,
               textTransform: 'uppercase', padding: 0,
-            }}>← {monthLabel} 2026</button>
+            }}>← {monthLabel} {year}</button>
             <span style={{ color: C.border }}>/</span>
             <span style={{
               fontFamily: "var(--font-mono), 'JetBrains Mono', monospace",
@@ -160,7 +162,7 @@ export default function LessonPage({
               }}>
                 <span style={{ color: C.accent, fontWeight: 600 }}>{lessonNum}</span>
                 <span>·</span>
-                <span>УРОК · {monthLabel} 2026</span>
+                <span>УРОК · {monthLabel} {year}</span>
               </div>
 
               {/* Title */}

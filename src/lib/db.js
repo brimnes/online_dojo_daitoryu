@@ -10,6 +10,7 @@
 'use client';
 
 import { useState, useEffect, useCallback } from 'react';
+import { monthRefLabel } from '@/lib/months';
 
 // ─────────────────────────────────────────────────────────────
 // MOCK DATA — используется как fallback при ошибке загрузки
@@ -119,7 +120,7 @@ export function useAccess() {
           paid_at_iso: a.paid_at,
           paid_at: fmtDate(a.paid_at),
           desc: a.type === 'month'
-            ? `${a.reference.charAt(0).toUpperCase() + a.reference.slice(1)} 2026`
+            ? (monthRefLabel(a.reference) || a.reference)
             : a.type === 'course' ? `Курс — ${a.reference}` : `База — ${a.reference}`,
         })));
       })
