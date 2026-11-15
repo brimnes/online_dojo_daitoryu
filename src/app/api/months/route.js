@@ -8,7 +8,7 @@ import { requireAuth } from '@/lib/auth-server.js';
 
 function toMonth(m, lessons) {
   const base = {
-    id: m.id, label: m.label, kanji: m.kanji,
+    id: m.id, label: m.label, kanji: m.kanji, year: m.year,
     is_open: m.isOpen, sort_order: m.sortOrder,
     modal_theme:   m.modalTheme,
     modal_topics:  m.modalTopics,
@@ -34,10 +34,10 @@ export async function GET(request) {
   const { searchParams } = new URL(request.url);
   const withLessons = searchParams.get('with_lessons') === '1';
 
-  // Месяцы 1–5 (янв–май) скрыты из UI; отображаем только с июня (sortOrder >= 6)
+  // Январь–май 2026 скрыты из UI (2026 показываем с июня); следующие годы — целиком
   const months = await prisma.month.findMany({
-    where: { sortOrder: { gte: 6 } },
-    orderBy: { sortOrder: 'asc' },
+    where: { OR: [{ year: { not: 2026 } }, { sortOrder: { gte: 6 } }] },
+    orderBy: [{ year: 'asc' }, { sortOrder: 'asc' }],
     ...(withLessons ? { include: { lessons: { orderBy: { num: 'asc' } } } } : {}),
   });
 

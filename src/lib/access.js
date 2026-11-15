@@ -66,5 +66,6 @@ const MONTH_REFS = ['jan','feb','mar','apr','may','jun','jul','aug','sep','oct',
  */
 export function accessTypeForProduct(productType, reference) {
   if (productType === 'course') return 'course';
+  if (productType === 'month')  return 'month';   // в т.ч. '2027-jan' и следующие годы
   return MONTH_REFS.includes(reference) ? 'month' : 'section';
 }

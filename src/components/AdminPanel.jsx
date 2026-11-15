@@ -11,6 +11,7 @@ import {
 // Supabase removed — always connected to Timeweb PostgreSQL
 import { IKKAJO_SECTION_OPTIONS, IKKAJO_SECTION_LABELS as IKKAJO_LABELS } from '@/lib/ikkajoSections';
 import { REVENUE_START } from '@/lib/revenue';
+import { monthYear, monthYears, defaultMonthYear, monthTitle, monthRefLabel, monthIdFor, MONTH_KEYS } from '@/lib/months';
 import { KYU_DATA } from '@/data/techniques';
 import KinescopeUploader from '@/components/KinescopeUploader';
 import dynamic from 'next/dynamic';
@@ -1451,7 +1452,7 @@ function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLe
                   {accessRows.map((row, i) => (
                     <div key={row.id||i} style={{display:'flex', alignItems:'center', gap:10, background:C.bg2, border:`1px solid ${C.hairline}`, padding:'10px 14px'}}>
                       <div style={{flex:1, minWidth:0}}>
-                        <div style={{fontFamily:F.mono, fontSize:13, color:C.ink, fontWeight:500}}>{row.type === 'course' ? (courseTitle[row.reference] || row.reference) : row.reference}</div>
+                        <div style={{fontFamily:F.mono, fontSize:13, color:C.ink, fontWeight:500}}>{row.type === 'course' ? (courseTitle[row.reference] || row.reference) : row.type === 'month' ? (monthRefLabel(row.reference) || row.reference) : row.reference}</div>
                         <div style={{fontFamily:F.mono, fontSize:11, color:C.muted, letterSpacing:'0.06em', textTransform:'uppercase', marginTop:2}}>
                           {row.type === 'course' ? 'курс' : row.type} · {row.paid_at ? new Date(row.paid_at).toLocaleDateString('ru-RU') : '—'}
                           {row.source && <> · {ACCESS_SOURCE_LABELS[row.source] || row.source}</>}
@@ -1493,7 +1494,7 @@ function StudentCard({ user, allPayments, allExams, onClose, showToast, updateLe
                   ) : (
                     <Select value={grantRef} onChange={setGrantRef} options={[
                       {value:'',label:'— выберите —'},
-                      ...(grantMonths ?? []).map(m => ({ value: m.id, label: `${m.label} (${m.id})` })),
+                      ...(grantMonths ?? []).map(m => ({ value: m.id, label: monthTitle(m) })),
                     ]}/>
                   )}
                 </div>
@@ -1883,10 +1884,9 @@ function SectionPayments({isMobile}){
   const avgCheck = paidOps ? Math.round(income/paidOps) : 0;
 
   // Название ручной выдачи: месяц по-русски, курс — по названию курса
-  const accessLabel = a => a.type==='month' && MONTH_RU[a.reference] ? MONTH_RU[a.reference]
+  const accessLabel = a => a.type==='month' && monthRefLabel(a.reference) ? monthRefLabel(a.reference)
     : a.type==='course' ? `Курс «${courses.find(c=>c.id===a.reference)?.title || a.reference}»`
     : (a.desc || '—');
-  const MONTH_RU = {jan:'Январь',feb:'Февраль',mar:'Март',apr:'Апрель',may:'Май',jun:'Июнь',jul:'Июль',aug:'Август',sep:'Сентябрь',oct:'Октябрь',nov:'Ноябрь',dec:'Декабрь'};
 
   // ── по продуктам: сколько купили каждого товара за период ────
   // Учитывает и оплаты через провайдера, и вручную выданные (нал/карта/крипта).
@@ -1900,7 +1900,7 @@ function SectionPayments({isMobile}){
   // Один и тот же месяц из онлайн-оплаты и ручной выдачи — одна строка (ключ по type/reference)
   succeeded.forEach(p => {
     const key   = `${p.product_type}/${p.product_reference}`;
-    const label = p.product_type==='month' && MONTH_RU[p.product_reference] ? MONTH_RU[p.product_reference] : (p.product_title || p.product_reference || '—');
+    const label = p.product_type==='month' && monthRefLabel(p.product_reference) ? monthRefLabel(p.product_reference) : (p.product_title || p.product_reference || '—');
     addSale(key, label, p.product_type==='month'?'月':'技', p.amount);
   });
   external.forEach(a => {
@@ -2255,10 +2255,16 @@ function SectionMonths({showToast,isMobile}){
   const {months,loading:mLoading,toggleOpen,saveMonth} = useMonths();
   const [activeMonth, setActiveMonth] = useState(null);
   const [showLessons, setShowLessons] = useState(false);
+  const [pickedYear,  setPickedYear]  = useState(null);
+
+  // Вкладки по годам: в списке только месяцы выбранного года
+  const years      = monthYears(months);
+  const year       = years.includes(pickedYear) ? pickedYear : defaultMonthYear(years);
+  const yearMonths = months.filter(m => monthYear(m) === year);
 
   // activeMId вычисляется ДО useLessons — оба используют один источник истины.
   // null пока месяцы не загружены → useLessons не делает запрос.
-  const activeMId = activeMonth || months[0]?.id || null;
+  const activeMId = (yearMonths.some(m => m.id === activeMonth) ? activeMonth : null) || yearMonths[0]?.id || null;
   const activeM   = months.find(m=>m.id===activeMId);
 
   const {lessons,loading:lLoading,saving,saveLesson,addLesson,deleteLesson,reload:reloadLessons} = useLessons(activeMId);
@@ -2421,6 +2427,21 @@ function SectionMonths({showToast,isMobile}){
         />
         <SumiStroke style={{margin:'0 0 24px',opacity:0.3}}/>
 
+        {/* Вкладки годов */}
+        {years.length > 1 && (
+          <div style={{display:'flex',borderBottom:`1px solid ${C.hairline}`,marginBottom:20}}>
+            {years.map(y=>{
+              const on = y===year;
+              return (
+                <button key={y} onClick={()=>{setPickedYear(y);setActiveMonth(null);setEditId(null);setEditingMonth(false);setShowLessons(false);}}
+                  style={{background:'none',border:'none',borderBottom:`2px solid ${on?C.accent:'transparent'}`,marginBottom:-1,padding:'10px 22px',minHeight:40,cursor:on?'default':'pointer',fontFamily:F.serif,fontSize:18,letterSpacing:'0.06em',color:on?C.ink:C.muted,fontWeight:on?600:400}}>
+                  {y}
+                </button>
+              );
+            })}
+          </div>
+        )}
+
         {/* edit form (inline, top of content) */}
         {editId&&(
           <div style={{marginBottom:16}}>
@@ -2433,8 +2454,8 @@ function SectionMonths({showToast,isMobile}){
           !showLessons ? (
             /* month list */
             <div style={{background:C.surface,border:`1px solid ${C.hairline}`}}>
-              {months.map((m,i)=>(
-                <div key={m.id} style={{display:'flex',alignItems:'center',gap:12,padding:'14px 16px',borderBottom:i===months.length-1?'none':`1px solid ${C.hairline}`,background:activeMId===m.id?C.surface2:'transparent',cursor:'pointer'}}
+              {yearMonths.map((m,i)=>(
+                <div key={m.id} style={{display:'flex',alignItems:'center',gap:12,padding:'14px 16px',borderBottom:i===yearMonths.length-1?'none':`1px solid ${C.hairline}`,background:activeMId===m.id?C.surface2:'transparent',cursor:'pointer'}}
                   onClick={()=>{setActiveMonth(m.id);setShowLessons(true);setEditId(null);}}>
                   <span style={{fontFamily:F.kanji,fontSize:18,color:m.is_open?C.accent:C.muted,opacity:m.is_open?0.85:0.4}}>{m.kanji}</span>
                   <div style={{flex:1,minWidth:0}}>
@@ -2492,12 +2513,12 @@ function SectionMonths({showToast,isMobile}){
             <div style={{background:C.surface,border:`1px solid ${C.hairline}`}}>
               <div style={{padding:'14px 18px',borderBottom:`1px solid ${C.hairline}`,display:'flex',alignItems:'center',gap:10}}>
                 <span style={{fontFamily:F.kanji,fontSize:13,color:C.gold,letterSpacing:'0.14em',opacity:0.85}}>年</span>
-                <span style={{fontFamily:F.serif,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>2026 · МЕСЯЦЫ</span>
+                <span style={{fontFamily:F.serif,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>{year} · МЕСЯЦЫ</span>
               </div>
-              {months.map((m,i)=>{
+              {yearMonths.map((m,i)=>{
                 const isA = activeMId===m.id;
                 return (
-                  <div key={m.id} style={{display:'flex',alignItems:'center',gap:12,padding:'14px 18px',borderBottom:i===months.length-1?'none':`1px solid ${C.hairline}`,borderLeft:`2px solid ${isA?C.accent:'transparent'}`,background:isA?C.bg2:'transparent',cursor:'pointer'}}
+                  <div key={m.id} style={{display:'flex',alignItems:'center',gap:12,padding:'14px 18px',borderBottom:i===yearMonths.length-1?'none':`1px solid ${C.hairline}`,borderLeft:`2px solid ${isA?C.accent:'transparent'}`,background:isA?C.bg2:'transparent',cursor:'pointer'}}
                     onClick={()=>{setActiveMonth(m.id);setEditId(null);setEditingMonth(false);}}>
                     <span style={{fontFamily:F.mono,fontSize:11,color:isA?C.accent:C.muted,letterSpacing:'0.06em',minWidth:18}}>{String(i+1).padStart(2,'0')}</span>
                     <span style={{fontFamily:F.kanji,fontSize:15,color:isA?C.accent:C.copper,opacity:isA?0.9:0.55}}>{m.kanji}</span>
@@ -2952,14 +2973,10 @@ function SectionIkkajo({showToast,isMobile,embedded}){
 // ═══════════════════════════════════════════════════════════════
 // SECTION ДОСТУПЫ — ручная выдача/отзыв через user_access
 // ═══════════════════════════════════════════════════════════════
-const ACCESS_MONTH_OPTIONS = [
-  {value:'jan',label:'Январь'},{value:'feb',label:'Февраль'},
-  {value:'mar',label:'Март'},{value:'apr',label:'Апрель'},
-  {value:'may',label:'Май'},{value:'jun',label:'Июнь'},
-  {value:'jul',label:'Июль'},{value:'aug',label:'Август'},
-  {value:'sep',label:'Сентябрь'},{value:'oct',label:'Октябрь'},
-  {value:'nov',label:'Ноябрь'},{value:'dec',label:'Декабрь'},
-];
+const ACCESS_MONTH_OPTIONS = [2026, 2027].flatMap(y => MONTH_KEYS.map(k => {
+  const id = monthIdFor(y, k);
+  return { value: id, label: monthRefLabel(id) };
+}));
 // Секции Ikkajo — из единого конфига, не хардкод
 const ACCESS_SECTION_OPTIONS = [
   {value:'ikkajo', label:'Иккаджо (весь)'},
@@ -3026,9 +3043,7 @@ function SectionAccess({showToast,isMobile}){
   };
 
   const refLabel = {
-    jan:'Январь',feb:'Февраль',mar:'Март',apr:'Апрель',
-    may:'Май',jun:'Июнь',jul:'Июль',aug:'Август',
-    sep:'Сентябрь',oct:'Октябрь',nov:'Ноябрь',dec:'Декабрь',
+    ...Object.fromEntries(ACCESS_MONTH_OPTIONS.map(o=>[o.value,o.label])),
     ikkajo:'Иккаджо (весь)',
     ...IKKAJO_LABELS,
     ...Object.fromEntries(courses.map(c=>[c.id,`Курс «${c.title}»`])),

@@ -4,6 +4,7 @@ import { useState, useMemo, useRef, useEffect } from 'react';
 import { C } from '@/lib/utils';
 import { BELT, FLAT_INDEX } from '@/data/techniques';
 import { hasIkkajoSectionAccess, hasMonthAccess } from '@/lib/db';
+import { monthTitle } from '@/lib/months';
 import { IKKAJO_SECTION_KEYS as IKKAJO_SECTIONS } from '@/lib/ikkajoSections';
 import { useIsMobile } from '@/lib/mobile';
 
@@ -78,7 +79,7 @@ export default function GlobalSearch({
     for (const month of months) {
       const monthLocked = !accessLoading && !hasMonthAccess(userAccess, month.id) && !month.is_open;
 
-      if (month.label?.toLowerCase().includes(lq)) {
+      if (monthTitle(month).toLowerCase().includes(lq)) {
         out.push({ type: 'month', month, locked: monthLocked });
       }
 
@@ -210,7 +211,7 @@ export default function GlobalSearch({
                       <span style={{ fontSize: 15, lineHeight: 1, flexShrink: 0 }}>{month.kanji || '月'}</span>
                       <div style={{ flex: 1, minWidth: 0 }}>
                         <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, color: C.ink, fontWeight: 500, whiteSpace: 'nowrap', overflow: 'hidden', textOverflow: 'ellipsis' }}>
-                          {month.label}
+                          {monthTitle(month)}
                         </div>
                       </div>
                       {locked && <LockIcon />}
@@ -235,7 +236,7 @@ export default function GlobalSearch({
                           {lesson.title}
                         </div>
                         <div style={{ fontSize: 11, color: C.muted, fontFamily: "var(--font-mono), monospace", letterSpacing: '0.04em' }}>
-                          {month.label}{lesson.duration ? ` · ${lesson.duration}` : ''}
+                          {monthTitle(month)}{lesson.duration ? ` · ${lesson.duration}` : ''}
                         </div>
                       </div>
                       {locked && <LockIcon />}
