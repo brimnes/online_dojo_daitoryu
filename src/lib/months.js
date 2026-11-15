@@ -8,7 +8,7 @@ export const FIRST_YEAR = 2026;
 
 export const monthYear = (m) => m?.year ?? FIRST_YEAR;
 
-/** Годы, в которых есть месяцы, по возрастанию */
+/** Годы, в которых есть месяцы, по возрастанию (вкладки рисуются от нового к старому) */
 export function monthYears(months) {
   return [...new Set((months ?? []).map(monthYear))].sort((a, b) => a - b);
 }

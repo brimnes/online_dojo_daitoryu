@@ -1851,6 +1851,7 @@ function SectionPayments({isMobile}){
   const [filter,setFilter] = useState('all');
   const [period,setPeriod] = useState('month');
   const [visibleCount,setVisibleCount] = useState(12);
+  const [openProduct,setOpenProduct] = useState(null); // ключ продукта, у которого раскрыт список покупателей
 
   // ── границы периода ──────────────────────────────────────────
   const now = new Date();
@@ -1891,25 +1892,32 @@ function SectionPayments({isMobile}){
   // ── по продуктам: сколько купили каждого товара за период ────
   // Учитывает и оплаты через провайдера, и вручную выданные (нал/карта/крипта).
   const productMap = new Map();
-  const addSale = (key, label, kanji, amount) => {
-    const row = productMap.get(key) || { label, kanji, count: 0, sum: 0 };
+  const addSale = (key, label, kanji, amount, buyer) => {
+    const row = productMap.get(key) || { key, label, kanji, count: 0, sum: 0, buyers: [] };
     row.count += 1;
     row.sum   += amount || 0;
+    row.buyers.push({ ...buyer, amount: amount || 0 });
     productMap.set(key, row);
   };
   // Один и тот же месяц из онлайн-оплаты и ручной выдачи — одна строка (ключ по type/reference)
   succeeded.forEach(p => {
     const key   = `${p.product_type}/${p.product_reference}`;
     const label = p.product_type==='month' && monthRefLabel(p.product_reference) ? monthRefLabel(p.product_reference) : (p.product_title || p.product_reference || '—');
-    addSale(key, label, p.product_type==='month'?'月':'技', p.amount);
+    addSale(key, label, p.product_type==='month'?'月':'技', p.amount, {
+      name: p.user_name||'—', email: p.user_email && p.user_email!=='—' ? p.user_email : '', ts: payDate(p).getTime(),
+      method: p.provider==='yookassa'?'ЮKassa':p.provider==='robokassa'?'Робокасса':(p.provider||'—'),
+    });
   });
   external.forEach(a => {
     const key   = `${a.type}/${a.reference}`;
-    addSale(key, accessLabel(a), a.type==='month'?'月':'技', a.amount);
+    addSale(key, accessLabel(a), a.type==='month'?'月':'技', a.amount, {
+      name: a.userName||'—', email: '', ts: new Date(a.dateIso).getTime(),
+      method: {cash:'Наличные',card:'Перевод на карту',crypto:'Крипта'}[a.source]||a.source,
+    });
   });
   const breakdown = [...productMap.values()]
     .sort((a,b) => b.sum - a.sum)
-    .map(r => ({ ...r, pct: income ? Math.round(r.sum/income*100) : 0 }));
+    .map(r => ({ ...r, pct: income ? Math.round(r.sum/income*100) : 0, buyers: r.buyers.sort((x,y)=>y.ts-x.ts) }));
 
   // ── таблица: платежи периода → display shape ─────────────────
   const fmtPayDate = p => payDate(p).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'});
@@ -2038,12 +2046,16 @@ function SectionPayments({isMobile}){
               <span style={{fontFamily:F.kanji,fontSize:13,color:C.gold,opacity:0.85}}>内訳</span>
               <span style={{fontFamily:F.serif,fontSize:11,letterSpacing:'0.18em',color:C.ink,fontWeight:600}}>ПРОДАЖИ ПО ПРОДУКТАМ · {periodLabel.toUpperCase()}</span>
             </div>
-            <div style={{padding:'4px 18px',maxHeight:260,overflowY:'auto'}}>
+            <div style={{padding:'4px 18px',maxHeight:openProduct?460:260,overflowY:'auto'}}>
               {breakdown.length===0 && (
                 <div style={{padding:'20px 0',fontFamily:F.serif,fontSize:13,color:C.muted,textAlign:'center'}}>Продаж за этот период нет</div>
               )}
-              {breakdown.map((r,i)=>(
-                <div key={i} style={{display:'grid',gridTemplateColumns:'24px 1fr 60px 70px',gap:12,alignItems:'center',padding:'10px 0',borderBottom:i===breakdown.length-1?'none':`1px solid ${C.hairline}`}}>
+              {breakdown.map((r,i)=>{
+                const isOpen = openProduct===r.key;
+                return (
+                <div key={r.key} style={{borderBottom:i===breakdown.length-1?'none':`1px solid ${C.hairline}`}}>
+                <div onClick={()=>setOpenProduct(isOpen?null:r.key)} title="Кто купил"
+                  style={{display:'grid',gridTemplateColumns:'24px 1fr 60px 70px 14px',gap:12,alignItems:'center',padding:'10px 0',cursor:'pointer'}}>
                   <span style={{fontFamily:F.kanji,fontSize:15,color:C.accent,opacity:0.7}}>{r.kanji}</span>
                   <div>
                     <div style={{fontFamily:F.mono,fontSize:13,color:C.ink2,fontWeight:500}}>{r.label}</div>
@@ -2053,8 +2065,26 @@ function SectionPayments({isMobile}){
                   </div>
                   <span style={{fontFamily:F.mono,fontSize:11,color:C.muted,letterSpacing:'0.04em',textAlign:'right'}}>{r.count} шт.</span>
                   <span style={{fontFamily:F.mono,fontSize:13,color:C.ink,letterSpacing:'0.04em',textAlign:'right',fontWeight:600}}>{(r.sum/1000).toFixed(1)}к ₽</span>
+                  <span style={{fontFamily:F.mono,fontSize:11,color:C.muted,textAlign:'right'}}>{isOpen?'▴':'▾'}</span>
                 </div>
-              ))}
+                {isOpen && (
+                  <div style={{margin:'0 0 10px 36px',borderLeft:`2px solid ${C.hairline}`,borderRadius:0}}>
+                    {r.buyers.map((b,j)=>(
+                      <div key={j} style={{display:'grid',gridTemplateColumns:'1fr auto',gap:8,padding:'7px 0 7px 12px',borderBottom:j===r.buyers.length-1?'none':`1px dashed ${C.hairline}`}}>
+                        <div style={{minWidth:0}}>
+                          <div style={{fontFamily:F.mono,fontSize:13,color:C.ink,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>{b.name}</div>
+                          <div style={{fontFamily:F.mono,fontSize:11,color:C.muted,overflow:'hidden',textOverflow:'ellipsis',whiteSpace:'nowrap'}}>
+                            {new Date(b.ts).toLocaleDateString('ru-RU',{day:'2-digit',month:'2-digit',year:'numeric'})} · {b.method}{b.email?` · ${b.email}`:''}
+                          </div>
+                        </div>
+                        <span style={{fontFamily:F.mono,fontSize:13,color:C.ink2,alignSelf:'center'}}>{b.amount.toLocaleString('ru-RU')} ₽</span>
+                      </div>
+                    ))}
+                  </div>
+                )}
+                </div>
+                );
+              })}
             </div>
           </div>
         </div>
@@ -2430,7 +2460,7 @@ function SectionMonths({showToast,isMobile}){
         {/* Вкладки годов */}
         {years.length > 1 && (
           <div style={{display:'flex',borderBottom:`1px solid ${C.hairline}`,marginBottom:20}}>
-            {years.map(y=>{
+            {[...years].reverse().map(y=>{
               const on = y===year;
               return (
                 <button key={y} onClick={()=>{setPickedYear(y);setActiveMonth(null);setEditId(null);setEditingMonth(false);setShowLessons(false);}}

@@ -603,7 +603,7 @@ function TabMonths({ nav, watched, user, userAccess, accessLoading, isMobile }) 
       {/* Вкладки годов */}
       {years.length > 1 && (
         <div role="tablist" style={{ display: 'flex', borderBottom: `1px solid ${C.border}`, marginBottom: isMobile ? 16 : 24, marginTop: isMobile ? 0 : -16 }}>
-          {years.map(y => {
+          {[...years].reverse().map(y => {
             const on = y === year;
             return (
               <button key={y} role="tab" aria-selected={on} onClick={() => pickYear(y)}
