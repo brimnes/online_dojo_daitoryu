@@ -6,6 +6,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma.js';
 import { requireAdmin } from '@/lib/auth-server.js';
+import { sendPushToUser, truncate } from '@/lib/push-server.js';
 
 export async function POST(request, { params }) {
   const { error, user } = await requireAdmin(request);
@@ -29,6 +30,19 @@ export async function POST(request, { params }) {
       isAdminReply:    true,
     },
   });
+
+  // Уведомляем автора комментария (если отвечает не он сам)
+  if (parent.userId !== user.id) {
+    const item = await prisma.knowledgeItem.findUnique({
+      where: { id: parent.knowledgeItemId }, select: { title: true },
+    }).catch(() => null);
+    await sendPushToUser(parent.userId, {
+      title: 'Сэнсэй ответил на ваш комментарий',
+      body:  [item?.title ? `Статья «${item.title}»` : '', truncate(reply.text)].filter(Boolean).join('\n'),
+      url:   `/?open=knowledge&id=${encodeURIComponent(parent.knowledgeItemId)}`,
+      tag:   `kcomment-${commentId}`,
+    });
+  }
 
   return NextResponse.json({ ok: true, reply: { id: reply.id, text: reply.text, created_at: reply.createdAt } });
 }
