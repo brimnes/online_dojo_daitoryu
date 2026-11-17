@@ -25,6 +25,12 @@ function routeFromUrl() {
     if (open === 'lesson' && q.get('month') && q.get('lesson')) {
       return { page: 'lesson', monthId: q.get('month'), lessonId: q.get('lesson') };
     }
+    if (open === 'month' && q.get('id')) {
+      return { page: 'month', monthId: q.get('id') };
+    }
+    if (open === 'course' && q.get('id')) {
+      return { page: 'course', courseId: q.get('id') };
+    }
     if (open === 'knowledge' && q.get('id')) {
       return { page: 'knowledge_item', itemId: q.get('id') };
     }

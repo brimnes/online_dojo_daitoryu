@@ -402,7 +402,7 @@ const SECTIONS = [
   {id:'knowledge', num:'05', label:'База знаний',     kanji:'智'},
   {id:'payments',  num:'06', label:'Платежи',         kanji:'銭'},
   {id:'comments',  num:'07', label:'Комментарии',     kanji:'声'},
-  {id:'push',      num:'08', label:'Уведомления',     kanji:'報'},
+  {id:'push',      num:'08', label:'Новости',         kanji:'報'},
   // hidden (functional, not in nav)
   {id:'access',    num:'',   label:'Доступы',         kanji:'鍵', hidden:true},
 ];
@@ -3931,63 +3931,181 @@ function KnowledgeAttachmentsEditor({ itemId, onInsert, showToast }) {
   );
 }
 
+const NEWS_KIND_LABEL = { month: 'Месяц', article: 'Статья', course: 'Курс', announcement: 'Объявление' };
+
 function SectionPush({ showToast, isMobile }) {
+  const [list,    setList]    = useState([]);
+  const [loading, setLoading] = useState(true);
   const [title,   setTitle]   = useState('');
   const [body,    setBody]    = useState('');
-  const [url,     setUrl]     = useState('/');
+  const [linkType, setLinkType] = useState('');
+  const [linkRef,  setLinkRef]  = useState('');
+  const [push,    setPush]    = useState(true);
   const [sending, setSending] = useState(false);
-  const [result,  setResult]  = useState(null);
+  const [editId,  setEditId]  = useState(null);
+  const [draft,   setDraft]   = useState({ title: '', body: '' });
+
+  const { months }  = useMonths();
+  const { items: articles } = useKnowledge({ adminMode: true });
+  const { courses } = useCourses({ adminMode: true });
+
+  const reload = useCallback(async () => {
+    setLoading(true);
+    try {
+      const r = await fetch('/api/admin/news');
+      if (r.ok) setList(await r.json());
+    } finally { setLoading(false); }
+  }, []);
+  useEffect(() => { reload(); }, [reload]);
+
+  const linkOptions = linkType === 'month'
+    ? months.map(m => ({ id: m.id, label: monthTitle(m) }))
+    : linkType === 'knowledge'
+      ? articles.filter(a => a.is_published).map(a => ({ id: a.id, label: a.title }))
+      : linkType === 'course'
+        ? courses.map(c => ({ id: c.id, label: c.title }))
+        : [];
+
+  const linkLabel = (n) => {
+    if (!n.link_type) return '';
+    if (n.link_type === 'url') return n.link_ref;
+    if (n.link_type === 'month') return monthRefLabel(n.link_ref) || n.link_ref;
+    if (n.link_type === 'knowledge') return articles.find(a => a.id === n.link_ref)?.title || 'статья';
+    if (n.link_type === 'course') return courses.find(c => c.id === n.link_ref)?.title || n.link_ref;
+    return '';
+  };
+
+  const canSend = title.trim() && (!linkType || linkRef.trim()) && !sending;
 
   const handleSend = async () => {
-    if (!title.trim() || !body.trim()) return;
-    setSending(true); setResult(null);
+    if (!canSend) return;
+    setSending(true);
     try {
-      const res  = await fetch('/api/admin/push/send', {
+      const res = await fetch('/api/admin/news', {
         method: 'POST', headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ title: title.trim(), body: body.trim(), url: url.trim() || '/' }),
+        body: JSON.stringify({ title: title.trim(), body: body.trim(), link_type: linkType || null, link_ref: linkRef.trim() || null, push }),
       });
       const data = await res.json();
-      if (!res.ok) { setResult({ error: data.error || 'Ошибка' }); return; }
-      setResult({ sent: data.sent, failed: data.failed });
-      showToast(`Отправлено: ${data.sent}`);
-      setTitle(''); setBody(''); setUrl('/');
-    } catch (e) { setResult({ error: e.message }); }
+      if (!res.ok) { showToast(data.error || 'Ошибка'); return; }
+      setList(l => [data.news, ...l]);
+      showToast(push ? 'Опубликовано и отправлено push' : 'Опубликовано');
+      setTitle(''); setBody(''); setLinkType(''); setLinkRef('');
+    } catch (e) { showToast(e.message); }
     finally { setSending(false); }
   };
 
+  const update = async (id, fields) => {
+    const res = await fetch(`/api/admin/news/${id}`, {
+      method: 'PUT', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(fields),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) { showToast(data.error || 'Ошибка'); return false; }
+    setList(l => l.map(n => (n.id === id ? data.news : n)));
+    return true;
+  };
+
+  const remove = async (n) => {
+    if (!window.confirm(n.is_auto ? 'Скрыть эту новость у всех учеников?' : 'Удалить объявление?')) return;
+    const res = await fetch(`/api/admin/news/${n.id}`, { method: 'DELETE' });
+    if (!res.ok) { showToast('Ошибка'); return; }
+    setList(l => (n.is_auto ? l.map(x => (x.id === n.id ? { ...x, is_hidden: true } : x)) : l.filter(x => x.id !== n.id)));
+  };
+
   const inp = { background: C.surface, border: `1px solid ${C.border}`, color: C.ink, fontFamily: F.serif, fontSize: 15, padding: '10px 12px', outline: 'none', width: '100%', boxSizing: 'border-box' };
+  const lbl = { fontFamily: F.mono, fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 6 };
+  const linkBtn = { background: 'none', border: 'none', padding: 0, cursor: 'pointer', fontFamily: F.mono, fontSize: 12, color: C.muted, textDecoration: 'underline' };
 
   return (
     <div>
-      <AdminSectionHead num="08" title="Push-уведомления" subtitle="Отправка всем подписанным пользователям" kanji="報" />
-      <div style={{ padding: isMobile ? '20px 16px 40px' : '32px 36px 60px' }}>
-      <div style={{ maxWidth: 560, display: 'flex', flexDirection: 'column', gap: 18 }}>
+      <AdminSectionHead num="08" title="Новости и уведомления" subtitle="Колокольчик в кабинете ученика и push" kanji="報" />
+      <div style={{ padding: isMobile ? '20px 16px 40px' : '32px 36px 60px', display: 'grid', gap: 32, gridTemplateColumns: isMobile ? '1fr' : 'minmax(0,1.3fr) minmax(0,1fr)', alignItems: 'start' }}>
+
+        {/* Лента */}
         <div>
-          <div style={{ fontFamily: F.mono, fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 6 }}>Заголовок *</div>
-          <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Открылся новый урок!" style={inp} maxLength={80} />
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: C.muted, marginTop: 4, textAlign: 'right' }}>{title.length}/80</div>
-        </div>
-        <div>
-          <div style={{ fontFamily: F.mono, fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 6 }}>Текст *</div>
-          <textarea value={body} onChange={e => setBody(e.target.value)} placeholder="Видео и материалы уже доступны в личном кабинете." rows={3} style={{ ...inp, resize: 'vertical' }} maxLength={200} />
-          <div style={{ fontFamily: F.mono, fontSize: 10, color: C.muted, marginTop: 4, textAlign: 'right' }}>{body.length}/200</div>
-        </div>
-        <div>
-          <div style={{ fontFamily: F.mono, fontSize: 11, color: C.muted, letterSpacing: '0.14em', textTransform: 'uppercase', marginBottom: 6 }}>Ссылка при нажатии</div>
-          <input value={url} onChange={e => setUrl(e.target.value)} placeholder="/" style={inp} />
-        </div>
-        {result && (
-          <div style={{ fontFamily: F.mono, fontSize: 13, padding: '12px 14px', background: result.error ? 'rgba(180,60,60,0.08)' : 'rgba(60,140,60,0.08)', border: `1px solid ${result.error ? C.danger : '#4a8a4a'}`, color: result.error ? C.danger : '#2a6a2a' }}>
-            {result.error ? `Ошибка: ${result.error}` : `✓ Отправлено: ${result.sent} · Ошибок: ${result.failed}`}
+          <div style={{ ...lbl, marginBottom: 10 }}>Лента новостей</div>
+          <div style={{ fontFamily: F.serif, fontSize: 14, color: C.muted, lineHeight: 1.6, marginBottom: 14 }}>
+            Новости создаются сами, когда вы открываете месяц, публикуете статью или курс, и сразу уходят push-ом. Здесь их можно поправить или скрыть.
           </div>
-        )}
-        <button onClick={handleSend} disabled={sending || !title.trim() || !body.trim()} style={{ padding: '13px 28px', alignSelf: 'flex-start', background: sending || !title.trim() || !body.trim() ? C.muted : C.accent, color: '#f1ece0', border: 'none', cursor: sending || !title.trim() || !body.trim() ? 'default' : 'pointer', fontFamily: F.mono, fontSize: 13, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
-          {sending ? 'Отправка…' : 'Отправить всем →'}
-        </button>
-        <div style={{ fontFamily: F.serif, fontSize: 14, color: C.muted, lineHeight: 1.7, borderTop: `1px solid ${C.border}`, paddingTop: 16 }}>
-          Пользователь получит уведомление если нажал колокольчик в приложении. На iOS нужно добавить платформу на рабочий стол.
+          {loading && <div style={{ fontFamily: F.mono, fontSize: 13, color: C.muted }}>Загрузка…</div>}
+          {!loading && !list.length && <div style={{ fontFamily: F.serif, fontSize: 15, color: C.muted }}>Новостей пока нет</div>}
+          <div style={{ display: 'grid', gap: 0, border: list.length ? `1px solid ${C.border}` : 'none', background: C.surface2 }}>
+            {list.map((n, i) => (
+              <div key={n.id} style={{ padding: '12px 14px', borderTop: i ? `1px solid ${C.hairline2}` : 'none', opacity: n.is_hidden ? 0.55 : 1 }}>
+                <div style={{ display: 'flex', gap: 8, alignItems: 'baseline', flexWrap: 'wrap', fontFamily: F.mono, fontSize: 11, color: C.muted, letterSpacing: '0.06em' }}>
+                  <span style={{ textTransform: 'uppercase', color: n.kind === 'announcement' ? C.accent : C.gold }}>{NEWS_KIND_LABEL[n.kind] || n.kind}</span>
+                  <span>{new Date(n.created_at).toLocaleDateString('ru-RU', { day: 'numeric', month: 'short', year: 'numeric' })}</span>
+                  {n.is_auto && <span>· автоматически</span>}
+                  {n.is_hidden && <span style={{ color: C.danger }}>· скрыта</span>}
+                  <span style={{ marginLeft: 'auto' }}>👁 {n.read_count}</span>
+                </div>
+                {editId === n.id ? (
+                  <div style={{ display: 'grid', gap: 8, marginTop: 8 }}>
+                    <input value={draft.title} onChange={e => setDraft(d => ({ ...d, title: e.target.value }))} style={inp} maxLength={120} />
+                    <textarea value={draft.body} onChange={e => setDraft(d => ({ ...d, body: e.target.value }))} rows={2} style={{ ...inp, resize: 'vertical' }} maxLength={400} />
+                    <div style={{ display: 'flex', gap: 14 }}>
+                      <button style={linkBtn} onClick={async () => { if (await update(n.id, draft)) setEditId(null); }}>Сохранить</button>
+                      <button style={linkBtn} onClick={() => setEditId(null)}>Отмена</button>
+                    </div>
+                  </div>
+                ) : (
+                  <>
+                    <div style={{ fontFamily: F.serif, fontSize: 17, color: C.ink, marginTop: 4 }}>{n.title}</div>
+                    {n.body && <div style={{ fontFamily: F.serif, fontSize: 14, color: C.ink2, marginTop: 2 }}>{n.body}</div>}
+                    {n.link_type && <div style={{ fontFamily: F.mono, fontSize: 11, color: C.muted, marginTop: 4 }}>→ {linkLabel(n)}</div>}
+                    <div style={{ display: 'flex', gap: 14, marginTop: 8 }}>
+                      <button style={linkBtn} onClick={() => { setEditId(n.id); setDraft({ title: n.title, body: n.body }); }}>Изменить</button>
+                      {n.is_hidden
+                        ? <button style={linkBtn} onClick={() => update(n.id, { is_hidden: false })}>Показать</button>
+                        : <button style={linkBtn} onClick={() => remove(n)}>{n.is_auto ? 'Скрыть' : 'Удалить'}</button>}
+                    </div>
+                  </>
+                )}
+              </div>
+            ))}
+          </div>
         </div>
-      </div>
+
+        {/* Новое объявление */}
+        <div style={{ display: 'flex', flexDirection: 'column', gap: 16, background: C.surface2, border: `1px solid ${C.border}`, padding: 18 }}>
+          <div style={{ ...lbl, marginBottom: 0 }}>Новое объявление</div>
+          <div>
+            <div style={lbl}>Заголовок *</div>
+            <input value={title} onChange={e => setTitle(e.target.value)} placeholder="Семинар 14 декабря — запись открыта" style={inp} maxLength={120} />
+          </div>
+          <div>
+            <div style={lbl}>Текст</div>
+            <textarea value={body} onChange={e => setBody(e.target.value)} placeholder="Подробности и запись — по ссылке." rows={3} style={{ ...inp, resize: 'vertical' }} maxLength={400} />
+          </div>
+          <div>
+            <div style={lbl}>Куда ведёт</div>
+            <select value={linkType} onChange={e => { setLinkType(e.target.value); setLinkRef(''); }} style={inp}>
+              <option value="">Никуда</option>
+              <option value="month">Месяц</option>
+              <option value="knowledge">Статья</option>
+              <option value="course">Курс</option>
+              <option value="url">Своя ссылка</option>
+            </select>
+            {linkType === 'url' && (
+              <input value={linkRef} onChange={e => setLinkRef(e.target.value)} placeholder="https://…" style={{ ...inp, marginTop: 8 }} />
+            )}
+            {linkType && linkType !== 'url' && (
+              <select value={linkRef} onChange={e => setLinkRef(e.target.value)} style={{ ...inp, marginTop: 8 }}>
+                <option value="">— выберите —</option>
+                {linkOptions.map(o => <option key={o.id} value={o.id}>{o.label}</option>)}
+              </select>
+            )}
+          </div>
+          <label style={{ display: 'flex', gap: 8, alignItems: 'center', fontFamily: F.serif, fontSize: 15, color: C.ink2, cursor: 'pointer' }}>
+            <input type="checkbox" checked={push} onChange={e => setPush(e.target.checked)} />
+            Отправить push всем подписанным
+          </label>
+          <button onClick={handleSend} disabled={!canSend} style={{ padding: '13px 24px', alignSelf: 'flex-start', background: canSend ? C.accent : C.muted, color: '#f1ece0', border: 'none', cursor: canSend ? 'pointer' : 'default', fontFamily: F.mono, fontSize: 13, letterSpacing: '0.12em', textTransform: 'uppercase' }}>
+            {sending ? 'Публикация…' : 'Опубликовать →'}
+          </button>
+          <div style={{ fontFamily: F.serif, fontSize: 13, color: C.muted, lineHeight: 1.6, borderTop: `1px solid ${C.border}`, paddingTop: 12 }}>
+            Объявление появится в колокольчике у всех учеников. Push получат только те, кто включил уведомления (на iOS — с платформой на рабочем столе).
+          </div>
+        </div>
       </div>
     </div>
   );

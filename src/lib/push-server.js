@@ -21,10 +21,20 @@ export function truncate(text, max = 140) {
   return s.length > max ? `${s.slice(0, max - 1)}…` : s;
 }
 
-export async function sendPushToUser(userId, { title, body, url = '/', tag }) {
+export function sendPushToUser(userId, payload) {
+  if (!userId) return Promise.resolve({ sent: 0 });
+  return sendPush({ userId }, payload);
+}
+
+// Всем, кто включил уведомления
+export function sendPushToAll(payload) {
+  return sendPush({}, payload);
+}
+
+async function sendPush(where, { title, body, url = '/', tag }) {
   try {
-    if (!userId || !configure()) return { sent: 0 };
-    const subs = await prisma.pushSubscription.findMany({ where: { userId } });
+    if (!configure()) return { sent: 0 };
+    const subs = await prisma.pushSubscription.findMany({ where });
     if (!subs.length) return { sent: 0 };
 
     const payload = JSON.stringify({ title, body, url, tag });
@@ -48,7 +58,7 @@ export async function sendPushToUser(userId, { title, body, url = '/', tag }) {
     }
     return { sent };
   } catch (e) {
-    console.warn('[push] sendPushToUser failed:', e?.message);
+    console.warn('[push] send failed:', e?.message);
     return { sent: 0 };
   }
 }

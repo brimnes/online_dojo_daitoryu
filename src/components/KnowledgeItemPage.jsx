@@ -7,6 +7,7 @@ import { useAccessibility } from '@/lib/accessibility';
 import KinescopePlayer from '@/components/KinescopePlayer';
 import { MobileBottomNav } from '@/components/BottomNav';
 import RichText from '@/components/RichText';
+import { NewReplyBadge } from '@/components/Notifications';
 
 export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
   const isMobile = useIsMobile();
@@ -305,6 +306,7 @@ export default function KnowledgeItemPage({ nav, itemId, viewerId }) {
                         <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, flexWrap: 'wrap' }}>
                           <span style={{ fontFamily: F.mono, fontSize: 13, color: C.ink, fontWeight: 500 }}>{r.author}</span>
                           <span style={{ fontFamily: F.mono, fontSize: 11, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', padding: '1px 7px', border: `1px solid ${C.accent}` }}>СЭНСЭЙ</span>
+                          {r.is_new && <NewReplyBadge />}
                           <span style={{ marginLeft: 'auto', fontFamily: F.mono, fontSize: isMobile ? 9 : 10, color: C.muted }}>{r.date}</span>
                         </div>
                         <div style={{ fontFamily: F.mono, fontSize: 18, color: C.ink2, lineHeight: 1.6 }}>{r.text}</div>
