@@ -11,6 +11,7 @@ import { hasIkkajoSectionAccess } from '@/lib/access';
 import { IKKAJO_SECTION_KEYS as IKKAJO_SECTIONS } from '@/lib/ikkajoSections';
 import Sidebar from '@/components/Sidebar';
 import { MobileBottomNav } from '@/components/BottomNav';
+import { NewReplyBadge } from '@/components/Notifications';
 
 const SECTION_KANJI = {
   tachiai: '立合', idori: '居取', ushirodori: '後取',
@@ -108,6 +109,7 @@ function TechniqueComments({ techniqueId }) {
                   <div style={{ flex: 1 }}>
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 8, marginBottom: 4 }}>
                       <span style={{ fontSize: 13, fontWeight: 600, color: C.gold }}>{r.author}</span>
+                      {r.is_new && <NewReplyBadge />}
                       <span style={{ fontSize: 11, color: C.muted, fontFamily: "var(--font-mono), monospace" }}>{r.date}</span>
                     </div>
                     <div style={{ fontSize: 16, color: C.ink2, lineHeight: 1.7 }}>{r.text}</div>

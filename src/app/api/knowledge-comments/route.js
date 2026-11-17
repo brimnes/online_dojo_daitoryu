@@ -7,8 +7,21 @@ import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma.js';
 import { requireAuth } from '@/lib/auth-server.js';
 
+// Новые (непрочитанные автором) ответы сэнсэя: помечаем is_new и сразу считаем прочитанными
+async function markRepliesSeen(model, comments, userId) {
+  const fresh = new Set();
+  for (const c of comments) {
+    if (c.userId !== userId) continue;
+    for (const r of c.replies || []) if (!r.readAt) fresh.add(r.id);
+  }
+  if (fresh.size) {
+    await model.updateMany({ where: { id: { in: [...fresh] } }, data: { readAt: new Date() } }).catch(() => null);
+  }
+  return fresh;
+}
+
 export async function GET(request) {
-  const { error } = await requireAuth(request);
+  const { error, user } = await requireAuth(request);
   if (error) return error;
 
   const { searchParams } = new URL(request.url);
@@ -32,6 +45,8 @@ export async function GET(request) {
     },
   });
 
+  const fresh = await markRepliesSeen(prisma.knowledgeComment, comments, user.id);
+
   return NextResponse.json(comments.map(c => ({
     id:      c.id,
     author:  c.user?.name || '—',
@@ -46,6 +61,7 @@ export async function GET(request) {
       role:   'sensei',
       text:   r.text,
       date:   r.createdAt.toLocaleDateString('ru-RU', { day: 'numeric', month: 'short' }),
+      is_new: fresh.has(r.id),
     })),
   })));
 }

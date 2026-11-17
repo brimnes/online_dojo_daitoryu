@@ -62,6 +62,7 @@ model User {
   knowledgeComments KnowledgeComment[]
   pushSubscriptions PushSubscription[]
   payments          Payment[]
+  newsReads         NewsRead[]
 
   @@map("users")
 }
@@ -346,6 +347,8 @@ model Comment {
   status          String    @default("visible")
   parentCommentId Int?      @map("parent_comment_id")
   isAdminReply    Boolean   @default(false) @map("is_admin_reply")
+  // Для ответа сэнсэя: когда автор вопроса его увидел (null = новый)
+  readAt          DateTime? @map("read_at")
   createdAt       DateTime  @default(now()) @map("created_at")
 
   lesson   Lesson?   @relation(fields: [lessonId], references: [id], onDelete: Cascade)
@@ -442,6 +445,8 @@ model KnowledgeComment {
   status          String    @default("visible")
   parentCommentId Int?      @map("parent_comment_id")
   isAdminReply    Boolean   @default(false) @map("is_admin_reply")
+  // Для ответа сэнсэя: когда автор вопроса его увидел (null = новый)
+  readAt          DateTime? @map("read_at")
   createdAt       DateTime  @default(now()) @map("created_at")
 
   knowledgeItem KnowledgeItem      @relation(fields: [knowledgeItemId], references: [id], onDelete: Cascade)
@@ -522,4 +527,40 @@ model CourseVideo {
   @@index([videoId], map: "idx_course_videos_video_id")
   @@index([errorsVideoId], map: "idx_course_videos_errors_video_id")
   @@map("course_videos")
+}
+
+
+// ────────────────────────────────────────────────────────────
+// news
+// Новости додзё в колокольчике ученика. Автоматические (открыт месяц,
+// опубликована статья / курс) создаются один раз по auto_key;
+// объявления пишет админ. link_type: month | knowledge | course | url
+// ────────────────────────────────────────────────────────────
+model News {
+  id        String   @id @default(uuid()) @db.Uuid
+  kind      String   @default("announcement")   // month | article | course | announcement
+  title     String
+  body      String?  @default("")
+  linkType  String?  @map("link_type")
+  linkRef   String?  @map("link_ref")
+  autoKey   String?  @unique @map("auto_key")
+  isHidden  Boolean  @default(false) @map("is_hidden")
+  createdAt DateTime @default(now()) @map("created_at")
+
+  reads NewsRead[]
+
+  @@index([createdAt], map: "idx_news_created_at")
+  @@map("news")
+}
+
+model NewsRead {
+  newsId String   @map("news_id") @db.Uuid
+  userId String   @map("user_id") @db.Uuid
+  readAt DateTime @default(now()) @map("read_at")
+
+  news News @relation(fields: [newsId], references: [id], onDelete: Cascade)
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@id([newsId, userId])
+  @@map("news_reads")
 }

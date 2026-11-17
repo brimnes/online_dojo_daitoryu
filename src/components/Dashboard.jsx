@@ -15,6 +15,7 @@ import { IKKAJO_SECTION_KEYS } from '@/lib/ikkajoSections';
 import { useProducts } from '@/lib/useProducts';
 import { pluralSections } from '@/components/CoursePage';
 import CoursePurchaseModal from '@/components/CoursePurchaseModal';
+import { useNotifications, NotificationBell, NotificationsBanner } from '@/components/Notifications';
 import { monthYear, monthYears, defaultMonthYear, monthTitle, loadMonthYear, saveMonthYear } from '@/lib/months';
 
 // Срок программы пока не хранится в БД — единственный явный источник здесь.
@@ -35,6 +36,8 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, onUs
   const [modal, setModal] = useState(null);
   const { state: pushState, subscribe: pushSubscribe, pushError } = usePushNotifications();
   const [pushSheetVisible, setPushSheetVisible] = useState(false);
+  const notif = useNotifications();
+  const [bellOpen, setBellOpen] = useState(false);
 
   useEffect(() => {
     if (pushState !== 'idle') return;
@@ -102,6 +105,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, onUs
                   {curLv.label}
                 </span>
               )}
+              <NotificationBell notif={notif} nav={nav} isMobile open={bellOpen} setOpen={setBellOpen} />
               <button
                 onClick={onLogout}
                 title="Выйти"
@@ -159,6 +163,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, onUs
                 {curLv.label}
               </span>
             )}
+            <NotificationBell notif={notif} nav={nav} isMobile={false} open={bellOpen} setOpen={setBellOpen} />
           </header>
         )}
 
@@ -168,6 +173,7 @@ export default function Dashboard({ nav, watched, user: userProp, onLogout, onUs
           key={tab}
         >
           <div className="fade">
+            <NotificationsBanner notif={notif} onOpen={() => { window.scrollTo({ top: 0, behavior: 'smooth' }); setBellOpen(true); }} />
             {tab === 'knowledge' && <TabKnowledge nav={nav} isMobile={isMobile} />}
             {tab === 'months'    && <TabMonths   nav={nav} watched={watched} user={u} userAccess={userAccess} accessLoading={accessLoading} isMobile={isMobile} />}
             {tab === 'database'  && <TabDatabase nav={nav} setModal={setModal} user={u} userAccess={userAccess} isMobile={isMobile} />}

@@ -5,6 +5,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma.js';
 import { requireAuth, requireAdmin } from '@/lib/auth-server.js';
+import { announceArticle } from '@/lib/news.js';
 
 function toSnake(k) {
   return {
@@ -71,6 +72,7 @@ export async function POST(request) {
     };
     if (body.id) data.id = body.id;
     const item = await prisma.knowledgeItem.create({ data });
+    if (item.isPublished) await announceArticle(item);
     return NextResponse.json({ ok: true, item: toSnake(item) }, { status: 201 });
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 500 });

@@ -14,6 +14,34 @@ import CourseSectionPage from './CourseSectionPage';
 import { INITIAL_COMMENTS } from '@/data/months';
 import { USER } from '@/data/users';
 import { registerServiceWorker } from '@/lib/mobile';
+import { FLAT_INDEX } from '@/data/techniques';
+
+// ─── Deep link из push-уведомления: /?open=lesson&month=..&lesson=.. ──
+// Возвращает маршрут или null. Ссылку из адресной строки затем убираем.
+function routeFromUrl() {
+  try {
+    const q = new URLSearchParams(window.location.search);
+    const open = q.get('open');
+    if (open === 'lesson' && q.get('month') && q.get('lesson')) {
+      return { page: 'lesson', monthId: q.get('month'), lessonId: q.get('lesson') };
+    }
+    if (open === 'month' && q.get('id')) {
+      return { page: 'month', monthId: q.get('id') };
+    }
+    if (open === 'course' && q.get('id')) {
+      return { page: 'course', courseId: q.get('id') };
+    }
+    if (open === 'knowledge' && q.get('id')) {
+      return { page: 'knowledge_item', itemId: q.get('id') };
+    }
+    if (open === 'technique' && q.get('id')) {
+      const id = q.get('id');
+      const hit = FLAT_INDEX.find(({ section, tech }) => `${section.id.toLowerCase()}_${tech.name}` === id);
+      if (hit) return { page: 'technique', kyu: hit.kyu, section: hit.section, tech: hit.tech };
+    }
+  } catch {}
+  return null;
+}
 
 // ─── Route persistence ────────────────────────────────────────────
 // Сохраняем текущий маршрут в localStorage, чтобы восстановить его
@@ -124,7 +152,11 @@ export default function App({ initialUser = null }) {
   // mismatch между server-rendered HTML и client state.
   useEffect(() => {
     const userId = initialUser?.id ?? null;
-    const saved = loadRoute(userId);
+    const linked = routeFromUrl();
+    if (linked) {
+      try { window.history.replaceState(null, '', window.location.pathname); } catch {}
+    }
+    const saved = linked || loadRoute(userId);
     if (saved) {
       setRoute(saved);
       // Восстанавливаем стек навигации пустым — back уйдёт на dashboard

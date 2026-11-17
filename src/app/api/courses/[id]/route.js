@@ -7,6 +7,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma.js';
 import { requireAuth, requireAdmin } from '@/lib/auth-server.js';
+import { announceCourse } from '@/lib/news.js';
 import { courseToSnake, upsertCourseProduct } from '../shared.js';
 
 export async function GET(request, { params }) {
@@ -48,10 +49,14 @@ export async function PUT(request, { params }) {
     if (body.is_published !== undefined) data.isPublished = !!body.is_published;
     if (body.is_coming_soon !== undefined) data.isComingSoon = !!body.is_coming_soon;
 
+    const before = await prisma.course.findUnique({ where: { id: params.id }, select: { isPublished: true, isComingSoon: true } });
     const course = await prisma.course.update({
       where: { id: params.id }, data,
       include: { videos: { orderBy: { sortOrder: 'asc' } } },
     });
+    // Курс стал доступен ученикам (опубликован и не «в разработке») — новость
+    const wasLive = before && before.isPublished && !before.isComingSoon;
+    if (!wasLive && course.isPublished && !course.isComingSoon) await announceCourse(course);
     await upsertCourseProduct(prisma, course.id, {
       price: body.price,
       title: body.title !== undefined ? `Курс «${course.title}»` : undefined,

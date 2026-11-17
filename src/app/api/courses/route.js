@@ -5,6 +5,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma.js';
 import { requireAuth, requireAdmin } from '@/lib/auth-server.js';
+import { announceCourse } from '@/lib/news.js';
 import { courseToSnake, upsertCourseProduct } from './shared.js';
 
 export async function GET(request) {
@@ -59,6 +60,7 @@ export async function POST(request) {
       },
       include: { videos: true },
     });
+    if (course.isPublished && !course.isComingSoon) await announceCourse(course);
     await upsertCourseProduct(prisma, id, {
       title: `Курс «${course.title}»`, price: body.price ?? 0, isActive: true,
     });

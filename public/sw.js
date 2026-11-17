@@ -1,7 +1,7 @@
 // Online Dojo — Service Worker
 // Кэширует shell приложения для работы оффлайн и быстрого старта
 
-const CACHE_NAME = 'online-dojo-v7'; // bump при каждом деплое
+const CACHE_NAME = 'online-dojo-v8'; // bump при каждом деплое
 
 // Ресурсы для предварительного кэширования (app shell)
 const PRECACHE_URLS = [
@@ -18,6 +18,7 @@ self.addEventListener('push', (event) => {
       icon:  data.icon  || '/icons/icon-192x192.png',
       badge: data.badge || '/icons/icon-192x192.png',
       data:  { url: data.url || '/' },
+      ...(data.tag ? { tag: data.tag, renotify: true } : {}),
     })
   );
 });

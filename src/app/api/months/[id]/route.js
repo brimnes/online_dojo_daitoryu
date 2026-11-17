@@ -7,6 +7,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma.js';
 import { requireAdmin } from '@/lib/auth-server.js';
+import { announceMonthOpened } from '@/lib/news.js';
 
 // Месяцы, скрытые из публичного UI (sort_order 1–5)
 const HIDDEN_MONTH_IDS = new Set(['jan', 'feb', 'mar', 'apr', 'may']);
@@ -34,7 +35,10 @@ export async function PATCH(request, { params }) {
   if (body.modal_extras  !== undefined) data.modalExtras  = body.modal_extras;
 
   try {
+    const before = await prisma.month.findUnique({ where: { id: params.id }, select: { isOpen: true } });
     const m = await prisma.month.update({ where: { id: params.id }, data });
+    // Месяц открыли — новость всем ученикам (один раз на месяц)
+    if (before && !before.isOpen && m.isOpen) await announceMonthOpened(m);
     return NextResponse.json({ ok: true, month: { ...m, is_open: m.isOpen } });
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 500 });

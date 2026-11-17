@@ -6,6 +6,7 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma.js';
 import { requireAuth, requireAdmin } from '@/lib/auth-server.js';
+import { announceArticle } from '@/lib/news.js';
 
 function toSnake(k) {
   return {
@@ -54,7 +55,10 @@ export async function PUT(request, { params }) {
     if (body.video_id      !== undefined) data.videoId       = body.video_id;
     if (body.video_status  !== undefined) data.videoStatus   = body.video_status;
 
+    const before = await prisma.knowledgeItem.findUnique({ where: { id: params.id }, select: { isPublished: true } });
     const item = await prisma.knowledgeItem.update({ where: { id: params.id }, data });
+    // Статью опубликовали — новость (один раз на статью)
+    if (before && !before.isPublished && item.isPublished) await announceArticle(item);
     return NextResponse.json({ ok: true, item: toSnake(item) });
   } catch (e) {
     return NextResponse.json({ error: e.message }, { status: 500 });

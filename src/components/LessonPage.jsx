@@ -10,6 +10,7 @@ import { monthYear } from '@/lib/months';
 import KinescopePlayer from '@/components/KinescopePlayer';
 import Sidebar from '@/components/Sidebar';
 import { MobileBottomNav } from '@/components/BottomNav';
+import { NewReplyBadge } from '@/components/Notifications';
 
 export default function LessonPage({
   nav, monthId, lessonId,
@@ -336,6 +337,7 @@ export default function LessonPage({
                               <div style={{ display: 'flex', alignItems: 'center', gap: 10, marginBottom: 4, flexWrap: 'wrap' }}>
                                 <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 13, color: C.ink, fontWeight: 500 }}>{r.author}</span>
                                 <span style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: 11, color: C.accent, letterSpacing: '0.18em', textTransform: 'uppercase', padding: '1px 7px', border: `1px solid ${C.accent}` }}>СЭНСЭЙ</span>
+                                {r.is_new && <NewReplyBadge />}
                                 <span style={{ marginLeft: 'auto', fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: isMobile ? 9 : 10, color: C.muted }}>{r.date}</span>
                               </div>
                               <div style={{ fontFamily: "var(--font-mono), 'JetBrains Mono', monospace", fontSize: isMobile ? 13 : 14, color: C.ink2, lineHeight: 1.55 }}>{r.text}</div>
